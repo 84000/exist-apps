@@ -44,6 +44,45 @@ declare variable $glossary:view-modes :=
         <view-mode id="default" client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache"/>
         <view-mode id="editor"  client="browser" layout="full" glossary="no-cache" parts="all" cache="no-cache"/>
     </view-modes>;
+    
+declare variable $glossary:attestation-types :=
+    <attestation-types xmlns="http://read.84000.co/ns/1.0">
+        <attestation-type id="SourceAttested" code="ST" legacy-id="sourceAttested">
+            <label>Source Attested</label>
+            <description>The term is attested in a Sanskrit witness of the source text.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+        <attestation-type id="OtherSourceAttested" code="OT">
+            <label>Other Source Attested</label>
+            <description>The term is attested in other Sanskrit texts.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+        <attestation-type id="DictionaryAttested" code="DI">
+            <label>Dictionary Attested</label>
+            <description>The term is plausibly attested as an equivalent to the given Tibetan term in dictionaries.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+        <attestation-type id="PhoneticReconstruction" code="PR" legacy-id="transliterationReconstruction">
+            <label>Phonetic Reconstruction</label>
+            <description>For phonetic reconstructions when the Tibetan source text renders Sanskrit phonetically (i.e., names of people, plants, places, etc.)</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+        <attestation-type id="TranslationReconstruction" code="TR" legacy-id="semanticReconstruction">
+            <label>Translation Reconstruction</label>
+            <description>Used in exceptional cases where there is a strong reason for using a hypothetical reconstructed Sanskrit form based on the Tibetan translation.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+        <attestation-type id="ApproximateReconstruction" code="AP">
+            <label>Approximate Reconstruction</label>
+            <description>Used when there is no attested Sanskrit source for a personal name but only approximate attested matches for the Sanskrit (e.g., the Tibetan name of a buddha in your text is attested in Sanskrit as the name of a bodhisattva in another text). In such cases the name should generally be rendered in English in the translation unless the translator estimates that the Sanskrit name in the text very likely is identical with the approximate match.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+        <attestation-type id="AttestationUnspecified" code="AU" default="true">
+            <label>Attestation Unspecified</label>
+            <description>Attestation un-specified,</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
+        </attestation-type>
+    </attestation-types>;
 
 declare variable $glossary:empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'));
 
@@ -814,7 +853,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         else if($filter eq 'entity-definition') then
             let $instances-entity-definition := $entities:entities//m:entity[m:content[@type eq 'glossary-definition'][node()]]/m:instance
             return
-                $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition[@use-definition = ('both','override')]/@id)/self::tei:gloss
+                $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition[@use-definition = ('both','append','prepend','override')]/@id)/self::tei:gloss
                 | $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition/@id)/self::tei:gloss[not(tei:term[@type eq 'definition'][node()])]
         
         (: No locations in the cache :)

@@ -1464,19 +1464,6 @@
                         <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
                         <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
                         
-                        <!-- Definition -->
-                        <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and not($entity-instance[@use-definition eq 'override']))">
-                            <xsl:for-each select="$entry-definition">
-                                <p>
-                                    <xsl:call-template name="class-attribute">
-                                        <xsl:with-param name="base-classes" select="'definition'"/>
-                                    </xsl:call-template>
-                                    <xsl:apply-templates select="node()"/>
-                                </p>
-                            </xsl:for-each>
-                        </xsl:if>
-                        
-                        <!-- Entity definition -->
                         <xsl:if test="$tei-editor and not($entity)">
                             <div class="footer">
                                 <span class="label label-warning">
@@ -1485,20 +1472,53 @@
                             </div>
                         </xsl:if>
                         
-                        <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','override')])">
+                        <!-- Definitions -->
+                        <xsl:if test="$entry-definition or $entity-definition">
+                            
                             <div class="footer">
+                                
                                 <h4 class="heading">
-                                    <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
+                                    <xsl:value-of select="'Definition:'"/>
                                 </h4>
-                                <xsl:for-each select="$entity-definition">
-                                    <p>
-                                        <xsl:call-template name="class-attribute">
-                                            <xsl:with-param name="base-classes" select="'definition'"/>
-                                        </xsl:call-template>
-                                        <xsl:apply-templates select="node()"/>
-                                    </p>
-                                </xsl:for-each>
+                                
+                                <!-- Entry definition -->
+                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entity-instance[not(@use-definition = ('override', 'prepend'))])">
+                                    <xsl:for-each select="$entry-definition">
+                                        <p>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="base-classes" select="'definition'"/>
+                                            </xsl:call-template>
+                                            <xsl:apply-templates select="node()"/>
+                                        </p>
+                                    </xsl:for-each>
+                                </xsl:if>
+                                
+                                <!-- Entity definition -->
+                                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','append','prepend','override')])">
+                                    <xsl:for-each select="$entity-definition">
+                                        <p>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="base-classes" select="'definition'"/>
+                                            </xsl:call-template>
+                                            <xsl:apply-templates select="node()"/>
+                                        </p>
+                                    </xsl:for-each>
+                                </xsl:if>
+                                
+                                <!-- Entry definition as epilogue -->
+                                <xsl:if test="($entry-definition and $entity-instance[@use-definition = ('prepend')])">
+                                    <xsl:for-each select="$entry-definition">
+                                        <p>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="base-classes" select="'definition'"/>
+                                            </xsl:call-template>
+                                            <xsl:apply-templates select="node()"/>
+                                        </p>
+                                    </xsl:for-each>
+                                </xsl:if>
+                                
                             </div>
+                            
                         </xsl:if>
                         
                         <!-- Expressions -->

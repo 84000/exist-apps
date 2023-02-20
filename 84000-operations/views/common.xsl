@@ -1270,18 +1270,18 @@
     <!-- Output definition of a gloss/item -->
     <xsl:template name="glossary-definition">
         
-        <xsl:param name="item"/>
-        <xsl:param name="override" as="xs:boolean?"/>
+        <xsl:param name="entry" as="element(m:entry)"/>
+        <xsl:param name="line-through" select="false()" as="xs:boolean?"/>
         
-        <xsl:if test="$item/m:definition[node()]">
+        <xsl:if test="$entry/m:definition[node()]">
             <div class="small" title="Glossary definition">
                 
-                <xsl:if test="$override">
+                <xsl:if test="$line-through">
                     <xsl:attribute name="class" select="'text-muted small line-through'"/>
-                    <xsl:attribute name="title" select="'Entity definition overrides glossary definition!'"/>
+                    <xsl:attribute name="title" select="'Entity definition incompatible with glossary definition!'"/>
                 </xsl:if>
                 
-                <xsl:for-each select="$item/m:definition[node()]">
+                <xsl:for-each select="$entry/m:definition[node()]">
                     
                     <xsl:variable name="definition-html">
                         <xsl:apply-templates select="node()"/>
@@ -1300,11 +1300,18 @@
     <!-- Output definition of a gloss/item -->
     <xsl:template name="entity-definition">
         
-        <xsl:param name="entity"/>
+        <xsl:param name="entity" as="element(m:entity)"/>
+        <xsl:param name="line-through" select="false()" as="xs:boolean?"/>
         
         <xsl:if test="$entity/m:content[@type eq 'glossary-definition'][node()]">
             
             <div class="text-warning small" title="Entity definition included">
+                
+                <xsl:if test="$line-through">
+                    <xsl:attribute name="class" select="'text-muted small line-through'"/>
+                    <xsl:attribute name="title" select="'Entity definition overrides glossary definition!'"/>
+                </xsl:if>
+                
                 <xsl:for-each select="$entity/m:content[@type eq 'glossary-definition'][node()]">
                     
                     <xsl:variable name="definition-html">
@@ -1318,6 +1325,46 @@
                 </xsl:for-each>
             </div>
             
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template name="combined-definitions">
+        
+        <xsl:param name="entry" as="element(m:entry)"/>
+        <xsl:param name="entity" as="element(m:entity)"/>
+        
+        <xsl:variable name="glossary-definition" select="$entry/m:definition[node()]"/>
+        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
+        <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $entry/@id]"/>
+        
+        <!-- Use entity definition before -->
+        <xsl:if test="$entity-definition and $entity-instance[@use-definition = ('prepend')]">
+            <div class="sml-margin bottom collapse-one-line">
+                <xsl:call-template name="entity-definition">
+                    <xsl:with-param name="entity" select="$entity"/>
+                </xsl:call-template>
+            </div>
+        </xsl:if>
+        
+        <!-- Output glossary definition -->
+        <xsl:if test="$glossary-definition">
+            <div class="sml-margin bottom collapse-one-line">
+                <xsl:call-template name="glossary-definition">
+                    <xsl:with-param name="entry" select="$entry"/>
+                    <xsl:with-param name="line-through" select="if($entity-definition and $entity-instance[@use-definition eq 'override']) then true() else false()"/>
+                </xsl:call-template>
+            </div>
+        </xsl:if>
+        
+        <!-- Use entity definition after -->
+        <xsl:if test="$entity-definition and $entity-instance[not(@use-definition = ('prepend'))]">
+            <div class="sml-margin bottom collapse-one-line">
+                <xsl:call-template name="entity-definition">
+                    <xsl:with-param name="entity" select="$entity"/>
+                    <xsl:with-param name="line-through" select="if($entity-instance[not(@use-definition = ('both','append','override'))]) then true() else false()"/>
+                </xsl:call-template>
+            </div>
         </xsl:if>
         
     </xsl:template>
@@ -1424,26 +1471,10 @@
                         <!-- Definition -->
                         <div class="item-row">
                             
-                            <xsl:variable name="glossary-definition" select="$entry/m:definition[node()]"/>
-                            <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
-                            
-                            <xsl:if test="$glossary-definition">
-                                <div class="sml-margin bottom collapse-one-line">
-                                    <xsl:call-template name="glossary-definition">
-                                        <xsl:with-param name="item" select="$entry"/>
-                                        <xsl:with-param name="override" select="if($entity-definition and $entity-instance[@use-definition eq 'override']) then true() else false()"/>
-                                    </xsl:call-template>
-                                </div>
-                            </xsl:if>
-                            
-                            <!-- Use entity definition -->
-                            <xsl:if test="$entity-definition and (not($glossary-definition) or $entity-instance[@use-definition = ('both','override')])">
-                                <div class="sml-margin bottom collapse-one-line">
-                                    <xsl:call-template name="entity-definition">
-                                        <xsl:with-param name="entity" select="$entity"/>
-                                    </xsl:call-template>
-                                </div>
-                            </xsl:if>
+                            <xsl:call-template name="combined-definitions">
+                                <xsl:with-param name="entry" select="$entry"/>
+                                <xsl:with-param name="entity" select="$entity"/>
+                            </xsl:call-template>
                             
                         </div>
                         

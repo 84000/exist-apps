@@ -120,7 +120,7 @@
                 <!-- don't allow links in links -->
                 <xsl:choose>
                     <xsl:when test="not($title-opener) or $title/descendant-or-self::xhtml:a or $title/descendant-or-self::xhtml:form">
-                        <div class="center-vertical full-width">
+                        <div class="top-vertical full-width">
                             
                             <div>
                                 <xsl:sequence select="$title"/>

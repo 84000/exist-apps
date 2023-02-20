@@ -437,7 +437,7 @@ declare function update-entity:remove-instance($instance-id as xs:string) as ele
 
 declare function update-entity:update-instance($instance-id as xs:string) as element()* {
     
-    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')
+    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')[. = ('', 'both', 'append', 'prepend', 'override')]
     
     where not($use-definition eq 'no-value-submitted')
     

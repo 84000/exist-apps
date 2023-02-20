@@ -27,25 +27,29 @@ declare function trigger:after-create-document($uri as xs:anyURI) {
 };
 
 declare function local:after-update-document-functions($doc) {
-
-    if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
     
-        local:permanent-ids($doc),
-        local:temporary-ids($doc),
-        local:last-updated($doc)
+    (# exist:batch-transaction #) {
         
-    )
-    else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
         
-        local:permanent-ids($doc),
-        (:local:remove-temporary-ids($doc),:)
-        local:temporary-ids($doc),
-        local:glossary-bo($doc, false()),
-        local:last-updated($doc)
+            local:permanent-ids($doc),
+            local:temporary-ids($doc),
+            local:last-updated($doc)
+            
+        )
+        else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+            
+            local:permanent-ids($doc),
+            (:local:remove-temporary-ids($doc),:)
+            local:temporary-ids($doc),
+            local:glossary-bo($doc, false()),
+            (:local:glossary-sa($doc),:)
+            local:last-updated($doc)
+            
+        )
+        else ()
         
-    )
-    else ()
-    
+    }
 };
 
 declare function local:permanent-ids($doc) {
@@ -236,9 +240,9 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
     
         let $glosses := 
             if($do-all) then
-                $doc//tei:div[@type='glossary']//tei:gloss
+                $doc//tei:div[@type eq 'glossary']//tei:gloss
             else
-                $doc//tei:div[@type='glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
+                $doc//tei:div[@type eq 'glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
         
         for $gloss in $glosses
         return (
@@ -253,10 +257,28 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
                         attribute xml:lang { 'bo' },
                         text { common:bo-term($bo-ltn-term/text()) } 
                     }
-                
+            
             return
                 update insert (text{ common:ws(7) }, $bo-term) following $bo-ltn-term
         )
+   )
+};
+
+declare function local:glossary-sa($doc) {
+
+    (: Chech Sanskrit terms :)
+    let $translation-id := tei-content:id($doc/tei:TEI)
+    where $translation-id
+    return (
+    
+        util:log('info', concat('trigger-glossary-sa:', $translation-id)),
+    
+        for $skt-text in $doc//tei:div[@type eq 'glossary']//tei:gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text()
+        let $skt-text-normalized := normalize-unicode(lower-case($skt-text))
+        where $skt-text-normalized and not($skt-text eq $skt-text-normalized)
+        return
+            update replace $skt-text with $skt-text-normalized
+            
    )
 };
 

@@ -33,7 +33,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
             tei-content:tei($resource-id, 'translation')
         else (
             collection($common:translations-path)//tei:TEI
-            | $knowledgebase:tei-render
+            (:| $knowledgebase:tei-render:)
         )
     
     let $published := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]

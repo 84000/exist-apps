@@ -771,7 +771,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                 (: Partial rendering - return some nodes :)
                 else if ($content-directive eq 'preview' and count($preview) gt 0) then (
                 
-                    (:element debug { attribute count-preview { count($preview) }, attribute count-text { count($node//text()) } },:)
+                    (:element debug { attribute count-preview { count($preview) }, attribute count-text { count($node//text()) },  $preview },:)
                     if(count($node//text() | $preview) lt (count($node//text()) + count($preview))) then (
                         $node/preceding-sibling::*[1][self::tei:milestone | self::tei:lb]
                         | $node/preceding-sibling::*[2][self::tei:milestone | self::tei:lb][following-sibling::*[1][self::tei:milestone | self::tei:lb]],
@@ -971,6 +971,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
     
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
     let $translation-head := $translation/tei:head[@type eq 'translation']
+    let $parts := $translation/tei:div[@type = ('section', 'chapter', 'prologue', 'colophon', 'homage')]
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
     let $text-title := tei-content:title($tei)
     
@@ -984,7 +985,11 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute glossarize { 'mark' },
             attribute prefix { map:get($translation:type-prefixes, $translation/@type) },
             
-            $translation-head,
+            (: In the html display we want to avoid duplicating the title :)
+            if($view-mode[not(@client = 'browser')] or $parts[1]/tei:head[@type = parent::tei:div/@type]) then
+                $translation-head
+            else ()
+            ,
             
             element honoration {
                 data($translation/tei:head[@type eq 'titleHon'])
@@ -996,42 +1001,52 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                 data($translation/tei:head[@type eq 'sub'])
             },
             
-            for $chapter at $section-index in $translation/tei:div[@type = ('section', 'chapter', 'prologue', 'colophon', 'homage')]
+            for $part at $section-index in $parts
                 
-                where not($chapter-id) or $chapter/@xml:id eq $chapter-id
+                (: If chapter requested, then only that chapter :)
+                where not($chapter-id) or $part/@xml:id eq $chapter-id
                 
-                let $chapter-title := $chapter/tei:head[@type = $chapter/@type][text()][1]
-                let $chapter-title :=
-                    if (not($chapter-title)) then
-                        if ($chapter/@type = ('prologue', 'colophon', 'homage')) then 
-                            text { map:get($translation:type-labels, $chapter/@type) }
+                let $part-title := $part/tei:head[@type = $part/@type][text()][1]
+                let $part-title :=
+                    (: No section header, so derive one :)
+                    if (not($part-title)) then
+                        
+                        (: Derive from config :)
+                        if ($part/@type = ('prologue', 'colophon', 'homage')) then 
+                            text { map:get($translation:type-labels, $part/@type) }
+                        
+                        (: Use 'The Translation' from the body header :)
                         else if($count-chapters eq 1) then
-                            text { $text-title }
+                            (: In the html display we want to avoid duplicating the title :)
+                            if($view-mode[not(@client = 'browser')]) then
+                                text { $text-title }
+                            else
+                                text { $translation-head/text() }
+                         
                         else ()
+                        
+                    (: local:part() will resolve the label by default :)
                     else ()
                 
-                let $chapter-prefix := translation:chapter-prefix($chapter)
-                
-                (:let $content-directive-default := if($chapter/@type = ('colophon', 'homage')) then 'complete' else 'preview'
-                let $content-directive := local:content-directive($chapter, ($chapter/@xml:id, 'body'), $passage-id, $view-mode, $content-directive-default):)
+                let $part-prefix := translation:chapter-prefix($part)
                 
                 let $content-directive := 
-                    if($passage-id = ($chapter/@xml:id, 'body', 'all')) then
+                    if($passage-id = ($part/@xml:id, 'body', 'all')) then
                         'complete'
                     else if($view-mode[@parts = ('passage')]) then
-                        if(local:passage-in-content($chapter, $passage-id)) then
+                        if(local:passage-in-content($part, $passage-id)) then
                             'passage'
                         else
                             'empty'
                     else if($view-mode[@parts eq 'outline']) then
                         'empty'
-                    else if($chapter/@type = ('colophon', 'homage')) then
+                    else if($part/@type = ('colophon', 'homage')) then
                         'complete'
                     else
                         'preview'
                 
             return
-                local:part($chapter, $content-directive, $chapter/@type, $chapter-prefix, $chapter-title, $passage-id, 0, $section-index, ())
+                local:part($part, $content-directive, $part/@type, $part-prefix, $part-title, $passage-id, 0, $section-index, ())
         }
 
 };

@@ -248,11 +248,12 @@
                                                                                 <xsl:variable name="term-group-related-entries" select="key('related-entries', $term-group-instances/@id, $root)"/>
                                                                                 <xsl:variable name="term-group-related-entries-excluded" select="$term-group-related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
                                                                                 <xsl:variable name="term-group-related-entries-no-definition" select="$term-group-related-entries[not(m:definition[node()])]"/>
-                                                                                <xsl:variable name="term-group-instances-use-definition" select="$term-group-instances[@use-definition = ('both','override')] | $term-group-instances[@id = $term-group-related-entries-no-definition/@id]"/>
+                                                                                <xsl:variable name="entity-definition" select="$request-entity/m:content[@type eq 'glossary-definition'][node()]"/>
+                                                                                <xsl:variable name="term-group-instances-use-definition" select="if($entity-definition) then $term-group-instances[@use-definition = ('both','append','prepend','override')] | $term-group-instances[@id = $term-group-related-entries-no-definition/@id] else ()"/>
                                                                                 
                                                                                 <li>
                                                                                     <span class="small text-muted">
-                                                                                        <xsl:if test="$request-entity/m:content[@type eq 'glossary-definition'][node()] and $term-group-instances-use-definition">
+                                                                                        <xsl:if test="$term-group-instances-use-definition">
                                                                                             <xsl:attribute name="class" select="'small text-warning'"/>
                                                                                         </xsl:if>
                                                                                         <xsl:value-of select="count($term-group-instances-use-definition)"/>
@@ -641,48 +642,66 @@
                 </div>
             </xsl:if>
             
-            <!-- Glossary definition -->
+            <!-- Definition -->
             <xsl:variable name="entry-definition" select="$entry/m:definition[node()]"/>
+            <xsl:variable name="entry-definition-html">
+                <xsl:for-each select="$entry-definition">
+                    <p>
+                        <xsl:apply-templates select="."/>
+                    </p>
+                </xsl:for-each>
+            </xsl:variable>
             <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition'][node()]"/>
-            <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and not($instance[@use-definition eq 'override']))">
-                <blockquote>
-                    <xsl:for-each select="$entry-definition">
-                        <p>
-                            <xsl:apply-templates select="."/>
-                        </p>
-                    </xsl:for-each>
-                </blockquote>
-            </xsl:if>
+            <xsl:variable name="entity-definition-html">
+                <xsl:for-each select="$entity-definition">
+                    <p>
+                        <xsl:attribute name="class" select="'definition'"/>
+                        <xsl:apply-templates select="node()"/>
+                    </p>
+                </xsl:for-each>
+            </xsl:variable>
             
-            <!-- Entity definition -->
-            <xsl:if test="$tei-editor">
-                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','override')])">
+            <!-- Entry definition -->
+            <xsl:choose>
+                <xsl:when test="$tei-editor and $entity-definition and (not($entry-definition) or $instance[@use-definition = ('both','append','prepend','override')])">
+                    
                     <div class="well well-sm">
                         
                         <h6 class="sml-margin top bottom">
                             
                             <xsl:value-of select="'Text displays entity definition: '"/>
                             
-                            <xsl:if test="$entry-definition and $instance[@use-definition eq 'override']">
-                                <span class="label label-warning">
-                                    <xsl:value-of select="'Entity definition overrides glossary definition'"/>
-                                </span>  
-                            </xsl:if>
+                            <span class="label label-info">
+                                <xsl:value-of select="($instance/@use-definition, 'No entry definition')[1]"/>
+                            </span>
                             
                         </h6>
                         
-                        <blockquote class="no-bottom-margin">
-                            <xsl:for-each select="$entity-definition">
-                                <p>
-                                    <xsl:attribute name="class" select="'definition'"/>
-                                    <xsl:apply-templates select="node()"/>
-                                </p>
-                            </xsl:for-each>
+                        <blockquote>
+                            <!-- Entity definition, prepended -->
+                            <xsl:if test="$entity-definition and $instance[@use-definition = ('prepend')]">
+                                <xsl:sequence select="$entity-definition-html"/>
+                            </xsl:if>
+                            
+                            <xsl:if test="$entry-definition and $instance[not(@use-definition eq 'override')]">
+                                <xsl:sequence select="$entry-definition-html"/>
+                            </xsl:if>
+                            
+                            <!-- Entity definition, appended -->
+                            <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','append','override')])">
+                                <xsl:sequence select="$entity-definition-html"/>
+                            </xsl:if>
                         </blockquote>
                         
                     </div>
-                </xsl:if>
-            </xsl:if>
+                    
+                </xsl:when>
+                <xsl:when test="($entry-definition and not($entity-definition)) or ($entry-definition and $instance[not(@use-definition eq 'override')])">
+                    <blockquote>
+                        <xsl:sequence select="$entry-definition-html"/>
+                    </blockquote>
+                </xsl:when>
+            </xsl:choose>
             
             <!-- Count of references -->
             <xsl:variable name="count-entry-locations" select="count($text/m:glossary-cache/m:gloss[@id eq $entry/@id]/m:location)"/>

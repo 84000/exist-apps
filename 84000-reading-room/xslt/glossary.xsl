@@ -115,7 +115,8 @@
             <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)"/>
             <xsl:variable name="related-entries-excluded" select="$related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
             <xsl:variable name="related-entries-no-definition" select="$related-entries[not(m:definition[node()])]"/>
-            <xsl:variable name="instances-use-definition" select="$entity/m:instance[@use-definition = ('both','override')] | $entity/m:instance[@id = $related-entries-no-definition/@id]"/>
+            <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
+            <xsl:variable name="instances-use-definition" select="if($entity-definition) then $entity/m:instance[@use-definition = ('both','append','prepend','override')] | $entity/m:instance[@id = $related-entries-no-definition/@id] else ()"/>
             <xsl:variable name="glossary-notes" select="$entity/m:content[@type eq 'glossary-notes'][node()]"/>
             
             <div class="well well-sm">
@@ -124,7 +125,7 @@
                     
                     <li>
                         <span class="small text-muted">
-                            <xsl:if test="$entity/m:content[@type eq 'glossary-definition'][node()] and $instances-use-definition">
+                            <xsl:if test="$instances-use-definition">
                                 <xsl:attribute name="class" select="'small text-danger'"/>
                             </xsl:if>
                             <xsl:value-of select="count($instances-use-definition)"/>

@@ -362,14 +362,14 @@
                                                         <xsl:if test="$request-filter eq 'check-all'">
                                                             <xsl:attribute name="selected" select="'selected'"/>
                                                         </xsl:if>
-                                                        <xsl:value-of select="'Show all'"/>
+                                                        <xsl:value-of select="'Full check'"/>
                                                     </option>
                                                     <optgroup label="Filter by locations:">
                                                         <option value="check-locations">
                                                             <xsl:if test="$request-filter eq 'check-locations'">
                                                                 <xsl:attribute name="selected" select="'selected'"/>
                                                             </xsl:if>
-                                                            <xsl:value-of select="'Show locations'"/>
+                                                            <xsl:value-of select="'Check locations'"/>
                                                         </option>                                                        
                                                         <option value="no-locations">
                                                             <xsl:if test="$request-filter eq 'no-locations'">
@@ -395,7 +395,7 @@
                                                             <xsl:if test="$request-filter eq 'check-entities'">
                                                                 <xsl:attribute name="selected" select="'selected'"/>
                                                             </xsl:if>
-                                                            <xsl:value-of select="'Show entities'"/>
+                                                            <xsl:value-of select="'Check entities'"/>
                                                         </option>
                                                         <option value="missing-entities">
                                                             <xsl:if test="$request-filter eq 'missing-entities'">
@@ -603,25 +603,10 @@
                                     </h3>
                                     
                                     <!-- Definition -->
-                                    <xsl:variable name="loop-glossary-definition" select="$loop-glossary/m:definition[node()]"/>
-                                    <xsl:variable name="loop-glossary-entity-definition" select="$loop-glossary-entity/m:content[@type eq 'glossary-definition'][node()]"/>
-                                    <xsl:if test="$loop-glossary-definition">
-                                        <div class="sml-margin bottom collapse-one-line">
-                                            <xsl:call-template name="glossary-definition">
-                                                <xsl:with-param name="item" select="$loop-glossary"/>
-                                                <xsl:with-param name="override" select="if($loop-glossary-entity-definition and $loop-glossary-instance[@use-definition eq 'override']) then true() else false()"/>
-                                            </xsl:call-template>
-                                        </div>
-                                    </xsl:if>
-                                    
-                                    <!-- Entity definition -->
-                                    <xsl:if test="$loop-glossary-entity-definition and (not($loop-glossary-definition) or $loop-glossary-instance[@use-definition = ('both', 'override')])">
-                                        <div class="sml-margin bottom collapse-one-line">
-                                            <xsl:call-template name="entity-definition">
-                                                <xsl:with-param name="entity" select="$loop-glossary-entity"/>
-                                            </xsl:call-template>
-                                        </div>
-                                    </xsl:if>
+                                    <xsl:call-template name="combined-definitions">
+                                        <xsl:with-param name="entry" select="$loop-glossary"/>
+                                        <xsl:with-param name="entity" select="$loop-glossary-entity"/>
+                                    </xsl:call-template>
                                     
                                     <!-- Set flags -->
                                     <xsl:if test="$loop-glossary-instance">
@@ -1702,14 +1687,20 @@
             <div class="col-sm-6">
                 <select name="use-definition" id="use-definition" class="form-control">
                     <option value="">
-                        <xsl:value-of select="'INCOMPATIBLE: show either glossary definition or entity definition'"/>
+                        <xsl:value-of select="'INCOMPATIBLE: only show an entity definition if there is no glossary definition'"/>
                     </option>
                     <xsl:if test="$definitions and $entity-definitions">
-                        <option value="both">
-                            <xsl:if test="$entity-instance[@use-definition eq 'both']">
+                        <option value="append">
+                            <xsl:if test="$entity-instance[@use-definition = ('both', 'append')]">
                                 <xsl:attribute name="selected" select="'selected'"/>
                             </xsl:if>
-                            <xsl:value-of select="'COMPATIBLE: show both glossary definition and entity definition'"/>
+                            <xsl:value-of select="'APPEND: show the entity definition after the glossary definition'"/>
+                        </option>
+                        <option value="prepend">
+                            <xsl:if test="$entity-instance[@use-definition eq 'prepend']">
+                                <xsl:attribute name="selected" select="'selected'"/>
+                            </xsl:if>
+                            <xsl:value-of select="'PREPEND: show the entity definition before the glossary definition'"/>
                         </option>
                         <option value="override">
                             <xsl:if test="$entity-instance[@use-definition eq 'override']">
@@ -1958,6 +1949,18 @@
             
             <ul class="list-inline inline-dots sml-margin bottom small">
                 
+                <xsl:if test="m:preceding-bookmark[xhtml:*]">
+                    <li>
+                        <xsl:apply-templates select="m:preceding-bookmark/xhtml:*"/>
+                    </li>
+                </xsl:if>
+                
+                <xsl:if test="m:preceding-ref[xhtml:*]">
+                    <li>
+                        <xsl:apply-templates select="m:preceding-ref/xhtml:*"/>
+                    </li>
+                </xsl:if>
+                
                 <xsl:choose>
                     <xsl:when test="$cache-location-status eq 'missing'">
                         <li>
@@ -1975,24 +1978,12 @@
                     </xsl:when>
                     <xsl:when test="$cache-location-status eq 'behind'">
                         <li>
-                            <div class="text-warning underline">
+                            <span class="text-warning underline">
                                 <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
-                            </div>
+                            </span>
                         </li>
                     </xsl:when>
                 </xsl:choose>
-                
-                <xsl:if test="m:preceding-bookmark[xhtml:*]">
-                    <li>
-                        <xsl:apply-templates select="m:preceding-bookmark/xhtml:*"/>
-                    </li>
-                </xsl:if>
-                
-                <xsl:if test="m:preceding-ref[xhtml:*]">
-                    <li>
-                        <xsl:apply-templates select="m:preceding-ref/xhtml:*"/>
-                    </li>
-                </xsl:if>
                 
             </ul>
             
@@ -2003,7 +1994,6 @@
         </div>
         
     </xsl:template>
-    
     
     <!-- Copy xhtml nodes -->
     <xsl:template match="xhtml:*">

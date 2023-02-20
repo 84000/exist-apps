@@ -553,10 +553,23 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                     else ()
                 return
                     element { QName('http://read.84000.co/ns/1.0', $element-name) } {
-                    attribute id { $element/@xml:id },
-                    attribute part-id { $part-id },
+                        attribute id { $element/@xml:id },
+                        attribute part-id { $part-id },
+                        attribute index { $index }
+                    }
+    
+    let $elements :=
+        (: Index per doc, not per part :)
+        if($element-name eq 'end-note') then
+            for $element at $index in $elements
+            return
+                element { QName('http://read.84000.co/ns/1.0', $element-name) } {
+                    $element/@id,
+                    $element/@part-id,
                     attribute index { $index }
                 }
+        else
+            $elements
     
     let $end-time := util:system-dateTime()
     
