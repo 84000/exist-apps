@@ -1041,9 +1041,14 @@
                             
                             <div class="rw-heading heading-section chapter">
                                 
-                                <xsl:if test="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()]">
+                                <xsl:variable name="translation-part-head" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()][1]" as="element(tei:head)?"/>
+                                <xsl:variable name="main-title" select="m:translation/m:part[@type eq 'translation']/m:main-title[text()]" as="element(m:main-title)?"/>
+                                <xsl:variable name="first-part-head" select="m:translation/m:part[@type eq 'translation']/m:part[1]/tei:head[@type eq parent::m:part/@type][text()][1]" as="element(tei:head)?"/>
+                                
+                                <!-- If the first paret head is the same as the main title we want to use the translation part head in the first chapter, so not here -->
+                                <xsl:if test="$translation-part-head and not(data($first-part-head) eq data($main-title))">
                                     <div class="h3">
-                                        <xsl:value-of select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()][1]"/>
+                                        <xsl:value-of select="$translation-part-head"/>
                                     </div>
                                 </xsl:if>
                                 
@@ -1053,9 +1058,9 @@
                                     </div>
                                 </xsl:if>
                                 
-                                <xsl:if test="m:translation/m:part[@type eq 'translation']/m:main-title[text()]">
+                                <xsl:if test="$main-title">
                                     <div class="h1 break">
-                                        <xsl:apply-templates select="m:translation/m:part[@type eq 'translation']/m:main-title"/>
+                                        <xsl:apply-templates select="$main-title"/>
                                         <xsl:if test="m:translation/m:part[@type eq 'translation']/m:sub-title[text()]">
                                             <br/>
                                             <small>

@@ -970,7 +970,6 @@ declare function translation:body($tei as element(tei:TEI)) as element(m:part)? 
 declare function translation:body($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $chapter-id as xs:string?) as element(m:part)? {
     
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
-    let $translation-head := $translation/tei:head[@type eq 'translation']
     let $parts := $translation/tei:div[@type = ('section', 'chapter', 'prologue', 'colophon', 'homage')]
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
     let $text-title := tei-content:title($tei)
@@ -985,11 +984,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute glossarize { 'mark' },
             attribute prefix { map:get($translation:type-prefixes, $translation/@type) },
             
-            (: In the html display we want to avoid duplicating the title :)
-            if($view-mode[not(@client = 'browser')] or $parts[1]/tei:head[@type = parent::tei:div/@type]) then
-                $translation-head
-            else ()
-            ,
+            $translation/tei:head[@type eq 'translation'],
             
             element honoration {
                 data($translation/tei:head[@type eq 'titleHon'])
@@ -1015,13 +1010,9 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                         if ($part/@type = ('prologue', 'colophon', 'homage')) then 
                             text { map:get($translation:type-labels, $part/@type) }
                         
-                        (: Use 'The Translation' from the body header :)
+                        (: Use the main title if the's no chapter title :)
                         else if($count-chapters eq 1) then
-                            (: In the html display we want to avoid duplicating the title :)
-                            if($view-mode[not(@client = 'browser')]) then
-                                text { $text-title }
-                            else
-                                text { $translation-head/text() }
+                            text { $text-title }
                          
                         else ()
                         

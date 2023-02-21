@@ -1716,11 +1716,6 @@
                 <xsl:with-param name="node" select="$element"/>
             </xsl:call-template>
             
-            <!-- If the child is another div it will recurse -->
-            <!--<xsl:if test="$view-mode[not(@parts eq 'passage')] or node()[not(self::tei:head)]">
-                <xsl:apply-templates select="node()"/>
-            </xsl:if>-->
-            
             <xsl:apply-templates select="$element/node()"/>
             
             <!-- Add link to tei editor -->
@@ -1770,6 +1765,8 @@
         </xsl:variable>
         <xsl:variable name="title-text" select="$part/m:title-text[1]"/>
         <xsl:variable name="title-supp" select="$part/m:title-supp[1]"/>
+        <xsl:variable name="main-title" select="$translation/m:part[@type eq 'translation']/m:main-title[text()]" as="element(m:main-title)?"/>
+        <xsl:variable name="translation-part-head" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()][1]" as="element(tei:head)?"/>
         
         <!-- .rw container -->
         <div>
@@ -1868,7 +1865,15 @@
                             </xsl:with-param>
                         </xsl:call-template>
                         
-                        <xsl:apply-templates select="node()"/>
+                        <xsl:choose>
+                            <xsl:when test="data(.) eq data($main-title)">
+                                <xsl:apply-templates select="$translation-part-head/node()"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:apply-templates select="node()"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
                         
                         <xsl:call-template name="tei-editor">
                             <xsl:with-param name="node" select="."/>
@@ -2461,6 +2466,7 @@
         <xsl:for-each select="$parts">
             
             <xsl:variable name="part" select="."/>
+            <xsl:variable name="part-head" select="($part/tei:head[@type eq $part/@type][data()],$part/m:main-title)[1]"/>
             <xsl:variable name="sub-parts" select="$part/m:part"/>
             
             <xsl:choose>
@@ -2470,7 +2476,7 @@
                     <xsl:choose>
                         
                         <!-- Create a link/label -->
-                        <xsl:when test="$part/tei:head[@type eq $part/@type][data()]">
+                        <xsl:when test="$part-head">
                             <li>
                                 <a>
                                     
@@ -2482,7 +2488,7 @@
                                         <xsl:value-of select="concat($part/@prefix, '. ')"/>
                                     </xsl:if>
                                     
-                                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/node()[not(self::tei:note)]"/>
+                                    <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
                                     
                                 </a>
                                 
@@ -2514,7 +2520,7 @@
                     <xsl:choose>
                         
                         <!-- Create a new nav point -->
-                        <xsl:when test="$part/tei:head[@type eq $part/@type][data()]">
+                        <xsl:when test="$part-head">
                             <navPoint xmlns="http://www.daisy.org/z3986/2005/ncx/">
                                 
                                 <xsl:attribute name="id" select="$part/@id"/>
@@ -2523,7 +2529,7 @@
                                 
                                 <navLabel>
                                     <text>
-                                        <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/text()"/>
+                                        <xsl:apply-templates select="$part-head/text()"/>
                                     </text>
                                 </navLabel>
                                 
@@ -2557,7 +2563,7 @@
                 <xsl:otherwise>
                     
                     <!-- Link to the section -->
-                    <xsl:if test="$part/tei:head[@type eq $part/@type][data()]">
+                    <xsl:if test="$part-head">
                         <tr>
                             <td>
                                 <xsl:choose>
@@ -2589,7 +2595,7 @@
                                         
                                     </xsl:choose>
                                     
-                                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]/node()[not(self::tei:note)]"/>
+                                    <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
                                     
                                 </a>
                             </td>
@@ -2599,7 +2605,7 @@
                     <xsl:choose>
                         
                         <!-- Create an expandable block for sub-sections -->
-                        <xsl:when test="$sub-parts/tei:head[data()]">
+                        <xsl:when test="$sub-parts[tei:head[data()]]">
                             
                             <xsl:variable name="count-chapters" select="count($sub-parts[@type eq 'chapter'])"/>
                             <xsl:variable name="count-sections" select="count($sub-parts[tei:head[data()]])"/>

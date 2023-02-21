@@ -43,7 +43,7 @@ declare function local:after-update-document-functions($doc) {
             (:local:remove-temporary-ids($doc),:)
             local:temporary-ids($doc),
             local:glossary-bo($doc, false()),
-            (:local:glossary-sa($doc),:)
+            (:local:glossary-tidy($doc, false()),:)
             local:last-updated($doc)
             
         )
@@ -264,21 +264,112 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
    )
 };
 
-declare function local:glossary-sa($doc) {
+declare function local:glossary-tidy($doc, $do-all as xs:boolean) {
 
-    (: Chech Sanskrit terms :)
+    (: Convert bo-ltn to bo term for glossary items :)
+    
     let $translation-id := tei-content:id($doc/tei:TEI)
     where $translation-id
     return (
     
-        util:log('info', concat('trigger-glossary-sa:', $translation-id)),
+        util:log('info', concat('trigger-glossary-tidy:', $translation-id)),
     
-        for $skt-text in $doc//tei:div[@type eq 'glossary']//tei:gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text()
-        let $skt-text-normalized := normalize-unicode(lower-case($skt-text))
-        where $skt-text-normalized and not($skt-text eq $skt-text-normalized)
-        return
-            update replace $skt-text with $skt-text-normalized
-            
+        for $gloss in $doc//tei:div[@type eq 'glossary']//tei:gloss
+        let $skt-text := $gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text()
+        let $skt-text-normalized := $skt-text ! normalize-unicode(lower-case(.))
+        
+        where 
+            $do-all
+            (: Check for new Wylie strings to be transliterated :)
+            or not(count($gloss/tei:term[@xml:lang eq 'bo']) eq count($gloss/tei:term[@xml:lang eq 'Bo-Ltn']))
+            (: Check for Sanskrit terms to be normalized :)
+            or not($skt-text = $skt-text-normalized)
+            (: Check for terms without types :)
+            or $gloss/tei:term[not(@type = ('translation','source','alternative','definition'))]
+        
+        let $new-gloss :=
+            element { QName('http://www.tei-c.org/ns/1.0','gloss') } {
+                
+                (: Copy gloss attributes :)
+                $gloss/@*,
+                
+                (: Translation :)
+                for $term in ($gloss/tei:term[not(@type)][not(@xml:lang)] | $gloss/tei:term[@type eq 'translation'])
+                return (
+                    text{ common:ws(7) },
+                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                        attribute type { 'translation' },
+                        $term/@xml:lang,
+                        text { string-join($term/text()) ! normalize-space(.) }
+                    }
+                ),
+                
+                (: Sanskrit :)
+                for $term in $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][not(@type) or @type = ('source','sourceAttested','semanticReconstruction','transliterationReconstruction')]
+                let $sub-type := $term/@type[. = ('sourceAttested','semanticReconstruction','transliterationReconstruction')]
+                return (
+                    text{ common:ws(7) },
+                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                        attribute type { 'source' },
+                        attribute xml:lang { 'Sa-Ltn' },
+                        if($sub-type) then
+                            attribute subtype { $sub-type/string() }
+                        else ()
+                        ,
+                        text { string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
+                    }
+                ),
+                
+                (: Tibetan :)
+                for $term in $gloss/tei:term[not(@type) or @type eq 'source'][@xml:lang eq 'Bo-Ltn']
+                let $term-bo-ltn := string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.)
+                return (
+                    text{ common:ws(7) },
+                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                        attribute type { 'source' },
+                        attribute xml:lang { 'Bo-Ltn' },
+                        text { $term-bo-ltn }
+                    },
+                    text{ common:ws(7) },
+                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                        attribute type { 'source' },
+                        attribute xml:lang { 'bo' },
+                        text { common:bo-term($term-bo-ltn) }
+                        
+                    }
+                ),
+                
+                (: Other source terms :)
+                for $term in $gloss/tei:term[not(@type) or @type eq 'source'][@xml:lang][not(@xml:lang = ('Sa-Ltn','Bo-Ltn','bo'))]
+                return(
+                    text{ common:ws(7) },
+                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                        attribute type { 'source' },
+                        $term/@xml:lang,
+                        text { string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
+                    }
+                ),
+                
+                (: Alternatives and definitions :)
+                for $term in $gloss/tei:term[@type][not(@type = ('translation','source','sourceAttested','semanticReconstruction','transliterationReconstruction'))]
+                return (
+                    text{ common:ws(7) },
+                    $term
+                ),
+                
+                (: Retain comments :)
+                for $comment in $gloss/comment()
+                return (
+                    text{ common:ws(7) },
+                    $comment
+                ),
+                
+                (: Whitespace :)
+                text{ common:ws(6) }
+                
+            }
+            return
+                update replace $gloss with $new-gloss
    )
 };
 
