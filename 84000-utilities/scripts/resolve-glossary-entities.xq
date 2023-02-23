@@ -27,5 +27,5 @@ return (
     count($texts-without-entities),
     $next-text-id,
     $texts-without-entities[2],
-    update-entity:merge-glossary($next-text-id, false())
+    update-entity:auto-assign-glossary($next-text-id, false())
 )

@@ -4,4 +4,4 @@ import module namespace update-entity="http://operations.84000.co/update-entity"
 
 declare variable $local:resource-id external;
 
-update-entity:merge-glossary($local:resource-id, true())
+update-entity:auto-assign-glossary($local:resource-id, true())

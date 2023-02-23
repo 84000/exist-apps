@@ -156,7 +156,7 @@
             
         </xsl:variable>
         
-        <!-- Parse the text -->
+        <!-- Parse the text node -->
         <xsl:choose>
             
             <!-- Already highlighted -->
@@ -164,13 +164,12 @@
                 <xsl:sequence select="$text-highlighted"/>
             </xsl:when>
             
+            <!-- Parse for glossary matches -->
             <xsl:when test="$glossarize">
-                
                 <xsl:call-template name="glossarize-text">
                     <xsl:with-param name="text-node" select="."/>
                     <xsl:with-param name="text-normalized" select="$text-normalized"/>
                 </xsl:call-template>
-                
             </xsl:when>
             
             <!-- Output un-parsed by default -->
@@ -1477,11 +1476,7 @@
                             
                             <div class="footer">
                                 
-                                <h4 class="heading">
-                                    <xsl:value-of select="'Definition:'"/>
-                                </h4>
-                                
-                                <!-- Entry definition -->
+                                <!-- Entry definition as prologue -->
                                 <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entity-instance[not(@use-definition = ('override', 'prepend'))])">
                                     <xsl:for-each select="$entry-definition">
                                         <p>
@@ -1495,6 +1490,9 @@
                                 
                                 <!-- Entity definition -->
                                 <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','append','prepend','override')])">
+                                    <h4 class="heading">
+                                        <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
+                                    </h4>
                                     <xsl:for-each select="$entity-definition">
                                         <p>
                                             <xsl:call-template name="class-attribute">
@@ -1506,7 +1504,10 @@
                                 </xsl:if>
                                 
                                 <!-- Entry definition as epilogue -->
-                                <xsl:if test="($entry-definition and $entity-instance[@use-definition = ('prepend')])">
+                                <xsl:if test="($entry-definition and $entity-definition and $entity-instance[@use-definition = ('prepend')])">
+                                    <h4 class="heading">
+                                        <xsl:value-of select="'In this text:'"/>
+                                    </h4>
                                     <xsl:for-each select="$entry-definition">
                                         <p>
                                             <xsl:call-template name="class-attribute">

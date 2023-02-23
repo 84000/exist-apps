@@ -54,6 +54,7 @@
                                     <div>
                                         <a class="center-vertical">
                                             <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading page...'"/>
                                             <span>
                                                 <span class="btn-round sml">
                                                     <i class="fa fa-list"/>
@@ -1210,7 +1211,23 @@
                                 <hr class="visible-xs visible-sm sml-margin"/>
                                 
                                 <div class="small text-warning sml-margin bottom">
-                                    <xsl:call-template name="text-page-count"/>
+                                    <xsl:value-of select="format-number(m:source/m:location/@count-pages, '#,###')"/>
+                                    <xsl:choose>
+                                        <xsl:when test="m:source/m:location/@count-pages ! xs:integer(.) eq 1">
+                                            <xsl:value-of select="' page'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="' pages'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    <xsl:choose>
+                                        <xsl:when test="m:source/m:location/@work eq 'UT4CZ5369'">
+                                            <xsl:value-of select="' of the Degé Kangyur'"/>
+                                        </xsl:when>
+                                        <xsl:when test="m:source/m:location/@work eq 'UT23703'">
+                                            <xsl:value-of select="' of the Degé Tengyur'"/>
+                                        </xsl:when>
+                                    </xsl:choose>
                                 </div>
                                 
                                 <xsl:choose>
@@ -1564,18 +1581,6 @@
                 
             </xsl:for-each>
         </div>
-    </xsl:template>
-    
-    <xsl:template name="text-page-count">
-        <xsl:value-of select="format-number(m:source/m:location/@count-pages, '#,###')"/>
-        <xsl:choose>
-            <xsl:when test="m:source/m:location/@work eq 'UT4CZ5369'">
-                <xsl:value-of select="' pages of the Degé Kangyur'"/>
-            </xsl:when>
-            <xsl:when test="m:source/m:location/@work eq 'UT23703'">
-                <xsl:value-of select="' pages of the Degé Tengyur'"/>
-            </xsl:when>
-        </xsl:choose>
     </xsl:template>
     
 </xsl:stylesheet>

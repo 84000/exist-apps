@@ -1300,7 +1300,7 @@
     <!-- Output definition of a gloss/item -->
     <xsl:template name="entity-definition">
         
-        <xsl:param name="entity" as="element(m:entity)"/>
+        <xsl:param name="entity" as="element(m:entity)?"/>
         <xsl:param name="line-through" select="false()" as="xs:boolean?"/>
         
         <xsl:if test="$entity/m:content[@type eq 'glossary-definition'][node()]">
@@ -1332,7 +1332,7 @@
     <xsl:template name="combined-definitions">
         
         <xsl:param name="entry" as="element(m:entry)"/>
-        <xsl:param name="entity" as="element(m:entity)"/>
+        <xsl:param name="entity" as="element(m:entity)?"/>
         
         <xsl:variable name="glossary-definition" select="$entry/m:definition[node()]"/>
         <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>

@@ -8,6 +8,7 @@ import module namespace store="http://read.84000.co/store" at "../../84000-readi
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
+import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -28,14 +29,25 @@ let $texts-status :=
         $tei-content:text-statuses/m:status[@type eq 'translation'][@status-id/string() eq $request-page-filter][not(@status-id eq '0')]/@status-id
     else ()
 
+(: Pull operations data :)
+let $pull-data-password := request:get-parameter('pull-data-password', '')
+let $pull-operations-data :=
+    if($pull-data-password gt '') then
+        deploy:pull('data-operations', $pull-data-password)
+    else ()
+
 (: Store a file if requested :)
 let $store-file := 
     for $store-file-name in request:get-parameter('store[]', '')[not(. eq '')]
-    return 
-        if($store-conf[@type eq 'client'][m:translations-master-host]) then
+    return
+        (: Get files from master :)
+        if($store-conf[@type eq 'client'][m:translations-master-host]) then 
             store:download-master($store-file-name, $store-conf/m:translations-master-host, true())
+        
+        (: Create files :)
         else if($store-conf[@type eq 'master']) then
             store:create($store-file-name)
+            
         else ()
 
 (: If this is a client doing a version diff then first get translation versions in MASTER database for comparison :)
@@ -43,8 +55,10 @@ let $translations-master :=
     if($store-conf[@type eq 'client']) then
         if($request-page-filter eq 'new-version-translations') then 
             store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=translations')))
+            
         else if ($request-page-filter eq 'new-version-placeholders') then
             store:master-downloads-data(xs:anyURI(concat($store-conf/m:translations-master-host, '/downloads.xml?resource-ids=placeholders')))
+            
         else ()
     else ()
 
@@ -104,6 +118,7 @@ return
             $translations-local,
             $translations-master,
             tei-content:text-statuses-sorted('translation'),
-            $store-file
+            $store-file,
+            $pull-operations-data
         )
     )

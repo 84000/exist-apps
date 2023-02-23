@@ -80,8 +80,12 @@ let $translation-status-group := tei-content:translation-status-group($tei)
 
 (: Commit new version to GitHub :)
 let $commit-version := 
-    if($post-id and $store:conf and $is-new-version) then 
-        deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei))
+    if($post-id and $store:conf and $is-new-version) then (
+        (: Push the TEI file :)
+        deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei))(:,
+        (\: Also push entities file :\)
+        deploy:push('data-operations', (), concat($text-id, ' / ', $tei-version-str), concat($common:data-path, '/operations/entities.xml')):)
+    )
     else ()
 
 (: Generate new versions of associated files :)

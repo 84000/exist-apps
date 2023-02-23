@@ -18,26 +18,28 @@ import module namespace entities="http://read.84000.co/entities" at "entities.xq
 import module namespace contributors="http://read.84000.co/contributors" at "contributors.xql";
 import module namespace functx="http://www.functx.com";
 
+declare variable $glossary:types := ('term', 'person', 'place', 'text');
+declare variable $glossary:modes := ('match', 'marked');
+declare variable $glossary:translation-render-status := $common:environment/m:render/m:status[@type eq 'translation']/@status-id/string();
+declare variable $glossary:knowledgebase-render-status := $common:environment/m:render/m:status[@type eq 'article']/@status-id/string();
+
 declare variable $glossary:tei := (
     (:collection(concat($common:data-path, '/tei/layout-checks'))//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
-            [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+            [@status = $glossary:translation-render-status]
         ],:)
     $tei-content:translations-collection//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
-            [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+            [@status = $glossary:translation-render-status]
         ],
     $tei-content:knowledgebase-collection//tei:TEI
         [tei:text/tei:back/tei:div[@type eq 'glossary']]
         [tei:teiHeader/tei:fileDesc/tei:publicationStmt
-            [@status = $common:environment/m:render/m:status[@type eq 'article']/@status-id]
+            [@status = $glossary:knowledgebase-render-status]
         ]
 );
-
-declare variable $glossary:types := ('term', 'person', 'place', 'text');
-declare variable $glossary:modes := ('match', 'marked');
 
 declare variable $glossary:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
@@ -47,39 +49,39 @@ declare variable $glossary:view-modes :=
     
 declare variable $glossary:attestation-types :=
     <attestation-types xmlns="http://read.84000.co/ns/1.0">
-        <attestation-type id="SourceAttested" code="ST" legacy-id="sourceAttested">
-            <label>Source Attested</label>
+        <attestation-type id="AttestedSource" code="AS" legacy-id="sourceAttested">
+            <label>Attested in source text</label>
             <description>The term is attested in a Sanskrit witness of the source text.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="OtherSourceAttested" code="OT">
-            <label>Other Source Attested</label>
+        <attestation-type id="AttestedOtherSource" code="AO">
+            <label>Attested in other text</label>
             <description>The term is attested in other Sanskrit texts.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="DictionaryAttested" code="DI">
-            <label>Dictionary Attested</label>
+        <attestation-type id="AttestedDictionary" code="AD">
+            <label>Attested in dictionary</label>
             <description>The term is plausibly attested as an equivalent to the given Tibetan term in dictionaries.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="PhoneticReconstruction" code="PR" legacy-id="transliterationReconstruction">
-            <label>Phonetic Reconstruction</label>
+        <attestation-type id="ReconstructionPhonetic" code="RP" legacy-id="transliterationReconstruction">
+            <label>Reconstruction from Tibetan phonetic rendering</label>
             <description>For phonetic reconstructions when the Tibetan source text renders Sanskrit phonetically (i.e., names of people, plants, places, etc.)</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="TranslationReconstruction" code="TR" legacy-id="semanticReconstruction">
-            <label>Translation Reconstruction</label>
+        <attestation-type id="TranslationReconstruction" code="RS" legacy-id="semanticReconstruction">
+            <label>Reconstruction from Tibetan semantic rendering</label>
             <description>Used in exceptional cases where there is a strong reason for using a hypothetical reconstructed Sanskrit form based on the Tibetan translation.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="ApproximateReconstruction" code="AP">
-            <label>Approximate Reconstruction</label>
-            <description>Used when there is no attested Sanskrit source for a personal name but only approximate attested matches for the Sanskrit (e.g., the Tibetan name of a buddha in your text is attested in Sanskrit as the name of a bodhisattva in another text). In such cases the name should generally be rendered in English in the translation unless the translator estimates that the Sanskrit name in the text very likely is identical with the approximate match.</description>
+        <attestation-type id="AttestedApproximate" code="AA">
+            <label>Approximate attestation</label>
+            <description>Used when there is no attested Sanskrit source for a personal name but only approximate attested matches for the Sanskrit (e.g. the Tibetan name of a buddha in your text is attested in Sanskrit as the name of a bodhisattva in another text).</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="AttestationUnspecified" code="AU" default="true">
             <label>Attestation Unspecified</label>
-            <description>Attestation un-specified,</description>
+            <description>Not yet attested</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
     </attestation-types>;

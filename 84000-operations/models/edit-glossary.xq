@@ -95,7 +95,7 @@ let $updates :=
             update-entity:resolve($entity-id, $target-entity-id, $predicate)
         
         else if($form-action eq 'merge-all-entities') then
-            (:update-entity:merge-glossary($resource-id, true()):)
+            (: update-entity:auto-assign-glossary($resource-id, true()) :)
             local:async-script(
                 'auto-assign-entities',
                 <parameters xmlns="">

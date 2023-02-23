@@ -100,7 +100,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
     
     where $git-add
     return
-        <result xmlns="http://read.84000.co/ns/1.0" admin-password-correct="{ $admin-password-correct }">
+        <result xmlns="http://read.84000.co/ns/1.0" id="deploy-push" admin-password-correct="{ $admin-password-correct }">
         {
         
             (: Sync the data for each $repo/m:sync :)
@@ -166,7 +166,7 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
     
     where $repo
     return
-        <result xmlns="http://read.84000.co/ns/1.0" admin-password-correct="{ $admin-password-correct }">
+        <result xmlns="http://read.84000.co/ns/1.0" id="deploy-pull" admin-password-correct="{ $admin-password-correct }">
         {
             (: options debug :)
             (:$exist-options,
@@ -178,29 +178,29 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
                 (:process:execute(('git', 'status'), $git-options),:)
                 process:execute(('git', 'pull', 'origin', 'master'), $git-options)
             }
-            </pull>,
+            </pull>
+            ,
             
             (: Restore the zip to eXist :)
             for $restore in $repo/m:restore
             
-                let $backup := 
-                    if($restore[@backup]) then
-                        concat('/',  $restore/@backup)
-                    else
-                        ''
-                
-                where $backup gt '' and ends-with($backup, '.zip') and $admin-password-correct
+            let $backup := 
+                if($restore[@backup]) then
+                    concat('/',  $restore/@backup)
+                else
+                    ''
+            
+            where $backup gt '' and ends-with($backup, '.zip') and $admin-password-correct
             return
                 process:execute(
                     ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat($repo/@path, $backup)),
                     $exist-options
                 )
-                
-            (:,
             
-            (\: Clean repos :\)
-            repair:clean-all(),
-            repair:repair():)
+            (: Clean repos :)(:
+            ,repair:clean-all()
+            ,repair:repair():)
+            
         }
         </result>
 };
@@ -270,7 +270,7 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
             $repo-path || '/tei'
     
     return 
-        <result xmlns="http://read.84000.co/ns/1.0">
+        <result xmlns="http://read.84000.co/ns/1.0" id="deploy-commit-data">
             <sync>
             {
                 $sync
@@ -355,7 +355,7 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
             ()
     
     return 
-        <result xmlns="http://read.84000.co/ns/1.0">
+        <result xmlns="http://read.84000.co/ns/1.0" id="deploy-deploy-apps">
             <deployment  action="{ $action }" admin-password-correct="{ $admin-password-correct }">
             {
                 $sync

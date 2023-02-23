@@ -15,7 +15,7 @@ declare option exist:serialize "method=json media-type=text/javascript";
       "apps": [],
       "details": [
          {
-            "appID": "KAZM92M7ZW.co.84000.reader",
+            "appIDs": ["KAZM92M7ZW.co.84000.reader","L8R7M2F4B8.co.84000.reader"],
             "paths": [ 
                 "/translation/toh1-1.html",
                 "/translation/toh1-6.html",
@@ -31,7 +31,8 @@ declare option exist:serialize "method=json media-type=text/javascript";
     <applinks>
         <apps json:array="true"/>
         <details json:array="true">
-            <appID>KAZM92M7ZW.co.84000.reader</appID>
+            <appIDs>KAZM92M7ZW.co.84000.reader</appIDs>
+            <appIDs>L8R7M2F4B8.co.84000.reader</appIDs>
             {
                 for $bibl in $tei-content:translations-collection//tei:fileDesc[tei:publicationStmt/@status = '1']/tei:sourceDesc/tei:bibl
                 return

@@ -1791,7 +1791,7 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
 
 declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as xs:string, $quote-label as xs:string, $quote-text-toh as element(m:toh), $quote-text-type as xs:string, $quote-text-title as xs:string, $source-location as element(), $source-part-id as xs:string, $source-text-toh as element(m:toh), $source-text-type as xs:string, $source-text-title as xs:string) as element(m:quote)? {
     
-    let $quote-ref-parent := ($quote-ref/parent::tei:orig | $quote-ref/parent::tei:p)(:$quote-ref/parent::tei:*:)
+    let $quote-ref-parent := ($quote-ref/parent::tei:orig | $quote-ref/parent::tei:p | $quote-ref/parent::tei:q)(:$quote-ref/parent::tei:*:)
     let $quote := $quote-ref/ancestor::tei:q[1]
     
     where $quote
