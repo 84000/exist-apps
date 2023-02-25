@@ -124,11 +124,11 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $matching-entity-ids := subsequence($matching-entity-ids, 1, 1024)
     let $similar-entities := 
         for $similar-entity in (
-            if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
+            (:if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
                 $entities:entities//m:entity
                     [m:instance/@id = $matching-instance-ids]
                     [m:type/@type = $entity/m:type/@type]
-            else 
+            else :)
                 $entities:entities//m:entity
                     [m:instance/@id = $matching-instance-ids]
             | $entities:entities//m:entity/id($matching-entity-ids)

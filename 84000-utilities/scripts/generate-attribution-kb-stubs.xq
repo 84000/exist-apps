@@ -131,7 +131,7 @@ return
                     if($knowledgebase-id) then (
                         $knowledgebase-add,
                         (: Add instance to entity :)
-                        update-entity:match-instance($entity/@xml:id, upper-case(concat('eft-kb-', $knowledgebase-id)), 'knowledgebase-article')
+                        update-entity:match-instance($entity/@xml:id, upper-case(concat('eft-kb-', $knowledgebase-id)), 'knowledgebase-article', '')
                     )
                     
                     else 'ERROR: ' || $knowledgebase-id

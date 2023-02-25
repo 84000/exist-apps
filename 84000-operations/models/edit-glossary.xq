@@ -89,7 +89,7 @@ let $updates :=
             update-entity:headers($entity-id)
         
         else if($form-action eq 'match-entity') then
-            update-entity:match-instance($entity-id, $glossary-id, 'glossary-item')
+            update-entity:match-instance($entity-id, $glossary-id, 'glossary-item', '')
         
         else if($form-action eq 'merge-entities') then
             update-entity:resolve($entity-id, $target-entity-id, $predicate)
@@ -237,7 +237,7 @@ let $glossary :=
                 else (),
                 
                 (: Report possible matches for reconciliation :)
-                if($filter = ('check-entities', 'check-all', 'check-terms', 'check-people', 'check-places', 'check-texts', 'missing-entities', 'requires-attention', 'entity-definition')) then
+                if($filter = ('check-entities', 'check-all', 'check-terms', 'check-people', 'check-places', 'check-texts', 'missing-entities', 'requires-attention', 'entity-definition', 'shared-entities', 'exclusive-entities')) then
                     let $search-terms := (
                         $entry/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
                         $entry/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),

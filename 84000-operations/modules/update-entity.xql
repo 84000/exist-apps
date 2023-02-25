@@ -10,6 +10,7 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
 declare function update-entity:new-entity($label-lang as xs:string?, $label-text as xs:string, $entity-type as xs:string, $instance-type as xs:string, $instance-id as xs:string, $flag as xs:string) as element()? {
+    
     element { QName('http://read.84000.co/ns/1.0', 'entity') } {
     
         attribute xml:id { entities:next-id() },
@@ -57,30 +58,31 @@ declare function update-entity:new-entity($label-lang as xs:string?, $label-text
         ,
         common:ws(1)
     }
+    
 };
 
 declare function update-entity:create($label-lang as xs:string?, $label-text as xs:string, $entity-type as xs:string, $instance-type as xs:string, $instance-id as xs:string, $flag as xs:string) as element()? {
     
-    common:update('new-entity', (), update-entity:new-entity($label-lang, $label-text, $entity-type, $instance-type, $instance-id, $flag), $entities:entities, ())
+    let $new-entity := update-entity:new-entity($label-lang, $label-text, $entity-type, $instance-type, $instance-id, $flag)
+    return
+        (:common:update('new-entity', (), $new-entity, $entities:entities, ()):)
+        update insert (text{ $common:chr-tab }, $new-entity, text{ $common:chr-nl }) into $entities:entities
     
 };
 
 declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:string) as element()? {
     
-    (# exist:batch-transaction #) {
-    
-        let $label-terms := 
-            for $term in $gloss/tei:term[not(@type = ('definition','alternative'))][normalize-space(string-join(text(),''))]
-            order by if($term/@xml:lang eq 'Bo-Ltn') then 1 else if($term/@xml:lang eq 'Sa-Ltn') then 2 else 3
-            return 
-                $term
-        
-        let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]
-        where $label-terms and $entity-type
+    let $label-terms := 
+        for $term in $gloss/tei:term[not(@type = ('definition','alternative'))][normalize-space(string-join(text(),''))]
+        order by if($term/@xml:lang eq 'Bo-Ltn') then 1 else if($term/@xml:lang eq 'Sa-Ltn') then 2 else 3
         return 
-            update-entity:create($label-terms[1]/@xml:lang, $label-terms[1]/data(), $entity-type[1]/@id, 'glossary-item', $gloss/@xml:id, $flag)
-   
-   }
+            $term
+    
+    let $entity-type := $entities:types//m:type[@glossary-type eq $gloss/@type]
+    where $label-terms and $entity-type
+    return 
+        update-entity:create($label-terms[1]/@xml:lang, $label-terms[1]/data(), $entity-type[1]/@id, 'glossary-item', $gloss/@xml:id, $flag)
+
         
 };
 
@@ -389,7 +391,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
     
 };
 
-declare function update-entity:match-instance($entity-id as xs:string, $instance-id as xs:string, $instance-type as xs:string) as element()* {
+declare function update-entity:match-instance($entity-id as xs:string, $instance-id as xs:string, $instance-type as xs:string, $flag as xs:string?) as element()* {
     
     (: Get the entity :)
     let $entity := $entities:entities/m:entity[@xml:id eq $entity-id][1]
@@ -404,15 +406,28 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
                 attribute id { $instance-id },
                 attribute type { $instance-type },
                 $existing-instance/@use-definition,
-                $existing-instance/node()
+                $existing-instance/node(),
+                if(not($existing-instance/m:flag[@type eq $flag]) and $entities:flags/m:flag[@id eq $flag]) then (
+                    common:ws(3),
+                    element flag {
+                        attribute type { $flag },
+                        attribute user { common:user-name() },
+                        attribute timestamp { current-dateTime() }
+                    }
+                )
+                else ()
             }
         else ()
     
     where $new-instance
     return
         (: Update the entity :)
-        common:update('entity-match-instance', $existing-instance, $new-instance, $entity, ())
-    
+        (:common:update('entity-match-instance', $existing-instance, $new-instance, $entity, ()):)
+        if($existing-instance) then
+            update replace $existing-instance with $new-instance
+        else 
+            update insert (text{ $common:chr-tab } , $new-instance, text{ common:ws(1) }) into $entity
+            
 };
 
 declare function update-entity:remove-instance($instance-id as xs:string) as element()* {
@@ -501,102 +516,141 @@ declare function local:set-flag($instance-id as xs:string, $type as xs:string, $
     
     where $existing-instance and $new-instance
     return
-        common:update('set-entity-flag', $existing-instance, $new-instance, (), ())
+        update replace $existing-instance with $new-instance
+        (:common:update('set-entity-flag', $existing-instance, $new-instance, (), ()):)
 };
 
 (: Auto-assign entities to all glossary entries in a text :)
 declare function update-entity:auto-assign-glossary($text-id as xs:string, $create-unmatched as xs:boolean) as element()* {
     
-    let $log := util:log('info', concat('update-entity-merge-glossary-started:', $text-id))
-    
-    let $tei := $glossary:tei/id($text-id)/ancestor::tei:TEI
-    let $glosses-with-entities := $tei//tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
-    
-    let $merge-glossary :=
-        for $gloss in $tei//tei:back//tei:gloss except $glosses-with-entities
+    (# exist:batch-transaction #) {
         
-            (: Is there a matching Sanskrit term? :)
-            let $search-terms-sa := distinct-values($gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text() ! normalize-space(.))
-            let $regex-sa := string-join($search-terms-sa ! functx:escape-for-regex(.), '|') ! concat('^\s*(', ., ')\s*$')
-            let $gloss-matches-sa := 
-                if(count($search-terms-sa) gt 0) then
-                    $glossary:tei//tei:back//tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]/parent::tei:gloss except $gloss
-                else ()
+        let $log := util:log('info', concat('update-entity-auto-assign-glossary-started:', $text-id))
+        
+        let $tei := $glossary:tei/id($text-id)/ancestor::tei:TEI
+        let $glosses-with-entities := $tei//tei:back//tei:gloss/id($entities:entities//m:entity/m:instance/@id)
+        
+        let $merge-glossary :=
+            for $gloss in $tei//tei:back//tei:gloss except $glosses-with-entities
             
-            (: Is there a matching Tibetan term? :)
-            let $search-terms-bo := distinct-values($gloss/tei:term[@xml:lang eq 'Bo-Ltn']/text() ! normalize-space(.)) (:distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.))):)
-            let $regex-bo := string-join($search-terms-bo ! functx:escape-for-regex(.), '|') ! concat('^\s*(', ., ')\s*$')
-            let $gloss-matches-bo := 
-                if(count($search-terms-bo) gt 0) then
-                    $glossary:tei//tei:back//tei:term[@xml:lang eq 'Bo-Ltn'][matches(., $regex-bo, 'i')]/parent::tei:gloss except $gloss
-                else ()
-            
-            (: Get the associated enities :)
-            let $gloss-matches := ($gloss-matches-sa | $gloss-matches-bo)
-            let $gloss-matches-ids := $gloss-matches/@xml:id/string()
-            let $entity-matches := $entities:entities//m:entity[m:instance/@id = $gloss-matches-ids]
-            
-            (: Match to entity depending on type :)
-            let $entity-match := 
+                (: Is there a matching Sanskrit term? :)
+                let $search-terms-sa := distinct-values($gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text() ! normalize-space(.) ! normalize-unicode(.))
+                let $search-terms-sa-hyphens := 
+                    for $search-term-sa in $search-terms-sa
+                    let $string-replaced := replace($search-term-sa, '­', '')
+                    let $string-escaped := functx:escape-for-regex($search-term-sa)
+                    return
+                        (: Only parse for soft-hyphens if not escaped :)
+                        if($string-escaped eq $search-term-sa) then
+                            string-join((1 to string-length($string-replaced)) ! substring($string-replaced, ., 1), '­?')
+                        else
+                            $string-escaped
                 
-                (: If it's a term, it matches the Tibetan and there's only one, it's a match :)
-                if($gloss[@type eq 'term'] and $gloss-matches-bo and count($entity-matches) eq 1) then
-                    $entity-matches
+                let $regex-sa := string-join($search-terms-sa-hyphens, '|') ! concat('^\s*(', ., ')\s*$')
+                let $gloss-candidates-sa := 
+                    if(count($search-terms-sa) gt 0) then
+                        $glossary:tei//tei:back//tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]/parent::tei:gloss except $gloss
+                    else ()
                 
-                (: Otherwise rank by number of matches :)
-                else
-                    let $entity-matches-sorted := 
-                        for $entity-match in $entity-matches
-                        (: Get all glosses for this entity :)
-                        let $entity-match-glosses := $glossary:tei/id($entity-match/m:instance/@id)[self::tei:gloss][@type eq $gloss/@type]
-                        (: Filter the ones that match this gloss :)
-                        let $entity-match-glosses-match := 
-                            $entity-match-glosses
+                (: Is there a matching Tibetan term? :)
+                let $search-terms-bo := distinct-values($gloss/tei:term[@xml:lang eq 'Bo-Ltn']/text() ! normalize-space(.)) (:distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.))):)
+                let $regex-bo := string-join($search-terms-bo ! functx:escape-for-regex(.), '|') ! concat('^\s*(', ., ')\s*$')
+                let $gloss-candidates-bo := 
+                    if(count($search-terms-bo) gt 0) then
+                        $glossary:tei//tei:back//tei:term[@xml:lang eq 'Bo-Ltn'][matches(., $regex-bo, 'i')]/parent::tei:gloss except $gloss
+                    else ()
+                
+                (: Get the associated enities :)
+                let $gloss-candidates := ($gloss-candidates-sa | $gloss-candidates-bo)
+                let $gloss-candidates-ids := $gloss-candidates/@xml:id/string()
+                let $entity-candidates := $entities:entities//m:entity[m:instance/@id = $gloss-candidates-ids]
+                
+                (: Do more filtering and sorting :)
+                let $entity-candidates-sorted := 
+                    for $entity-candidate in $entity-candidates
+                    
+                    (: Get all glosses for this entity of this type :)
+                    let $entity-candidate-glosses := $glossary:tei/id($entity-candidate/m:instance/@id)[self::tei:gloss][@type eq $gloss/@type]
+                    
+                    (: Filter the ones that match this gloss :)
+                    let $entity-candidate-glosses-match := 
+                        (: For terms just focus on Tibetan :)
+                        if($gloss[@type eq 'term']) then
+                            $entity-candidate-glosses
+                                [@type eq 'term']
+                                [tei:term[@xml:lang eq 'Bo-Ltn'][matches(., $regex-bo, 'i')]]
+                        (: For other types check for Skt equivalence too :)
+                        else
+                            $entity-candidate-glosses
+                                [@type eq $gloss/@type]
                                 [tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]]
                                 [tei:term[@xml:lang eq 'Bo-Ltn'][matches(., $regex-bo, 'i')]]
-                        (: What's the proportion :)
-                        let $count-entity-match-glosses := count($entity-match-glosses)
-                        let $count-entity-match-glosses-match := count($entity-match-glosses-match)
-                        let $entity-match-glosses-ratio := $count-entity-match-glosses-match div $count-entity-match-glosses
-                        order by $entity-match-glosses-ratio descending
-                        return
+                    
+                    (: Count of matches :)
+                    let $entity-candidate-glosses-count := count($entity-candidate-glosses)
+                    let $entity-candidate-glosses-match-count := count($entity-candidate-glosses-match)
+                    
+                    (: Filter out candidates :)
+                    where $entity-candidate-glosses-match
+                    
+                    (: Order by most matching terms :)
+                    order by $entity-candidate-glosses-match-count descending, $entity-candidate-glosses-count ascending
+                    return 
+                        element { QName('http://read.84000.co/ns/1.0','entity-candidate') } {
+                            attribute count-glossaries { count($entity-candidate-glosses) },
+                            attribute count-glossary-matches { $entity-candidate-glosses-match-count },
+                            $entity-candidate
+                        }
+                
+                (: Match to entity depending on type :)
+                let $entity-candidates-first := $entity-candidates-sorted[1]
+                let $entity-match := $entity-candidates-first/m:entity
+                
+                (: flag some matches :)
+                let $flag := 
+                    if(((: There is only 1 other matches :)
+                        $entity-candidates-first/@count-glossary-matches ! xs:integer(.) le 1
+                        (: Of more than 5 linked glossaries :)
+                        and $entity-candidates-first/@count-glossaries ! xs:integer(.) ge 5)
+                        (: Or there's not a common type :)
+                        or ($entity-match and not($entities:types/m:type[@id = $entity-match/m:type/@type][@glossary-type eq $gloss/@type]))
+                    ) then 
+                        'requires-attention'
+                    else ''
+                
+                (: Do the update :)
+                let $do-update := 
+                    if($entity-match) then (
+                        update-entity:match-instance($entity-match/@xml:id, $gloss/@xml:id, 'glossary-item', $flag)
+                        (:,util:log('info', concat('update-entity-auto-assign-glossary-match:', $gloss/@xml:id)):)
+                    )
+                    else if($create-unmatched) then (
+                        update-entity:create($gloss, $flag)
+                        (:,util:log('info', concat('update-entity-auto-assign-glossary-create:', $gloss/@xml:id)):)
+                    )
+                    else ()
+                
+                return 
+                    element update {
+                        attribute action { if($entity-match) then 'merge' else if($create-unmatched) then 'create' else 'none' },
+                        attribute flag { $flag },
+                        $gloss,
+                        element match {
+                            (:$gloss-matches,:)
                             $entity-match
-                    
-                    return
-                        $entity-matches-sorted[1]
-            
-            (: If there is some match then it requires some attention :)
-            let $flag := '' (:if(count($matches-sa[@type eq $gloss/@type] | $matches-bo[@type eq $gloss/@type]) gt 0) then 'requires-attention' else '':)
-            
-            (: Do the update :)
-            let $do-update := 
-                if($entity-match) then
-                    update-entity:match-instance($entity-match/@xml:id, $gloss/@xml:id, 'glossary-item')
-                    
-                else if($create-unmatched) then
-                    update-entity:create($gloss, $flag)
-                    
-                else ()
-            
-            return 
-                element update {
-                    attribute action { if($entity-match) then 'merge' else if($create-unmatched) then 'create' else 'none' },
-                    attribute flag { $flag },
-                    $gloss,
-                    element match {
-                        (:$gloss-matches,:)
-                        $entity-matches
-                    },
-                    $do-update,
-                    element debug {
-                        attribute glossary-editor-url { 'https://projects.84000-translate.org/edit-glossary.html?resource-id=' || $text-id || '&amp;resource-type=translation&amp;max-records=1&amp;glossary-id=' || $gloss/@xml:id },
-                        element regex-sa {$regex-sa},
-                        element regex-bo {$regex-bo}
+                        },
+                        $do-update,
+                        element debug {
+                            attribute glossary-editor-url { 'https://projects.84000-translate.org/edit-glossary.html?resource-id=' || $text-id || '&amp;resource-type=translation&amp;max-records=1&amp;glossary-id=' || $gloss/@xml:id },
+                            element regex-sa {$regex-sa},
+                            element regex-bo {$regex-bo}
+                        }
                     }
-                }
-    
-    return (
-        $merge-glossary,
-        util:log('info', concat('update-entity-merge-glossary-complete:', $text-id))
-    )
+        
+        return (
+            $merge-glossary,
+            util:log('info', concat('update-entity-auto-assign-glossary-complete:', $text-id))
+        )
+        
+    }
 };

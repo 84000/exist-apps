@@ -30,7 +30,7 @@ let $updated :=
         update-entity:headers($entity-id)
     
     else if($form-action eq 'match-entity') then
-        update-entity:match-instance($entity-id, $request-id, 'knowledgebase-article')
+        update-entity:match-instance($entity-id, $request-id, 'knowledgebase-article','')
         
     else if($form-action eq 'merge-entities') then
         update-entity:resolve($entity-id, $target-entity-id, $predicate)

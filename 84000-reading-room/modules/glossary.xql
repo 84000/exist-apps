@@ -88,6 +88,8 @@ declare variable $glossary:attestation-types :=
 
 declare variable $glossary:empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'));
 
+declare variable $glossary:stopwords-en := ("a", "an", "and", "are", "as", "at", "be", "but", "by","for", "if", "in", "into", "is", "it","no", "not", "of", "on", "or", "such","that", "the", "their", "then", "there", "these","they", "this", "to", "was", "will", "with");
+
 declare function local:lookup-options() as element() {
     <options>
         <default-operator>or</default-operator>
@@ -169,7 +171,7 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
                 <bool>
                 {
                     (: wildcard is not ignoring stopwords :)
-                    for $term in tokenize($normalized-search, '\s+')[not(. = ("a", "an", "and", "are", "as", "at", "be", "but", "by","for", "if", "in", "into", "is", "it","no", "not", "of", "on", "or", "such","that", "the", "their", "then", "there", "these","they", "this", "to", "was", "will", "with"))]
+                    for $term in tokenize($normalized-search, '\s+')[not(. = $glossary:stopwords-en)]
                     return
                         <wildcard occur="must">{ $term }*</wildcard>
                 }
@@ -857,6 +859,17 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition[@use-definition = ('both','append','prepend','override')]/@id)/self::tei:gloss
                 | $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition/@id)/self::tei:gloss[not(tei:term[@type eq 'definition'][node()])]
+        
+        (: Entities with only one entry :)
+        else if($filter = ('shared-entities', 'exclusive-entities')) then
+            let $entities-single-instance := $entities:entities//m:entity[count(m:instance) eq 1]
+            return
+                if($filter eq 'exclusive-entities') then
+                    $tei//tei:back//tei:div[@type eq 'glossary']//id($entities-single-instance/m:instance/@id)/self::tei:gloss
+                else
+                    let $entities-multiple-instances := $entities:entities//m:entity[m:instance] except $entities-single-instance
+                    return
+                        $tei//tei:back//tei:div[@type eq 'glossary']//id($entities-multiple-instances/m:instance/@id)/self::tei:gloss
         
         (: No locations in the cache :)
         else if($filter eq 'no-locations') then
