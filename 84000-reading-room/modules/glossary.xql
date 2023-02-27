@@ -583,7 +583,7 @@ declare function glossary:combined() as element() {
         
         let $terms :=
             for $entity at $index in $entities
-            where $index le 1000
+            (:where $index le 1000:)
             let $glossary-entries := $glossary:tei//id($entity/m:instance[not(m:flag)]/@id)[not(@mode eq 'surfeit')]
             where $glossary-entries
             (: Get unique terms :)
