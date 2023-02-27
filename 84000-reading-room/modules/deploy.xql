@@ -50,7 +50,7 @@ declare function deploy:admin-password-correct($admin-password as xs:string?) as
 (: Allow the sharing of the admin password with non-admin users? :)
 declare function deploy:validate-token($token as xs:string) as xs:boolean {
     
-    deploy:admin-password-correct(replace(util:base64-decode($token), $deploy:git-config/@auth-codes, ''))
+    deploy:admin-password-correct(replace(util:base64-decode($token), common:user-name(), ''))
     
 };
 
@@ -102,7 +102,6 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
     return
         <result xmlns="http://read.84000.co/ns/1.0" id="deploy-push" admin-password-correct="{ $admin-password-correct }">
         {
-        
             (: Sync the data for each $repo/m:sync :)
             for $sync in $repo/m:sync[@collection]
                 
@@ -149,6 +148,9 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                 process:execute(('git', 'push', 'origin', 'master'), $git-options)
             }
             </push>
+            
+            ,util:log('info', concat('deploy-push:', $repo-id))
+            
         }
         </result>
 };
@@ -196,6 +198,8 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
                     ('bin/backup.sh', '-u', 'admin', '-p', $admin-password, '-P', $admin-password, '-r', concat($repo/@path, $backup)),
                     $exist-options
                 )
+            
+            ,util:log('info', concat('deploy-pull:', $repo-id))
             
             (: Clean repos :)(:
             ,repair:clean-all()
@@ -279,8 +283,9 @@ declare function deploy:commit-data($action as xs:string, $sync-resource as xs:s
             {
                 if($sync) then
                     deploy:git-push($git-add, $commit-msg, deploy:execute-options($working-dir))
-                else
-                    ()
+                else ()
+                
+                ,util:log('info', concat('deploy-commit-data:', $working-dir))
             }
         </result>
     
@@ -359,6 +364,7 @@ declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as
             <deployment  action="{ $action }" admin-password-correct="{ $admin-password-correct }">
             {
                 $sync
+                ,util:log('info', concat('deploy-deploy-apps:', $get-app))
             }
             </deployment>
         </result>

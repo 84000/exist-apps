@@ -1715,13 +1715,13 @@
                     </option>
                     <xsl:if test="$definitions and $entity-definitions">
                         <option value="append">
-                            <xsl:if test="$entity-instance[@use-definition = ('both', 'append')]">
+                            <xsl:if test="$entity-instance[@use-definition = ('append')]">
                                 <xsl:attribute name="selected" select="'selected'"/>
                             </xsl:if>
                             <xsl:value-of select="'APPEND: show the entity definition after the glossary definition'"/>
                         </option>
                         <option value="prepend">
-                            <xsl:if test="$entity-instance[@use-definition eq 'prepend']">
+                            <xsl:if test="$entity-instance[@use-definition = ('both', 'prepend')]">
                                 <xsl:attribute name="selected" select="'selected'"/>
                             </xsl:if>
                             <xsl:value-of select="'PREPEND: show the entity definition before the glossary definition'"/>

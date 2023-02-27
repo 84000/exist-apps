@@ -571,15 +571,19 @@ declare function local:term-star($term as element(tei:term)) as xs:string {
 };
 
 declare function glossary:combined() as element() {
-
+    
+    let $entities := $entities:entities/m:entity
+    
+    return
     element { QName('http://read.84000.co/ns/1.0', 'glossary-combined') } {
     
         attribute created { current-dateTime() },
         attribute app-version { $common:app-version },
+        attribute count-entites { count($entities) },
         
         let $terms :=
-            for $entity at $index in $entities:entities/m:entity
-            (:where $index le 10:)
+            for $entity at $index in $entities
+            where $index le 1000
             let $glossary-entries := $glossary:tei//id($entity/m:instance[not(m:flag)]/@id)[not(@mode eq 'surfeit')]
             where $glossary-entries
             (: Get unique terms :)
@@ -1186,7 +1190,7 @@ declare function glossary:downloads() as element(m:downloads) {
     
         attribute resource-id { 'glossary-combined' },
         
-        for $type in ('xml', 'xlsx', 'txt', 'dict')
+        for $type in ((:'xml',:) 'xlsx', 'txt', 'dict')
         let $keys := if($type = ('txt', 'dict')) then ('bo', 'wy') else ('')
         for $key in $keys
         return

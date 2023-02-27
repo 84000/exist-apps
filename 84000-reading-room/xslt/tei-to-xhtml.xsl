@@ -1477,7 +1477,7 @@
                             <div class="footer">
                                 
                                 <!-- Entry definition as prologue -->
-                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entity-instance[not(@use-definition = ('override', 'prepend'))])">
+                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entity-instance[not(@use-definition = ('override','both','prepend'))])">
                                     <xsl:for-each select="$entry-definition">
                                         <p>
                                             <xsl:call-template name="class-attribute">
@@ -1504,7 +1504,7 @@
                                 </xsl:if>
                                 
                                 <!-- Entry definition as epilogue -->
-                                <xsl:if test="($entry-definition and $entity-definition and $entity-instance[@use-definition = ('prepend')])">
+                                <xsl:if test="($entry-definition and $entity-definition and $entity-instance[@use-definition = ('both','prepend')])">
                                     <h4 class="heading">
                                         <xsl:value-of select="'In this text:'"/>
                                     </h4>

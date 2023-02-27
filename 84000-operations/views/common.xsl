@@ -1339,7 +1339,7 @@
         <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $entry/@id]"/>
         
         <!-- Use entity definition before -->
-        <xsl:if test="$entity-definition and $entity-instance[@use-definition = ('prepend')]">
+        <xsl:if test="$entity-definition and $entity-instance[@use-definition = ('both','prepend')]">
             <div class="sml-margin bottom collapse-one-line">
                 <xsl:call-template name="entity-definition">
                     <xsl:with-param name="entity" select="$entity"/>
@@ -1358,11 +1358,11 @@
         </xsl:if>
         
         <!-- Use entity definition after -->
-        <xsl:if test="$entity-definition and $entity-instance[not(@use-definition = ('prepend'))]">
+        <xsl:if test="$entity-definition and $entity-instance[not(@use-definition = ('both','prepend'))]">
             <div class="sml-margin bottom collapse-one-line">
                 <xsl:call-template name="entity-definition">
                     <xsl:with-param name="entity" select="$entity"/>
-                    <xsl:with-param name="line-through" select="if($entity-instance[not(@use-definition = ('both','append','override'))]) then true() else false()"/>
+                    <xsl:with-param name="line-through" select="if($glossary-definition and $entity-instance[not(@use-definition = ('append','override'))]) then true() else false()"/>
                 </xsl:call-template>
             </div>
         </xsl:if>

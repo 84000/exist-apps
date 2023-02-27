@@ -24,6 +24,8 @@ let $request-xml :=
         attribute resource-suffix { 'xml' }
     }
 
+return if (true()) then element debug { glossary:combined()/@count-entites } else 
+
 let $cached-xml := common:cache-get($request-xml, $cache-key)
 
 let $glossary-combined := 
@@ -131,22 +133,22 @@ return
                 $sync-filename-key
             )
             
-            let $generate-dict := (
-                (: Clear the existing files :)
+            (:let $generate-dict := (
+                (\: Clear the existing files :\)
                 file:delete($sync-folder-txt),
-                (: Sync to file system :)
+                (\: Sync to file system :\)
                 file:sync($cache-collection-txt, $sync-folder-txt, ()),
-                (: Ensure the target directory exists :)
+                (\: Ensure the target directory exists :\)
                 file:mkdirs(concat($sync-folder-dict, '/', $sync-filename-key)),
-                (: Generate dict resources :)
+                (\: Generate dict resources :\)
                 process:execute($exec-pyglossary, $exec-pyglossary-options),
-                (: Create a zip :)
+                (\: Create a zip :\)
                 process:execute($exec-zip, $exec-zip-options),
-                (: Add zip to the db :)
+                (\: Add zip to the db :\)
                 let $dict-data := file:read-binary($upload-dict-zip-path)
                 return
                     common:cache-put($request-dict, $dict-data, $cache-key)
-            )
+            ):)
             
             return ( 
                 $request-dict,

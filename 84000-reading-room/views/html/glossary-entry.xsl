@@ -643,7 +643,7 @@
             </xsl:if>
             
             <!-- Definition -->
-            <xsl:variable name="entry-definition" select="$entry/m:definition[node()]"/>
+            <xsl:variable name="entry-definition" select="$entry/m:definition[descendant::text()]"/>
             <xsl:variable name="entry-definition-html">
                 <xsl:for-each select="$entry-definition">
                     <p>
@@ -651,7 +651,7 @@
                     </p>
                 </xsl:for-each>
             </xsl:variable>
-            <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition'][node()]"/>
+            <xsl:variable name="entity-definition" select="$instance/parent::m:entity/m:content[@type eq 'glossary-definition'][descendant::text()]"/>
             <xsl:variable name="entity-definition-html">
                 <xsl:for-each select="$entity-definition">
                     <p>
@@ -672,25 +672,34 @@
                             <xsl:value-of select="'Text displays entity definition: '"/>
                             
                             <span class="label label-info">
-                                <xsl:value-of select="($instance/@use-definition, 'No entry definition')[1]"/>
+                                <xsl:value-of select="($instance/@use-definition[not(. eq '')], 'No entry definition')[1]"/>
                             </span>
                             
                         </h6>
                         
                         <blockquote>
-                            <!-- Entity definition, prepended -->
-                            <xsl:if test="$entity-definition and $instance[@use-definition = ('prepend')]">
-                                <xsl:sequence select="$entity-definition-html"/>
-                            </xsl:if>
                             
-                            <xsl:if test="$entry-definition and $instance[not(@use-definition eq 'override')]">
+                            <!-- Entry definition as prologue -->
+                            <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $instance[not(@use-definition = ('override','both','prepend'))])">
                                 <xsl:sequence select="$entry-definition-html"/>
                             </xsl:if>
                             
-                            <!-- Entity definition, appended -->
-                            <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','append','override')])">
+                            <!-- Entity definition -->
+                            <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','append','prepend','override')])">
+                                <h4 class="sml-margin top bottom text-muted">
+                                    <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
+                                </h4>
                                 <xsl:sequence select="$entity-definition-html"/>
                             </xsl:if>
+                            
+                            <!-- Entry definition as epilogue -->
+                            <xsl:if test="($entry-definition and $entity-definition and $instance[@use-definition = ('both','prepend')])">
+                                <h4 class="sml-margin top bottom text-muted">
+                                    <xsl:value-of select="'In this text:'"/>
+                                </h4>
+                                <xsl:sequence select="$entry-definition-html"/>
+                            </xsl:if>
+                            
                         </blockquote>
                         
                     </div>
