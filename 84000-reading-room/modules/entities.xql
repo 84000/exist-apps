@@ -221,7 +221,12 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
                     }
                 ,
                 
-                $gloss ! glossary:glossary-entry(., false()),
+                for $gloss-single in $gloss
+                let $gloss-id := $gloss-single/@xml:id
+                group by $gloss-id
+                return
+                    glossary:glossary-entry($gloss-single[1], false())
+                ,
                 
                 element glossary-cache {
                 

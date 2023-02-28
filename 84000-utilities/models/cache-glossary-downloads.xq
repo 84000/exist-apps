@@ -24,20 +24,15 @@ let $request-xml :=
         attribute resource-suffix { 'xml' }
     }
 
-(:return if (true()) then element debug { glossary:combined()/@count-entites } else :)
-
 let $cached-xml := common:cache-get($request-xml, $cache-key)
 
-let $glossary-combined := 
+let $cache-combined-xml := 
     if(not($cached-xml)) then
-        let $content := glossary:combined()
-        let $cache-put := common:cache-put($request-xml, $content, $cache-key)
-        return
-            $content
+        glossary:cache-combined-xml($request-xml, $cache-key)
     else
-        $cached-xml//m:glossary-combined
+        true()
 
-where $glossary-combined
+where $cache-combined-xml
 (: Return the request element for each cached file :)
 return 
     element { QName('http://read.84000.co/ns/1.0', 'cached') } {
@@ -53,7 +48,7 @@ return
                 attribute resource-suffix { 'xlsx' }
             }
         
-        let $spreadsheet-data := glossary:spreadsheet-data($glossary-combined)
+        let $spreadsheet-data := glossary:spreadsheet-data($request-xml, $cache-key)
 
         let $spreadsheet-zip := common:spreadsheet-zip($spreadsheet-data)
         
@@ -61,117 +56,119 @@ return
         
         return 
             $request-xlsx
-    ,
-    
-    for $key in ('bo', 'wy')
-    return 
+        ,
         
-        (: Cache txt :)
-        let $request-txt := 
-            element { QName('http://read.84000.co/ns/1.0', 'request')} {
-                attribute model { 'glossary-download' },
-                attribute resource-suffix { 'txt' },
-                attribute key { $key }
-            }
-        
-        let $glossary-txt := glossary:combined-txt($glossary-combined, $request-txt/@key)
-        
-        let $glossary-txt := string-join($glossary-txt, '')
-        
-        let $cache-put := common:cache-put($request-txt, $glossary-txt, $cache-key)
-        
-        return (
-            $request-txt,
+        for $key in ('bo', 'wy')
+        return 
             
-            let $pyglossary-file := concat('/', $common:environment/m:glossary-downloads-conf/m:pyglossary-path)
-            let $sync-folder := concat('/', $common:environment/m:glossary-downloads-conf/m:sync-path)
-            where $pyglossary-file and $sync-folder
-            
-            (: Cache dict :)
-            let $request-dict := 
+            (: Cache txt :)
+            let $request-txt := 
                 element { QName('http://read.84000.co/ns/1.0', 'request')} {
                     attribute model { 'glossary-download' },
-                    attribute resource-suffix { 'dict' },
+                    attribute resource-suffix { 'txt' },
                     attribute key { $key }
                 }
             
-            let $cache-filename-txt := common:cache-filename($request-txt, $cache-key)
-            let $cache-collection-txt := common:cache-collection($request-txt)
-            let $cache-collection-txt-rel := substring-after($cache-collection-txt, concat($common:data-path, '/'))
-            let $cache-filename-dict := common:cache-filename($request-dict, $cache-key)
-            let $cache-collection-dict := common:cache-collection($request-dict)
-            let $sync-folder-txt := concat($sync-folder, '/', $cache-collection-txt-rel)
-            let $sync-filename-key := concat('84000-glossary-', $key)
-            let $sync-folder-dict := concat($sync-folder, '/dict')
-            let $dict-filename-zip := concat($sync-filename-key, '.zip')
-            let $upload-dict-zip-path := concat('file://', $sync-folder-dict, '/', $dict-filename-zip)
+            let $glossary-txt := glossary:combined-txt($request-xml, $cache-key, $request-txt/@key)
             
-            let $exec-pyglossary-options := 
-                <options>
-                    <workingDir>{$sync-folder}</workingDir>
-                </options>
+            let $glossary-txt := string-join($glossary-txt, '')
             
-            let $exec-pyglossary := (
-                'python3', 
-                $pyglossary-file, 
-                concat($sync-folder-txt, '/', $cache-filename-txt), 
-                concat($sync-folder-dict, '/', $sync-filename-key),
-                '--read-format=Tabfile',
-                '--write-format=Stardict',
-                '--no-interactive'
-            )
+            let $cache-put := common:cache-put($request-txt, $glossary-txt, $cache-key)
             
-            let $exec-zip-options := 
-                <options>
-                    <workingDir>{$sync-folder-dict}</workingDir>
-                </options>
-            
-            let $exec-zip := (
-                'zip', 
-                '-rj', 
-                $dict-filename-zip,
-                $sync-filename-key
-            )
-            
-            let $generate-dict := (
-                (: Clear the existing files :)
-                file:delete($sync-folder-txt),
-                (: Sync to file system :)
-                file:sync($cache-collection-txt, $sync-folder-txt, ()),
-                (: Ensure the target directory exists :)
-                file:mkdirs(concat($sync-folder-dict, '/', $sync-filename-key)),
-                (: Generate dict resources :)
-                process:execute($exec-pyglossary, $exec-pyglossary-options),
-                (: Create a zip :)
-                process:execute($exec-zip, $exec-zip-options),
-                (: Add zip to the db :)
-                let $dict-data := file:read-binary($upload-dict-zip-path)
-                return
-                    common:cache-put($request-dict, $dict-data, $cache-key)
-            )
-            
-            return ( 
-                $request-dict,
-                element debug {
-                    string-join($exec-pyglossary, ' '),
-                    $exec-pyglossary-options,
-                    string-join($exec-zip, ' '),
-                    $exec-zip-options(:,
-                    for $resource in xmldb:get-child-resources($cache-collection-dict)
-                    let $path-tokenized := tokenize($cache-collection-dict, '/')
-                    where 
-                        count($path-tokenized) gt 6
-                        and $path-tokenized[last() -1] eq 'glossary-download'
-                        and util:binary-doc-available(concat($cache-collection-dict, '/', $resource))
+            return (
+                $request-txt,
+                
+                let $pyglossary-file := concat('/', $common:environment/m:glossary-downloads-conf/m:pyglossary-path)
+                let $sync-folder := concat('/', $common:environment/m:glossary-downloads-conf/m:sync-path)
+                where $pyglossary-file and $sync-folder
+                
+                (: Cache dict :)
+                let $request-dict := 
+                    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+                        attribute model { 'glossary-download' },
+                        attribute resource-suffix { 'dict' },
+                        attribute key { $key }
+                    }
+                
+                let $cache-filename-txt := common:cache-filename($request-txt, $cache-key)
+                let $cache-collection-txt := common:cache-collection($request-txt)
+                let $cache-collection-txt-rel := substring-after($cache-collection-txt, concat($common:data-path, '/'))
+                let $cache-filename-dict := common:cache-filename($request-dict, $cache-key)
+                let $cache-collection-dict := common:cache-collection($request-dict)
+                let $sync-folder-txt := concat($sync-folder, '/', $cache-collection-txt-rel)
+                let $sync-filename-key := concat('84000-glossary-', $key)
+                let $sync-folder-dict := concat($sync-folder, '/dict')
+                let $dict-filename-zip := concat($sync-filename-key, '.zip')
+                let $upload-dict-zip-path := concat('file://', $sync-folder-dict, '/', $dict-filename-zip)
+                
+                let $exec-pyglossary-options := 
+                    <options>
+                        <workingDir>{$sync-folder}</workingDir>
+                    </options>
+                
+                let $exec-pyglossary := (
+                    'python3', 
+                    $pyglossary-file, 
+                    concat($sync-folder-txt, '/', $cache-filename-txt), 
+                    concat($sync-folder-dict, '/', $sync-filename-key),
+                    '--read-format=Tabfile',
+                    '--write-format=Stardict',
+                    '--no-interactive'
+                )
+                
+                let $exec-zip-options := 
+                    <options>
+                        <workingDir>{$sync-folder-dict}</workingDir>
+                    </options>
+                
+                let $exec-zip := (
+                    'zip', 
+                    '-rj', 
+                    $dict-filename-zip,
+                    $sync-filename-key
+                )
+                
+                let $generate-dict := (
+                    (: Clear the existing files :)
+                    file:delete($sync-folder-txt),
+                    (: Sync to file system :)
+                    file:sync($cache-collection-txt, $sync-folder-txt, ()),
+                    (: Ensure the target directory exists :)
+                    file:mkdirs(concat($sync-folder-dict, '/', $sync-filename-key)),
+                    (: Generate dict resources :)
+                    process:execute($exec-pyglossary, $exec-pyglossary-options),
+                    (: Create a zip :)
+                    process:execute($exec-zip, $exec-zip-options),
+                    (: Add zip to the db :)
+                    let $dict-data := file:read-binary($upload-dict-zip-path)
                     return
-                        element resource {
-                            attribute path-tokenized-count { count($path-tokenized) },
-                            attribute path-tokenized-last { $path-tokenized[last() -1] },
-                            concat($cache-collection-dict, '/', $resource)
-                        }:)
-                }
+                        common:cache-put($request-dict, $dict-data, $cache-key)
+                )
+                
+                let $log := util:log('info', concat('cache-glossary-downloads:', $cache-key, ' completed'))
+                
+                return ( 
+                    $request-dict,
+                    element debug {
+                        string-join($exec-pyglossary, ' '),
+                        $exec-pyglossary-options,
+                        string-join($exec-zip, ' '),
+                        $exec-zip-options(:,
+                        for $resource in xmldb:get-child-resources($cache-collection-dict)
+                        let $path-tokenized := tokenize($cache-collection-dict, '/')
+                        where 
+                            count($path-tokenized) gt 6
+                            and $path-tokenized[last() -1] eq 'glossary-download'
+                            and util:binary-doc-available(concat($cache-collection-dict, '/', $resource))
+                        return
+                            element resource {
+                                attribute path-tokenized-count { count($path-tokenized) },
+                                attribute path-tokenized-last { $path-tokenized[last() -1] },
+                                concat($cache-collection-dict, '/', $resource)
+                            }:)
+                    }
+                )
             )
-        )
     }
 
     

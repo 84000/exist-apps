@@ -607,16 +607,16 @@ declare function update-entity:auto-assign-glossary($text-id as xs:string, $crea
                 let $entity-match := $entity-candidates-first/m:entity
                 
                 (: flag some matches :)
-                let $flag := 
-                    if(((: There is only 1 other matches :)
+                let $flag := ''
+                    (:if(((\: There is only 1 other matches :\)
                         $entity-candidates-first/@count-glossary-matches ! xs:integer(.) le 1
-                        (: Of more than 5 linked glossaries :)
+                        (\: Of more than 5 linked glossaries :\)
                         and $entity-candidates-first/@count-glossaries ! xs:integer(.) ge 5)
-                        (: Or there's not a common type :)
+                        (\: Or there's not a common type :\)
                         or ($entity-match and not($entities:types/m:type[@id = $entity-match/m:type/@type][@glossary-type eq $gloss/@type]))
                     ) then 
                         'requires-attention'
-                    else ''
+                    else '':)
                 
                 (: Do the update :)
                 let $do-update := 

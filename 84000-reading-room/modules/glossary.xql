@@ -54,7 +54,7 @@ declare variable $glossary:attestation-types :=
             <description>The term is attested in a Sanskrit witness of the source text.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="AttestedOtherSource" code="AO">
+        <attestation-type id="AttestedOther" code="AO">
             <label>Attested in other text</label>
             <description>The term is attested in other Sanskrit texts.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
@@ -64,12 +64,12 @@ declare variable $glossary:attestation-types :=
             <description>The term is plausibly attested as an equivalent to the given Tibetan term in dictionaries.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="ReconstructionPhonetic" code="RP" legacy-id="transliterationReconstruction">
+        <attestation-type id="ReconstructedPhonetic" code="RP" legacy-id="transliterationReconstruction">
             <label>Reconstruction from Tibetan phonetic rendering</label>
-            <description>For phonetic reconstructions when the Tibetan source text renders Sanskrit phonetically (i.e., names of people, plants, places, etc.)</description>
+            <description>The term is reconstructed from the Tibetan where the Tibetan source text renders Sanskrit phonetically (i.e., names of people, plants, places, etc.)</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="TranslationReconstruction" code="RS" legacy-id="semanticReconstruction">
+        <attestation-type id="ReconstructedSemantic" code="RS" legacy-id="semanticReconstruction">
             <label>Reconstruction from Tibetan semantic rendering</label>
             <description>Used in exceptional cases where there is a strong reason for using a hypothetical reconstructed Sanskrit form based on the Tibetan translation.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
@@ -79,7 +79,7 @@ declare variable $glossary:attestation-types :=
             <description>Used when there is no attested Sanskrit source for a personal name but only approximate attested matches for the Sanskrit (e.g. the Tibetan name of a buddha in your text is attested in Sanskrit as the name of a bodhisattva in another text).</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="AttestationUnspecified" code="AU" default="true">
+        <attestation-type id="AttestedUnspecified" code="AU" default="true">
             <label>Attestation Unspecified</label>
             <description>Not yet attested</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
@@ -570,90 +570,126 @@ declare function local:term-star($term as element(tei:term)) as xs:string {
     if($term[@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]) then '*' else ''
 };
 
-declare function glossary:combined() as element() {
+declare function glossary:cache-combined-xml($request-xml as element(m:request), $cache-key as xs:string) as xs:boolean {
+    
+    (: This needs generating in a different way as it exceeds the limit for output in exist :)
     
     let $entities := $entities:entities/m:entity
+    let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = 'excluded')]
     
-    return
-    element { QName('http://read.84000.co/ns/1.0', 'glossary-combined') } {
-    
-        attribute created { current-dateTime() },
-        attribute app-version { $common:app-version },
-        attribute count-entites { count($entities) },
-        
-        let $terms :=
-            for $entity at $index in $entities
-            (:where $index le 1000:)
-            let $glossary-entries := $glossary:tei//id($entity/m:instance[not(m:flag)]/@id)[not(@mode eq 'surfeit')]
-            where $glossary-entries
-            (: Get unique terms :)
-            return 
-                for $term-wy in $glossary-entries/tei:term[@xml:lang eq 'Bo-Ltn']
-                let $term-wy-text := normalize-space(string-join($term-wy/text(),''))
-                where $term-wy-text
-                group by $term-wy-text
-                order by $term-wy-text
-                let $term-glosses := $term-wy/parent::tei:gloss
-                return
-                    element term {
+    let $terms :=
+        for $entity at $index in $entities
+        (:where $index le 1000:)
+        let $glossary-entries := $glossaries//id($entity/m:instance[not(m:flag)]/@id)[not(@mode eq 'surfeit')]
+        where $glossary-entries
+        (: Get unique terms :)
+        return 
+            for $term-wy in $glossary-entries/tei:term[@xml:lang eq 'Bo-Ltn']
+            let $term-wy-text := normalize-space(string-join($term-wy/text(),''))
+            where $term-wy-text
+            group by $term-wy-text
+            order by $term-wy-text
+            let $term-glosses := $term-wy/parent::tei:gloss
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'term') } {
+                    
+                    (: TO DO: Create endpoints for these uris :)
+                    attribute entity { concat('http://purl.84000.co/resource/core/', $entity/@xml:id) },
+                    
+                    attribute href { concat($common:environment/m:url[@id eq 'reading-room'],'/glossary/', $entity/@xml:id, '.html') },
+                    
+                    attribute sort-key { replace(common:normalized-chars(lower-case($term-wy-text)), '[^a-z0-9\s]', '') },
+                    
+                    (: Re-generate the tibetan from wylie as we can't be sure which terms match :)
+                    text{ common:ws(2) } ,
+                    element tibetan { common:bo-term($term-wy-text) },
+                    
+                    text{ common:ws(2) } ,
+                    element wylie { $term-wy-text },
+                    
+                    (: Merge entries :)
+                    distinct-values($term-glosses/@type) ! ( text{ common:ws(2) }, element type { concat('eft:', .) } ),
+                    local:distinct-terms($term-glosses/tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]) ! ( text{ common:ws(2) }, element translation { . } ),
+                    local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! ( text{ common:ws(2) }, element sanskrit { . } ),
+                    local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'zh'][normalize-space(text())]) ! ( text{ common:ws(2) }, element chinese { . } ),
+                    
+                    (: Definition :)
+                    $entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]] ! ( text{ common:ws(2) }, element definition { string-join(descendant::text() ! normalize-space(.), '') } ),
+                    
+                    (: Details of individual entries :)
+                    (: Provisionally add gloss id :)
+                    for $gloss in $term-glosses
+                    
+                    let $tei := $gloss/ancestor::tei:TEI
+                    let $text-id := tei-content:id($tei)
+                    let $bibls := $tei[1]/tei:teiHeader//tei:bibl
+                    group by $text-id
+                    return ( 
+                        text{ common:ws(2) }, 
                         
-                        (: TO DO: Create endpoints for these uris :)
-                        attribute entity { concat('http://purl.84000.co/resource/core/', $entity/@xml:id) },
-                        
-                        attribute href { concat($common:environment/m:url[@id eq 'reading-room'],'/glossary/', $entity/@xml:id, '.html') },
-                        
-                        attribute sort-key { replace(common:normalized-chars(lower-case($term-wy-text)), '[^a-z0-9\s]', '') },
-                        
-                        (: Re-generate the tibetan from wylie as we can't be sure which terms match :)
-                        element tibetan { common:bo-term($term-wy-text) },
-                        element wylie { $term-wy-text },
-                        
-                        (: Merge entries :)
-                        distinct-values($term-glosses/@type) ! element type { concat('eft:', .) },
-                        local:distinct-terms($term-glosses/tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]) ! element translation { . },
-                        local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! element sanskrit { . },
-                        local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'zh'][normalize-space(text())]) ! element chinese { . },
-                        
-                        $entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]] ! element definition { string-join(descendant::text() ! normalize-space(.), '') },
-                        
-                        (: Details of individual entries :)
-                        for $gloss in $term-glosses
-                        let $tei := $gloss/ancestor::tei:TEI
-                        let $text-id := tei-content:id($tei)
-                        let $bibls := $tei[1]/tei:teiHeader//tei:bibl
-                        group by $text-id
-                        return 
-                            element ref {
-                                for $bibl in $bibls
-                                let $toh := translation:toh($tei[1], $bibl/@key)
-                                order by $toh/m:base/text()
-                                return (
-                                    element toh {
-                                        $toh/@key,
-                                        $toh/m:base/text()
-                                    },
-                                    $gloss ! element link { attribute href { translation:canonical-html($toh/@key, ()) || '#' || @xml:id } }
-                                ),
-                                tei-content:title-set($tei[1], 'mainTitle')[self::m:title], 
-                                $tei[1]//tei:titleStmt/tei:author[@role eq "translatorEng"] ! element translator { attribute uri { concat('http://purl.84000.co/resource/core/eft:', contributors:contributor-id(@ref)) }, normalize-space(text()) },
-                                $gloss/tei:term[@type eq 'definition'][descendant::text()[normalize-space()]] ! element definition { string-join(descendant::text() ! normalize-space(.), '') }
-                            }
-                        
-                    }
+                        element ref {
+                            for $bibl in $tei[1]/tei:teiHeader//tei:bibl
+                            let $toh := translation:toh($tei[1], $bibl/@key)
+                            order by $toh/m:base/text()
+                            return (
+                                text{ common:ws(3) }, 
+                                
+                                (: Toh number :)
+                                element toh {
+                                    $toh/@key,
+                                    $toh/m:base/text()
+                                },
+                                
+                                (: Glossary links :)
+                                $gloss ! ( text{ common:ws(3) }, element link { attribute href { translation:canonical-html($toh/@key, ()) || '#' || @xml:id } } )
+                                
+                            ),
+                            (: Titles :)
+                            tei-content:title-set($tei[1], 'mainTitle')[self::m:title] ! ( text{ common:ws(3) }, . ), 
+                            (: Authors :)
+                            $tei[1]//tei:titleStmt/tei:author[@role eq "translatorEng"] !  ( text{ common:ws(3) }, element translator { attribute uri { concat('http://purl.84000.co/resource/core/eft:', contributors:contributor-id(@ref)) }, normalize-space(text()) } ),
+                            (: Definition :)
+                            $gloss/tei:term[@type eq 'definition'][descendant::text()[normalize-space()]] !  ( text{ common:ws(3) }, element definition { string-join(descendant::text() ! normalize-space(.), '') } ),
+                            
+                            text{ common:ws(2) }
+                            
+                        }
+                    )
+                    
+                    ,
+                    text{ common:ws(1) }
+                    
+                }
                 
-        return (
-       
+    (: Save file with just the terms :)
+    let $glossary-combined := 
+        element { QName('http://read.84000.co/ns/1.0', 'glossary-combined') } {
+        
+            attribute created { current-dateTime() },
+            attribute app-version { $common:app-version },
+            attribute count-entites { count($entities) },
+            
             (: Terms sorted :)
             for $term in $terms
             order by $term/@sort-key
-            return $term
-        )
-    }
+            return ( text{ common:ws(1) } , $term )
+            ,
+            
+            text{ $common:chr-nl }
+        }
     
+    let $cache-put := common:cache-put($request-xml, $glossary-combined, $cache-key)
+    
+    return 
+        true()
+            
 };
 
-declare function glossary:spreadsheet-data($glossary-combined as element(m:glossary-combined)) as element(m:spreadsheet-data) {
+declare function glossary:spreadsheet-data($request-xml as element(m:request), $cache-key as xs:string) as element(m:spreadsheet-data) {
     
+    let $glossary-combined := common:cache-get($request-xml, $cache-key)//m:glossary-combined
+    where $glossary-combined
+    return
     element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
     
         attribute key { concat('84000-glossary-', format-dateTime(current-dateTime(), '[Y0001]-[M01]-[D01]'))},
@@ -684,30 +720,33 @@ declare function glossary:spreadsheet-data($glossary-combined as element(m:gloss
     
 };
 
-declare function glossary:combined-txt($glossary-combined as element(m:glossary-combined), $key as xs:string?) as text()* {
-
-    for $term at $position in $glossary-combined/m:term
-    where $term/m:tibetan[text()]
-    return (
-        
-        if($position gt 1) then text { '&#10;' } else (),
-        text { 
-            concat(
-                if($key eq 'wy') then $term/m:wylie/text() else $term/m:tibetan/text(), '&#9;',
-                if($term/m:type[text()]) then concat('Type: ', string-join($term/m:type, '; '), ' / ') else (),
-                if($term/m:translation[text()]) then concat('Translated: ', string-join($term/m:translation, '; '), ' / ') else (),
-                if($term/m:sanskrit[text()]) then concat('Sanskrit: ', string-join($term/m:sanskrit, '; '), ' / ') else (),
-                if($term/m:chinese[text()]) then concat('Chinese: ', string-join($term/m:chinese, '; '), ' / ') else (),
-                if($term/m:definition[text()]) then concat('Definition: ', string-join($term/m:definition, '; '), ' / ') else (),
-                if($term[@href]) then
-                    concat('Link: ', $term/@href/string())
-                else ()
-                (:concat('Tohs: ', string-join($term/m:ref/m:toh, '; '), ' / '),:)
-                (:concat('Translators: ', string-join($term/m:ref/m:translator, '; ')):)
-            )
-        }
-
-    )
+declare function glossary:combined-txt($request-xml as element(m:request), $cache-key as xs:string, $key as xs:string?) as text()* {
+    
+    let $glossary-combined := common:cache-get($request-xml, $cache-key)//m:glossary-combined
+    where $glossary-combined
+    return
+        for $term at $position in $glossary-combined/m:term
+        where $term/m:tibetan[text()]
+        return (
+            
+            if($position gt 1) then text { '&#10;' } else (),
+            text { 
+                concat(
+                    if($key eq 'wy') then $term/m:wylie/text() else $term/m:tibetan/text(), '&#9;',
+                    if($term/m:type[text()]) then concat('Type: ', string-join($term/m:type, '; '), ' / ') else (),
+                    if($term/m:translation[text()]) then concat('Translated: ', string-join($term/m:translation, '; '), ' / ') else (),
+                    if($term/m:sanskrit[text()]) then concat('Sanskrit: ', string-join($term/m:sanskrit, '; '), ' / ') else (),
+                    if($term/m:chinese[text()]) then concat('Chinese: ', string-join($term/m:chinese, '; '), ' / ') else (),
+                    if($term/m:definition[text()]) then concat('Definition: ', string-join($term/m:definition, '; '), ' / ') else (),
+                    if($term[@href]) then
+                        concat('Link: ', $term/@href/string())
+                    else ()
+                    (:concat('Tohs: ', string-join($term/m:ref/m:toh, '; '), ' / '),:)
+                    (:concat('Translators: ', string-join($term/m:ref/m:translator, '; ')):)
+                )
+            }
+    
+        )
 };
 
 declare function glossary:item-count($tei as element(tei:TEI)) as xs:integer {
@@ -1190,7 +1229,7 @@ declare function glossary:downloads() as element(m:downloads) {
     
         attribute resource-id { 'glossary-combined' },
         
-        for $type in ((:'xml',:) 'xlsx', 'txt', 'dict')
+        for $type in ('xml', 'xlsx', 'txt', 'dict')
         let $keys := if($type = ('txt', 'dict')) then ('bo', 'wy') else ('')
         for $key in $keys
         return
