@@ -562,7 +562,7 @@
                                 
                                 <xsl:variable name="loop-glossary-instance" select="key('entity-instance', $loop-glossary/@id, $root)[1]"/>
                                 <xsl:variable name="loop-glossary-entity" select="$loop-glossary-instance/parent::m:entity"/>
-                                <xsl:variable name="loop-glossary-entity-relations" select="$loop-glossary-entity/m:relation | /m:response/m:entities/m:related/m:entity[not(@xml:id = $loop-glossary-entity/m:relation/@id)]/m:relation[@id eq $loop-glossary-entity/@xml:id]"/>
+                                <xsl:variable name="loop-glossary-entity-relations" select="$loop-glossary-entity/m:relation | /m:response/m:entities/m:related/m:entity[not(@xml:id = $loop-glossary-entity/m:relation/@id)]/m:relation[@id eq $loop-glossary-entity/@xml:id][not(@predicate eq 'sameAs')]"/>
                                 
                                 <div>
                                     

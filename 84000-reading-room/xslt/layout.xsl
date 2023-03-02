@@ -275,4 +275,22 @@
         
     </xsl:template>
     
+    <xsl:template name="preview-child-list">
+        
+        <xsl:param name="list"/>
+        <xsl:param name="view-mode" as="element(m:view-mode)"/>
+        
+        <xsl:choose>
+            <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
+                <div class="preview-child-list">
+                    <xsl:sequence select="$list"/>
+                </div>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:sequence select="$list"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:template>
+    
 </xsl:stylesheet>

@@ -51,32 +51,32 @@ declare variable $glossary:attestation-types :=
     <attestation-types xmlns="http://read.84000.co/ns/1.0">
         <attestation-type id="AttestedSource" code="AS" legacy-id="sourceAttested">
             <label>Attested in source text</label>
-            <description>The term is attested in a Sanskrit witness of the source text.</description>
+            <description>This term is attested in the Sanskrit manuscript used as a source for this translation.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="AttestedOther" code="AO">
             <label>Attested in other text</label>
-            <description>The term is attested in other Sanskrit texts.</description>
+            <description>This term is attested in other Sanskrit manuscripts of the Kangyur or Tengyur.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="AttestedDictionary" code="AD">
             <label>Attested in dictionary</label>
-            <description>The term is plausibly attested as an equivalent to the given Tibetan term in dictionaries.</description>
+            <description>This term is attested in Tibetan-Sanskrit dictionaries.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="ReconstructedPhonetic" code="RP" legacy-id="transliterationReconstruction">
             <label>Reconstruction from Tibetan phonetic rendering</label>
-            <description>The term is reconstructed from the Tibetan where the Tibetan source text renders Sanskrit phonetically (i.e., names of people, plants, places, etc.)</description>
+            <description>This Sanskrit term is a reconstruction based on the Tibetan phonetic rendering of the term.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="ReconstructedSemantic" code="RS" legacy-id="semanticReconstruction">
             <label>Reconstruction from Tibetan semantic rendering</label>
-            <description>Used in exceptional cases where there is a strong reason for using a hypothetical reconstructed Sanskrit form based on the Tibetan translation.</description>
+            <description>This Sanskrit term is a reconstruction based on the semantics of the Tibetan translation.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="AttestedApproximate" code="AA">
             <label>Approximate attestation</label>
-            <description>Used when there is no attested Sanskrit source for a personal name but only approximate attested matches for the Sanskrit (e.g. the Tibetan name of a buddha in your text is attested in Sanskrit as the name of a bodhisattva in another text).</description>
+            <description>The attestation of this Sanskrit name is approximate. It is based on other names where Tibetan-Sanskrit relationship is attested in dictionaries or other manuscripts.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="AttestedUnspecified" code="AU" default="true">

@@ -604,7 +604,7 @@ img.logo-84000 {
     font-weight: bold;
     margin-bottom: .25em;
 }
-.glossary-item .footer ul > li {
+.glossary-item .footer ul.list-locations > li {
     font-size: .75em;
     padding-bottom: .5em;
     padding-right: .75em;

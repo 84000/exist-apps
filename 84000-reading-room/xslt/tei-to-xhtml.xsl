@@ -1642,52 +1642,58 @@
         <xsl:param name="translation-root" select="$root"/>
         
         <xsl:if test="$cached-locations">
-            <ul class="list-inline">
-                <xsl:for-each select="$cached-locations">
-                    <li>
-                        <a>
-                            
-                            <xsl:variable name="cached-location" select="."/>
-                            
-                            <xsl:variable name="target-element" as="element()?">
-                                <xsl:call-template name="target-element">
-                                    <xsl:with-param name="target-id" select="$cached-location/@id"/>
-                                    <xsl:with-param name="translation-root" select="$translation-root"/>
-                                </xsl:call-template>
-                            </xsl:variable>
-                            
-                            <xsl:choose>
-                                <xsl:when test="$target-element">
-                                    <xsl:call-template name="target-element-href">
-                                        <xsl:with-param name="target-element" select="$target-element"/>
-                                        <xsl:with-param name="mark-id" select="$glossary-id"/>
-                                    </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(), '#', $cached-location/@id)"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            
-                            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                <xsl:attribute name="data-location-id" select="$cached-location/@id"/>
-                            </xsl:if>
-                            
-                            <xsl:choose>
-                                <xsl:when test="$target-element">
-                                    <xsl:call-template name="target-element-label">
-                                        <xsl:with-param name="target-element" select="$target-element"/>
-                                    </xsl:call-template>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="position()"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            
-                        </a>
-                    </li>
-                </xsl:for-each>
-            </ul>
+            <xsl:call-template name="preview-child-list">
+                <xsl:with-param name="list">
+                    <ul class="list-inline list-locations">
+                        <xsl:for-each select="$cached-locations">
+                            <li>
+                                <a>
+                                    
+                                    <xsl:variable name="cached-location" select="."/>
+                                    
+                                    <xsl:variable name="target-element" as="element()?">
+                                        <xsl:call-template name="target-element">
+                                            <xsl:with-param name="target-id" select="$cached-location/@id"/>
+                                            <xsl:with-param name="translation-root" select="$translation-root"/>
+                                        </xsl:call-template>
+                                    </xsl:variable>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$target-element">
+                                            <xsl:call-template name="target-element-href">
+                                                <xsl:with-param name="target-element" select="$target-element"/>
+                                                <xsl:with-param name="mark-id" select="$glossary-id"/>
+                                            </xsl:call-template>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(), '#', $cached-location/@id)"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                        <xsl:attribute name="data-location-id" select="$cached-location/@id"/>
+                                    </xsl:if>
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$target-element">
+                                            <xsl:call-template name="target-element-label">
+                                                <xsl:with-param name="target-element" select="$target-element"/>
+                                            </xsl:call-template>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="position()"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                </a>
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:with-param>
+                <xsl:with-param name="view-mode" select="$view-mode"/>
+            </xsl:call-template>
         </xsl:if>
+        
     </xsl:template>
     
     <!-- Sections -->
@@ -2204,6 +2210,7 @@
                 </xsl:when>
                 
             </xsl:choose>
+        
         </xsl:if>
     </xsl:template>
     
