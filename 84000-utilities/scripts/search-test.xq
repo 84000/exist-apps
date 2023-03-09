@@ -45,8 +45,7 @@ declare function local:search-tests() as element(eft:search-test)* {
             element { if($hit[@expect eq 'hit']) then 'hit' else 'miss' } {
                 $hit/@*,
                 ft:highlight-field-matches($hit, map:get($local:lang-map, $hit/@xml:lang))/node()
-            }
-            ,
+            },
             
             for $miss in $misses
             return

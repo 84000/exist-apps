@@ -36,6 +36,8 @@
     <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
     <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
     
+    <xsl:variable name="count-milestones" select="count(/m:response/m:text-outline[@text-id eq $translation/@id]/m:pre-processed[@type eq 'milestones']/m:milestone)"/>
+    
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
         <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][string-join(text(), '') ! normalize-space(.)]]">
@@ -1522,29 +1524,54 @@
                             
                         </xsl:if>
                         
-                        <!-- Expressions -->
-                        <xsl:if test="$view-mode[not(@id eq 'pdf')]">
+                        <!-- Locations -->
+                        <xsl:if test="$view-mode[not(@client eq 'pdf')]">
                             <div class="footer hidden-print" role="navigation" aria-label="Locations of this term in the text">
                                 
                                 <xsl:variable name="count-locations" select="count($cached-locations)"/>
-                                <h4 class="heading">
-                                    <xsl:choose>
-                                        <xsl:when test="$count-locations gt 1">
-                                            <xsl:value-of select="concat(format-number($count-locations, '#,###'), ' passages contain this term:')"/>
-                                        </xsl:when>
-                                        <xsl:when test="$count-locations eq 1">
-                                            <xsl:value-of select="'1 passage contains this term:'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'No known locations for this term'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </h4>
                                 
-                                <xsl:call-template name="cached-locations">
-                                    <xsl:with-param name="cached-locations" select="$cached-locations"/>
-                                    <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
-                                </xsl:call-template>
+                                <xsl:choose>
+                                    <xsl:when test="$count-milestones ge 100 and $count-locations ge ($count-milestones div 6)">
+                                        
+                                        <h4 class="heading">
+                                            <xsl:value-of select="concat(format-number($count-locations, '#,###'), ' passages contain this term')"/>    
+                                        </h4>
+                                        
+                                        <p class="text-muted">
+                                            <xsl:value-of select="'Locations of terms are not listed if they occur in more than a sixth of the passages.'"/>
+                                        </p>
+                                        
+                                    </xsl:when>
+                                    <xsl:when test="$count-locations gt 1">
+                                        
+                                        <h4 class="heading">
+                                            <xsl:value-of select="concat(format-number($count-locations, '#,###'), ' passages contain this term:')"/>
+                                        </h4>
+                                        
+                                        <xsl:call-template name="cached-locations">
+                                            <xsl:with-param name="cached-locations" select="$cached-locations"/>
+                                            <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
+                                        </xsl:call-template>
+                                        
+                                    </xsl:when>
+                                    <xsl:when test="$count-locations eq 1">
+                                        
+                                        <h4 class="heading">
+                                            <xsl:value-of select="'1 passage contains this term:'"/>
+                                        </h4>
+                                        
+                                        <xsl:call-template name="cached-locations">
+                                            <xsl:with-param name="cached-locations" select="$cached-locations"/>
+                                            <xsl:with-param name="glossary-id" select="$glossary-item/@xml:id"/>
+                                        </xsl:call-template>
+                                        
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <p class="text-muted italic">
+                                            <xsl:value-of select="'No known locations for this term'"/>
+                                        </p>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                                 
                             </div>
                         </xsl:if>
@@ -1635,6 +1662,7 @@
         </xsl:if>
         
     </xsl:template>
+    
     <xsl:template name="cached-locations">
         
         <xsl:param name="cached-locations" as="element(m:location)*"/>
@@ -1643,52 +1671,100 @@
         
         <xsl:if test="$cached-locations">
             <xsl:call-template name="preview-child-list">
+                <xsl:with-param name="list-id" select="$glossary-id"/>
                 <xsl:with-param name="list">
-                    <ul class="list-inline list-locations">
+                    
+                    <xsl:variable name="target-elements" as="element()*">
                         <xsl:for-each select="$cached-locations">
-                            <li>
-                                <a>
-                                    
-                                    <xsl:variable name="cached-location" select="."/>
-                                    
-                                    <xsl:variable name="target-element" as="element()?">
-                                        <xsl:call-template name="target-element">
-                                            <xsl:with-param name="target-id" select="$cached-location/@id"/>
-                                            <xsl:with-param name="translation-root" select="$translation-root"/>
-                                        </xsl:call-template>
-                                    </xsl:variable>
-                                    
-                                    <xsl:choose>
-                                        <xsl:when test="$target-element">
+                            <xsl:call-template name="target-element">
+                                <xsl:with-param name="target-id" select="@id"/>
+                                <xsl:with-param name="translation-root" select="$translation-root"/>
+                            </xsl:call-template>
+                        </xsl:for-each>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="target-elements-count" select="count($target-elements)"/>
+                    
+                    <!-- Group target elements together if they are adjacent -->
+                    <xsl:variable name="group-start-indexes" as="xs:integer*">
+                        <xsl:for-each select="1 to $target-elements-count">
+                            <xsl:variable name="index" select="."/>
+                            <xsl:variable name="target-element" select="$target-elements[$index]" as="element()?"/>
+                            <xsl:variable name="preceding-target" select="$target-elements[$index - 1]" as="element()?"/>
+                            <xsl:if test="not($preceding-target) or not(local-name($target-element) eq local-name($preceding-target)) or not($preceding-target/@part-id eq $target-element/@part-id) or not($preceding-target/@index ! xs:integer(.) eq $target-element/@index ! (xs:integer(.) - 1))">
+                                <xsl:value-of select="$index"/>
+                            </xsl:if>
+                        </xsl:for-each>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="group-end-indexes" as="xs:integer*">
+                        <xsl:for-each select="1 to $target-elements-count">
+                            <xsl:variable name="index" select="."/>
+                            <xsl:variable name="target-element" select="$target-elements[$index]" as="element()?"/>
+                            <xsl:variable name="following-target" select="$target-elements[$index + 1]" as="element()?"/>
+                            <xsl:if test="not($following-target) or not(local-name($target-element) eq local-name($following-target)) or not($following-target/@part-id eq $target-element/@part-id) or not($following-target/@index ! xs:integer(.) eq $target-element/@index ! (xs:integer(.) + 1))">
+                                <xsl:value-of select="$index"/>
+                            </xsl:if>
+                        </xsl:for-each>
+                    </xsl:variable>
+                    
+                    <ul class="list-inline list-locations">
+                        <xsl:for-each select="$target-elements">
+                            
+                            <xsl:variable name="index" select="position()"/>
+                            <xsl:variable name="target-element" select="." as="element()?"/>
+                            
+                            <xsl:choose>
+                                <xsl:when test="$index = $group-start-indexes">
+                                    <li>
+                                        <a>
+                                            
                                             <xsl:call-template name="target-element-href">
                                                 <xsl:with-param name="target-element" select="$target-element"/>
                                                 <xsl:with-param name="mark-id" select="$glossary-id"/>
                                             </xsl:call-template>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="href" select="concat(m:view-mode-parameter((),'?'), m:archive-path-parameter(), '#', $cached-location/@id)"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    
-                                    <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                        <xsl:attribute name="data-location-id" select="$cached-location/@id"/>
-                                    </xsl:if>
-                                    
-                                    <xsl:choose>
-                                        <xsl:when test="$target-element">
+                                            
+                                            <xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                                <xsl:attribute name="data-location-id" select="$target-element/@id"/>
+                                            </xsl:if>
+                                            
                                             <xsl:call-template name="target-element-label">
                                                 <xsl:with-param name="target-element" select="$target-element"/>
                                             </xsl:call-template>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="position()"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    
-                                </a>
-                            </li>
+                                            
+                                            <!-- Find the end -->
+                                            <xsl:variable name="group-end-index-next" select="min($group-end-indexes[. ge $index])"/>
+                                            
+                                            <xsl:if test="$group-end-index-next ne $index">
+                                                <xsl:value-of select="concat('-', $target-elements[$group-end-index-next]/@index)"/>
+                                                <!--<xsl:call-template name="target-element-label">
+                                                    <xsl:with-param name="target-element" select="$target-elements[$group-end-index-next]"/>
+                                                </xsl:call-template>-->
+                                            </xsl:if>
+                                            
+                                        </a>
+                                    </li>
+                                </xsl:when>
+                                <!-- Retain for debugging
+                                <xsl:otherwise>
+                                    <li>
+                                        
+                                        <xsl:call-template name="target-element-href">
+                                            <xsl:with-param name="target-element" select="$target-element"/>
+                                            <xsl:with-param name="mark-id" select="$glossary-id"/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:call-template name="target-element-label">
+                                            <xsl:with-param name="target-element" select="$target-element"/>
+                                        </xsl:call-template>
+                                        
+                                    </li>
+                                </xsl:otherwise>-->
+                            </xsl:choose>
+                            
                         </xsl:for-each>
                     </ul>
+                    
                 </xsl:with-param>
                 <xsl:with-param name="view-mode" select="$view-mode"/>
             </xsl:call-template>
@@ -2881,7 +2957,7 @@
         <xsl:variable name="target" select="if($target) then $target else key('milestones-pre-processed', $target-id, $translation-root)[1]"/>
         <xsl:variable name="target" select="if($target) then $target else key('glossary-pre-processed', $target-id, $translation-root)[1]"/>
         
-        <xsl:sequence select="$target"/>
+        <xsl:copy-of select="$target"/>
         
     </xsl:template>
     
@@ -3724,7 +3800,7 @@
                         <!-- Validate all matches in the context -->
                         <!-- Get matches in context -->
                         <xsl:variable name="context" select="string-join($text-context ! replace(., '\s+', ' '), '')" as="xs:string?"/>
-                        <xsl:variable name="context-analyzed" select="analyze-string($context, $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                        <xsl:variable name="context-analyzed" select="$mark-regex ! analyze-string($context, ., 'i')" as="element(fn:analyze-string-result)?"/>
                         
                         <!--<span class="hidden" data-test-quote-id="{ $quote/@id }" data-test-quote-highlight="{ $highlight/@index }" data-mark-regex="{ $mark-regex }" data-context-matches="{count($context-analyzed/fn:match)}">
                             <xsl:sequence select="$context-analyzed"/>
@@ -3847,7 +3923,7 @@
                                 
                                 <!-- Get the number of matches in the preceding context -->
                                 <xsl:variable name="preceding-context" select="string-join(($text-context[position() lt $text-index]) ! replace(., '\s+', ' '), '')" as="xs:string?"/>
-                                <xsl:variable name="preceding-analyzed" select="analyze-string($preceding-context, $mark-regex, 'i')" as="element(fn:analyze-string-result)?"/>
+                                <xsl:variable name="preceding-analyzed" select="$mark-regex ! analyze-string($preceding-context, ., 'i')" as="element(fn:analyze-string-result)?"/>
                                 <xsl:variable name="preceding-context-occurrences-count" select="count($preceding-analyzed/fn:match)" as="xs:integer"/>
                                 
                                 <xsl:for-each select="$text-analyzed/*">

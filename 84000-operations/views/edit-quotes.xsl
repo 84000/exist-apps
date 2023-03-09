@@ -63,6 +63,15 @@
                             <xsl:value-of select="common:limit-str($request-resource-id, 100 - string-length($main-title-limited))"/>
                         </a>
                         
+                        <!--<small>
+                            <xsl:value-of select="' / '"/>
+                        </small>
+                        
+                        <a target="_blank" class="small underline" data-loading="Loading...">
+                            <xsl:attribute name="href" select="concat('/test-cases-quotes.xml?resource-ids=', $request-resource-id, '&amp;part=', $requested-part)"/>
+                            <xsl:value-of select="'Test cases'"/>
+                        </a>-->
+                        
                         <small>
                             <xsl:value-of select="' / '"/>
                         </small>

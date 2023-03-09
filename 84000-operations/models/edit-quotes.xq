@@ -53,7 +53,6 @@ let $text :=
         
     }
 
-
 let $quotes := translation:outline-cached($tei)/m:pre-processed[@type eq 'quotes']
 
 let $part-quote-refs := $text/m:part[@id eq 'translation']/m:part[@id eq $request/@part]//tei:ptr[@type eq 'quote-ref']/@xml:id

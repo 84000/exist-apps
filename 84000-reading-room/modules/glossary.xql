@@ -49,40 +49,58 @@ declare variable $glossary:view-modes :=
     
 declare variable $glossary:attestation-types :=
     <attestation-types xmlns="http://read.84000.co/ns/1.0">
-        <attestation-type id="AttestedSource" code="AS" legacy-id="sourceAttested">
+        <attestation-type id="attestedSource" code="AS" >
             <label>Attested in source text</label>
-            <description>This term is attested in the Sanskrit manuscript used as a source for this translation.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <description>This term is attested in the manuscript used as a source for this translation.</description>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Bo-Ltn"/>
+            <appliesToLang xml:lang="bo"/>
+            <appliesToLang xml:lang="zh"/>
+            <migrate id="sourceAttested"/>
         </attestation-type>
-        <attestation-type id="AttestedOther" code="AO">
+        <attestation-type id="attestedOther" code="AO">
             <label>Attested in other text</label>
-            <description>This term is attested in other Sanskrit manuscripts of the Kangyur or Tengyur.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <description>This term is attested in other manuscripts of the Kangyur or Tengyur.</description>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Bo-Ltn"/>
+            <appliesToLang xml:lang="bo"/>
+            <appliesToLang xml:lang="zh"/>
         </attestation-type>
-        <attestation-type id="AttestedDictionary" code="AD">
+        <attestation-type id="attestedDictionary" code="AD">
             <label>Attested in dictionary</label>
-            <description>This term is attested in Tibetan-Sanskrit dictionaries.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <description>This term is attested in widely trusted dictionaries.</description>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Bo-Ltn"/>
+            <appliesToLang xml:lang="bo"/>
+            <appliesToLang xml:lang="zh"/>
         </attestation-type>
-        <attestation-type id="ReconstructedPhonetic" code="RP" legacy-id="transliterationReconstruction">
-            <label>Reconstruction from Tibetan phonetic rendering</label>
-            <description>This Sanskrit term is a reconstruction based on the Tibetan phonetic rendering of the term.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
-        </attestation-type>
-        <attestation-type id="ReconstructedSemantic" code="RS" legacy-id="semanticReconstruction">
-            <label>Reconstruction from Tibetan semantic rendering</label>
-            <description>This Sanskrit term is a reconstruction based on the semantics of the Tibetan translation.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
-        </attestation-type>
-        <attestation-type id="AttestedApproximate" code="AA">
+        <attestation-type id="attestedApproximate" code="AA">
             <label>Approximate attestation</label>
-            <description>The attestation of this Sanskrit name is approximate. It is based on other names where Tibetan-Sanskrit relationship is attested in dictionaries or other manuscripts.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <description>The attestation of this name is approximate. It is based on other names where the transcription is attested in dictionaries or other manuscripts.</description>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Bo-Ltn"/>
+            <appliesToLang xml:lang="bo"/>
+            <appliesToLang xml:lang="zh"/>
         </attestation-type>
-        <attestation-type id="AttestedUnspecified" code="AU" default="true">
-            <label>Attestation Unspecified</label>
-            <description>Not yet attested</description>
+        <attestation-type id="reconstructedPhonetic" code="RP">
+            <label>Reconstruction from Tibetan phonetic rendering</label>
+            <description>This term is a reconstruction based on the Tibetan phonetic rendering of the term.</description>
+            <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
+            <migrate id="transliterationReconstruction"/>
+        </attestation-type>
+        <attestation-type id="reconstructedSemantic" code="RS">
+            <label>Reconstruction from Tibetan semantic rendering</label>
+            <description>This term is a reconstruction based on the semantics of the Tibetan translation.</description>
+            <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
+            <migrate id="semanticReconstruction"/>
+        </attestation-type>
+        <attestation-type id="sourceUnspecified" code="SU" default="true">
+            <label>Source Unspecified</label>
+            <description>This term has been supplied from an unspecified source, which most often is a widely trusted dictionary.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Bo-Ltn"/>
+            <appliesToLang xml:lang="bo"/>
+            <appliesToLang xml:lang="zh"/>
         </attestation-type>
     </attestation-types>;
 

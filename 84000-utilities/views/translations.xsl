@@ -149,35 +149,6 @@
                             <button type="submit" class="btn btn-danger btn-sml">Get all updated placeholder files</button>                            
                         </form>
                     </xsl:when>
-                    
-                    <!--<xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client']">
-                        
-                        <form method="post" class="form-horizontal sml-margin bottom">
-                            
-                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
-                            <xsl:attribute name="data-loading" select="'Getting shared data files...'"/>
-                            
-                            <p class="text-muted italic small">
-                                <xsl:value-of select="'Update this server with the latest shared data files e.g. entities'"/>
-                            </p>
-                            
-                            <div class="form-group">
-                                
-                                <div class="col-sm-2">
-                                    <input type="password" name="pull-data-password" class="form-control" id="pull-data-password" placeholder="Admin password"/>
-                                </div>
-                                
-                                <div class="col-sm-4">
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <xsl:value-of select="'Get updates to shared data'"/>
-                                    </button>
-                                </div>
-                                
-                            </div>
-                            
-                        </form>
-                        
-                    </xsl:when>-->
                 
                 </xsl:choose>
                 
@@ -722,10 +693,6 @@
                                                         
                                                         <div class="form-group">
                                                             
-                                                            <!--<div class="col-sm-2">
-                                                                <input type="password" name="pull-data-password" class="form-control" id="pull-data-password" placeholder="Admin password"/>
-                                                            </div>-->
-                                                            
                                                             <div class="col-sm-2">
                                                                 <button type="submit" class="btn btn-danger btn-sm btn-block">
                                                                     <xsl:choose>
@@ -738,12 +705,6 @@
                                                                     </xsl:choose>
                                                                 </button>
                                                             </div>
-                                                            
-                                                            <!--<div class="col-sm-6">
-                                                                <span class="text-muted italic small">
-                                                                    <xsl:value-of select="'The admin password is not required, but if provided it will trigger the simultaneous deployment of common data files e.g. shared entities'"/>
-                                                                </span>
-                                                            </div>-->
                                                             
                                                         </div>
                                                         
@@ -936,7 +897,7 @@
                                         <xsl:value-of select="'Password incorrect'"/>
                                     </h2>
                                     <p>
-                                        <xsl:value-of select="'The admin password provided was incorrect'"/>
+                                        <xsl:value-of select="'The deploy password provided was incorrect'"/>
                                     </p>
                                 </div>
                                 

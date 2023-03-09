@@ -14,6 +14,7 @@ declare function utilities:request(){
     {
         if(request:exists()) then (
             for $request-parameter in common:sort-trailing-number-in-string(request:get-parameter-names(), '-')
+            where not($request-parameter eq 'password')
             return
                 <parameter name="{ $request-parameter }">{ request:get-parameter($request-parameter, '') }</parameter>
             ,

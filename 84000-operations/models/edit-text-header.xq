@@ -12,7 +12,6 @@ import module namespace contributors="http://read.84000.co/contributors" at "../
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 
-import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
@@ -32,8 +31,6 @@ let $tei :=
         tei-content:tei($request-id, 'translation')
 
 let $text-id := tei-content:id($tei)
-let $translation-status := translation-status:texts($text-id)
-let $current-version-str := $translation-status/@version ! string()
 
 (: Delete a submission :)
 (: The parameter delete-submission also triggers translation-status:update :)
@@ -73,20 +70,8 @@ let $updated :=
         else ()
     }
 
-(: If it's a new version :)
-let $tei-version-str := tei-content:version-str($tei)
-let $is-new-version := not(tei-content:is-current-version($tei-version-str, $current-version-str))
+let $translation-status := tei-content:translation-status($tei)
 let $translation-status-group := tei-content:translation-status-group($tei)
-
-(: Commit new version to GitHub :)
-let $commit-version := 
-    if($post-id and $store:conf and $is-new-version) then (
-        (: Push the TEI file :)
-        deploy:push('data-tei', (), concat($text-id, ' / ', $tei-version-str), tei-content:document-url($tei))(:,
-        (\: Also push entities file :\)
-        deploy:push('data-operations', (), concat($text-id, ' / ', $tei-version-str), concat($common:data-path, '/operations/entities.xml')):)
-    )
-    else ()
 
 (: Generate new versions of associated files :)
 let $generate-files :=
@@ -111,9 +96,9 @@ let $text :=
         attribute id { $text-id },
         attribute document-url { tei-content:document-url($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
-        attribute status { tei-content:translation-status($tei) },
+        attribute status { $translation-status },
         attribute status-group { $translation-status-group },
-        attribute tei-version { $tei-version-str },
+        attribute tei-version { tei-content:version-str($tei) },
         
         for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
         return (
@@ -138,7 +123,7 @@ let $translation-status :=
         translation-status:texts($text-id, true())
     }
 
-let $text-statuses-selected := tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation')
+let $text-statuses-selected := tei-content:text-statuses-selected($translation-status, 'translation')
 let $persons := contributors:persons(false(), false())
 let $teams := contributors:teams(true(), false(), false())
 let $glossary-cache := glossary:glossary-cache($tei, (), false())

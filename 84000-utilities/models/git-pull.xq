@@ -17,7 +17,6 @@ return
             utilities:request(),
             if(common:user-in-group('dba') and $repo gt '') then
                 deploy:pull($repo, $password)
-            else
-                ()
+            else ()
         )
     )

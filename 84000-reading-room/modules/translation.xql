@@ -1785,6 +1785,7 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
             (: Loop through refs :)
             for $part in  $tei//tei:div[@type eq 'translation']/tei:div[@xml:id]
             for $quote-ref in $part//tei:ptr[@target eq $source-location-id-target]
+            where $quote-ref[@type eq 'quote-ref']
             return 
                 local:quote($quote-ref, $part/@xml:id, $quote-label, $this-toh, $this-text-type, $this-text-title, $source-location, $source-part-id, $source-text-toh, $source-text-type, $source-text-shortcode)
 };
@@ -1841,7 +1842,7 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                 for $quoted-text in $quoted-texts
                 return
                 
-                    let $ellipsis-texts := $quoted-text ! tokenize(., '…') ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.,!?—;:’"”“]\s*)+', '') ! replace(., '(\s*[\.,!?—;:’"”“])+$', '') ! .[not(. = $translation:stopwords)]
+                    let $ellipsis-texts := $quoted-text ! tokenize(., '…') ! normalize-space(.) ! lower-case(.) ! replace(., '^([\.\(\),!?—;:’"”“]\s*)+', '') ! replace(., '(\s*[\.\(\),!?—;:’"”“])+$', '') ! .[not(. = $translation:stopwords)]
                     let $count-ellipsis-texts := count($ellipsis-texts)
                     
                     for $ellipsis-text at $index in $ellipsis-texts

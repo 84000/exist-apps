@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
@@ -43,7 +43,7 @@
                     <label>Push updated files to the Git repository</label>
                 </tab>
             </xsl:if>
-            <xsl:if test="$environment/m:git-config/m:pull/m:repo and /m:response/m:request/m:authenticated-user/m:group[@name eq 'dba']">
+            <xsl:if test="$environment/m:git-config/m:pull/m:repo and /m:response/m:request/m:authenticated-user/m:group[@name eq 'git-push']">
                 <tab page="git-pull.html" model="utilities/git-pull">
                     <label>Pull latest files from the Git repository</label>
                 </tab>
@@ -185,6 +185,57 @@
                 </button>
             </div>
         </div>
+        
+    </xsl:template>
+    
+    <xsl:template name="exec-output">
+        
+        <xsl:param name="output"/>
+        
+        <xsl:for-each select="$output">
+            <xsl:choose>
+                <xsl:when test="self::execution">
+                    <strong>
+                        <xsl:value-of select="concat($environment/m:label, '$ ', commandline/text())"/>
+                    </strong>
+                    <br/>
+                    <xsl:for-each select="stdout/line">
+                        <xsl:value-of select="concat('  ', text())"/>
+                        <br/>
+                    </xsl:for-each>
+                </xsl:when>
+                <xsl:when test="self::xf:sync">
+                    <strong>
+                        <xsl:value-of select="concat('Sync: ', @collection)"/>
+                    </strong>
+                    <br/>
+                    <xsl:choose>
+                        <xsl:when test="xf:update">
+                            <xsl:for-each select="xf:update">
+                                <xsl:value-of select="concat('Updated: ', @name)"/>
+                                <br/>
+                            </xsl:for-each>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'No updates'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:when>
+                <xsl:when test="self::m:debug">
+                    <xsl:if test="m:command">
+                        <strong>
+                            <xsl:value-of select="concat($environment/m:label, '$ ', m:command)"/>
+                        </strong>
+                        <br/>
+                    </xsl:if>
+                    <xsl:for-each select="m:output">
+                        <xsl:value-of select="text()"/>
+                        <br/>
+                    </xsl:for-each>
+                </xsl:when>
+            </xsl:choose>
+            <hr/>
+        </xsl:for-each>
         
     </xsl:template>
     

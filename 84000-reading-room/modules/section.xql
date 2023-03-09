@@ -127,6 +127,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                 for $resource-id in $text-tei//tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $id]]/@key
                 return
                     section:text($text-tei, $resource-id, false())
+                    
         else ()
     
     (: Get stats on progress :)

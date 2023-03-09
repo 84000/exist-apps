@@ -277,13 +277,20 @@
     
     <xsl:template name="preview-child-list">
         
+        <xsl:param name="list-id" as="xs:string"/>
         <xsl:param name="list"/>
         <xsl:param name="view-mode" as="element(m:view-mode)"/>
         
         <xsl:choose>
             <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
                 <div class="preview-child-list">
+                    
                     <xsl:sequence select="$list"/>
+                    
+                    <!--<a href="#preview-child-list-{ $list-id }" class="small preview-child-list-clear">
+                        <xsl:value-of select="'Show all...'"/>
+                    </a>-->
+                    
                 </div>
             </xsl:when>
             <xsl:otherwise>

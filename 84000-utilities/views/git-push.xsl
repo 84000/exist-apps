@@ -6,8 +6,10 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="/m:response/m:environment"/>
+        <xsl:variable name="environment" select="m:environment"/>
         <xsl:variable name="request-repo" select="m:request/m:parameter[@name eq 'repo']" as="xs:string?"/>
+        <xsl:variable name="user-groups" select="m:request/m:authenticated-user/m:group/@name" as="xs:string*"/>
+        <xsl:variable name="user-repos" select="$environment/m:git-config/m:push/m:repo[not(@group) or @group = $user-groups]"/>
         
         <xsl:variable name="content">
             
@@ -24,7 +26,7 @@
                             </p>
                             <div>
                                 <ul class="list-inline inline-dots">
-                                    <xsl:for-each-group select="$environment/m:git-config/m:push/m:repo" group-by="@url">
+                                    <xsl:for-each-group select="$user-repos" group-by="@url">
                                         <li>
                                             <a target="_blank" class="alert-link nowrap">
                                                 <xsl:attribute name="href" select="concat(@url, '/commits/master')"/>
@@ -36,7 +38,7 @@
                             </div>
                         </div>
                         
-                        <form action="/git-push.html" method="post" class="form-horizontal">
+                        <form action="/git-push.html" method="post" class="form-horizontal" data-loading="Loading...">
                             
                             <div class="form-group">
                                 <label for="repo" class="col-sm-3 control-label">
@@ -44,7 +46,7 @@
                                 </label>
                                 <div class="col-sm-9">
                                     <select name="repo" id="repo" class="form-control">
-                                        <xsl:for-each select="$environment/m:git-config/m:push/m:repo">
+                                        <xsl:for-each select="$user-repos">
                                             <option>
                                                 <xsl:attribute name="value" select="@id"/>
                                                 <xsl:if test="compare(@id, $request-repo) eq 0">
@@ -69,7 +71,7 @@
                             
                             <div class="form-group">
                                 <label for="password" class="col-sm-3 control-label">
-                                    <xsl:value-of select="'Admin password'"/>
+                                    <xsl:value-of select="'Deploy password'"/>
                                 </label>
                                 <div class="col-sm-3">
                                     <input type="password" name="password" id="password" value="" maxlength="20" class="form-control" autocomplete="off"/>
@@ -84,38 +86,9 @@
                         </form>
                         
                         <div class="well well-sm well-code top-margin small monospace">
-                            <xsl:for-each select="//execution[commandline] | //xf:sync">
-                                <xsl:choose>
-                                    <xsl:when test="self::execution">
-                                        <strong>
-                                            <xsl:value-of select="concat($environment/m:label, '$ ', commandline/text())"/>
-                                        </strong>
-                                        <br/>
-                                        <xsl:for-each select="stdout/line">
-                                            <xsl:value-of select="concat('  ', text())"/>
-                                            <br/>
-                                        </xsl:for-each>
-                                    </xsl:when>
-                                    <xsl:when test="self::xf:sync">
-                                        <strong>
-                                            <xsl:value-of select="concat('Sync: ', @collection)"/>
-                                        </strong>
-                                        <br/>
-                                        <xsl:choose>
-                                            <xsl:when test="xf:update">
-                                                <xsl:for-each select="xf:update">
-                                                    <xsl:value-of select="concat('Updated: ', @name)"/>
-                                                    <br/>
-                                                </xsl:for-each>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="'No updates'"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:when>
-                                </xsl:choose>
-                                <hr/>
-                            </xsl:for-each>
+                            <xsl:call-template name="exec-output">
+                                <xsl:with-param name="output" select="m:result/m:push/execution[commandline] | m:result/xf:sync | m:result/m:debug"/>
+                            </xsl:call-template>
                             <strong>
                                 <xsl:value-of select="concat($environment/m:label, '$ ...')"/>
                             </strong>

@@ -11,7 +11,9 @@ import module namespace translation = "http://read.84000.co/translation" at "../
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace knowledgebase = "http://read.84000.co/knowledgebase" at "../../84000-reading-room/modules/knowledgebase.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
+
 import module namespace store = "http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
+import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 
 import module namespace functx = "http://www.functx.com";
 
@@ -85,7 +87,7 @@ declare function local:add-note($tei as element(tei:TEI), $update as xs:string, 
 declare function update-tei:publication-status($tei as element(tei:TEI)) as element()* {
     
     let $request-parameter-names := request:get-parameter-names()
-    
+
     where not(tei-content:locked-by-user($tei) gt '')
     return
         (: exist:batch-transaction should defer triggers until all updates are made :)
@@ -96,62 +98,62 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
             (: publicationStmt :)
             (: Do this first to establish if there were updates, then we can force a version increment if there were :)
             let $do-publication-statement-update :=
-            
-            if ($request-parameter-names = 'publication-date' and $request-parameter-names = 'translation-status') then
-                
-                let $existing-value := $parent/tei:publicationStmt
-                let $insert-following := $parent/tei:editionStmt
-                
-                (: Publication date :)
-                let $request-publication-date := request:get-parameter('publication-date', '')
-                
-                (: Translation status :)
-                let $request-status := request:get-parameter('translation-status', '')
-                (: Force zero to '' :)
-                let $request-status :=
-                if ($request-status eq '0') then
-                    ''
-                else
-                    $request-status
-                
-                let $new-value :=
-                element {QName("http://www.tei-c.org/ns/1.0", "publicationStmt")} {
+                if ($request-parameter-names = 'publication-date' and $request-parameter-names = 'translation-status') then
                     
-                    (: Set the status :)
-                    attribute {'status'} { $request-status },
+                    let $existing-value := $parent/tei:publicationStmt
+                    let $insert-following := $parent/tei:editionStmt
                     
-                    (: Copy any other attributes :)
-                    $existing-value/@*[not(name(.) eq 'status')],
+                    (: Publication date :)
+                    let $request-publication-date := request:get-parameter('publication-date', '')
                     
-                    (: Copy any other nodes :)
-                    $existing-value/*[not(self::tei:date)],
+                    (: Translation status :)
+                    let $request-status := request:get-parameter('translation-status', '')
+                    (: Force zero to '' :)
+                    let $request-status :=
+                    if ($request-status eq '0') then
+                        ''
+                    else
+                        $request-status
                     
-                    (: Set the date :)
-                    element {QName("http://www.tei-c.org/ns/1.0", "date")} {
-                        text { $request-publication-date }
-                    }
+                    let $new-value :=
+                        element {QName("http://www.tei-c.org/ns/1.0", "publicationStmt")} {
+                            
+                            (: Set the status :)
+                            attribute {'status'} { $request-status },
+                            
+                            (: Copy any other attributes :)
+                            $existing-value/@*[not(name(.) eq 'status')],
+                            
+                            (: Copy any other nodes :)
+                            $existing-value/*[not(self::tei:date)],
+                            
+                            (: Set the date :)
+                            element {QName("http://www.tei-c.org/ns/1.0", "date")} {
+                                text { $request-publication-date }
+                            }
+                            
+                        }
                     
-                }
-                
-                let $existing-status := $existing-value/@status/string()
-                let $existing-publication-date := $existing-value/tei:date/string()
-                    
-                where $parent and ($request-status ne $existing-status or $request-publication-date ne $existing-publication-date)
-                return
-                    
-                    let $do-update := common:update('publication-statement', $existing-value, $new-value, $parent, $insert-following)
-                    
-                    return (
+                    let $existing-status := $existing-value/@status/string()
+                    let $existing-publication-date := $existing-value/tei:date/string()
                         
-                        $do-update,
+                    where $parent and ($request-status ne $existing-status or $request-publication-date ne $existing-publication-date)
+                    return
                         
-                        (: Add the note - if it's a status update :)
-                        if ($do-update[self::m:updated] and $request-status ne $existing-status) then
-                            local:add-note($tei, 'translation-status', $request-status, $request-status)
-                        else ()
+                        let $do-update := common:update('publication-statement', $existing-value, $new-value, $parent, $insert-following)
                         
-                    )
-            else ()
+                        return (
+                            
+                            $do-update,
+                            
+                            (: Add the note - if it's a status update :)
+                            if ($do-update[self::m:updated] and $request-status ne $existing-status) then
+                                local:add-note($tei, 'translation-status', $request-status, $request-status)
+                            else ()
+                            
+                        )
+                        
+                else ()
             
             (: editionStmt :)
             (: Do this second and force a version update if there was a change to the publicationStmt :)
@@ -191,24 +193,27 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
             let $new-is-current-version := tei-content:is-current-version($existing-version-number-str, $version-number-str)
             
             let $existing-version-date := $existing-value/tei:date/string()
-                
+            
             where $parent and (not($new-is-current-version) or $request-version-date ne $existing-version-date)
             return
+                
+                let $text-id := tei-content:id($tei)
+                let $document-url := tei-content:document-url($tei)
                 
                 let $do-update := common:update('text-version', $existing-value, $new-value, $parent, $insert-following)
                 
                 let $update-notes := request:get-parameter('update-notes', '')
                 let $update-notes :=
-                if ($update-notes eq '') then
-                    if (not($version-number-str eq $request-version-number-str)) then
-                        (: It's a forced update :)
-                        'Auto (update-publication-status)'
+                    if ($update-notes eq '') then
+                        if (not($version-number-str eq $request-version-number-str)) then
+                            (: It's a forced update :)
+                            'Auto (update-publication-status)'
+                        else
+                            (: It's a requested update :)
+                            $request-version-number-str
                     else
-                        (: It's a requested update :)
-                        $request-version-number-str
-                else
-                    (: The user defined a note :)
-                    $update-notes
+                        (: The user defined a note :)
+                        $update-notes
                 
                 return (
                     
@@ -216,8 +221,14 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
                     $do-update,
                     
                     (: Add the note :)
-                    if ($do-update[self::m:updated]) then
+                    if ($do-update[self::m:updated]) then 
                         local:add-note($tei, 'text-version', $version-number-str, $update-notes)
+                    else ()
+                    ,
+                    
+                    (: Push to Github :)
+                    if($store:conf and not($new-is-current-version)) then 
+                        deploy:push('data-tei', (), concat($text-id, ' / ',  $version-number-str), $document-url)
                     else ()
                     
                 )

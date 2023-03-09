@@ -225,52 +225,66 @@
                             <!-- Alphabet pills / search pill -->
                             <xsl:if test="m:request/m:term-langs/m:lang[@id eq $active-tab]">
                                 
-                                <div class="tabs-container-center">
-                                    <ul class="nav nav-pills" role="tablist" id="nav-letters">
+                                <div class="row">
+                                    <div>
                                         
-                                        <xsl:variable name="alphabet" select="m:request/m:alphabet"/>
-                                        <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', $selected-term-lang/@id), $selected-type ! concat('term-type[]=', ./@id), m:view-mode-parameter((),()))"/>
+                                        <xsl:choose>
+                                            <xsl:when test="$selected-term-lang/@id eq 'Sa-Ltn'">
+                                                <xsl:attribute name="class" select="'col-md-offset-2 col-md-8'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="class" select="'col-sm-12'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                         
-                                        <!-- Letter options -->
-                                        <xsl:for-each select="$alphabet/m:letter">
-                                            
-                                            <li role="presentation" class="letter">
+                                        <div class="tabs-container-center">
+                                            <ul class="nav nav-pills" role="tablist" id="nav-letters">
                                                 
-                                                <xsl:if test="@selected">
-                                                    <xsl:attribute name="class" select="'active letter'"/>
-                                                </xsl:if>
+                                                <xsl:variable name="alphabet" select="m:request/m:alphabet"/>
+                                                <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', $selected-term-lang/@id), $selected-type ! concat('term-type[]=', ./@id), m:view-mode-parameter((),()))"/>
                                                 
-                                                <a>
+                                                <!-- Letter options -->
+                                                <xsl:for-each select="$alphabet/m:letter">
                                                     
-                                                    <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?letter=', @index), $internal-link-attrs, '', $root/m:response/@lang)"/>
-                                                    <xsl:attribute name="title" select="concat('Filter by ', text())"/>
-                                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                    <li role="presentation" class="letter">
+                                                        
+                                                        <xsl:if test="@selected">
+                                                            <xsl:attribute name="class" select="'active letter'"/>
+                                                        </xsl:if>
+                                                        
+                                                        <a>
+                                                            
+                                                            <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?letter=', @index), $internal-link-attrs, '', $root/m:response/@lang)"/>
+                                                            <xsl:attribute name="title" select="concat('Filter by ', text())"/>
+                                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                            
+                                                            <div>
+                                                                <xsl:call-template name="class-attribute">
+                                                                    <xsl:with-param name="lang" select="$alphabet/@xml:lang"/>
+                                                                    <xsl:with-param name="html-classes">
+                                                                        <xsl:if test="$alphabet/@xml:lang eq 'en'">
+                                                                            <xsl:value-of select="'uppercase'"/>
+                                                                        </xsl:if>
+                                                                    </xsl:with-param>
+                                                                </xsl:call-template>
+                                                                <xsl:value-of select="text()"/>
+                                                            </div>
+                                                            
+                                                            <xsl:if test="@wylie ! normalize-space(.)">
+                                                                <br/>
+                                                                <div class="small text-muted">
+                                                                    <xsl:value-of select="normalize-space(@wylie)"/>
+                                                                </div>
+                                                            </xsl:if>
+                                                            
+                                                        </a>
+                                                    </li>
                                                     
-                                                    <div>
-                                                        <xsl:call-template name="class-attribute">
-                                                            <xsl:with-param name="lang" select="$alphabet/@xml:lang"/>
-                                                            <xsl:with-param name="html-classes">
-                                                                <xsl:if test="$alphabet/@xml:lang eq 'en'">
-                                                                    <xsl:value-of select="'uppercase'"/>
-                                                                </xsl:if>
-                                                            </xsl:with-param>
-                                                        </xsl:call-template>
-                                                        <xsl:value-of select="text()"/>
-                                                    </div>
-                                                    
-                                                    <xsl:if test="@wylie ! normalize-space(.)">
-                                                        <br/>
-                                                        <div class="small text-muted">
-                                                            <xsl:value-of select="normalize-space(@wylie)"/>
-                                                        </div>
-                                                    </xsl:if>
-                                                    
-                                                </a>
-                                            </li>
-                                            
-                                        </xsl:for-each>
-                                        
-                                    </ul>
+                                                </xsl:for-each>
+                                                
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                             </xsl:if>
