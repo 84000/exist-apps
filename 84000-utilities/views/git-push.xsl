@@ -71,7 +71,7 @@
                             
                             <div class="form-group">
                                 <label for="password" class="col-sm-3 control-label">
-                                    <xsl:value-of select="'Deploy password'"/>
+                                    <xsl:value-of select="'Deployment password'"/>
                                 </label>
                                 <div class="col-sm-3">
                                     <input type="password" name="password" id="password" value="" maxlength="20" class="form-control" autocomplete="off"/>

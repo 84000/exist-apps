@@ -30,10 +30,13 @@ let $texts-status :=
     else ()
 
 (: Pull operations data :)
-let $pull-data-password := request:get-parameter('pull-data-password', '')
-let $pull-operations-data :=
-    if($pull-data-password gt '') then
-        deploy:pull('data-operations', $pull-data-password)
+let $pull-data-operations :=
+    if($store-conf[@type eq 'client'] and request:get-parameter('form-action', '') eq 'pull-data-operations') then
+        deploy:pull('data-operations', request:get-parameter('deploy-password', ''))
+    
+    else if($store-conf[@type eq 'master'] and request:get-parameter('form-action', '') eq 'push-data-operations') then
+        deploy:push('data-operations', request:get-parameter('deploy-password', ''), (), ())
+    
     else ()
 
 (: Store a file if requested :)
@@ -119,6 +122,6 @@ return
             $translations-master,
             tei-content:text-statuses-sorted('translation'),
             $store-file,
-            $pull-operations-data
+            $pull-data-operations
         )
     )

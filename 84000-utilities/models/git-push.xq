@@ -16,7 +16,7 @@ return
         'utilities',
         (
             utilities:request(),
-            if(common:user-in-group('git-push') and $repo gt '') then
+            if(common:user-in-group('git-push') and $repo gt '' and $password gt '') then
                 deploy:push($repo, $password, $message, ())
             else ()
         )

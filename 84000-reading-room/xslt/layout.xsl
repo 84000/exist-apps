@@ -283,11 +283,11 @@
         
         <xsl:choose>
             <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
-                <div class="preview-child-list">
+                <div data-preview-child-list-rows="2">
                     
                     <xsl:sequence select="$list"/>
                     
-                    <!--<a href="#preview-child-list-{ $list-id }" class="small preview-child-list-clear">
+                    <!--<a href="#{ $list-id }" class="small preview-child-list-clear">
                         <xsl:value-of select="'Show all...'"/>
                     </a>-->
                     

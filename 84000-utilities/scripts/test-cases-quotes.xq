@@ -27,8 +27,8 @@ declare function local:source-content($elements as node()*) {
         }
 };
 
-let $resource-id := request:get-parameter('resource-id', '')
-let $part-id := request:get-parameter('part', '')
+let $resource-id := 'UT23703-093-001'
+let $part-id := 'UT23703-093-001-section-1'
 
 let $tei := tei-content:tei($resource-id, 'translation')
 let $source := tei-content:source($tei, $resource-id)

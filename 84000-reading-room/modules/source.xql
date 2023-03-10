@@ -193,8 +193,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
                 $preceding-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $preceding-milestone-n]
                 | $preceding-page/node()[preceding-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) ge $preceding-milestone-n]] 
             }
-        else
-            ()
+        else ()
     
     let $trailing-paragraph := 
         if($add-context) then
@@ -202,8 +201,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
                 $trailing-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $trailing-milestone-n]
                 | $trailing-page/node()[following-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) le $trailing-milestone-n]] 
             }
-        else
-            ()
+        else ()
     
     return 
         element { QName('http://read.84000.co/ns/1.0','page') }  {

@@ -58,8 +58,7 @@ let $ref-resource-index :=
 let $ref-sort-index := 
     if($ref-resource-index gt 0) then
         translation:folio-sort-index($tei, $request/@resource-id, $ref-resource-index)
-    else
-        0
+    else 0
 
 let $source-text := source:etext-page($tei-location, $ref-sort-index, true(), tokenize($request/@highlight, ','))
 let $translation-text := translation:folio-content($tei, $request/@resource-id, $ref-resource-index)

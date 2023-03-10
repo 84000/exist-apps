@@ -149,6 +149,72 @@
                             <button type="submit" class="btn btn-danger btn-sml">Get all updated placeholder files</button>                            
                         </form>
                     </xsl:when>
+                    
+                    <xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client'] and m:request/m:authenticated-user/m:group[@name eq 'git-push']">
+                        
+                        <form method="post" class="form-horizontal sml-margin bottom">
+                            
+                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
+                            <xsl:attribute name="data-loading" select="'Getting shared data files...'"/>
+                            
+                            <input type="hidden" name="form-action" value="pull-data-operations"/>
+                            
+                            <p class="text-muted italic small">
+                                <xsl:value-of select="'Update this server with the latest shared data files e.g. entities, sponsorship, contributors...'"/>
+                            </p>
+                            
+                            <div class="form-group">
+                                
+                                <div class="col-sm-2">
+                                    <input type="password" name="deploy-password" class="form-control" id="deploy-password" placeholder="Deployment password"/>
+                                </div>
+                                
+                                <div class="col-sm-4">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <xsl:value-of select="'Get updates to shared data'"/>
+                                    </button>
+                                </div>
+                                
+                            </div>
+                            
+                        </form>
+                        
+                        <hr/>
+                        
+                    </xsl:when>
+                    
+                    <xsl:when test="$page-filter eq '1' and $environment/m:store-conf[@type eq 'master'] and m:request/m:authenticated-user/m:group[@name eq 'git-push']">
+                        
+                        <form method="post" class="form-horizontal sml-margin bottom">
+                            
+                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
+                            <xsl:attribute name="data-loading" select="'Pushing shared data files...'"/>
+                            
+                            <input type="hidden" name="form-action" value="push-data-operations"/>
+                            
+                            <p class="text-muted italic small">
+                                <xsl:value-of select="'Publish the latest shared data files e.g. entities, sponsorship, contributors...'"/>
+                            </p>
+                            
+                            <div class="form-group">
+                                
+                                <div class="col-sm-2">
+                                    <input type="password" name="deploy-password" class="form-control" id="deploy-password" placeholder="Deployment password"/>
+                                </div>
+                                
+                                <div class="col-sm-4">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <xsl:value-of select="'Publish updates to shared data'"/>
+                                    </button>
+                                </div>
+                                
+                            </div>
+                            
+                        </form>
+                        
+                        <hr/>
+                        
+                    </xsl:when>
                 
                 </xsl:choose>
                 

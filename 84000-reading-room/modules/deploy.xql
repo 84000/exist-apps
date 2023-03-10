@@ -81,6 +81,8 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
     
     where $repo and $repo-group-user
     return
+    
+        let $log := util:log('info', concat('deploy-push: ', $repo-id))
         
         let $exist-options := deploy:exist-options()
         
@@ -178,7 +180,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             
         },
         
-        util:log('info', concat('deploy-push: ', $repo-id))
+        util:log('info', 'deploy-push: completed')
         
     )
 };

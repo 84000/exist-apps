@@ -1373,8 +1373,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
                 attribute index-in-resource {$index-in-resource},
                 if ($ref[@type = ('volume')]) then
                     attribute sort-volume {replace($ref/@cRef, '\D', '')}
-                else
-                    ()
+                else ()
                 ,
                 $ref/node()
             }
@@ -1390,18 +1389,16 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
             let $preceding-volume-ref := $volume-refs[@index-in-resource ! xs:integer(.) eq $preceding-volume-ref-index]
             let $cref-tokenized := tokenize($ref/@cRef, '\.')
                 order by
-                if ($preceding-volume-ref) then
-                    number($preceding-volume-ref/@sort-volume)
-                else
-                    0,
+                    if ($preceding-volume-ref) then
+                        number($preceding-volume-ref/@sort-volume)
+                    else 0,
                     if (count($cref-tokenized) gt 1) then
                         number(replace($cref-tokenized[2], '\D', ''))
-                    else
-                        0,
+                    else 0,
                     if (count($cref-tokenized) gt 2) then
                         $cref-tokenized[3]
-                    else
-                        ''
+                    else ''
+            
             return
                 element {node-name($ref)} {
                     $ref/@*[not(name(.) = ('index-in-resource', 'cRef-volume'))],

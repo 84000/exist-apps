@@ -1531,7 +1531,7 @@
                                 <xsl:variable name="count-locations" select="count($cached-locations)"/>
                                 
                                 <xsl:choose>
-                                    <xsl:when test="$count-milestones ge 100 and $count-locations ge ($count-milestones div 6)">
+                                    <xsl:when test="$view-mode[not(@client eq 'browser')] and $count-milestones ge 100 and $count-locations ge ($count-milestones div 6)">
                                         
                                         <h4 class="heading">
                                             <xsl:value-of select="concat(format-number($count-locations, '#,###'), ' passages contain this term')"/>    
@@ -1670,8 +1670,11 @@
         <xsl:param name="translation-root" select="$root"/>
         
         <xsl:if test="$cached-locations">
+            
+            <xsl:variable name="list-id" select="concat('list-locations-', $glossary-id)"/>
+            
             <xsl:call-template name="preview-child-list">
-                <xsl:with-param name="list-id" select="$glossary-id"/>
+                <xsl:with-param name="list-id" select="$list-id"/>
                 <xsl:with-param name="list">
                     
                     <xsl:variable name="target-elements" as="element()*">
@@ -1708,7 +1711,7 @@
                         </xsl:for-each>
                     </xsl:variable>
                     
-                    <ul class="list-inline list-locations">
+                    <ul id="{ $list-id }" class="list-inline list-locations">
                         <xsl:for-each select="$target-elements">
                             
                             <xsl:variable name="index" select="position()"/>
