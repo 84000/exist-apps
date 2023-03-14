@@ -155,7 +155,7 @@ declare function local:lang-field($valid-lang as xs:string) as xs:string {
 
 declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string, $exclude-status as xs:string*) as element(tei:term)* {
     
-    (: Search for terms :)
+    (: Combined glossary search :)
     let $valid-type := local:valid-type($type)
     let $valid-lang := common:valid-lang($lang)
     
@@ -243,6 +243,8 @@ declare function glossary:glossary-startletter($type as xs:string*, $lang as xs:
 
 declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-type as xs:string*) as element(tei:gloss)* {
     
+    (: Return flagged entries :)
+    
     let $flag := $entities:flags//m:flag[@id eq $flag-type]
     
     let $flagged-instances := 
@@ -257,7 +259,7 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
     
 };
 
-declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string, $search as xs:string, $include-count as xs:boolean) as element(m:glossary)* {
+(:declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string, $search as xs:string, $include-count as xs:boolean) as element(m:glossary)* {
     
     let $valid-lang := common:valid-lang($lang)
     let $valid-type := local:valid-type($type)
@@ -266,7 +268,7 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
     
     let $terms := 
 
-        (: Search for term - all languages and types :)
+        (\: Search for term - all languages and types :\)
         if($type eq 'search') then
             if($normalized-search gt '') then
                 $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
@@ -274,10 +276,10 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
                     [ft:query(., local:search-query($normalized-search), local:search-options())]
             else ()
         
-        (: Look-up terms based on letter, type and lang :)
+        (\: Look-up terms based on letter, type and lang :\)
         else if($valid-type and $normalized-search gt '') then
             
-            (: this shouldn't be necessary if collation were working!?? :)
+            (\: this shouldn't be necessary if collation were working!?? :\)
             let $alt-searches := common:letter-variations($normalized-search)
             let $regex := concat('^(\d*\s+|The\s+|A\s+)?(', string-join($alt-searches, '|'), ').*')
             
@@ -293,7 +295,7 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
                         [@xml:lang eq $valid-lang]
                         [not(@type = ('definition','alternative'))]
         
-        (: All terms for type and lang :)
+        (\: All terms for type and lang :\)
         else if($valid-type) then
             if($valid-lang = ('en', '')) then
                 $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
@@ -304,12 +306,12 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
                     [@xml:lang eq $valid-lang]
                     [not(@type = ('definition','alternative'))]
         
-        (: All terms for cumulative glossary :)
+        (\: All terms for cumulative glossary :\)
         else if($type eq 'all') then
             $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
                 [not(@type = ('definition','alternative'))]
         
-        (: All terms for lang only :)
+        (\: All terms for lang only :\)
         else
             if($valid-lang = ('en', '')) then
                 $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
@@ -337,7 +339,7 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
                             normalize-unicode(
                                 replace(
                                     normalize-space(lower-case($term))
-                                , '\-­'(: soft-hyphen :), '')
+                                , '\-­'(\: soft-hyphen :\), '')
                             , 'NFC')
                         )
                     , '[^a-zA-Z\s]', '')
@@ -370,9 +372,9 @@ declare function glossary:glossary-terms($type as xs:string?, $lang as xs:string
                 
         }
         
-};
+};:)
 
-declare function glossary:matching-gloss($term as xs:string, $lang as xs:string) as element(tei:gloss)* {
+(:declare function glossary:matching-gloss($term as xs:string, $lang as xs:string) as element(tei:gloss)* {
     
     let $valid-lang := common:valid-lang($lang)
     let $matches := 
@@ -386,7 +388,7 @@ declare function glossary:matching-gloss($term as xs:string, $lang as xs:string)
     return
         $matches/parent::tei:gloss
             
-};
+};:)
 
 declare function glossary:entries($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:entry)* {
     
@@ -404,8 +406,6 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
         
         attribute id { $gloss/@xml:id },
         $gloss/@mode,
-        
-        (: TO BE DEPRECATED - use entity types instead :)
         $gloss/@type,
         
         (: Sort term :)
@@ -421,6 +421,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     $term/@status,
                     normalize-space($term/text())
                 }
+                
             else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative'))]) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
                     $term/@xml:lang,
@@ -433,6 +434,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     else 
                         $term/text() ! normalize-unicode(.) ! normalize-space(.) ! replace(.,'&#160;+$','')
                 }
+                
             else if ($term[@type eq 'alternative']) then
                 element { QName('http://read.84000.co/ns/1.0', 'alternative') } {
                     $term/@xml:lang,
@@ -443,6 +445,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     attribute glossarize { 'mark' },
                     $term/node()
                 }
+                
             else ()
         ,
         
@@ -522,7 +525,7 @@ declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:s
         
 };
 
-declare function glossary:matching-entries($term as xs:string, $lang as xs:string) as element(m:glossary) {
+(:declare function glossary:matching-entries($term as xs:string, $lang as xs:string) as element(m:glossary) {
     <glossary
         xmlns="http://read.84000.co/ns/1.0"
         model="glossary-items">
@@ -534,9 +537,9 @@ declare function glossary:matching-entries($term as xs:string, $lang as xs:strin
                 glossary:glossary-entry($gloss, true())
         }
     </glossary>
-};
+};:)
 
-declare function glossary:cumulative-glossary($chunk as xs:integer) as element() {
+(:declare function glossary:cumulative-glossary($chunk as xs:integer) as element() {
 
     let $cumulative-terms := glossary:glossary-terms('all', '', '', false())//m:term
     let $count := count($cumulative-terms)
@@ -564,7 +567,7 @@ declare function glossary:cumulative-glossary($chunk as xs:integer) as element()
             }
         </cumulative-glossary>
         
-};
+};:)
 
 declare function local:distinct-terms($terms as element(tei:term)*) as xs:string* {
     for $term in $terms
@@ -580,9 +583,9 @@ declare function local:distinct-terms($terms as element(tei:term)*) as xs:string
         $term-text-starred[1]
 };
 
-declare function local:concat-terms($terms as element(tei:term)*) as xs:string {
+(:declare function local:concat-terms($terms as element(tei:term)*) as xs:string {
     string-join( local:concat-terms($terms), '; ')
-};
+};:)
 
 declare function local:term-star($term as element(tei:term)) as xs:string {
     if($term[@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]) then '*' else ''
@@ -773,7 +776,7 @@ declare function glossary:item-count($tei as element(tei:TEI)) as xs:integer {
     
 };
 
-declare function glossary:item-query($gloss as element(tei:gloss)) as element() {
+(:declare function glossary:item-query($gloss as element(tei:gloss)) as element() {
     <query>
         <bool>
         {
@@ -790,7 +793,7 @@ declare function glossary:item-query($gloss as element(tei:gloss)) as element() 
         }
         </bool>
     </query>
-};
+};:)
 
 declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $test-glossary-ids as xs:string*) as element(m:response) {
     
@@ -996,12 +999,15 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
 };
 
 declare function glossary:locations($locations as element(m:location)*, $glossary-id as xs:string) as element(m:location)* {
+
     (: Filter out locations containing this glossary match but have a higher nested location :)
+    
     for $location in $locations[descendant::xhtml:*[@data-glossary-id eq $glossary-id]]
     let $glossary-matches := $location/descendant::xhtml:*[@data-glossary-id eq $glossary-id]
     where not($glossary-matches/ancestor::xhtml:*[@data-location-id][1][not(@data-location-id eq $location/@id)])
     return
         $location
+        
 };
 
 declare function glossary:locations($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $glossary-ids as xs:string*) as element(m:locations) {

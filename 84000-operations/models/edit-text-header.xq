@@ -118,16 +118,15 @@ let $text :=
         
     }
     
-let $translation-status :=
-    element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
-        translation-status:texts($text-id, true())
-    }
-
 let $text-statuses-selected := tei-content:text-statuses-selected($translation-status, 'translation')
 let $persons := contributors:persons(false(), false())
 let $teams := contributors:teams(true(), false(), false())
 let $glossary-cache := glossary:glossary-cache($tei, (), false())
 let $submission-checklist := doc('../config/submission-checklist.xml')
+let $translation-statuses :=
+    element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
+        translation-status:texts($text-id, true())
+    }
 
 let $xml-response := 
     common:response(
@@ -137,7 +136,7 @@ let $xml-response :=
             $request,
             $updated,
             $text,
-            $translation-status,
+            $translation-statuses,
             $text-statuses-selected,
             $persons,
             $teams,

@@ -135,7 +135,9 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                 file:sync(
                     $sync/@collection, 
                     concat($repo/@path, $sub-dir), 
-                    ()(:map{ "prune": true(), "excludes": ("zip","xar",".git") }:)
+                    if($sync[@prune]) then
+                        map{ "prune": true(), "excludes": ("zip","xar",".git") }
+                    else ()
                 )
             
             let $log := util:log('info', concat('deploy-push: ', concat($repo/@path, $sub-dir), ' synced'))

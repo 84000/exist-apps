@@ -28,8 +28,7 @@ declare function utilities:request(){
                 }
                 </authenticated-user>
         )
-        else
-            ()
+        else ()
     }
     </request>
 

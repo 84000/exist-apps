@@ -30,7 +30,7 @@ declare function local:search-tests() as element(eft:search-test)* {
     let $search := $test/eft:search[1]/data()
     let $hits := 
         $test/eft:content[ft:query(., concat('sa:(', $search, ')'), map { "fields": ("sa") })]
-        | $test/eft:content[ft:query(., concat('bo:(', $search, ')'), map { "fields": ("bo") })]
+        | $test/eft:content[ft:query(., concat('bo:(', $search, ')'), map { "fields": ("bo"), "phrase-slop": "1" })]
         | $test/eft:content[ft:query(., concat('en:(', $search, ')'), map { "fields": ("en") })]
     
     let $misses := $test/eft:content[@expect eq 'hit'] except $hits

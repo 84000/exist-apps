@@ -124,12 +124,14 @@ let $glossary-types := $entity-types/m:type[@selected]/@glossary-type
 
 (: Get matching terms :)
 let $term-matches := 
-    if($flag) then
-        ()
+    if($flag) then ()
+    
     else if($request/m:search/text() gt '') then
         glossary:glossary-search($glossary-types, $term-lang/@id, $request/m:search, $exclude-status)
+        
     else if($alphabet/m:letter[@selected]) then
         glossary:glossary-startletter($glossary-types, $term-lang/@id, $alphabet/m:letter[@selected]/@regex, $exclude-status)
+        
     else ()
 
 (: Convert terms to entries :)
