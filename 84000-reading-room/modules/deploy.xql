@@ -136,7 +136,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     $sync/@collection, 
                     concat($repo/@path, $sub-dir), 
                     if($sync[@prune]) then
-                        map{ "prune": true(), "excludes": ("zip","xar",".git") }
+                        map{ "prune": true(), "excludes": ("zip","xar",".git",".gitignore","README.md") }
                     else ()
                 )
             
