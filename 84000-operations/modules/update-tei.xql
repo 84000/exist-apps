@@ -198,7 +198,7 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
             return
                 
                 let $text-id := tei-content:id($tei)
-                let $document-url := tei-content:document-url($tei)
+                let $document-url := base-uri($tei)
                 
                 let $do-update := common:update('text-version', $existing-value, $new-value, $parent, $insert-following)
                 
@@ -244,21 +244,27 @@ declare function local:titles-from-request() as element(tei:title)* {
     let $title-index := substring-after($title-text-param, 'title-text-')
     let $title-text := request:get-parameter($title-text-param, '')
     let $title-type := request:get-parameter(concat('title-type-', $title-index), '')
+    let $title-key := request:get-parameter(concat('title-key-', $title-index), '')
     let $title-lang := request:get-parameter(concat('title-lang-', $title-index), '')
     let $valid-lang := common:valid-lang(replace($title-lang, '\-rc$', ''))
     
     where $title-text gt ''
     return
         element { QName("http://www.tei-c.org/ns/1.0", "title") } {
-            attribute type {$title-type},
+            attribute type { $title-type },
             if(lower-case($title-lang) eq 'sa-ltn-rc') then (
-                attribute xml:lang {'Sa-Ltn'},
-                attribute rend {'reconstruction'}
+                attribute xml:lang { 'Sa-Ltn' },
+                attribute rend { 'reconstruction' }
             )
             else 
                 attribute xml:lang { $valid-lang }
             ,
+            if($title-key gt '') then
+                attribute key { $title-key }
+            else ()
+            ,
             text {
+                (: Replace hyphens with soft-hypens :)
                 if ($valid-lang eq 'Sa-Ltn') then
                     replace($title-text, '\-', '­')
                 else
@@ -300,8 +306,11 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
             let $title-text := $title/text()
             group by $title-text
             order by 
-                if($title[1]/@type eq 'mainTitle') then 1 else if($title[1]/@type eq 'longTitle') then 2 else 3 ascending,
-                if($title[1]/@xml:lang eq 'en') then 1 else if($title[1]/@xml:lang eq 'Sa-Ltn') then 2 else 3 ascending
+                if($title[1]/@type eq 'mainTitle') then 1 else if($title[1]/@type eq 'longTitle') then 2 else if($title[1]/@type eq 'otherTitle') then 3 else 4 ascending,
+                if($title[1]/@xml:lang eq 'en') then 1 else if($title[1]/@xml:lang eq 'Sa-Ltn') then 2 else if($title[1]/@xml:lang eq 'bo') then 3 else 4 ascending,
+                $title[1]/@xml:lang/string(),
+                $title[1]/@key/string()
+                
             where $title-text[not(. eq '')]
             return (
                 $node-ws,
@@ -315,7 +324,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
                 (: Translator main :)
                 let $translator-team-id := request:get-parameter('translator-team-id', '') ! lower-case(.)
                 let $existing-translator-team := $title-statement-existing/tei:author[@role eq 'translatorMain']
-                    
+                
                 where $translator-team-id gt ''
                 return (
                     $node-ws,
@@ -411,8 +420,8 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
         return (
             $node-ws,
             $existing-node
-        )
-        ,
+        ),
+        
         $container-ws
     }
     
@@ -728,6 +737,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                         else if(matches($term-lang-type, '\-sa$')) then 
                             'sourceAttested' 
                         else ()
+                        
                     let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
                     let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr|sa)$', ''))
                     where $term-text gt ''
@@ -748,7 +758,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                             (: Text - skip if text matches placeholder - if Sanskrit parse hyphens :)
                             if ($term-lang eq 'Sa-Ltn') then
                                 if(not($term-text eq common:local-text('glossary.term-empty-sa-ltn', 'en'))) then
-                                    text { replace($term-text, '\-', '­'(: This is a soft-hyphen :)) }
+                                    text { $term-text ! replace(., '\-', '­') ! lower-case(.) }
                                 else ()
                                 
                             else if ($term-lang eq 'Bo-Ltn') then
@@ -1325,8 +1335,8 @@ declare function update-tei:comment($tei as element(tei:TEI), $passage-id as xs:
 declare function update-tei:archive-latest($tei as element(tei:TEI)) as element()? {
     
     (: Archive path is tei/toh-key/current-date-time :)
-    let $toh-key := translation:toh-key($tei, '')
-    let $document-url := tei-content:document-url($tei)
+    let $toh-key := translation:source-key($tei, '')
+    let $document-url := base-uri($tei)
     let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')
 
     where $toh-key and $file-name

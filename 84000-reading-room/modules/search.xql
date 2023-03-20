@@ -433,9 +433,7 @@ declare function local:tei-header($tei as element(tei:TEI)) as element() {
             attribute translation-status { $trandlation-status },
             attribute translation-status-group { $trandlation-status-group },
             
-            element titles {
-                tei-content:title-set($tei, 'mainTitle') 
-            },
+            tei-content:title-set($tei, 'mainTitle') ,
             
             if($tei-type eq 'knowledgebase') then (
                 knowledgebase:page($tei)

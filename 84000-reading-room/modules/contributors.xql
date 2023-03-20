@@ -64,8 +64,7 @@ declare function contributors:person($person-id as xs:string, $include-acknowled
             element sort-name { lower-case(replace($contributor/m:label, concat($contributors:person-prefixes, '\s+'), '')) },
             if($include-acknowledgements) then
                 contributors:acknowledgements($contributor/@xml:id)
-            else
-                ()
+            else ()
         }
 };
 
@@ -108,16 +107,17 @@ declare function local:acknowledgement($tei as element(tei:TEI), $paragraphs as 
         attribute translation-id { tei-content:id($tei) },
         attribute translation-status { tei-content:translation-status($tei) },
         attribute translation-status-group { tei-content:translation-status-group($tei) },
-        element m:title { text { tei-content:title($tei) } },
+        translation:title-element($tei, ()),
         translation:toh($tei, ''),
         for $contribution in $contributions
         return
-        element m:contribution {
-            attribute node-name { local-name($contribution) },
-            $contribution/@role,
-            $contribution/@ref,
-            normalize-space($contribution/text())
-        },
+            element m:contribution {
+                attribute node-name { local-name($contribution) },
+                $contribution/@role,
+                $contribution/@ref,
+                normalize-space($contribution/text())
+            }
+        ,
         element tei:div {
             attribute type {'acknowledgment'},
             $paragraphs

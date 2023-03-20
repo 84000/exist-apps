@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -266,13 +266,32 @@
                     
                     <!-- Titles -->
                     <div class="add-nodes-container">
+                        <div class="form-group sml-margin bottom small text-muted">
+                            <div class="col-sm-2">
+                                <xsl:value-of select="'Type'"/>
+                            </div>
+                            <div class="col-sm-2">
+                                <xsl:value-of select="'Lang.'"/>
+                            </div>
+                            <div class="col-sm-2">
+                                <xsl:value-of select="'Toh.'"/>
+                            </div>
+                            <div class="col-sm-2">
+                                <xsl:value-of select="'Text'"/>
+                            </div>
+                        </div>
                         <xsl:choose>
                             <xsl:when test="$text/m:titles/m:title">
                                 <xsl:for-each select="$text/m:titles/m:title">
+                                    <xsl:sort select="if(@type eq 'mainTitle') then 1 else if (@type eq 'longTitle') then 2 else if (@type eq 'otherTitle') then 3 else 4"/>
+                                    <xsl:sort select="if(@xml:lang eq 'en') then 1 else if (@xml:lang eq 'Sa-Ltn') then 2 else if (@xml:lang eq 'bo') then 3 else 4"/>
+                                    <xsl:sort select="@xml:lang"/>
+                                    <xsl:sort select="@key"/>
                                     <xsl:call-template name="title-controls">
                                         <xsl:with-param name="title" select="."/>
                                         <xsl:with-param name="title-index" select="position()"/>
                                         <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
+                                        <xsl:with-param name="source-keys" select="$text/m:source/@key/string()"/>
                                     </xsl:call-template>
                                 </xsl:for-each>
                             </xsl:when>
@@ -281,6 +300,7 @@
                                     <xsl:with-param name="title" select="()"/>
                                     <xsl:with-param name="title-index" select="1"/>
                                     <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
+                                    <xsl:with-param name="source-keys" select="$text/m:source/@key/string()"/>
                                 </xsl:call-template>
                             </xsl:otherwise>
                         </xsl:choose>

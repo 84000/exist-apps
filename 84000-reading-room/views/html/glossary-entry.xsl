@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -132,29 +132,62 @@
                                     
                                     <!-- Header -->
                                     <div class="entity-title">
-                                        
                                         <div class="top-vertical full-width">
                                             
                                             <!-- Title -->
                                             <div>
-                                                <ul class="list-unstyled">
-                                                    <xsl:for-each select="$request-entity-data/m:label">
-                                                        <xsl:choose>
-                                                            <xsl:when test="@type eq 'primary'">
-                                                                <h2>
-                                                                    <span class="{ common:lang-class(@xml:lang) }">
-                                                                        <xsl:value-of select="data() ! normalize-space(.)"/>
+                                                
+                                                <div>
+                                                    <ul class="list-inline inline-dots">
+                                                        <xsl:for-each select="$request-entity-data/m:term[@xml:lang eq 'bo']">
+                                                            
+                                                            <xsl:sort select="string-join(tokenize(text(), '\s+') ! normalize-unicode(.), ' ')"/>
+                                                            
+                                                            <li>
+                                                                <xsl:choose>
+                                                                    <xsl:when test="position() eq 1">
+                                                                        <h2 class="no-bottom-margin">
+                                                                            <span>
+                                                                                <xsl:call-template name="class-attribute">
+                                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                                                </xsl:call-template>
+                                                                                <xsl:apply-templates select="text()"/>
+                                                                            </span>
+                                                                        </h2>
+                                                                    </xsl:when>
+                                                                    <xsl:otherwise>
+                                                                        <span class="h2">
+                                                                            <span>
+                                                                                <xsl:call-template name="class-attribute">
+                                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                                                </xsl:call-template>
+                                                                                <xsl:apply-templates select="text()"/>
+                                                                            </span>
+                                                                        </span>
+                                                                    </xsl:otherwise>
+                                                                </xsl:choose>
+                                                            </li>
+                                                            
+                                                        </xsl:for-each>
+                                                    </ul>
+                                                </div>
+                                                
+                                                <xsl:for-each select="('Bo-Ltn','Sa-Ltn')">
+                                                    <xsl:variable name="title-lang" select="."/>
+                                                    <xsl:variable name="title-terms-lang" select="$request-entity-data/m:term[@xml:lang eq $title-lang]"/>
+                                                    <div>
+                                                        <ul class="list-inline inline-dots sml-margin top">
+                                                            <xsl:for-each select="$title-terms-lang">
+                                                                <li>
+                                                                    <span class="{ common:lang-class($title-lang) }">
+                                                                        <xsl:value-of select="."/>
                                                                     </span>
-                                                                </h2>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <p class="{ common:lang-class(@xml:lang) }">
-                                                                    <xsl:value-of select="data() ! normalize-space(.)"/>
-                                                                </p>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </xsl:for-each>
-                                                </ul>
+                                                                </li>
+                                                            </xsl:for-each>
+                                                        </ul>
+                                                    </div>
+                                                </xsl:for-each>
+                                                
                                             </div>
                                             
                                             <!-- Types -->
@@ -180,7 +213,6 @@
                                             </div>
                                             
                                         </div>
-                                        
                                     </div>
                                     
                                     <div class="entity-body" id="{ concat($item-id, '-body') }">
@@ -191,241 +223,245 @@
                                         
                                         <div class="entity-detail collapse in persist" id="{ concat($item-id, '-detail') }">
                                             
-                                            <!-- Entity definition -->
-                                            <xsl:if test="$request-entity/m:content[@type eq 'glossary-definition'][node()]">
-                                                <blockquote>
-                                                    <xsl:for-each select="$request-entity/m:content[@type eq 'glossary-definition']">
-                                                        <p class="definition">
-                                                            <xsl:apply-templates select="node()"/>
-                                                        </p>
-                                                    </xsl:for-each>
-                                                </blockquote>
-                                            </xsl:if>
-                                            
-                                            <!-- Glossary entries: grouped by translation -->
-                                            <label class="sml-margin bottom">
-                                                <xsl:value-of select="'Translated as:'"/>
-                                            </label>
-                                            <div id="{ concat($item-id, '-translations') }" class="entity-detail-accordion">
+                                            <div class="top-margin">
                                                 
-                                                <xsl:if test="$related-entries">
+                                                <!-- Entity definition -->
+                                                <xsl:if test="$request-entity/m:content[@type eq 'glossary-definition'][node()]">
+                                                    <blockquote>
+                                                        <xsl:for-each select="$request-entity/m:content[@type eq 'glossary-definition']">
+                                                            <p class="definition">
+                                                                <xsl:apply-templates select="node()"/>
+                                                            </p>
+                                                        </xsl:for-each>
+                                                    </blockquote>
+                                                </xsl:if>
+                                                
+                                                <!-- Glossary entries: grouped by translation -->
+                                                <label class="sml-margin bottom">
+                                                    <xsl:value-of select="'Translated as:'"/>
+                                                </label>
+                                                <div id="{ concat($item-id, '-translations') }" class="entity-detail-accordion">
                                                     
-                                                    <xsl:for-each-group select="$related-entries" group-by="m:sort-term">
+                                                    <xsl:if test="$related-entries">
                                                         
-                                                        <xsl:sort select="count(current-group())" order="descending"/>
-                                                        <xsl:sort select="m:sort-term"/>
-                                                        
-                                                        <xsl:variable name="term-group-index" select="position()"/>
-                                                        <xsl:variable name="term-group" select="current-group()"/>
-                                                        <xsl:variable name="term-group-id" select="concat('term-group-', $request-entity/@xml:id, '-', $term-group-index)"/>
-                                                        
-                                                        <xsl:call-template name="expand-item">
-                                                            <xsl:with-param name="accordion-selector" select="concat('#', $item-id, '-translations')"/>
-                                                            <xsl:with-param name="id" select="$term-group-id"/>
-                                                            <xsl:with-param name="title-opener" select="true()"/>
-                                                            <xsl:with-param name="active" select="if(count($related-entries) eq count($term-group)) then true() else false()"/>
-                                                            <xsl:with-param name="title">
-                                                                <div class="center-vertical align-left">
-                                                                    
-                                                                    <span>
-                                                                        <span class="badge badge-notification">
-                                                                            <xsl:value-of select="count(current-group())"/>
-                                                                        </span>
-                                                                    </span>
-                                                                    
-                                                                    <span>
-                                                                        <h3>
-                                                                            <xsl:value-of select="m:term[@xml:lang eq 'en'][1] ! functx:capitalize-first(.)"/>
-                                                                        </h3>
-                                                                    </span>
-                                                                    
-                                                                    <xsl:if test="$tei-editor">
+                                                        <xsl:for-each-group select="$related-entries" group-by="m:sort-term">
+                                                            
+                                                            <xsl:sort select="count(current-group())" order="descending"/>
+                                                            <xsl:sort select="m:sort-term"/>
+                                                            
+                                                            <xsl:variable name="term-group-index" select="position()"/>
+                                                            <xsl:variable name="term-group" select="current-group()"/>
+                                                            <xsl:variable name="term-group-id" select="concat('term-group-', $request-entity/@xml:id, '-', $term-group-index)"/>
+                                                            
+                                                            <xsl:call-template name="expand-item">
+                                                                <xsl:with-param name="accordion-selector" select="concat('#', $item-id, '-translations')"/>
+                                                                <xsl:with-param name="id" select="$term-group-id"/>
+                                                                <xsl:with-param name="title-opener" select="true()"/>
+                                                                <xsl:with-param name="active" select="if(count($related-entries) eq count($term-group)) then true() else false()"/>
+                                                                <xsl:with-param name="title">
+                                                                    <div class="center-vertical align-left">
+                                                                        
                                                                         <span>
-                                                                            <ul class="list-inline inline-dots inline-pad-first">
-                                                                                
-                                                                                <xsl:variable name="term-group-instances" select="$request-entity/m:instance[@id = $term-group/@id]"/>
-                                                                                <xsl:variable name="term-group-instances-flagged" select="$term-group-instances[m:flag]"/>
-                                                                                <xsl:variable name="term-group-related-entries" select="key('related-entries', $term-group-instances/@id, $root)"/>
-                                                                                <xsl:variable name="term-group-related-entries-excluded" select="$term-group-related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
-                                                                                <xsl:variable name="term-group-related-entries-no-definition" select="$term-group-related-entries[not(m:definition[node()])]"/>
-                                                                                <xsl:variable name="entity-definition" select="$request-entity/m:content[@type eq 'glossary-definition'][node()]"/>
-                                                                                <xsl:variable name="term-group-instances-use-definition" select="if($entity-definition) then $term-group-instances[@use-definition = ('both','append','prepend','override')] | $term-group-instances[@id = $term-group-related-entries-no-definition/@id] else ()"/>
-                                                                                
-                                                                                <li>
-                                                                                    <span class="small text-muted">
-                                                                                        <xsl:if test="$term-group-instances-use-definition">
-                                                                                            <xsl:attribute name="class" select="'small text-warning'"/>
-                                                                                        </xsl:if>
-                                                                                        <xsl:value-of select="count($term-group-instances-use-definition)"/>
-                                                                                        <xsl:value-of select="if (count($term-group-instances-use-definition) eq 1) then ' entry displays entity definition' else ' entries display entity definition'"/>
-                                                                                    </span>
-                                                                                </li>
-                                                                                
-                                                                                <li>
-                                                                                    <span class="small text-muted">
-                                                                                        <xsl:if test="$term-group-related-entries-excluded">
-                                                                                            <xsl:attribute name="class" select="'small text-warning'"/>
-                                                                                        </xsl:if>
-                                                                                        <xsl:value-of select="count($term-group-related-entries-excluded)"/>
-                                                                                        <xsl:value-of select="if (count($term-group-related-entries-excluded) eq 1) then ' entry in an excluded text' else ' entries in excluded texts'"/>
-                                                                                    </span>
-                                                                                </li>
-                                                                                
-                                                                                <li>
-                                                                                    <span class="small text-muted">
-                                                                                        <xsl:if test="$term-group-instances-flagged">
-                                                                                            <xsl:attribute name="class" select="'small text-warning'"/>
-                                                                                        </xsl:if>
-                                                                                        <xsl:value-of select="count($term-group-instances-flagged)"/>
-                                                                                        <xsl:value-of select="if (count($term-group-instances-flagged) eq 1) then ' entry flagged' else ' entries flagged'"/>
-                                                                                    </span>
-                                                                                </li>
-                                                                                
-                                                                            </ul>
+                                                                            <span class="badge badge-notification">
+                                                                                <xsl:value-of select="count(current-group())"/>
+                                                                            </span>
                                                                         </span>
-                                                                    </xsl:if>
-                                                                    
-                                                                </div>
-                                                            </xsl:with-param>
-                                                            <xsl:with-param name="content">
-                                                                <div class="translation-result">
-                                                                    
-                                                                    <!-- Group by type (translation/knowledgebase) -->
-                                                                    <xsl:for-each-group select="$term-group" group-by="parent::m:text/@type">
                                                                         
-                                                                        <xsl:variable name="text-type" select="parent::m:text/@type"/>
-                                                                        <xsl:variable name="text-type-entries" select="current-group()"/>
-                                                                        <xsl:variable name="text-type-related-texts" select="/m:response/m:entities/m:related/m:text[m:entry/@id = $text-type-entries/@id]"/>
+                                                                        <span>
+                                                                            <h3>
+                                                                                <xsl:value-of select="m:term[@xml:lang eq 'en'][1] ! functx:capitalize-first(.)"/>
+                                                                            </h3>
+                                                                        </span>
                                                                         
-                                                                        <xsl:for-each select="$text-type-related-texts">
+                                                                        <xsl:if test="$tei-editor">
+                                                                            <span>
+                                                                                <ul class="list-inline inline-dots inline-pad-first">
+                                                                                    
+                                                                                    <xsl:variable name="term-group-instances" select="$request-entity/m:instance[@id = $term-group/@id]"/>
+                                                                                    <xsl:variable name="term-group-instances-flagged" select="$term-group-instances[m:flag]"/>
+                                                                                    <xsl:variable name="term-group-related-entries" select="key('related-entries', $term-group-instances/@id, $root)"/>
+                                                                                    <xsl:variable name="term-group-related-entries-excluded" select="$term-group-related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
+                                                                                    <xsl:variable name="term-group-related-entries-no-definition" select="$term-group-related-entries[not(m:definition[node()])]"/>
+                                                                                    <xsl:variable name="entity-definition" select="$request-entity/m:content[@type eq 'glossary-definition'][node()]"/>
+                                                                                    <xsl:variable name="term-group-instances-use-definition" select="if($entity-definition) then $term-group-instances[@use-definition = ('both','append','prepend','override')] | $term-group-instances[@id = $term-group-related-entries-no-definition/@id] else ()"/>
+                                                                                    
+                                                                                    <li>
+                                                                                        <span class="small text-muted">
+                                                                                            <xsl:if test="$term-group-instances-use-definition">
+                                                                                                <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                                            </xsl:if>
+                                                                                            <xsl:value-of select="count($term-group-instances-use-definition)"/>
+                                                                                            <xsl:value-of select="if (count($term-group-instances-use-definition) eq 1) then ' entry displays entity definition' else ' entries display entity definition'"/>
+                                                                                        </span>
+                                                                                    </li>
+                                                                                    
+                                                                                    <li>
+                                                                                        <span class="small text-muted">
+                                                                                            <xsl:if test="$term-group-related-entries-excluded">
+                                                                                                <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                                            </xsl:if>
+                                                                                            <xsl:value-of select="count($term-group-related-entries-excluded)"/>
+                                                                                            <xsl:value-of select="if (count($term-group-related-entries-excluded) eq 1) then ' entry in an excluded text' else ' entries in excluded texts'"/>
+                                                                                        </span>
+                                                                                    </li>
+                                                                                    
+                                                                                    <li>
+                                                                                        <span class="small text-muted">
+                                                                                            <xsl:if test="$term-group-instances-flagged">
+                                                                                                <xsl:attribute name="class" select="'small text-warning'"/>
+                                                                                            </xsl:if>
+                                                                                            <xsl:value-of select="count($term-group-instances-flagged)"/>
+                                                                                            <xsl:value-of select="if (count($term-group-instances-flagged) eq 1) then ' entry flagged' else ' entries flagged'"/>
+                                                                                        </span>
+                                                                                    </li>
+                                                                                    
+                                                                                </ul>
+                                                                            </span>
+                                                                        </xsl:if>
+                                                                        
+                                                                    </div>
+                                                                </xsl:with-param>
+                                                                <xsl:with-param name="content">
+                                                                    <div class="translation-result">
+                                                                        
+                                                                        <!-- Group by type (translation/knowledgebase) -->
+                                                                        <xsl:for-each-group select="$term-group" group-by="parent::m:text/@type">
                                                                             
-                                                                            <!-- Order by Toh numerically needs improving -->
-                                                                            <xsl:sort select="m:bibl[1]/m:toh[1]/@number ! xs:integer(.)"/>
-                                                                            <xsl:variable name="related-text" select="."/>
+                                                                            <xsl:variable name="text-type" select="parent::m:text/@type"/>
+                                                                            <xsl:variable name="text-type-entries" select="current-group()"/>
+                                                                            <xsl:variable name="text-type-related-texts" select="/m:response/m:entities/m:related/m:text[m:entry/@id = $text-type-entries/@id]"/>
                                                                             
-                                                                            <xsl:for-each select="$related-text/m:entry[@id = $text-type-entries/@id]">
-                                                                                <xsl:variable name="related-text-entry" select="."/>
-                                                                                <xsl:call-template name="glossary-entry">
-                                                                                    <xsl:with-param name="entity-data" select="$request-entity-data"/>
-                                                                                    <xsl:with-param name="entry" select="$related-text-entry"/>
-                                                                                    <xsl:with-param name="text" select="$related-text"/>
-                                                                                    <xsl:with-param name="instance" select="$request-entity/m:instance[@id eq $related-text-entry/@id]"/>
-                                                                                </xsl:call-template>
+                                                                            <xsl:for-each select="$text-type-related-texts">
+                                                                                
+                                                                                <!-- Order by Toh numerically needs improving -->
+                                                                                <xsl:sort select="m:bibl[1]/m:toh[1]/@number ! xs:integer(.)"/>
+                                                                                <xsl:variable name="related-text" select="."/>
+                                                                                
+                                                                                <xsl:for-each select="$related-text/m:entry[@id = $text-type-entries/@id]">
+                                                                                    <xsl:variable name="related-text-entry" select="."/>
+                                                                                    <xsl:call-template name="glossary-entry">
+                                                                                        <xsl:with-param name="entity-data" select="$request-entity-data"/>
+                                                                                        <xsl:with-param name="entry" select="$related-text-entry"/>
+                                                                                        <xsl:with-param name="text" select="$related-text"/>
+                                                                                        <xsl:with-param name="instance" select="$request-entity/m:instance[@id eq $related-text-entry/@id]"/>
+                                                                                    </xsl:call-template>
+                                                                                </xsl:for-each>
+                                                                                
                                                                             </xsl:for-each>
                                                                             
-                                                                        </xsl:for-each>
+                                                                        </xsl:for-each-group>
                                                                         
-                                                                    </xsl:for-each-group>
-                                                                    
-                                                                </div>
-                                                            </xsl:with-param>
-                                                        </xsl:call-template>
+                                                                    </div>
+                                                                </xsl:with-param>
+                                                            </xsl:call-template>
+                                                            
+                                                        </xsl:for-each-group>
                                                         
-                                                    </xsl:for-each-group>
+                                                    </xsl:if>
+                                                    
+                                                </div>
+                                                
+                                                <!-- Related pages -->
+                                                <xsl:if test="$related-entity-pages and $environment/m:enable[@type eq 'knowledgebase']">
+                                                    
+                                                    <div class="entity-detail-related">
+                                                        
+                                                        <div>
+                                                            <span class="badge badge-notification badge-muted">
+                                                                <xsl:value-of select="count($related-entity-pages)"/>
+                                                            </span>
+                                                            <span class="badge-text">
+                                                                <xsl:value-of select="' Related content from the 84000 Knowledge Base:'"/>
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        <xsl:for-each select="$related-entity-pages">
+                                                            
+                                                            <xsl:variable name="main-title" select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                                                            
+                                                            <a class="entity-list-item block-link">
+                                                                <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
+                                                                <span>
+                                                                    <xsl:attribute name="class">
+                                                                        <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($main-title/@xml:lang)),' ')"/>
+                                                                    </xsl:attribute>
+                                                                    <xsl:value-of select="normalize-space($main-title/text())"/>
+                                                                </span>
+                                                            </a>
+                                                            
+                                                        </xsl:for-each>
+                                                        
+                                                    </div>
+                                                    
+                                                </xsl:if>
+                                                
+                                                <!-- Related entries -->
+                                                <xsl:if test="$related-entity-entries">
+                                                    
+                                                    <xsl:variable name="related-entries-entities" select="/m:response/m:entities/m:related/m:entity[m:instance/@id = $related-entity-entries/@id]"/>
+                                                    
+                                                    <div class="entity-detail-related">
+                                                        
+                                                        <div>
+                                                            <span class="badge badge-notification badge-muted">
+                                                                <xsl:value-of select="count($related-entries-entities)"/>
+                                                            </span>
+                                                            <span class="badge-text">
+                                                                <xsl:value-of select="' Related content from the 84000 Glossary of Terms:'"/>
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        <xsl:for-each select="$related-entries-entities">
+                                                            
+                                                            <xsl:variable name="related-entity" select="."/>
+                                                            <xsl:variable name="entity-data" as="element(m:entity-data)?">
+                                                                <xsl:call-template name="entity-data">
+                                                                    <xsl:with-param name="entity" select="$related-entity"/>
+                                                                </xsl:call-template>
+                                                            </xsl:variable>
+                                                            
+                                                            <a class="entity-list-item block-link">
+                                                                
+                                                                <!-- Link to the glossary, checking if it's already included in this page -->
+                                                                <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html', '#', $related-entity/@xml:id)"/>
+                                                                <xsl:attribute name="data-href-override" select="concat('#', $related-entity/@xml:id)"/>
+                                                                <xsl:attribute name="data-postscroll-mark" select="concat('#', $related-entity/@xml:id)"/>
+                                                                
+                                                                <h4 class="{ common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
+                                                                    <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>
+                                                                </h4>
+                                                                
+                                                                <xsl:for-each select="('Sa-Ltn','en')[not(. = $entity-data/m:label[@type eq 'primary']/@xml:lang)]">
+                                                                    
+                                                                    <xsl:variable name="additional-terms-lang" select="."/>
+                                                                    <xsl:variable name="additional-terms" select="$entity-data/m:term[@xml:lang eq $additional-terms-lang]"/>
+                                                                    
+                                                                    <xsl:if test="$additional-terms">
+                                                                        <div>
+                                                                            <ul class="list-inline inline-dots">
+                                                                                <xsl:for-each select="$additional-terms">
+                                                                                    <xsl:sort select="@normalized-string"/>
+                                                                                    <li>
+                                                                                        <span class="{ common:lang-class(@xml:lang) }">
+                                                                                            <xsl:value-of select="text() ! normalize-space(.)"/>
+                                                                                        </span>
+                                                                                    </li>
+                                                                                </xsl:for-each>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </xsl:if>
+                                                                    
+                                                                </xsl:for-each>
+                                                                
+                                                            </a>
+                                                            
+                                                        </xsl:for-each>
+                                                        
+                                                    </div>
                                                     
                                                 </xsl:if>
                                                 
                                             </div>
-                                            
-                                            <!-- Related pages -->
-                                            <xsl:if test="$related-entity-pages and $environment/m:enable[@type eq 'knowledgebase']">
-                                                
-                                                <div class="entity-detail-related">
-                                                    
-                                                    <div>
-                                                        <span class="badge badge-notification badge-muted">
-                                                            <xsl:value-of select="count($related-entity-pages)"/>
-                                                        </span>
-                                                        <span class="badge-text">
-                                                            <xsl:value-of select="' Related content from the 84000 Knowledge Base:'"/>
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    <xsl:for-each select="$related-entity-pages">
-                                                        
-                                                        <xsl:variable name="main-title" select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
-                                                        
-                                                        <a class="entity-list-item block-link">
-                                                            <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
-                                                            <span>
-                                                                <xsl:attribute name="class">
-                                                                    <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($main-title/@xml:lang)),' ')"/>
-                                                                </xsl:attribute>
-                                                                <xsl:value-of select="normalize-space($main-title/text())"/>
-                                                            </span>
-                                                        </a>
-                                                        
-                                                    </xsl:for-each>
-                                                    
-                                                </div>
-                                                
-                                            </xsl:if>
-                                            
-                                            <!-- Related entries -->
-                                            <xsl:if test="$related-entity-entries">
-                                                
-                                                <xsl:variable name="related-entries-entities" select="/m:response/m:entities/m:related/m:entity[m:instance/@id = $related-entity-entries/@id]"/>
-                                                
-                                                <div class="entity-detail-related">
-                                                    
-                                                    <div>
-                                                        <span class="badge badge-notification badge-muted">
-                                                            <xsl:value-of select="count($related-entries-entities)"/>
-                                                        </span>
-                                                        <span class="badge-text">
-                                                            <xsl:value-of select="' Related content from the 84000 Glossary of Terms:'"/>
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    <xsl:for-each select="$related-entries-entities">
-                                                        
-                                                        <xsl:variable name="related-entity" select="."/>
-                                                        <xsl:variable name="entity-data" as="element(m:entity-data)?">
-                                                            <xsl:call-template name="entity-data">
-                                                                <xsl:with-param name="entity" select="$related-entity"/>
-                                                            </xsl:call-template>
-                                                        </xsl:variable>
-                                                        
-                                                        <a class="entity-list-item block-link">
-                                                            
-                                                            <!-- Link to the glossary, checking if it's already included in this page -->
-                                                            <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html', '#', $related-entity/@xml:id)"/>
-                                                            <xsl:attribute name="data-href-override" select="concat('#', $related-entity/@xml:id)"/>
-                                                            <xsl:attribute name="data-postscroll-mark" select="concat('#', $related-entity/@xml:id)"/>
-                                                            
-                                                            <h4 class="{ common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
-                                                                <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>
-                                                            </h4>
-                                                            
-                                                            <xsl:for-each select="('Sa-Ltn','en')[not(. = $entity-data/m:label[@type eq 'primary']/@xml:lang)]">
-                                                                
-                                                                <xsl:variable name="additional-terms-lang" select="."/>
-                                                                <xsl:variable name="additional-terms" select="$entity-data/m:term[@xml:lang eq $additional-terms-lang]"/>
-                                                                
-                                                                <xsl:if test="$additional-terms">
-                                                                    <div>
-                                                                        <ul class="list-inline inline-dots">
-                                                                            <xsl:for-each select="$additional-terms">
-                                                                                <xsl:sort select="@normalized-string"/>
-                                                                                <li>
-                                                                                    <span class="{ common:lang-class(@xml:lang) }">
-                                                                                        <xsl:value-of select="text() ! normalize-space(.)"/>
-                                                                                    </span>
-                                                                                </li>
-                                                                            </xsl:for-each>
-                                                                        </ul>
-                                                                    </div>
-                                                                </xsl:if>
-                                                                
-                                                            </xsl:for-each>
-                                                            
-                                                        </a>
-                                                        
-                                                    </xsl:for-each>
-                                                    
-                                                </div>
-                                                
-                                            </xsl:if>
                                             
                                         </div>
                                         
@@ -511,7 +547,7 @@
             
             <!-- Title -->
             <div>
-                <a>
+                <a class="text-bold">
                     <xsl:attribute name="href" select="$href"/>
                     <xsl:attribute name="target" select="$target"/>
                     <xsl:apply-templates select="($text/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], $text/m:titles/m:title[@type eq 'mainTitle'])[1]/text()"/>
@@ -525,17 +561,17 @@
             </div>
             
             <!-- Tantric restriction warning -->
-            <xsl:variable name="tantric-restriction" select="$text[@type eq 'translation']/m:publication/m:tantric-restriction"/>
+            <!--<xsl:variable name="tantric-restriction" select="$text[@type eq 'translation']/m:publication/m:tantric-restriction"/>
             <xsl:if test="$tantric-restriction/tei:p">
                 <xsl:call-template name="tantra-warning">
                     <xsl:with-param name="id" select="$entry/@id"/>
                     <xsl:with-param name="node" select="$tantric-restriction"/>
                 </xsl:call-template>
-            </xsl:if>
+            </xsl:if>-->
             
             <!-- Location -->
             <xsl:for-each select="$text/m:bibl">
-                <nav role="navigation" aria-label="Breadcrumbs" class="small text-muted">
+                <nav role="navigation" aria-label="Breadcrumbs" class="text-muted">
                     <xsl:value-of select="'in '"/>
                     <ul class="breadcrumb">
                         
@@ -558,7 +594,7 @@
             <!-- Translators -->
             <xsl:variable name="translators" select="$text/m:publication/m:contributors/m:author[normalize-space(text())]"/>
             <xsl:if test="$translators">
-                <div class="text-muted small">
+                <div class="text-muted">
                     <xsl:value-of select="'Translation by '"/>
                     <xsl:value-of select="string-join($translators ! normalize-space(data()), ' · ')"/>
                 </div>
@@ -573,7 +609,7 @@
                 <!--<xsl:if test="$term-lang-terms[text()[not(normalize-space(.) = $entity-data/m:label[@xml:lang eq $term-lang]/text())]]">-->
                 <xsl:if test="$term-lang-terms[text()]">
                     <div>
-                        <ul class="list-inline inline-dots">
+                        <ul class="list-inline inline-dots inline-pad-first">
                             <xsl:choose>
                                 <xsl:when test="$term-lang-terms">
                                     <xsl:for-each select="$term-lang-terms">
@@ -623,7 +659,7 @@
             <xsl:variable name="alternative-terms" select="$entry/m:alternative"/>
             <xsl:if test="$tei-editor and $alternative-terms">
                 <div>
-                    <ul class="list-inline inline-dots">
+                    <ul class="list-inline inline-dots inline-pad-first">
                         <xsl:for-each select="$alternative-terms">
                             <li>
                                 <span>
@@ -665,50 +701,52 @@
             <xsl:choose>
                 <xsl:when test="$tei-editor and $entity-definition and (not($entry-definition) or $instance[@use-definition = ('both','append','prepend','override')])">
                     
-                    <div class="well well-sm">
+                    <div class="well well-sm top-margin bottom-margin">
                         
-                        <h6 class="sml-margin top bottom">
-                            
+                        <h4 class="no-top-margin">
                             <xsl:value-of select="'Text displays entity definition: '"/>
-                            
                             <span class="label label-info">
                                 <xsl:value-of select="($instance/@use-definition[not(. eq '')], 'No entry definition')[1]"/>
                             </span>
-                            
-                        </h6>
+                        </h4>
                         
-                        <blockquote>
-                            
-                            <!-- Entry definition as prologue -->
-                            <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $instance[not(@use-definition = ('override','both','prepend'))])">
-                                <xsl:sequence select="$entry-definition-html"/>
-                            </xsl:if>
-                            
-                            <!-- Entity definition -->
-                            <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','append','prepend','override')])">
-                                <h4 class="sml-margin top bottom text-muted">
+                        <!-- Entry definition as prologue -->
+                        <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $instance[not(@use-definition = ('override','both','prepend'))])">
+                            <xsl:sequence select="$entry-definition-html"/>
+                        </xsl:if>
+                        
+                        <!-- Entity definition -->
+                        <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','append','prepend','override')])">
+                            <div>
+                                <header class="text-muted italic">
                                     <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
-                                </h4>
+                                </header>
                                 <xsl:sequence select="$entity-definition-html"/>
-                            </xsl:if>
-                            
-                            <!-- Entry definition as epilogue -->
-                            <xsl:if test="($entry-definition and $entity-definition and $instance[@use-definition = ('both','prepend')])">
-                                <h4 class="sml-margin top bottom text-muted">
+                            </div>
+                        </xsl:if>
+                        
+                        <!-- Entry definition as epilogue -->
+                        <xsl:if test="($entry-definition and $entity-definition and $instance[@use-definition = ('both','prepend')])">
+                            <div>
+                                <header class="text-muted italic">
                                     <xsl:value-of select="'In this text:'"/>
-                                </h4>
+                                </header>
                                 <xsl:sequence select="$entry-definition-html"/>
-                            </xsl:if>
-                            
-                        </blockquote>
+                            </div>
+                        </xsl:if>
                         
                     </div>
                     
                 </xsl:when>
                 <xsl:when test="($entry-definition and not($entity-definition)) or ($entry-definition and $instance[not(@use-definition eq 'override')])">
-                    <blockquote>
+                    
+                    <div class="top-margin">
+                        <header class="text-muted italic">
+                            <xsl:value-of select="'Defined in this text:'"/>
+                        </header>
                         <xsl:sequence select="$entry-definition-html"/>
-                    </blockquote>
+                    </div>
+                    
                 </xsl:when>
             </xsl:choose>
             

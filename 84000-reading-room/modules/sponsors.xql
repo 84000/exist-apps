@@ -87,7 +87,7 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
         
         let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-name, 'phrase')
         
-        let $title := tei-content:title($tei)
+        let $title := tei-content:title-any($tei)
         let $translation-id := tei-content:id($tei)
         let $translation-status := tei-content:translation-status($tei)
         let $translation-status-group := tei-content:translation-status-group($tei)

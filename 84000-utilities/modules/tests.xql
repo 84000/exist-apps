@@ -37,7 +37,17 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
     return
         <results xmlns="http://read.84000.co/ns/1.0">
         {
-         for $tei in $selected-translations
+        for $tei in $selected-translations
+        
+        let $text-id := tei-content:id($tei)
+        let $text-status := tei-content:translation-status($tei)
+        let $text-status-group := tei-content:translation-status-group($tei)
+        let $test-validate-schema := tests:validate-schema($tei, $schema)
+        let $test-duplicate-ids := tests:duplicate-ids($tei)
+        let $test-scoped-ids := tests:scoped-ids($tei)
+        let $test-valid-pointers := tests:valid-pointers($tei)
+        
+        return
             for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
             
                 let $start-time := util:system-dateTime()
@@ -55,77 +65,79 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                 
                 let $toh-html := $response[2]
                 
-            (:return if(true()) then $toh-html else :)
-            
                 let $end-time := util:system-dateTime()
                 
             return
-               <translation 
-                   id="{ tei-content:id($tei) }" 
-                   test-domain="{ $test-config/m:path/text() }" 
-                   status="{ tei-content:translation-status($tei) }"
-                   status-group="{ tei-content:translation-status-group($tei) }"
-                   duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
-                   <title>{ tei-content:title($tei) }</title>
-                   { translation:toh($tei, $toh-key) }
-                   <tests>
-                    {
-                        tests:validate-schema($tei, $schema),
-                        tests:duplicate-ids($tei),
-                        tests:scoped-ids($tei),
-                        tests:valid-pointers($tei),
-                        tests:titles($toh-html, $tei),
-                        tests:outline-context($tei, $toh-key),
-                        tests:complete-source($toh-html),
-                        tests:translation-tantra-warning($tei, $toh-html),
-                        tests:part(
-                            $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-summary')], 
-                            'summary', 1),
-                        tests:part(
-                            $tei//tei:front//tei:div[@type eq 'acknowledgment'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-acknowledgment')],
-                            'acknowledgment', 1),
-                        tests:part(
-                            $tei//tei:front//tei:div[@type eq 'preface'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-preface')], 
-                            'preface', 0),
-                        tests:part(
-                            $tei//tei:front//tei:div[@type eq 'introduction'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-introduction')], 
-                            'introduction', 1),
-                        tests:part(
-                            $tei//tei:body//tei:div[@type eq 'prologue'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-prologue')], 
-                            'prologue', 0),
-                        tests:part(
-                            $tei//tei:body//tei:div[@type eq 'homage'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-homage')], 
-                            'homage', 0),
-                        tests:part(
-                            element tei:div {
-                                $tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
-                            },
-                            element xhtml:div {
-                                $toh-html//xhtml:section[common:contains-class(@class, ('part-type-chapter', 'part-type-section'))]
-                            }, 
-                            'body', 1),
-                        tests:part(
-                            $tei//tei:body//tei:div[@type eq 'colophon'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-colophon')], 
-                            'colophon', 0),
-                        tests:part(
-                            $tei//tei:back//tei:div[@type eq 'appendix'], 
-                            $toh-html//xhtml:section[common:contains-class(@class, 'part-type-appendix')], 
-                            'appendix', 0),
-                        tests:notes($tei, $toh-html),
-                        tests:abbreviations($tei, $toh-html),
-                        tests:bibliography($tei, $toh-html),
-                        tests:glossary($tei, $toh-html),
-                        tests:refs($tei, $toh-html, $toh-key)
+                <translation 
+                    id="{ $text-id }" 
+                    test-domain="{ $test-config/m:path/text() }" 
+                    status="{ $text-status }"
+                    status-group="{ $text-status-group }"
+                    duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
+                    { 
+                    
+                        translation:title-element($tei, $toh-key),
+                        translation:toh($tei, $toh-key),
+                        
+                        element tests {
+                            $test-validate-schema,
+                            $test-duplicate-ids,
+                            $test-scoped-ids,
+                            $test-valid-pointers,
+                            tests:titles($toh-html, $tei, $toh-key),
+                            tests:outline-context($tei, $toh-key),
+                            tests:complete-source($toh-html),
+                            tests:translation-tantra-warning($tei, $toh-html),
+                            tests:part(
+                                $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-summary')], 
+                                'summary', 1),
+                            tests:part(
+                                $tei//tei:front//tei:div[@type eq 'acknowledgment'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-acknowledgment')],
+                                'acknowledgment', 1),
+                            tests:part(
+                                $tei//tei:front//tei:div[@type eq 'preface'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-preface')], 
+                                'preface', 0),
+                            tests:part(
+                                $tei//tei:front//tei:div[@type eq 'introduction'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-introduction')], 
+                                'introduction', 1),
+                            tests:part(
+                                $tei//tei:body//tei:div[@type eq 'prologue'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-prologue')], 
+                                'prologue', 0),
+                            tests:part(
+                                $tei//tei:body//tei:div[@type eq 'homage'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-homage')], 
+                                'homage', 0),
+                            tests:part(
+                                element tei:div {
+                                    $tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
+                                },
+                                element xhtml:div {
+                                    $toh-html//xhtml:section[common:contains-class(@class, ('part-type-chapter', 'part-type-section'))]
+                                }, 
+                                'body', 1),
+                            tests:part(
+                                $tei//tei:body//tei:div[@type eq 'colophon'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-colophon')], 
+                                'colophon', 0),
+                            tests:part(
+                                $tei//tei:back//tei:div[@type eq 'appendix'], 
+                                $toh-html//xhtml:section[common:contains-class(@class, 'part-type-appendix')], 
+                                'appendix', 0),
+                            tests:notes($tei, $toh-html),
+                            tests:abbreviations($tei, $toh-html),
+                            tests:bibliography($tei, $toh-html),
+                            tests:glossary($tei, $toh-html),
+                            tests:refs($tei, $toh-html, $toh-key)
+                        }
+                        
                     }
-                </tests>
-            </translation>
+                </translation>
+                
         }
         </results>
 };
@@ -174,7 +186,7 @@ declare function tests:sections($section-id as xs:string) as element(m:results) 
                     id="{ $resource-id }"
                     filename="{ base-uri($tei) }"
                     duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
-                    <title>{ tei-content:title($tei) }</title>
+                    <title>{ tei-content:title-any($tei) }</title>
                     <tests>
                     {
                         tests:validate-schema($tei, $schema),
@@ -281,21 +293,23 @@ declare function tests:valid-pointers($tei as element(tei:TEI)) as element(m:tes
         </test>
 };
 
-declare function tests:titles($toh-html as document-node(), $tei as element(tei:TEI)) as element(m:test) {
+declare function tests:titles($toh-html as document-node(), $tei as element(tei:TEI), $toh-key as xs:string) as element(m:test) {
     
-    (: Bo-Ltn can be derived from bo or vice versa :)
-    (: Max 3: 'en', 'Sa-Ltn' and either 'Bo-Ltn' or  'bo' :)
     let $tei-main-titles := (
-        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('en', 'Sa-Ltn')][text()],
-        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1]
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('en', 'Sa-Ltn')][not(@key) or @key eq $toh-key][text()],
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()][1]
     )
     
     (: Max 4: 'en', 'Sa-Ltn', 'Bo-Ltn' and 'bo' if 'Bo-Ltn' or 'bo'  :)
     let $tei-long-titles := (
-        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('en', 'Sa-Ltn')][text()],
-        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1],
-        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][text()][1]
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('en', 'Sa-Ltn')][not(@key) or @key eq $toh-key][text()],
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()][1],
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()][1]
     )
+    let $tei-long-titles := 
+        if(count($tei-long-titles) gt 1 or $tei-long-titles[@xml:lang eq 'Bo-Ltn']) then
+            $tei-long-titles
+        else ()
     
     let $html-main-titles := $toh-html//*[@id eq 'main-titles']/descendant::*[common:contains-class(@class, 'title')][data()]
     let $html-long-titles := $toh-html//*[@id eq 'long-titles']/descendant::*[common:contains-class(@class, 'title')][data()]
@@ -307,13 +321,21 @@ declare function tests:titles($toh-html as document-node(), $tei as element(tei:
             <title>Titles test: The html has the correct number of titles.</title>
             <details>
             { 
+                for $title in $tei-main-titles
+                return 
+                    <detail>TEI main title: {$title/data()}</detail>
+                ,
                 for $title in $html-main-titles
                 return 
-                    <detail>Main title: {$title/data()}</detail>
+                    <detail>HTML main title: {$title/data()}</detail>
+                ,
+                for $title in $tei-long-titles
+                return 
+                    <detail>TEI long title: {$title/data()}</detail>
                 ,
                 for $title in $html-long-titles
                 return 
-                    <detail>Long title: {$title/data()}</detail>
+                    <detail>HTML long title: {$title/data()}</detail>
             }
             </details>
         </test>

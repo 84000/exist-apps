@@ -640,10 +640,10 @@ function common:user-in-group($group as xs:string*) as xs:boolean {
     
     let $smid := sm:id()
     return
-    if($smid//sm:real/sm:groups/sm:group[text() = $group]) then
-        true()
-    else
-        false()
+        if($smid//sm:real/sm:groups/sm:group[text() = $group]) then
+            true()
+        else
+            false()
         
 };
 

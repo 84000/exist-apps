@@ -69,7 +69,7 @@ let $translation-response :=
         attribute id { tei-content:id($tei) },
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
-        translation:titles($tei),
+        translation:titles($tei, $request/@resource-id),
         tei-content:ancestors($tei, $request/@resource-id, 1), 
         translation:toh($tei, $request/@resource-id),
         $translation-text

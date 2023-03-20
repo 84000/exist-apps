@@ -19,16 +19,19 @@ declare variable $translations:total-kangyur-pages as xs:integer := 70000;
 (:declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));:)
 
 declare function translations:work-tei($work as xs:string) as element(tei:TEI)* {
+
     if($work eq 'all') then
         $tei-content:translations-collection//tei:TEI
     else if($work = ($source:kangyur-work, $source:tengyur-work)) then
         $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location[@work = $work]]
     else ()
+    
 };
 
 declare function translations:files($publication-statuses as xs:string*) as element(m:translations) {
 
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
+    
         for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt[@status = $publication-statuses]/ancestor::tei:TEI
             let $base-uri := base-uri($tei)
             let $file-name := util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8')
@@ -36,10 +39,11 @@ declare function translations:files($publication-statuses as xs:string*) as elem
         return
             element file {
                 attribute id { tei-content:id($tei) },
-                attribute document-url { tei-content:document-url($tei) },
+                attribute document-url { $base-uri },
                 attribute file-name { $file-name },
-                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title($tei))
+                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title-any($tei))
             }
+            
     }
     
 };
@@ -436,7 +440,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
     let $text-id := tei-content:id($tei)
     let $lang := request:get-parameter('lang', 'en')
     let $toh := translation:toh($tei, $toh-key)
-    let $document-url := tei-content:document-url($tei)
+    let $document-url := base-uri($tei)
     let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')
     let $document-path := substring-before($document-url, concat('/', $file-name))
     let $archive-path := 
@@ -456,8 +460,8 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute status { tei-content:translation-status($tei) },
             attribute status-group { tei-content:translation-status-group($tei) },
             $toh,
-            translation:titles($tei),
-            translation:title-variants($tei),
+            translation:titles($tei, $toh/@key),
+            translation:title-variants($tei, $toh/@key),
             (:tei-content:source-bibl($tei, $toh-key),:)
             tei-content:source($tei, $toh-key),
             translation:location($tei, $toh-key),
@@ -551,7 +555,7 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
         return
             element { QName('http://read.84000.co/ns/1.0', 'text') }{
                 attribute id { $text-id }, 
-                attribute document-url { tei-content:document-url($tei) },
+                attribute document-url { base-uri($tei) },
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
                 attribute translation-status { tei-content:translation-status($tei) },
@@ -600,7 +604,9 @@ declare function translations:recent-updates() as element(m:recent-updates) {
                     attribute status { tei-content:translation-status($tei) },
                     attribute status-group { tei-content:translation-status-group($tei) },
                     attribute recent-update { if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then 'new-publication' else 'new-version' },
-                    translation:titles($tei),
+                    
+                    translation:titles($tei, ()),
+                    
                     for $bibl in $fileDesc/tei:sourceDesc/tei:bibl
                     return
                         translation:toh($tei, $bibl/@key)

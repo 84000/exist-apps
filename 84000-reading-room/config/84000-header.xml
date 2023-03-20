@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 17.02.2023 -->
+    <!-- Updated 16.03.2023 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -96,7 +96,7 @@
         </item>
         <item class="resources" url="#resources">
             <label key="label-resources">Resources</label>
-            <item url="https://84000.co/resources/translator-training">
+            <item url="https://84000.co/resources/for-translators">
                 <label key="label-translator-training">For Translators</label>
             </item>
             <item url="https://84000.co/resources/teachings-on-sutra">

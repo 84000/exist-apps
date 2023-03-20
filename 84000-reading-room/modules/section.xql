@@ -14,14 +14,6 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 declare variable $section:sections := collection($common:sections-path);
 declare variable $section:texts := collection($common:translations-path);
 
-declare function section:titles($tei as element(tei:TEI)) as element() {
-    
-    element { QName('http://read.84000.co/ns/1.0', 'titles') } {
-        tei-content:title-set($tei, 'mainTitle')
-    }
-    
-};
-
 declare function section:abstract($tei as element(tei:TEI)) as element() {
 
     element { QName('http://read.84000.co/ns/1.0', 'abstract') } {
@@ -68,14 +60,14 @@ declare function section:text($tei as element(tei:TEI), $resource-id as xs:strin
         attribute resource-id { $resource-id },
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
-        attribute document-url { tei-content:document-url($tei) },
+        attribute document-url { base-uri($tei) },
         attribute canonical-html { translation:canonical-html($resource-id, '') },
         attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) },
         tei-content:source($tei, $resource-id),
         translation:toh($tei, $resource-id),
         tei-content:ancestors($tei, $resource-id, 0),
-        translation:titles($tei),
-        translation:title-variants($tei),
+        translation:titles($tei, $resource-id),
+        translation:title-variants($tei, $resource-id),
         translation:publication($tei),
         translation:downloads($tei, $resource-id, 'any-version'),
         translation:summary($tei)
@@ -261,12 +253,13 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
             attribute id { $id },
             attribute type { $type },
             attribute nesting { $nest },
-            attribute document-url { tei-content:document-url($tei) },
+            attribute document-url { base-uri($tei) },
             attribute sort-index { $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index },
             attribute last-updated { $last-updated },
             attribute include-texts { $include-texts },
             attribute toh-number-first { min($child-texts-output/m:toh/@number ! number(.)) },
-            section:titles($tei),
+            
+            tei-content:title-set($tei, 'mainTitle'),
             
             (: avoid duplicate ids :)
             if($nest gt 1) then
@@ -310,11 +303,11 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
         element { QName('http://read.84000.co/ns/1.0', 'section') }{
             attribute id { 'ALL-TRANSLATED' },
             attribute type { $section-tei/tei:teiHeader/tei:fileDesc/@type },
-            attribute document-url { tei-content:document-url($section-tei) },
+            attribute document-url { base-uri($section-tei) },
             attribute sort-index { $section-tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index },
             attribute last-updated { tei-content:last-updated($section-tei/tei:teiHeader/tei:fileDesc) },
             
-            section:titles($section-tei),
+            tei-content:title-set($section-tei, 'mainTitle'),
             section:abstract($section-tei),
             section:warning($section-tei),
             section:about($section-tei),

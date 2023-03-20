@@ -94,7 +94,7 @@ let $text :=
     element { QName('http://read.84000.co/ns/1.0', 'text') } {
             
         attribute id { $text-id },
-        attribute document-url { tei-content:document-url($tei) },
+        attribute document-url { base-uri($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
         attribute status { $translation-status },
         attribute status-group { $translation-status-group },
@@ -107,11 +107,8 @@ let $text :=
             translation:downloads($tei, $bibl/@key, 'all')
         ),
         
-        element title { 
-            tei-content:title($tei) 
-        },
-        
-        tei-content:titles($tei),
+        translation:title-element($tei, ()),
+        tei-content:titles-all($tei),
         translation:publication($tei),
         translation:contributors($tei, true()),
         tei-content:status-updates($tei)

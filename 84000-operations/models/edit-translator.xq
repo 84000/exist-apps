@@ -24,8 +24,7 @@ let $contributor :=
         contributors:person($post-id, true(), false())
     else if($request-id gt '') then
         contributors:person($request-id, true(), false())
-    else
-        ()
+    else ()
 
 let $xml-response := 
     common:response(

@@ -180,11 +180,11 @@ let $text :=
     element { QName('http://read.84000.co/ns/1.0', 'text') }{
         attribute id { tei-content:id($tei) },
         attribute tei-version { tei-content:version-str($tei) },
-        attribute document-url { tei-content:document-url($tei) },
+        attribute document-url { base-uri($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
-        tei-content:titles($tei),
+        tei-content:titles-all($tei),
         if($resource-type eq 'translation') then
             translation:toh($tei, '')
         else ()

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -28,10 +28,14 @@
                     
                     <xsl:variable name="submission" select="m:submission"/>
                     
+                    <h2>
+                        <xsl:value-of select="string-join((m:translation/m:toh/m:full, m:translation/m:title), ' / ')"/>
+                    </h2>
+                    
                     <div class="center-vertical full-width">
                         <span>
                             <span class="h3 text-sa text-muted">
-                                <xsl:value-of select="concat(m:translation/m:toh/m:full, ' / ', $submission/@file-name)"/>
+                                <xsl:value-of select="$submission/@file-name"/>
                             </span>
                             <xsl:value-of select="' / '"/>
                             <a>

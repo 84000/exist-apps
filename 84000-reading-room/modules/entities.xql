@@ -205,7 +205,7 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
                 
                 $tei[1]//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
                 
-                tei-content:titles($tei[1]),
+                tei-content:titles-all($tei[1]),
                 
                 if($text-type eq 'translation') then 
                     translation:publication($tei[1])

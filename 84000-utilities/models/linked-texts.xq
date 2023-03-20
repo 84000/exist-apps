@@ -14,12 +14,12 @@ declare function local:linked-text($tei as element(tei:TEI)) as element(m:text) 
     element { QName('http://read.84000.co/ns/1.0', 'text') } {
     
         attribute id { tei-content:id($tei) },
-        attribute document-url { tei-content:document-url($tei) },
+        attribute document-url { base-uri($tei) },
         attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
         
-        translation:titles($tei),
+        translation:titles($tei, ()),
         translation:toh($tei, ''),
         
         for $link in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:link[@type][@target]
@@ -31,12 +31,12 @@ declare function local:linked-text($tei as element(tei:TEI)) as element(m:text) 
                     element { QName('http://read.84000.co/ns/1.0', 'text') } {
                     
                         attribute id { tei-content:id($target-tei) },
-                        attribute document-url { tei-content:document-url($target-tei) },
+                        attribute document-url { base-uri($target-tei) },
                         attribute file-name { util:unescape-uri(replace(base-uri($target-tei), ".+/(.+)$", "$1"), 'UTF-8') },
                         attribute status { tei-content:translation-status($target-tei) },
                         attribute status-group { tei-content:translation-status-group($target-tei) },
                         
-                        translation:titles($target-tei),
+                        translation:titles($target-tei, $link/@target),
                         translation:toh($target-tei, $link/@target)
                         
                     }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -25,8 +25,8 @@
     <xsl:key name="glossary-cache-gloss" match="m:glossary-cache/m:gloss" use="@id"/>
     <xsl:key name="glossary-cache-index" match="m:glossary-cache/m:gloss" use="@index"/>
     <xsl:key name="glossary-cache-location" match="m:glossary-cache/m:gloss/m:location" use="@id"/>
-    <xsl:key name="folio-refs-pre-processed" match="m:pre-processed[@type eq 'folio-refs']/m:folio-ref" use="@id"/>
-    <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
+    <xsl:key name="folio-refs-pre-processed" match="m:pre-processed[@type eq 'folio-refs']/m:folio-ref[@source-key eq $toh-key]" use="@id"/>
+    <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note[@source-key eq $toh-key]" use="@id"/>
     <xsl:key name="milestones-pre-processed" match="m:pre-processed[@type eq 'milestones']/m:milestone" use="@id"/>
     <xsl:key name="glossary-pre-processed" match="m:pre-processed[@type eq 'glossary']/m:gloss" use="@id"/>
     <xsl:key name="quotes-outbound" match="m:pre-processed[@type eq 'quotes'][@text-id eq $translation/@id]/m:quote" use="@id"/>
@@ -184,7 +184,7 @@
     </xsl:template>
     
     <!-- Ignore any nodes with a different key - except those that are indexed -->
-    <xsl:template match="tei:*[@key][@key = $translation/m:toh//m:duplicate/@key][not(self::tei:note | self::tei:milestone | tei:gloss)]">
+    <xsl:template match="tei:*[@key][not(@key eq $toh-key)][not(self::tei:note | self::tei:milestone | tei:gloss)]">
         <!-- Ignore these -->
     </xsl:template>
     
@@ -465,7 +465,7 @@
         </xsl:if>
         
         <!-- Output the milestone -->
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             
             <xsl:with-param name="content">
                 <xsl:element name="{ if($element/self::tei:lg) then 'div' else if($element/self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
@@ -581,7 +581,7 @@
         
         <xsl:variable name="element" select="."/>
         
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <div>
                     
@@ -754,7 +754,7 @@
     
     <!-- Table -->
     <xsl:template match="tei:table">
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 
                 <div>
@@ -938,7 +938,7 @@
         </strong>
     </xsl:template>
     <xsl:template match="tei:label">
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <h5 class="section-label">
                     
@@ -960,7 +960,7 @@
     
     <!-- Lists -->
     <xsl:template match="tei:list[@type eq 'abbreviations']">
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <xsl:for-each select="tei:head[@type eq 'abbreviations' and not(lower-case(data()) = ('abbreviations', 'abbreviations:'))]">
                     <h5>
@@ -998,7 +998,7 @@
     </xsl:template>
     <xsl:template match="tei:list">
         
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <div>
                     
@@ -1032,7 +1032,7 @@
         
     </xsl:template>
     <xsl:template match="tei:head[parent::tei:list]">
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <h5 class="section-label">
                     
@@ -1054,7 +1054,7 @@
         </xsl:call-template>
     </xsl:template>
     <xsl:template match="tei:item[parent::tei:list]">
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <div>
                     
@@ -1662,7 +1662,6 @@
         </xsl:if>
         
     </xsl:template>
-    
     <xsl:template name="cached-locations">
         
         <xsl:param name="cached-locations" as="element(m:location)*"/>
@@ -1778,14 +1777,14 @@
     <!-- Sections -->
     <xsl:template match="m:part | tei:div">
         
-        <xsl:variable name="element" select="."/>
-        <xsl:variable name="element-id" select="($element/@id, $element/@xml:id)[1]" as="xs:string?"/>
+        <xsl:variable name="part" select="."/>
+        <xsl:variable name="part-id" select="($part/@id, $part/@xml:id)[1]" as="xs:string?"/>
         
         <div>
             
             <!-- Set the id -->
-            <xsl:if test="ancestor-or-self::m:part[@content-status][1][not(@content-status eq 'preview')]">
-                <xsl:attribute name="id" select="$element-id"/>
+            <xsl:if test="$part/ancestor-or-self::m:part[@content-status][1][not(@content-status eq 'preview')]">
+                <xsl:attribute name="id" select="$part-id"/>
             </xsl:if>
             
             <!-- Set the class -->
@@ -1799,14 +1798,14 @@
             </xsl:call-template>
             
             <xsl:call-template name="data-location-id-attribute">
-                <xsl:with-param name="node" select="$element"/>
+                <xsl:with-param name="node" select="$part"/>
             </xsl:call-template>
             
-            <xsl:apply-templates select="$element/node()"/>
+            <xsl:apply-templates select="$part/node()"/>
             
             <!-- Add link to tei editor -->
             <xsl:call-template name="tei-editor">
-                <xsl:with-param name="node" select="$element"/>
+                <xsl:with-param name="node" select="$part"/>
             </xsl:call-template>
             
         </div>
@@ -1831,11 +1830,14 @@
             
         </h2>
     </xsl:template>
+    
     <!-- Primary headers / linked to a section -->
-    <xsl:template match="tei:head[@type eq parent::*/@type]">
+    <xsl:template match="tei:head[@type eq parent::*/@type][not(@type eq 'translation')][not(@key) or @key eq $toh-key]">
         
-        <xsl:variable name="part" select="(parent::m:part, parent::tei:div)[1]"/>
-        <xsl:variable name="part-nesting" select="($part/@nesting/number(), count(ancestor::tei:div))[1]"/>
+        <xsl:variable name="head" select="."/>
+        <xsl:variable name="part" select="($head/parent::m:part, $head/parent::tei:div)[1]"/>
+        <xsl:variable name="part-nesting" select="($part/@nesting/number(), count($head/ancestor::tei:div))[1]"/>
+        
         <xsl:variable name="header-tag" as="xs:string">
             <xsl:choose>
                 <xsl:when test="$part-nesting eq 0">
@@ -1849,150 +1851,126 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:variable name="title-text" select="$part/m:title-text[1]"/>
-        <xsl:variable name="title-supp" select="$part/m:title-supp[1]"/>
-        <xsl:variable name="main-title" select="$translation/m:part[@type eq 'translation']/m:main-title[text()]" as="element(m:main-title)?"/>
+        
+        <xsl:variable name="supplementary-heading" select="$part/tei:head[@type eq 'supplementary'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+        <xsl:variable name="main-title" select="$part/tei:head[@type eq 'titleMain'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
         <xsl:variable name="translation-part-head" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][text()][1]" as="element(tei:head)?"/>
         
-        <!-- .rw container -->
-        <div>
+        <xsl:call-template name="header-row">
             
-            <!-- .rw container classes -->
-            <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes" as="xs:string*">
-                    <xsl:value-of select="'rw'"/>
-                    <xsl:value-of select="'rw-section-head'"/>
-                </xsl:with-param>
-            </xsl:call-template>
+            <xsl:with-param name="head" select="$head"/>
+            <xsl:with-param name="part" select="$part"/>
             
-            <xsl:call-template name="data-location-id-attribute">
-                <xsl:with-param name="node" select="$part"/>
-            </xsl:call-template>
-            
-            <!-- Add a milestone .gtr -->
-            <xsl:if test="$part[@prefix]">
-                <div class="gtr">
-                    <xsl:choose>
-                        
-                        <!-- show a link -->
-                        <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))] and $part[@id]">
-                            <xsl:call-template name="bookmark-link">
-                                <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
-                                <xsl:with-param name="bookmark-target-part" select="$part/@id"/>
-                                <xsl:with-param name="bookmark-label">
-                                    <xsl:call-template name="bookmark-label">
-                                        <xsl:with-param name="prefix" select="$part/@prefix"/>
-                                    </xsl:call-template>
-                                </xsl:with-param>
-                                <xsl:with-param name="bookmark-title" select="data()"/>
-                            </xsl:call-template>
-                        </xsl:when>
-                        
-                        <!-- or just the text -->
-                        <xsl:otherwise>
-                            <xsl:call-template name="bookmark-label">
-                                <xsl:with-param name="prefix" select="$part/@prefix"/>
-                            </xsl:call-template>
-                        </xsl:otherwise>
-                        
-                    </xsl:choose>
-                </div>
-            </xsl:if>
-            
-            <xsl:call-template name="quotes-inbound">
-                <xsl:with-param name="quotes" select="key('quotes-inbound', $part/@id, $root)"/>
-            </xsl:call-template>
-            
-            <!-- .rw-heading container -->
-            <div>
+            <xsl:with-param name="header-content">
                 
-                <!-- .rw-heading container classes -->
-                <xsl:call-template name="class-attribute">
-                    <xsl:with-param name="base-classes" as="xs:string*">
-                        <xsl:value-of select="'rw-heading'"/>
-                        <xsl:value-of select="'heading-section'"/>
-                        <xsl:if test="not(@type = ('section', 'colophon', 'homage', 'prologue'))">
-                            <xsl:value-of select="'chapter'"/>
-                        </xsl:if>
-                        <xsl:if test="$part-nesting">
-                            <xsl:value-of select="concat('nested nested-', $part-nesting)"/>
-                        </xsl:if>
-                    </xsl:with-param>
-                </xsl:call-template>
-                
-                <!-- Add another container element for dots :before and :after -->
-                <header>
-                    
-                    <!-- Supplementary title -->
-                    <xsl:if test="$title-supp[text()]">
-                        <div class="h4">
-                            
-                            <xsl:call-template name="id-attribute">
-                                <xsl:with-param name="node" select="$title-supp"/>
-                            </xsl:call-template>
-                            
-                            <xsl:apply-templates select="$title-supp/text()"/>
-                            
-                        </div>
-                    </xsl:if>
-                    
-                    <xsl:element name="{ $header-tag }">
+                <!-- Supplementary title -->
+                <xsl:if test="$supplementary-heading">
+                    <div class="h4">
                         
                         <xsl:call-template name="id-attribute">
-                            <xsl:with-param name="node" select="."/>
+                            <xsl:with-param name="node" select="$supplementary-heading"/>
                         </xsl:call-template>
                         
-                        <xsl:call-template name="class-attribute">
-                            <xsl:with-param name="base-classes" as="xs:string*">
-                                <xsl:value-of select="'section-title'"/>
-                                <xsl:if test="@xml:lang eq 'Sa-Ltn'">
-                                    <xsl:value-of select="'break'"/>
-                                </xsl:if>
-                            </xsl:with-param>
-                        </xsl:call-template>
+                        <xsl:apply-templates select="$supplementary-heading/node()"/>
                         
-                        <xsl:choose>
-                            <xsl:when test="data(.) eq data($main-title)">
-                                <xsl:apply-templates select="$translation-part-head/node()"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:apply-templates select="node()"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        
-                        
-                        <xsl:call-template name="tei-editor">
-                            <xsl:with-param name="node" select="."/>
-                        </xsl:call-template>
-                        
-                    </xsl:element>
-                    
-                    <xsl:if test="$title-text[text()]">
-                        
-                        <div class="h3">
-                            
-                            <xsl:call-template name="id-attribute">
-                                <xsl:with-param name="node" select="$title-text"/>
-                            </xsl:call-template>
-                            
-                            <xsl:apply-templates select="$title-text/node()"/>
-                            
-                        </div>
-                        
-                    </xsl:if>
-                    
-                </header>
+                    </div>
+                </xsl:if>
                 
-            </div>
+                <!-- Chapter title -->
+                <xsl:element name="{ $header-tag }">
+                    
+                    <xsl:call-template name="id-attribute">
+                        <xsl:with-param name="node" select="$head"/>
+                    </xsl:call-template>
+                    
+                    <xsl:call-template name="class-attribute">
+                        <xsl:with-param name="base-classes" as="xs:string*">
+                            <xsl:value-of select="'section-title'"/>
+                            <xsl:if test="$head/@xml:lang eq 'Sa-Ltn'">
+                                <xsl:value-of select="'break'"/>
+                            </xsl:if>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                    
+                    <xsl:choose>
+                        <xsl:when test="data($head) eq data($main-title)">
+                            <xsl:apply-templates select="$translation-part-head/node()"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:apply-templates select="node()"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                    <xsl:call-template name="tei-editor">
+                        <xsl:with-param name="node" select="$head"/>
+                    </xsl:call-template>
+                    
+                </xsl:element>
+                
+                <!-- Main title -->
+                <xsl:if test="$main-title">
+                    
+                    <div class="h3">
+                        
+                        <xsl:call-template name="id-attribute">
+                            <xsl:with-param name="node" select="$main-title"/>
+                        </xsl:call-template>
+                        
+                        <xsl:apply-templates select="$main-title/node()"/>
+                        
+                    </div>
+                    
+                </xsl:if>
             
-        </div>
+            </xsl:with-param>
+            
+        </xsl:call-template>
         
     </xsl:template>
+    
+    <xsl:template match="tei:head[@type = ('titleMain', 'supplementary')]">
+        <!-- Already parsed in combination with tei:head, so ignore -->
+    </xsl:template>
+    
+    <!-- This is only called if there's no heading in the first chapter -->
+    <xsl:template match="tei:head[@type eq 'translation']">
+        
+        <xsl:call-template name="header-row">
+            
+            <xsl:with-param name="head" select="."/>
+            <xsl:with-param name="part" select="$translation/m:part[@type eq 'translation']/m:part[1]"/>
+            
+            <xsl:with-param name="header-content">
+                <h2>
+                    
+                    <xsl:call-template name="id-attribute">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
+                    
+                    <xsl:call-template name="class-attribute">
+                        <xsl:with-param name="base-classes" as="xs:string*">
+                            <xsl:value-of select="'section-title'"/>
+                        </xsl:with-param>
+                    </xsl:call-template>
+                    
+                    <xsl:apply-templates select="node()"/>
+                    
+                    <xsl:call-template name="tei-editor">
+                        <xsl:with-param name="node" select="."/>
+                    </xsl:call-template>
+                    
+                </h2>    
+            </xsl:with-param>
+            
+        </xsl:call-template>
+        
+    </xsl:template>
+    
     <!-- Other headers, could be anywhere in text -->
     <xsl:template match="tei:head">
         
         <!-- .rw container from milestone template -->
-        <xsl:call-template name="milestone">
+        <xsl:call-template name="milestone-row">
             
             <xsl:with-param name="content">
                 
@@ -2041,12 +2019,6 @@
         </xsl:call-template>
         
     </xsl:template>
-    <xsl:template match="m:title-text">
-        <!-- Already parsed in combination with tei:head, so ignore -->
-    </xsl:template>
-    <xsl:template match="m:title-supp">
-        <!-- Already parsed in combination with tei:head, so ignore -->
-    </xsl:template>
     
     <xsl:template match="exist:match">
         <span class="mark">
@@ -2058,7 +2030,7 @@
         <xsl:choose>
             
             <xsl:when test="@mimeType eq 'audio/mpeg' and $view-mode[@client = ('browser', 'ajax')]">
-                <xsl:call-template name="milestone">
+                <xsl:call-template name="milestone-row">
                     <xsl:with-param name="content">
                         <audio controls="controls">
                             <xsl:attribute name="title" select="tei:desc"/>
@@ -2120,8 +2092,8 @@
         </code>
     </xsl:template>
     
-    <!-- Milestone -->
-    <xsl:template name="milestone">
+    <!-- Milestone row -->
+    <xsl:template name="milestone-row">
         
         <xsl:param name="content" required="yes"/>
         <xsl:param name="row-type" required="yes"/>
@@ -2133,10 +2105,10 @@
             <xsl:choose>
                 <xsl:when test="($translation | $knowledgebase)">
                     
-                    <!-- Set id -->
-                    <xsl:variable name="milestone" select="($element/preceding-sibling::tei:*[1][self::tei:milestone] | $element/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | $element/parent::tei:seg/preceding-sibling::tei:*[1][self::tei:milestone] | $element/parent::tei:seg/preceding-sibling::tei:*[2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
+                    <!-- Find adjacent milestone -->
+                    <xsl:variable name="milestone" select="($element/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][1][self::tei:milestone] | $element/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | $element/parent::tei:seg/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][1][self::tei:milestone] | $element/parent::tei:seg/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
                     
-                    <xsl:if test="$milestone[@xml:id] and ancestor-or-self::m:part[@content-status][1][not(@content-status eq 'preview')]">
+                    <xsl:if test="$milestone[@xml:id] and $element/ancestor-or-self::m:part[@content-status][1][not(@content-status eq 'preview')]">
                         <xsl:attribute name="id" select="$milestone/@xml:id"/>
                     </xsl:if>
                     
@@ -2222,6 +2194,93 @@
                     
                 </xsl:otherwise>
             </xsl:choose>
+            
+        </div>
+        
+    </xsl:template>
+    
+    <!-- Header row -->
+    <xsl:template name="header-row">
+        
+        <xsl:param name="head" as="element(tei:head)"/>
+        <xsl:param name="part" as="element(m:part)"/>
+        <xsl:param name="header-content" as="node()*"/>
+        
+        <xsl:variable name="part-nesting" select="($part/@nesting/number(), count($head/ancestor::tei:div))[1]"/>
+        
+        <!-- .rw container -->
+        <div class="rw rw-section-head">
+            
+            <!-- .rw container classes -->
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes" as="xs:string*">
+                    <xsl:value-of select="'rw'"/>
+                    <xsl:value-of select="'rw-section-head'"/>
+                </xsl:with-param>
+            </xsl:call-template>
+            
+            <!-- data-location-id -->
+            <xsl:call-template name="data-location-id-attribute">
+                <xsl:with-param name="node" select="$part"/>
+            </xsl:call-template>
+            
+            <!-- Add a milestone .gtr -->
+            <xsl:if test="$part[@prefix]">
+                <div class="gtr">
+                    <xsl:choose>
+                        
+                        <!-- show a link -->
+                        <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))] and $part[@id]">
+                            <xsl:call-template name="bookmark-link">
+                                <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
+                                <xsl:with-param name="bookmark-target-part" select="$part/@id"/>
+                                <xsl:with-param name="bookmark-label">
+                                    <xsl:call-template name="bookmark-label">
+                                        <xsl:with-param name="prefix" select="$part/@prefix"/>
+                                    </xsl:call-template>
+                                </xsl:with-param>
+                                <xsl:with-param name="bookmark-title" select="$head/data()"/>
+                            </xsl:call-template>
+                        </xsl:when>
+                        
+                        <!-- or just the text -->
+                        <xsl:otherwise>
+                            <xsl:call-template name="bookmark-label">
+                                <xsl:with-param name="prefix" select="$part/@prefix"/>
+                            </xsl:call-template>
+                        </xsl:otherwise>
+                        
+                    </xsl:choose>
+                </div>
+            </xsl:if>
+            
+            <xsl:call-template name="quotes-inbound">
+                <xsl:with-param name="quotes" select="key('quotes-inbound', $part/@id, $root)"/>
+            </xsl:call-template>
+            
+            <!-- .rw-heading container -->
+            <div>
+                
+                <!-- .rw-heading container classes -->
+                <xsl:call-template name="class-attribute">
+                    <xsl:with-param name="base-classes" as="xs:string*">
+                        <xsl:value-of select="'rw-heading'"/>
+                        <xsl:value-of select="'heading-section'"/>
+                        <xsl:if test="not($head/@type = ('translation', 'section', 'colophon', 'homage', 'prologue'))">
+                            <xsl:value-of select="'chapter'"/>
+                        </xsl:if>
+                        <xsl:if test="$part-nesting">
+                            <xsl:value-of select="concat('nested nested-', $part-nesting)"/>
+                        </xsl:if>
+                    </xsl:with-param>
+                </xsl:call-template>
+                
+                <!-- Add another container element for dots :before and :after -->
+                <header>
+                    <xsl:sequence select="$header-content"/>
+                </header>
+                
+            </div>
             
         </div>
         
@@ -2553,8 +2612,9 @@
         <xsl:for-each select="$parts">
             
             <xsl:variable name="part" select="."/>
-            <xsl:variable name="part-head" select="($part/tei:head[@type eq $part/@type][data()],$part/m:main-title)[1]"/>
+            <xsl:variable name="part-head" select="($part/tei:head[@type eq $part/@type][not(@key) or @key eq $toh-key][data()], $part/parent::m:part[@type eq 'translation']/tei:head[@type eq 'titleMain'][not(@key) or @key eq $toh-key][data()])[1]"/>
             <xsl:variable name="sub-parts" select="$part/m:part"/>
+            <xsl:variable name="sub-parts-with-headings" select="$sub-parts[tei:head[data()]] | $sub-parts[parent::m:part[@type eq 'translation']/tei:head[@type eq 'titleMain'][not(@key) or @key eq $toh-key][data()]]"/>
             
             <xsl:choose>
                 
@@ -2692,10 +2752,10 @@
                     <xsl:choose>
                         
                         <!-- Create an expandable block for sub-sections -->
-                        <xsl:when test="$sub-parts[tei:head[data()]]">
+                        <xsl:when test="$sub-parts-with-headings">
                             
                             <xsl:variable name="count-chapters" select="count($sub-parts[@type eq 'chapter'])"/>
-                            <xsl:variable name="count-sections" select="count($sub-parts[tei:head[data()]])"/>
+                            <xsl:variable name="count-sections" select="count($sub-parts-with-headings)"/>
                             <xsl:variable name="sub-parts-label">
                                 <xsl:choose>
                                     <xsl:when test="$count-chapters eq 1">
@@ -3658,7 +3718,7 @@
             </xsl:when>
             
             <!-- EFT elements we don't want to process -->
-            <xsl:when test="$node/ancestor-or-self::m:honoration | $node/ancestor-or-self::m:main-title  | $node/ancestor-or-self::m:sub-title | $node/ancestor-or-self::m:title-supp | $node/ancestor-or-self::m:title-text | $node/ancestor-or-self::m:match">
+            <xsl:when test="$node/ancestor-or-self::m:match">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
@@ -3706,11 +3766,6 @@
             
             <!-- TEI elements we don't want to process -->
             <xsl:when test="$node/ancestor-or-self::tei:ptr | $node/ancestor-or-self::tei:ref[@target] | $node/ancestor-or-self::tei:lb | $node/ancestor-or-self::tei:milestone">
-                <xsl:value-of select="false()"/>
-            </xsl:when>
-            
-            <!-- EFT elements we don't want to process -->
-            <xsl:when test="$node/ancestor-or-self::m:honoration | $node/ancestor-or-self::m:main-title  | $node/ancestor-or-self::m:sub-title | $node/ancestor-or-self::m:title-supp | $node/ancestor-or-self::m:title-text">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             

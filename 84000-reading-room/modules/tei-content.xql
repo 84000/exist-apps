@@ -70,7 +70,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
 
     let $collection := 
         (: Layout checks :)
-        if(lower-case($resource-id) = ('toh00', 'ut22084-000-000', 'toh00c', 'ut23703-000-000')) then
+        if(lower-case($resource-id) = ('toh00', 'toh00a', 'ut22084-000-000', 'toh00c', 'ut23703-000-000')) then
             collection(concat($common:tei-path, '/layout-checks'))
         
         (: Archived copy :)
@@ -109,27 +109,33 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
 };
 
-declare function tei-content:title($tei as element(tei:TEI)) as xs:string? {
-    (: Returns a standardised title in a given tei doc :)
+declare function tei-content:title-any($tei as element(tei:TEI)) as xs:string? {
     
-    let $title := $tei//tei:titleStmt/tei:title[@xml:lang eq 'en'][normalize-space(text())]
+    (: Returns a title from the tei :)
     
-    return
-        if(not($title))then
-            concat($tei//tei:titleStmt/tei:title[@xml:lang eq 'Sa-Ltn'][normalize-space(text())][1] ! normalize-space(text()), ' (awaiting English title)')
-        else
-            $title[1] ! normalize-space(text())
+    let $titles := $tei//tei:fileDesc/tei:titleStmt/tei:title
+    
+    return (
+        $titles[@type eq 'mainTitle'][@xml:lang eq 'en'],
+        $titles[@xml:lang eq 'en'],
+        $titles[@type eq 'mainTitle'][@xml:lang eq 'Sa-Ltn'],
+        $titles[not(@xml:lang eq 'en')]
+    )[normalize-space(text())][1] ! concat(normalize-space(text()), @xml:lang[not(. eq 'en')] ! ' (awaiting English title)')
     
 };
 
 declare function tei-content:title($tei as node(), $type as xs:string?, $lang as xs:string*) as xs:string? {
     
-    $tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang = $lang][@type eq $type][normalize-space(text())][1] ! normalize-space(text())
+    (: Returns a specific type of title from the tei :)
+    
+    ($tei//tei:fileDesc/tei:titleStmt/tei:title[@xml:lang = $lang][@type eq $type])[normalize-space(text())][1] ! normalize-space(text())
     
 };
 
-declare function tei-content:titles($tei as element(tei:TEI)) as element(m:titles) {
-
+declare function tei-content:titles-all($tei as element(tei:TEI)) as element(m:titles) {
+    
+    (: Returns all titles from the tei :)
+    
     element { QName('http://read.84000.co/ns/1.0', 'titles') } {
         for $title in $tei//tei:fileDesc/tei:titleStmt/tei:title
         return
@@ -148,52 +154,43 @@ declare function tei-content:titles($tei as element(tei:TEI)) as element(m:title
     
 };
 
-declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:string) as element()* {
+declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:string) as element(m:titles) {
     
-    let $titles := $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq $type][normalize-space(text())]
+    (: Returns a set of titles from the tei :)
     
-    let $source-bibl := tei-content:source-bibl($tei, '')
+    let $titles := ($tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq $type])[normalize-space(text())]
     
     let $en := $titles[@xml:lang = ('eng', 'en')][1]
     let $bo-ltn := $titles[@xml:lang = ('Bo-Ltn', '')][1]
     let $bo := $titles[@xml:lang eq 'bo'][1]
     let $sa-ltn := $titles[@xml:lang eq 'Sa-Ltn'][1]
     
-    return (
-        element { QName('http://read.84000.co/ns/1.0', 'title') }{
-            attribute xml:lang { 'en' },
-            $en/@*[not(name(.) = ('xml:lang', 'type'))],
-            $en/text() ! normalize-space(.)
-        },
-        element { QName('http://read.84000.co/ns/1.0', 'title') }{
-            attribute xml:lang { 'bo' },
-            $en/@*[not(name(.) = ('xml:lang', 'type'))],
-            if(not($bo/text()) and $bo-ltn/text()) then
-                common:bo-from-wylie($bo-ltn/text() ! normalize-space(.))
-            else
-                $bo/text() ! normalize-space(.)
-        },
-        element { QName('http://read.84000.co/ns/1.0', 'title') }{
-            attribute xml:lang { 'Bo-Ltn' },
-            $bo-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
-            $bo-ltn/text() ! normalize-space(.)
-        },
-        element { QName('http://read.84000.co/ns/1.0', 'title') }{
-            attribute xml:lang { 'Sa-Ltn' },
-            $sa-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
-            $sa-ltn/text() ! normalize-space(.)
-        },
-        if($source-bibl[@type eq 'chapter']) then
-            let $parent-id := $source-bibl/tei:idno/@parent-id
-            let $parent-tei := tei-content:tei($parent-id, 'section')
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'parent') }{
-                    element titles {
-                        tei-content:title-set($parent-tei, 'mainTitle')
-                    }
-                }
-        else ()
-    )
+    return 
+        element { QName('http://read.84000.co/ns/1.0', 'titles') } {
+            element title {
+                attribute xml:lang { 'en' },
+                $en/@*[not(name(.) = ('xml:lang', 'type'))],
+                $en/text() ! normalize-space(.)
+            },
+            element title {
+                attribute xml:lang { 'bo' },
+                $en/@*[not(name(.) = ('xml:lang', 'type'))],
+                if(not($bo/text()) and $bo-ltn/text()) then
+                    common:bo-from-wylie($bo-ltn/text() ! normalize-space(.))
+                else
+                    $bo/text() ! normalize-space(.)
+            },
+            element title {
+                attribute xml:lang { 'Bo-Ltn' },
+                $bo-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
+                $bo-ltn/text() ! normalize-space(.)
+            },
+            element title {
+                attribute xml:lang { 'Sa-Ltn' },
+                $sa-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
+                $sa-ltn/text() ! normalize-space(.)
+            }
+        }
     
 };
 
@@ -265,10 +262,9 @@ declare function tei-content:text-statuses-selected($selected-ids as xs:string*,
     
 };
 
-declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:bibl)? {
+declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string?) as element(tei:bibl)? {
     (: Returns a bibl node based on a resource-id :)
-    let $resource-id := lower-case($resource-id)
-    let $bibl := $tei//tei:sourceDesc/tei:bibl[@key eq $resource-id][1]
+    let $bibl := $resource-id ! $tei//tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)][1]
     return
         if(not($bibl)) then
             $tei//tei:sourceDesc/tei:bibl[1]
@@ -364,9 +360,7 @@ declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as
                 attribute id { $parent-id },
                 attribute nesting { $nest },
                 attribute type {  $parent-tei//tei:teiHeader/tei:fileDesc/@type  },
-                element titles {
-                    tei-content:title-set($parent-tei, 'mainTitle')
-                },
+                tei-content:title-set($parent-tei, 'mainTitle'),
                 tei-content:ancestors($parent-tei, '', $nest + 1)
             }
          else ()
@@ -383,17 +377,17 @@ declare function tei-content:locked-by-user($tei as element(tei:TEI)) as xs:stri
 
 };
 
-declare function tei-content:document-url($tei as element(tei:TEI)) as xs:string {
+(:declare function tei-content:document-url($tei as element(tei:TEI)) as xs:string {
     
-    (:let $document-uri := base-uri($tei)
+    (\:let $document-uri := base-uri($tei)
     let $document-uri-tokenised := tokenize($document-uri, '/')
     let $document-filename := $document-uri-tokenised[last()]
     let $document-path := substring-before($document-uri, $document-filename)
     return
-        concat($document-path, $document-filename):)
+        concat($document-path, $document-filename):\)
     base-uri($tei)
 
-};
+};:)
 
 declare function tei-content:last-updated($fileDesc as element()?) as xs:dateTime {
     xs:dateTime(($fileDesc/tei:notesStmt/tei:note[@type eq "lastUpdated"][@date-time gt ''][1]/@date-time, '2010-01-01T00:00:00')[1])
@@ -555,19 +549,24 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                     element { QName('http://read.84000.co/ns/1.0', $element-name) } {
                         attribute id { $element/@xml:id },
                         attribute part-id { $part-id },
-                        attribute index { $index }
+                        attribute index { $index },
+                        $element/ancestor-or-self::tei:*[@key][1]/@key
                     }
     
     let $elements :=
         (: Index per doc, not per part :)
         if($element-name eq 'end-note') then
-            for $element at $index in $elements
+            for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
+            let $toh-key := $bibl/@key
             return
-                element { QName('http://read.84000.co/ns/1.0', $element-name) } {
-                    $element/@id,
-                    $element/@part-id,
-                    attribute index { $index }
-                }
+                for $element at $index in $elements[not(@key) or @key eq $toh-key]
+                return
+                    element { QName('http://read.84000.co/ns/1.0', $element-name) } {
+                        $element/@id,
+                        $element/@part-id,
+                        attribute source-key { $toh-key },
+                        attribute index { $index }
+                    }
         else
             $elements
     

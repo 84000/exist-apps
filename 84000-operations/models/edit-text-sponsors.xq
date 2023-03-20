@@ -69,10 +69,10 @@ let $xml-response :=
             <translation 
                 xmlns="http://read.84000.co/ns/1.0" 
                 id="{ $text-id }"
-                document-url="{ tei-content:document-url($tei) }" 
+                document-url="{ base-uri($tei) }" 
                 locked-by-user="{ tei-content:locked-by-user($tei) }"
                 status="{ tei-content:translation-status($tei) }">
-                { translation:titles($tei) }
+                { translation:titles($tei, ()) }
                 { translation:sponsors($tei, true()) }
                 { translation:publication($tei) }
                 { translation:toh($tei, '') }

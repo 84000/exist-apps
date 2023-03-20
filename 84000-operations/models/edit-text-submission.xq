@@ -44,9 +44,7 @@ let $xml-response :=
                 status="{ tei-content:translation-status($tei) }"
                 status-group="{ tei-content:translation-status-group($tei) }">
                 { 
-                    element title { 
-                        tei-content:title($tei) 
-                    },
+                    translation:title-element($tei, ()),
                     translation:toh($tei,'')
                 }
             </translation>,

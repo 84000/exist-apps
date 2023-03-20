@@ -42,13 +42,13 @@ let $text :=
     
         attribute id { $text-id },
         attribute tei-version { tei-content:version-str($tei) },
-        attribute document-url { tei-content:document-url($tei) },
+        attribute document-url { base-uri($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
         attribute status { tei-content:translation-status($tei) },
         attribute status-group { tei-content:translation-status-group($tei) },
         
-        tei-content:titles($tei),
-        translation:toh($tei, ''),
+        translation:titles($tei, $source/@key),
+        translation:toh($tei, $source/@key),
         translation:parts($tei, $request/@part, $translation:view-modes/m:view-mode[@id eq 'passage'], 'body')
         
     }

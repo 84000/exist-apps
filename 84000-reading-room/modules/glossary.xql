@@ -434,12 +434,13 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     else 
                         $term/text() ! normalize-unicode(.) ! normalize-space(.) ! replace(.,'&#160;+$','')
                 }
-                
+            
             else if ($term[@type eq 'alternative']) then
                 element { QName('http://read.84000.co/ns/1.0', 'alternative') } {
                     $term/@xml:lang,
                     normalize-space(data($term))
                 }
+            
             else if($term[@type eq 'definition']) then
                 element { QName('http://read.84000.co/ns/1.0', 'definition') } {
                     attribute glossarize { 'mark' },
@@ -456,7 +457,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
             let $translation-id := tei-content:id($tei)
             let $type := tei-content:type($tei)
-            let $title := tei-content:title($tei)
+            let $title := tei-content:title-any($tei)
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -600,7 +601,7 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
     
     let $terms :=
         for $entity at $index in $entities
-        (:where $index le 1000:)
+        (:where $index le 100:)
         let $glossary-entries := $glossaries//id($entity/m:instance[not(m:flag)]/@id)[not(@mode eq 'surfeit')]
         where $glossary-entries
         (: Get unique terms :)
@@ -649,6 +650,7 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                         text{ common:ws(2) }, 
                         
                         element ref {
+                        
                             for $bibl in $tei[1]/tei:teiHeader//tei:bibl
                             let $toh := translation:toh($tei[1], $bibl/@key)
                             order by $toh/m:base/text()
@@ -665,10 +667,13 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                                 $gloss ! ( text{ common:ws(3) }, element link { attribute href { translation:canonical-html($toh/@key, ()) || '#' || @xml:id } } )
                                 
                             ),
+                            
                             (: Titles :)
-                            tei-content:title-set($tei[1], 'mainTitle')[self::m:title] ! ( text{ common:ws(3) }, . ), 
+                            tei-content:title-set($tei[1], 'mainTitle')//m:title ! ( text{ common:ws(3) }, . ),
+                            
                             (: Authors :)
                             $tei[1]//tei:titleStmt/tei:author[@role eq "translatorEng"] !  ( text{ common:ws(3) }, element translator { attribute uri { concat('http://purl.84000.co/resource/core/eft:', contributors:contributor-id(@ref)) }, normalize-space(text()) } ),
+                            
                             (: Definition :)
                             $gloss/tei:term[@type eq 'definition'][descendant::text()[normalize-space()]] !  ( text{ common:ws(3) }, element definition { string-join(descendant::text() ! normalize-space(.), '') } ),
                             
@@ -848,8 +853,8 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 attribute relative-html { translation:relative-html($source/@key, '') },
                 attribute canonical-html { translation:canonical-html($source/@key, '') },
                 (: Parts relevant to glossary :)
-                translation:titles($tei),
-                translation:long-titles($tei),
+                translation:titles($tei, $source/@key),
+                translation:long-titles($tei, $source/@key),
                 $source,
                 translation:toh($tei, $source/@key),
                 translation:publication($tei),

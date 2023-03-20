@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -95,6 +95,7 @@
     <xsl:template match="/m:response">
         
         <xsl:variable name="content">
+            
             <form action="/test-translations.html" method="get" class="form-inline filter-form" data-loading="Loading...">
                 <div class="form-group">
                     <xsl:variable name="request-translation-id" as="xs:string">
@@ -152,6 +153,19 @@
                 </div>
             </form>
             
+            <xsl:choose>
+                <xsl:when test="count(distinct-values(m:results/m:translation/@id)) eq 1">
+                    <h2>
+                        <xsl:value-of select="string-join((m:results/m:translation/m:toh/m:full, m:results/m:translation[1]/m:title), ' / ')"/>
+                    </h2>
+                </xsl:when>
+                <xsl:otherwise>
+                    <p class="top-margin text-muted">
+                        <xsl:value-of select="concat('Automated tests for ', format-number(count(distinct-values(m:results/m:translation/@id)), '#,###'), ' texts')"/>
+                    </p>
+                </xsl:otherwise>
+            </xsl:choose>
+            
             <table class="table table-responsive table-icons">
                 <thead>
                     <tr>
@@ -168,13 +182,16 @@
                 </thead>
                 <tbody>
                     <xsl:for-each select="m:results/m:translation">
+                        
                         <xsl:sort select="count(m:tests/m:test[@pass eq '1'])" order="ascending"/>
                         <xsl:sort select="number(@duration)" order="descending"/>
+                        
                         <xsl:variable name="table-row" select="position()"/>
                         <xsl:variable name="toh-key" select="m:toh/@key"/>
                         <xsl:variable name="text-id" select="@id"/>
                         <xsl:variable name="text-title" select="m:title/text()"/>
                         <xsl:variable name="test-domain" select="@test-domain"/>
+                        
                         <tr>
                             <td>
                                 <a>
@@ -229,9 +246,11 @@
                                 </a>
                             </td>
                         </tr>
+                    
                     </xsl:for-each>
                 </tbody>
             </table>
+        
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">

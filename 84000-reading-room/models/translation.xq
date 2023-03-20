@@ -134,8 +134,8 @@ return
                 
                 $source,
                 translation:toh($tei, $source/@key),
-                translation:titles($tei),
-                translation:long-titles($tei),
+                translation:titles($tei, $source/@key),
+                translation:long-titles($tei, $source/@key),
                 translation:publication($tei),
                 tei-content:ancestors($tei, $source/@key, 1),
                 translation:downloads($tei, $source/@key, 'any-version'),

@@ -34,7 +34,7 @@ declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {
 
 declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string? {
     
-    let $titles := tei-content:titles($tei)
+    let $titles := tei-content:titles-all($tei)
     
     let $sort-title := (
         $titles/m:title[@type eq 'mainTitle'][not(@xml:lang eq 'bo')],
@@ -51,7 +51,7 @@ declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string?
 
 declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:titles) {
     
-    let $tei-titles := tei-content:titles($tei)
+    let $tei-titles := tei-content:titles-all($tei)
     let $titles :=
         for $title at $index in $tei-titles/m:title
         order by if($title/@type eq 'mainTitle') then 0 else 1 ascending
@@ -80,7 +80,7 @@ declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)
         element { QName('http://read.84000.co/ns/1.0', 'page') }{
             attribute xml:id { tei-content:id($tei) },
             attribute kb-id { $kb-id },
-            attribute document-url { tei-content:document-url($tei) },
+            attribute document-url { base-uri($tei) },
             attribute locked-by-user { tei-content:locked-by-user($tei) },
             attribute last-updated { max(tei-content:last-updated($tei/tei:teiHeader/tei:fileDesc)) },
             attribute version-number { tei-content:version-number(tei-content:version-number-str($tei)) },

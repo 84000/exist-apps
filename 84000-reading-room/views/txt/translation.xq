@@ -9,18 +9,20 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "indent=no";
 
-declare function local:parse-translation($response as element(m:response)) {
+declare function local:parse-translation($response as element(m:response)) as text()* {
+
     
     text { '{{version:' || $response/m:translation/m:publication/m:edition || '}}' },
     text { '&#10;' },
-
-    for $element in $response/m:translation/m:part[@type eq 'translation']/*[not(self::tei:head[@type eq 'translation'])]
+    
+    let $toh-key := $response/m:translation//m:source/@key
+    for $element in $response/m:translation/m:part[@type eq 'translation']
     return
-        local:parse-node($response, $element)
+        local:parse-node($response, $element, $toh-key)
         
 };
 
-declare function local:parse-node($response as element(m:response), $element as element()) {
+declare function local:parse-node($response as element(m:response), $element as element(), $toh-key as xs:string?) as text()* {
     
     (: 
         These are the content groups.
@@ -29,10 +31,9 @@ declare function local:parse-node($response as element(m:response), $element as 
     :)
     if(
         $element[
-            self::m:honoration 
-            | self::m:main-title 
-            | self::tei:head[not(@type eq 'colophon')][not(matches(text(), functx:escape-for-regex($response/m:translation/m:part[@type eq 'translation']/m:main-title), 'i'))] 
-            | self::tei:p | self::tei:ab | self::tei:l | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone]
+            self::tei:head[not(@type = ('translation', 'colophon'))]
+            | self::tei:p | self::tei:ab | self::tei:l | self::tei:q | self::tei:list | self::tei:trailer | self::tei:label | self::tei:seg | self::tei:milestone
+        ][not(@key) or @key eq $toh-key]
     ) then (
         
         let $text-id := $response/m:translation/@id
@@ -55,9 +56,7 @@ declare function local:parse-node($response as element(m:response), $element as 
                 
                 (: Output refs with cRef :)
                 else if($node[self::tei:ref]) then
-                    let $toh-key := $response/m:translation/m:source/@key
-                    let $resource-id := ($response/m:request/@resource-id[. = $toh-key], $toh-key)[1]
-                    let $cache-folio := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'folio-refs']/m:folio-ref[@id eq $node/@xml:id][@resource-id eq $resource-id]
+                    let $cache-folio := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'folio-refs']/m:folio-ref[@id eq $node/@xml:id][@resource-id eq $toh-key]
                     where $cache-folio
                     return (
                         text { '{{page:{number:' || $cache-folio/@index-in-resource || ',id:' || $node/@xml:id || ',folio:' || $node/@cRef || $cache-folio[@cRef-volume gt ''] ! concat(',volume:', ./@cRef-volume) || '}}}' }
@@ -74,17 +73,19 @@ declare function local:parse-node($response as element(m:response), $element as 
                 (: Output text nodes:)
                 else 
                    
-                    replace(
+                    text {
                         replace(
-                            $node
-                        , '[\r\n\t]', ' ')    (: remove new line characters :)
-                    , '\s+', ' ')            (: condense multiple spaces :)
-                    
+                            replace(
+                                $node
+                            , '[\r\n\t]', ' ')    (: remove new line characters :)
+                        , '\s+', ' ')             (: condense multiple spaces :)
+                    }
             ,
             
             (: Add a return character for the last node, if there was some output :)
             if($output-nodes) then
                 text { '&#10;' }
+            
             else ()
         )
     )
@@ -93,9 +94,9 @@ declare function local:parse-node($response as element(m:response), $element as 
     else if($element[*]) then
         for $child-element in $element/*
         return
-            local:parse-node($response, $child-element)
-    else
-        ()
+            local:parse-node($response, $child-element, $toh-key)
+    
+    else ()
 };
 
 let $data := request:get-data()

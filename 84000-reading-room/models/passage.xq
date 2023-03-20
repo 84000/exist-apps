@@ -93,11 +93,10 @@ return
                 attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
                 attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
                 
-                translation:titles($tei),
+                translation:titles($tei, $source/@key),
                 $source,
                 translation:toh($tei, $source/@key),
                 tei-content:ancestors($tei, $source/@key, 1),
-                
                 $merged-parts
                 
             }

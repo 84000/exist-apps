@@ -91,7 +91,7 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
             attribute relative-html { translation:relative-html($source/@key, ()) },
             attribute canonical-html { translation:canonical-html($source/@key, ()) },
             
-            translation:titles($tei),
+            translation:titles($tei, $source/@key),
             $source,
             translation:toh($tei, $source/@key),
             tei-content:ancestors($tei, $source/@key, 1),

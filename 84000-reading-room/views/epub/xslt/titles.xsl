@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
@@ -7,6 +7,9 @@
     <!-- epub:types https://idpf.github.io/epub-vocabs/structure/ -->
     
     <xsl:template match="/m:response">
+        
+        <xsl:variable name="main-titles" select="m:translation/m:titles/m:title[normalize-space(text())]"/>
+        <xsl:variable name="long-titles" select="m:translation/m:long-titles/m:title[normalize-space(text())]"/>
         
         <xsl:call-template name="epub-page">
             <xsl:with-param name="page-title" select="'Title'"/>
@@ -16,18 +19,22 @@
                     <xsl:attribute name="id" select="'titles'"/>
                     
                     <section epub:type="halftitlepage" class="new-page heading-section">
-                    
-                        <h2 class="main-title text-bo">
-                            <xsl:apply-templates select="concat('༄༅། །', m:translation/m:titles/m:title[@xml:lang eq 'bo'])"/>
-                        </h2>
+                        
+                        <xsl:if test="$main-titles[@xml:lang eq 'bo']">
+                           <h2 class="main-title text-bo">
+                               <xsl:apply-templates select="concat('༄༅། །', $main-titles[@xml:lang eq 'bo'])"/>
+                           </h2>
+                        </xsl:if>
                         
                         <h1 class="main-title">
-                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                            <xsl:apply-templates select="$main-titles[@xml:lang eq 'en']"/>
                         </h1>
                         
-                        <h2 class="main-title text-sa">
-                            <xsl:apply-templates select="m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                        </h2>
+                        <xsl:if test="$main-titles[@xml:lang eq 'bo']">
+                            <h2 class="main-title text-sa">
+                                <xsl:apply-templates select="$main-titles[@xml:lang eq 'Sa-Ltn']"/>
+                            </h2>
+                        </xsl:if>
                         
                         <img src="image/logo-stacked.png" alt="84000 Translating the Words of the Buddha Logo" class="logo logo-84000"/>
                     
@@ -37,27 +44,27 @@
                         
                         <div class="heading-section">
                             
-                            <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'bo'][text()]">
+                            <xsl:if test="$long-titles[@xml:lang eq 'bo']">
                                 <h2 class="text-bo">
-                                    <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'bo']"/>
+                                    <xsl:apply-templates select="$long-titles[@xml:lang eq 'bo']"/>
                                 </h2>
                             </xsl:if>
                             
-                            <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn'][text()]">
+                            <xsl:if test="$long-titles[@xml:lang eq 'Bo-Ltn']">
                                 <h2>
-                                    <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
+                                    <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
                                 </h2>
                             </xsl:if>
                             
-                            <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'en'][text()]">
+                            <xsl:if test="$long-titles[@xml:lang eq 'en']">
                                 <h1>
-                                    <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'en']"/>
+                                    <xsl:apply-templates select="$long-titles[@xml:lang eq 'en']"/>
                                 </h1>
                             </xsl:if>
                             
-                            <xsl:if test="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
+                            <xsl:if test="$long-titles[@xml:lang eq 'Sa-Ltn']">
                                 <h2 class="text-sa">
-                                    <xsl:apply-templates select="m:translation/m:long-titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
+                                    <xsl:apply-templates select="$long-titles[@xml:lang eq 'Sa-Ltn']"/>
                                 </h2>
                             </xsl:if>
                             

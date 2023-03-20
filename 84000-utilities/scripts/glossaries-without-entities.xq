@@ -12,7 +12,7 @@ let $glossary := $tei//tei:back//tei:gloss
 let $glosses-with-entities := $glossary/id($entities:entities//m:entity/m:instance/@id)
 let $glosses-without-entities := $glossary except $glosses-with-entities
 let $text-id := tei-content:id($tei)
-let $toh-key := translation:toh-key($tei, '')
+let $toh-key := translation:source-key($tei, '')
 where $glossary and $glosses-without-entities
 order by $text-id
 return

@@ -43,7 +43,7 @@ let $results :=
     {
         for $tei in $files
             let $id := tei-content:id($tei)
-            let $title := tei-content:title($tei)
+            let $title := tei-content:title-any($tei)
             let $validation-report := validation:jing-report($tei, $schema)
             let $file-name := util:unescape-uri(base-uri($tei), 'UTF-8')
         return
@@ -55,8 +55,7 @@ let $results :=
                         attribute url { concat($reading-room-url, '/translation/', $id, '.tei') }
                     else if($type eq 'sections') then
                         attribute url { concat($reading-room-url, '/section/', $id, '.tei') }
-                    else
-                        ()
+                    else ()
                 }
                 <title>{ $title }</title>
                 {

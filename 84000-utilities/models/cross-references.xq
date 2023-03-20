@@ -15,8 +15,8 @@ declare function local:ref-context($ref as element(tei:ref), $target-tei as elem
 
     let $tei := $ref/ancestor::tei:TEI[1]
     let $text-id := tei-content:id($tei)
-    let $toh-key := translation:toh-key($tei, '')
-    let $target-toh-key := if($target-tei) then translation:toh-key($target-tei, '') else ()
+    let $toh-key := translation:source-key($tei, '')
+    let $target-toh-key := if($target-tei) then translation:source-key($target-tei, '') else ()
     let $target := tokenize($ref/@target, '/')[last()]
     let $target-page := tokenize($target, '#')[1]
     let $target-hash := tokenize($target, '#')[2]
@@ -48,8 +48,8 @@ declare function local:ref-context($ref as element(tei:ref), $target-tei as elem
             attribute target-id-validated { $target-id-validated },
             attribute target-domain-validated { $target-domain-validated },
             
-            translation:titles($tei),
-            translation:toh($tei, ''),
+            translation:titles($tei, $toh-key),
+            translation:toh($tei, $toh-key),
             $ref(:,
             $passage/preceding-sibling::tei:milestone[@xml:id][1],
             $passage:)
@@ -72,11 +72,11 @@ common:response(
                 element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
                 
                     attribute id { $target-text-id },
-                    attribute resource-id { translation:toh-key($target-tei[1], '') },
+                    attribute resource-id { translation:source-key($target-tei[1], '') },
                     attribute translation-status-group { tei-content:translation-status-group($target-tei[1]) },
                     
                     translation:toh($target-tei[1], $resource-id[1]),
-                    translation:titles($target-tei[1]),
+                    translation:titles($target-tei[1], $resource-id[1]),
                     for $one-ref in $ref
                     return 
                         local:ref-context($one-ref, $target-tei[1])

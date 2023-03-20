@@ -83,36 +83,111 @@ declare variable $translation:stopwords := (
     'we','well','what','when','which','who','will','with','would',(:'year',:)'you','your'
 );
 
-declare function translation:titles($tei as element(tei:TEI)) as element(m:titles) {
+declare function translation:title($tei as element(tei:TEI), $source-key as xs:string?) as xs:string? {
+    
+    (: Validate the source-key :)
+    let $source-bibl := tei-content:source-bibl($tei, $source-key)
+    
+    return (
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang eq 'en'][not(@key) or @key eq $source-bibl/@key] ! normalize-space(text()),
+        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang eq 'Sa-Ltn'][not(@key) or @key eq $source-bibl/@key] ! normalize-space(text()) ! concat(., ' (awaiting English title)')
+    )[1]
+    
+};
+
+declare function translation:title-element($tei as element(tei:TEI), $source-key as xs:string?) as element(m:title) {
+    element { QName('http://read.84000.co/ns/1.0', 'title') } {
+        translation:title($tei, $source-key)
+    }
+};
+
+declare function local:title-set($tei as element(tei:TEI), $type as xs:string, $source-key as xs:string?) as element()* {
+    
+    (: Validate the source-key :)
+    let $source-bibl := tei-content:source-bibl($tei, $source-key)
+    
+    let $titles := ($tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq $type][not(@key) or @key eq $source-bibl/@key])[normalize-space(text())]
+    
+    let $en := $titles[@xml:lang = ('eng', 'en')][1]
+    let $bo-ltn := $titles[@xml:lang = ('Bo-Ltn', '')][1]
+    let $bo := $titles[@xml:lang eq 'bo'][1]
+    let $sa-ltn := $titles[@xml:lang eq 'Sa-Ltn'][1]
+    
+    return (
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'en' },
+            $en/@*[not(name(.) = ('xml:lang', 'type'))],
+            $en/text() ! normalize-space(.)
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'bo' },
+            $en/@*[not(name(.) = ('xml:lang', 'type'))],
+            if(not($bo/text()) and $bo-ltn/text()) then
+                common:bo-from-wylie($bo-ltn/text() ! normalize-space(.))
+            else
+                $bo/text() ! normalize-space(.)
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'Bo-Ltn' },
+            $bo-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
+            $bo-ltn/text() ! normalize-space(.)
+        },
+        element { QName('http://read.84000.co/ns/1.0', 'title') }{
+            attribute xml:lang { 'Sa-Ltn' },
+            $sa-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
+            $sa-ltn/text() ! normalize-space(.)
+        },
+        if($source-bibl[@type eq 'chapter']) then
+            let $parent-tei := $source-bibl/tei:idno/@parent-id ! tei-content:tei(., 'section')
+            where $parent-tei
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'parent') }{
+                    tei-content:title-set($parent-tei, 'mainTitle')
+                }
+        else ()
+    )
+    
+};
+
+declare function translation:titles($tei as element(tei:TEI), $source-key as xs:string?) as element(m:titles) {
     element {QName('http://read.84000.co/ns/1.0', 'titles')} {
-        tei-content:title-set($tei, 'mainTitle')
+        local:title-set($tei, 'mainTitle', $source-key)
     }
 };
 
-declare function translation:long-titles($tei as element(tei:TEI)) as element(m:long-titles) {
+declare function translation:long-titles($tei as element(tei:TEI), $source-key as xs:string?) as element(m:long-titles) {
     element {QName('http://read.84000.co/ns/1.0', 'long-titles')} {
-        tei-content:title-set($tei, 'longTitle')
+        local:title-set($tei, 'longTitle', $source-key)
     }
 };
 
-declare function translation:title-variants($tei as element(tei:TEI)) as element(m:title-variants) {
-    element {QName('http://read.84000.co/ns/1.0', 'title-variants')} {
-        for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type eq 'mainTitle')]
-        return
-            element {QName('http://read.84000.co/ns/1.0', 'title')} {
-                attribute xml:lang {$title/@xml:lang},
-                normalize-space($title/text())
-            }
-        ,
-        for $note in 
-            $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type  = ('title','title-internal')]
-            | $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type eq 'updated'][@update eq 'title']
-        return
-            element {QName('http://read.84000.co/ns/1.0', 'note')} {
-                $note/@*,
-                $note/node()
-            }
-    }
+declare function translation:title-variants($tei as element(tei:TEI), $source-key as xs:string?) as element(m:title-variants) {
+    
+    (: Validate the source-key :)
+    let $source-bibl := tei-content:source-bibl($tei, $source-key)
+    
+    let $mainTitles := $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][not(@key) or @key eq $source-bibl/@key]
+    
+    return
+        element {QName('http://read.84000.co/ns/1.0', 'title-variants')} {
+            for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title except $mainTitles
+            where $title[normalize-space(text())]
+            return
+                element {QName('http://read.84000.co/ns/1.0', 'title')} {
+                    attribute xml:lang {$title/@xml:lang},
+                    normalize-space($title/text())
+                }
+            ,
+            for $note in 
+                $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type  = ('title','title-internal')]
+                | $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type eq 'updated'][@update eq 'title']
+            return
+                element {QName('http://read.84000.co/ns/1.0', 'note')} {
+                    $note/@*,
+                    $note/node()
+                }
+        }
+    
 };
 
 declare function translation:publication($tei as element(tei:TEI)) as element(m:publication) {
@@ -165,9 +240,9 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
         }
 };
 
-declare function translation:toh-key($tei as element(tei:TEI), $resource-id as xs:string) as xs:string {
+declare function translation:source-key($tei as element(tei:TEI), $source-key as xs:string) as xs:string {
     
-    let $bibl := tei-content:source-bibl($tei, $resource-id)
+    let $bibl := tei-content:source-bibl($tei, $source-key)
     
     return
         if ($bibl/@key) then
@@ -184,10 +259,10 @@ declare function translation:toh-full($bibl as element(tei:bibl)) as xs:string? 
     normalize-space(string-join($bibl/tei:ref//text()[normalize-space(.)], ' +'))
 };
 
-declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:string) as element(m:toh) {
+declare function translation:toh($tei as element(tei:TEI), $source-key as xs:string) as element(m:toh) {
 
     (: Returns a toh meta-data for sorting grouping  :)
-    let $bibl := tei-content:source-bibl($tei, $resource-id)
+    let $bibl := tei-content:source-bibl($tei, $source-key)
     let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
     let $toh-str := translation:toh-str($bibl)
     let $full := translation:toh-full($bibl)
@@ -226,27 +301,28 @@ declare function translation:toh($tei as element(tei:TEI), $resource-id as xs:st
         }
 };
 
-declare function translation:location($tei as element(tei:TEI), $resource-id as xs:string) as element(m:location) {
-    let $bibl := tei-content:source-bibl($tei, $resource-id)
+declare function translation:location($tei as element(tei:TEI), $source-key as xs:string) as element(m:location) {
+    let $bibl := tei-content:source-bibl($tei, $source-key)
     return
         tei-content:location($bibl)
 };
 
-declare function translation:filename($tei as element(tei:TEI), $resource-id as xs:string) as xs:string {
+declare function translation:filename($tei as element(tei:TEI), $source-key as xs:string) as xs:string {
     
     (: Generate a filename for a text :)
     
-    let $toh-key := lower-case(translation:toh-key($tei, $resource-id))
-    let $title :=
+    let $source-key := translation:source-key($tei, $source-key)! lower-case(.)
+    let $title := translation:title($tei, $source-key)
+    let $title-normalized :=
     replace(
         common:normalized-chars(
             lower-case(
-                tei-content:title($tei) (: get title :)
+                $title                  (: title :)
             )                           (: convert to lower case :)
         )                               (: remove diacritics :)
     , '[^a-zA-Z0-9\s]', ' ')            (: remove non-alphanumeric, except spaces :)
     
-    let $file-title :=  concat($toh-key, '_', '84000', ' ', $title)
+    let $file-title :=  concat($source-key, '_', '84000', ' ', $title-normalized)
     let $filename :=    replace($file-title, '\s+', '-') (: convert spaces to hyphen :)
     return
         $filename
@@ -468,6 +544,9 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
 declare function translation:outline-cached($tei as element(tei:TEI)) as element(m:text-outline)* {
     
     let $text-id := tei-content:id($tei)
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $app-version := replace($common:app-version, '\.', '-')
+    let $tei-archived := matches(base-uri($tei), concat('^', functx:escape-for-regex($common:archive-path)), 'i')
     
     let $request := 
         element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -476,15 +555,15 @@ declare function translation:outline-cached($tei as element(tei:TEI)) as element
             attribute resource-id { $text-id }
         }
     
-    let $tei-timestamp := tei-content:last-modified($tei)
-    let $app-version := replace($common:app-version, '\.', '-')
-    
     let $cache-key := 
         if($tei-timestamp instance of xs:dateTime) then
             lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || $app-version)
         else ()
     
-    let $cache := common:cache-get($request, $cache-key, false())
+    let $cache := 
+        if(not($tei-archived)) then
+            common:cache-get($request, $cache-key, false())
+        else ()
     
     return
         (: From cache :)
@@ -498,7 +577,7 @@ declare function translation:outline-cached($tei as element(tei:TEI)) as element
             
             let $outline := 
                 element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
-                
+                    
                     attribute text-id { $text-id },
                     attribute tei-timestamp { $tei-timestamp },
                     attribute app-version { $app-version },
@@ -511,8 +590,13 @@ declare function translation:outline-cached($tei as element(tei:TEI)) as element
                     glossary:pre-processed($tei)
                     
                 }
-             let $log := common:cache-put($request, $outline, $cache-key)
-             return (
+            
+            let $store := 
+                if(not($tei-archived)) then
+                    common:cache-put($request, $outline, $cache-key)
+                else ()
+                
+            return (
                 (:util:log('info',concat('outline-cache-put:',$text-id, '/', $cache-key)),:)
                 $outline
              )
@@ -545,11 +629,12 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
         $tei-content:translations-collection//tei:TEI
             [tei:teiHeader/tei:fileDesc/tei:publicationStmt
                 [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+                /tei:idno[not(@xml:id eq $text-id)]
             ]
         ,
         
         (: Test TEI if appropriate :)
-        if($text-id = ('UT22084-000-000', 'UT23703-000-000') or $commentary-key = ('toh00', 'toh00c')) then
+        if($text-id = ('UT22084-000-000', 'UT23703-000-000') or $commentary-key = ('toh00', 'toh00a', 'toh00c')) then
             collection(concat($common:tei-path, '/layout-checks'))//tei:TEI
         else ()
         
@@ -630,30 +715,36 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             attribute ref { $part/@ref }
         else (),
         
-        let $chapter-title := $part/tei:head[@type eq 'chapterTitle'][text()][1]
-        let $section-title := $part/tei:head[@type eq $part/@type][text()][1]
+        let $chapter-titles := $part/tei:head[@type eq 'chapterTitle'][text()]
+        let $section-titles := $part/tei:head[@type eq $part/@type][text()]
         return
             
             (: Normalize head :)
-            if ($chapter-title) then (
-                element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                    attribute type { $type },
-                    attribute tid { $chapter-title/@tid },
-                    $chapter-title/node()
-                },
-                if ($section-title) then
-                    element {QName('http://read.84000.co/ns/1.0', 'title-supp')} {
-                        $section-title/@tid,
+            if ($chapter-titles) then (
+                for $chapter-title in $chapter-titles
+                return
+                   element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                       attribute type { $type },
+                       $chapter-title/@*[not(local-name(.) = ('type'))],
+                       $chapter-title/node()
+                   }
+                ,
+                for $section-title in $section-titles
+                return
+                   element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                       attribute type { 'supplementary' },
+                       $section-title/@*[not(local-name(.) = ('type'))],
+                       $section-title/node()
+                   }
+            )
+            else if ($section-titles) then
+                for $section-title in $section-titles
+                return
+                    element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                        attribute type { $type },
+                        $section-title/@*[not(local-name(.) = ('type'))],
                         $section-title/node()
                     }
-                else ()
-            )
-            else if ($section-title) then
-                element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
-                    attribute type { $type },
-                    attribute tid { $section-title/@tid },
-                    $section-title/node()
-                }
             else if ($label) then
                 element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                     attribute type { $type },
@@ -972,7 +1063,6 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
     let $parts := $translation/tei:div[@type = ('section', 'chapter', 'prologue', 'colophon', 'homage')]
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
-    let $text-title := tei-content:title($tei)
     
     where $translation
     return
@@ -984,39 +1074,18 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute glossarize { 'mark' },
             attribute prefix { map:get($translation:type-prefixes, $translation/@type) },
             
-            $translation/tei:head[@type eq 'translation'],
-            
-            element honoration {
-                data($translation/tei:head[@type eq 'titleHon'])
-            },
-            element main-title {
-                data($translation/tei:head[@type eq 'titleMain'])
-            },
-            element sub-title {
-                data($translation/tei:head[@type eq 'sub'])
-            },
+            $translation/tei:head[@type = ('translation', 'titleHon', 'titleMain', 'sub')],
             
             for $part at $section-index in $parts
                 
                 (: If chapter requested, then only that chapter :)
                 where not($chapter-id) or $part/@xml:id eq $chapter-id
                 
-                let $part-title := $part/tei:head[@type = $part/@type][text()][1]
+                (: If there's no section header derive one :)
                 let $part-title :=
-                    (: No section header, so derive one :)
-                    if (not($part-title)) then
-                        
-                        (: Derive from config :)
-                        if ($part/@type = ('prologue', 'colophon', 'homage')) then 
-                            text { map:get($translation:type-labels, $part/@type) }
-                        
-                        (: Use the main title if the's no chapter title :)
-                        else if($count-chapters eq 1) then
-                            text { $text-title }
-                         
-                        else ()
-                        
-                    (: local:part() will resolve the label by default :)
+                    if ($part/@type = ('prologue', 'colophon', 'homage') and not($part/tei:head[@type = $part/@type])) then
+                        text { map:get($translation:type-labels, $part/@type) }
+                    
                     else ()
                 
                 let $part-prefix := translation:chapter-prefix($part)
@@ -1048,12 +1117,7 @@ declare function translation:appendix($tei as element(tei:TEI)) as element(m:par
 
 declare function translation:appendix($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
-    let $type := 'appendix'
-    let $appendix := $tei/tei:text/tei:back/tei:div[@type eq $type][1]
-    let $part-title := $appendix/tei:head[@type eq $type][text()][1]
-    let $main-title := $appendix/tei:head[@type eq 'titleMain'][text()][1]
-    
-    where $appendix
+    let $appendix := $tei/tei:text/tei:back/tei:div[@type eq 'appendix'][1]
     
     (:let $content-directive := local:content-directive($appendix, ($type, 'back'), $passage-id, $view-mode, 'preview'):)
     let $content-directive := 
@@ -1069,8 +1133,9 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
         else
             'preview'
     
-    let $prefix := map:get($translation:type-prefixes, $type)
+    let $prefix := map:get($translation:type-prefixes, 'appendix')
     
+    where $appendix
     return
         
         element { QName('http://read.84000.co/ns/1.0', 'part') } {
@@ -1081,15 +1146,12 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
             attribute content-status { $content-directive },
             attribute glossarize { 'mark' },
             attribute prefix { $prefix },
-            element title-supp { map:get($translation:type-labels, $type) },
-            element { QName('http://www.tei-c.org/ns/1.0', 'head') } {
-                attribute type { 'appendix' },
-                $part-title/@tid,
-                $part-title/text()
-            },
-            element title-text {
-                $main-title/@tid,
-                $main-title/text()
+            
+            $appendix/tei:head[@type eq 'appendix'],
+            $appendix/tei:head[@type eq 'titleMain'],
+            element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
+                attribute type { 'supplementary' },
+                map:get($translation:type-labels, 'appendix')
             },
             
             for $chapter at $chapter-index in $appendix/tei:div[@type = ('section', 'chapter', 'prologue')]
@@ -1276,14 +1338,14 @@ declare function local:folio-refs-pre-processed($tei as element(tei:TEI)) as ele
     
     let $folio-refs :=
         for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
-        let $resource-id := $bibl/@key
-        let $folios-for-toh := translation:folio-refs-sorted($tei, $resource-id)
+        let $source-key := $bibl/@key
+        let $folios-for-toh := translation:folio-refs-sorted($tei, $source-key)
         return
             for $folio in $folios-for-toh
             return 
                 element { QName('http://read.84000.co/ns/1.0', 'folio-ref') } {
                     attribute id { $folio/@xml:id },
-                    attribute resource-id { $resource-id },
+                    attribute source-key { $source-key },
                     $folio/@index-in-resource,
                     $folio/@index-in-sort,
                     if($folio[@cRef-volume]) then
@@ -1329,32 +1391,33 @@ declare function translation:title-listing($translation-title as xs:string*) as 
             $translation-title
 };
 
-declare function translation:start-volume($tei as element(tei:TEI), $resource-id as xs:string) as xs:integer {
-    tei-content:source-bibl($tei, $resource-id)/tei:location/tei:volume[1]/@number/xs:integer(.)
+declare function translation:start-volume($tei as element(tei:TEI), $source-key as xs:string) as xs:integer {
+    tei-content:source-bibl($tei, $source-key)/tei:location/tei:volume[1]/@number/xs:integer(.)
 };
 
 declare function translation:count-volume-pages($location as element(m:location)) as xs:integer {
     sum($location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
 };
 
-declare function translation:folio-refs($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:ref)* {
+declare function translation:folio-refs($tei as element(tei:TEI), $source-key as xs:string) as element(tei:ref)* {
     
     (: Get the relevant folio refs refs :)
-    translation:refs($tei, $resource-id, ('folio'))
+    translation:refs($tei, $source-key, ('folio'))
 
 };
 
-declare function translation:refs($tei as element(tei:TEI), $resource-id as xs:string, $types as xs:string*) as element(tei:ref)* {
+declare function translation:refs($tei as element(tei:TEI), $source-key as xs:string, $types as xs:string*) as element(tei:ref)* {
     
-    (: Get the relevant refs :)
-    let $toh-key := translation:toh-key($tei, $resource-id)
+    (: Validate the source-key :)
+    let $source-key := translation:source-key($tei, $source-key)
+    
     return
-        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@key) or @key eq $toh-key][not(ancestor::tei:note)][not(ancestor::tei:orig)]
-        (:$tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend = ('hidden'))][not(@key) or @key eq $toh-key][not(ancestor::tei:note)][not(ancestor::tei:orig)]:)
+        $tei/tei:text/tei:body//tei:ref[@type = $types][not(@key) or @key eq $source-key][not(ancestor::tei:note)][not(ancestor::tei:orig)]
+        (:$tei/tei:text/tei:body//tei:ref[@type = $types][not(@rend) or not(@rend = ('hidden'))][not(@key) or @key eq $source-key][not(ancestor::tei:note)][not(ancestor::tei:orig)]:)
 
 };
 
-declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resource-id as xs:string) as element(tei:ref)* {
+declare function translation:folio-refs-sorted($tei as element(tei:TEI), $source-key as xs:string) as element(tei:ref)* {
     
     (: 
         This returns a set of folios for the text with additional detail
@@ -1366,7 +1429,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
     
     (: Get the relevant refs :)
     let $refs-for-resource :=
-        for $ref at $index-in-resource in translation:refs($tei, $resource-id, ('folio', 'volume'))
+        for $ref at $index-in-resource in translation:refs($tei, $source-key, ('folio', 'volume'))
         return
             element {node-name($ref)} {
                 $ref/@*,
@@ -1419,23 +1482,22 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $resour
             }
 };
 
-declare function translation:folio-sort-index($tei as element(tei:TEI), $resource-id as xs:string, $index-in-resource as xs:integer) as xs:integer? {
+declare function translation:folio-sort-index($tei as element(tei:TEI), $source-key as xs:string, $index-in-resource as xs:integer) as xs:integer? {
     
     (: Convert the index of the folio in the resource into the index of the folio when sorted :)
-    let $refs-sorted := translation:folio-refs-sorted($tei, $resource-id)
+    let $refs-sorted := translation:folio-refs-sorted($tei, $source-key)
     let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
     return
         xs:integer($ref/@index-in-sort)
 
 };
 
-declare function translation:folios($tei as element(tei:TEI), $resource-id as xs:string) as element(m:folios) {
+declare function translation:folios($tei as element(tei:TEI), $source-key as xs:string) as element(m:folios) {
     
-    let $location := translation:location($tei, $resource-id)
+    let $location := translation:location($tei, $source-key)
     let $work := $location/@work
     let $reading-room-path := $common:environment/m:url[@id eq 'reading-room']/text()
-    let $folio-refs := translation:folio-refs-sorted($tei, $resource-id)
-    (:let $folio-refs := translation:folio-refs($tei, $resource-id):)
+    let $folio-refs := translation:folio-refs-sorted($tei, $source-key)
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'folios')} {
@@ -1512,10 +1574,10 @@ declare function translation:folios($tei as element(tei:TEI), $resource-id as xs
         }
 };
 
-declare function translation:folio-content($tei as element(tei:TEI), $toh-key as xs:string, $index-in-resource as xs:integer) as element(m:folio-content) {
+declare function translation:folio-content($tei as element(tei:TEI), $source-key as xs:string, $index-in-resource as xs:integer) as element(m:folio-content) {
     
     (: Get all the <ref/>s in the doc :)
-    let $refs := translation:folio-refs($tei, $toh-key)
+    let $refs := translation:folio-refs($tei, $source-key)
     let $start-ref := $refs[$index-in-resource]
     let $end-ref := $refs[$index-in-resource + 1]
     
@@ -1527,8 +1589,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $toh-key as
     let $start-ref-paragraph-index :=
         if ($start-ref-paragraph) then
             functx:index-of-node($translation-paragraphs, $start-ref-paragraph)
-        else
-            0
+        else 0
         
     (: Find the container of the end <ref/> and it's index :)
     let $end-ref-paragraph := $translation-paragraphs[count($end-ref) eq 1 and count(descendant::* | $end-ref) eq count(descendant::*)]

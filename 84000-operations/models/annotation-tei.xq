@@ -31,7 +31,7 @@ let $translation-files :=
                 if($text-id eq $request/@text-id) then
                     attribute selected { true() }
                 else (),
-                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title($tei))
+                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title-any($tei))
             }
     }
 
@@ -47,7 +47,7 @@ let $archived-texts :=
     element { QName('http://read.84000.co/ns/1.0','archived-texts') } {
         for $tei in collection(concat($common:archive-path, '/tei'))//tei:publicationStmt/tei:idno/id($request/@text-id)/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)
-        let $document-url := tei-content:document-url($tei)
+        let $document-url := base-uri($tei)
         let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')
         let $document-path := substring-before($document-url, concat('/', $file-name))
         let $archive-path := 

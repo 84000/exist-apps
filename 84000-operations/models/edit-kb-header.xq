@@ -44,7 +44,7 @@ let $knowledgebase-entity := $entities:entities//m:instance[@id = $knowledgebase
 let $similar-entities :=
     (: Return possible matches for reconciliation :)
     let $search-terms := (
-        tei-content:titles($tei)//m:title/data(),
+        tei-content:titles-all($tei)//m:title/data(),
         normalize-space($similar-search)
     )[not(. eq '')]
     return

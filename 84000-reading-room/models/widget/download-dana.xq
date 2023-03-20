@@ -4,6 +4,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "../../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../modules/tei-content.xql";
+import module namespace translation="http://read.84000.co/translation" at "../../modules/translation.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -15,15 +16,15 @@ let $request :=
         attribute lang { common:request-lang() }
     }
 
+let $tei := tei-content:tei($request/@resource-id, 'translation')
+
 let $xml-response :=
     common:response(
         $request/@model, 
         $common:app-id,
         (
             $request,
-            element { QName('http://read.84000.co/ns/1.0', 'title') } {
-                tei-content:title(tei-content:tei($request/@resource-id, 'translation'))
-            }
+            translation:title-element($tei, $request/@resource-id)
         )
     )
 

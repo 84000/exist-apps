@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -425,6 +425,7 @@
         <xsl:param name="title" as="element(m:title)?"/>
         <xsl:param name="title-index" as="xs:integer"/>
         <xsl:param name="title-types" required="yes"/>
+        <xsl:param name="source-keys" as="xs:string*"/>
         
         <div class="form-group add-nodes-group">
             
@@ -448,7 +449,7 @@
             </div>
             
             <!-- Could we use text-input-with-lang or select-language templates here? -->
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <xsl:call-template name="select-language">
                     <xsl:with-param name="language-options" select="('en','bo','Bo-Ltn','Sa-Ltn', 'Sa-Ltn-rc', 'zh', 'Pi-Ltn')"/>
                     <xsl:with-param name="selected-language">
@@ -466,7 +467,34 @@
                 </xsl:call-template>
             </div>
             
-            <div class="col-sm-7">
+            <xsl:if test="count($source-keys) gt 0">
+                <div class="col-sm-2">
+                    <select class="form-control">
+                        <xsl:variable name="control-name" select="concat('title-key-', $title-index)"/>
+                        <xsl:attribute name="name" select="$control-name"/>
+                        <xsl:attribute name="id" select="$control-name"/>
+                        <option>
+                            <xsl:attribute name="value" select="''"/>
+                            <xsl:value-of select="''"/>
+                        </option>
+                        <xsl:for-each select="$source-keys">
+                            <xsl:variable name="option-value" select="." as="xs:string"/>
+                            <option>
+                                <xsl:attribute name="value" select="$option-value"/>
+                                <xsl:if test="$option-value eq $title/@key">
+                                    <xsl:attribute name="selected" select="'selected'"/>
+                                </xsl:if>
+                                <xsl:value-of select="."/>
+                            </option>
+                        </xsl:for-each>
+                    </select>
+                </div>
+            </xsl:if>
+            
+            <div class="col-sm-8">
+                <xsl:if test="count($source-keys) gt 0">
+                    <xsl:attribute name="class" select="'col-sm-6'"/>
+                </xsl:if>
                 <input class="form-control">
                     <xsl:attribute name="name" select="concat('title-text-', $title-index)"/>
                     <xsl:choose>
@@ -1386,7 +1414,7 @@
             
             <!-- Text -->
             <legend>
-                <xsl:value-of select="concat('In ', ($related-text/m:bibl/m:toh/m:full)[1], ' / ', ops:limit-str($related-text/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], 80))"/>
+                <xsl:value-of select="concat('In ', ($related-text/m:bibl/m:toh/m:full)[1], ' / ', ops:limit-str($related-text/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en'][1], 80))"/>
                 <xsl:if test="$related-text[@glossary-status eq 'excluded']">
                     <xsl:value-of select="' '"/>
                     <span class="label label-danger">
