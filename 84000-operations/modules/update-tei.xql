@@ -686,6 +686,24 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     
     let $tei-version := tei-content:version-str($tei)
     
+    let $main-term := request:get-parameter('main-term', $glossary-id)
+    
+    let $glossary-type :=
+        if (request:get-parameter('glossary-type', '') = $glossary:types) then
+            request:get-parameter('glossary-type', 'term')
+        else if($existing-item/tei:gloss[@type]) then
+            $existing-item/tei:gloss/@type/string()
+        else
+            'term'
+    
+    let $glossary-mode :=
+        if (request:get-parameter('glossary-mode', 'match') = $glossary:modes) then
+            request:get-parameter('glossary-mode', 'match')
+        else if($existing-item/tei:gloss[@mode]) then
+            $existing-item/tei:gloss/@mode/string()
+        else 
+            'match'
+    
     (: Only construct the new value if it's existing or it's a valid id :)
     let $new-value :=
         if (($existing-item or tei-content:valid-xml-id($tei, $glossary-id)) and not($remove)) then
@@ -699,29 +717,15 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     attribute xml:id { $glossary-id },
                     
                     (: @type :)
-                    if (request:get-parameter('glossary-type', '') = $glossary:types) then
-                        attribute type { request:get-parameter('glossary-type', 'term') }
-                    else if($existing-item/tei:gloss[@type]) then
-                        $existing-item/tei:gloss/@type
-                    else
-                        attribute type { 'term' }
-                    ,
+                    attribute type { $glossary-type },
                     
                     (: @mode :)
-                    if (request:get-parameter('glossary-mode', 'match') = $glossary:modes) then
-                        attribute mode { request:get-parameter('glossary-mode', 'match') }
-                    else if($existing-item/tei:gloss[@mode]) then
-                        $existing-item/tei:gloss/@mode
-                    else 
-                        attribute mode { 'match' }
-                    ,
+                    attribute mode { $glossary-mode },
                     
                     (: Main term :)
                     common:ws(7),
                     element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
-                        text {
-                            request:get-parameter('main-term', $glossary-id)
-                        }
+                        text { $main-term }
                     },
                     
                     (: Source terms and alternatives :)
@@ -737,7 +741,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                         else if(matches($term-lang-type, '\-sa$')) then 
                             'sourceAttested' 
                         else ()
-                        
+                    
                     let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
                     let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr|sa)$', ''))
                     where $term-text gt ''
@@ -745,27 +749,39 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                         common:ws(7),
                         element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
                         
-                            (: Lang - if more than one en term is passed then make it an alternative :)
+                            (: If more than one en term is passed then make it an alternative :)
                             if($term-lang eq 'en') then
                                 attribute type {'alternative'}
-                            else ( 
-                                attribute xml:lang { $term-lang },
-                                if($term-type gt '') then attribute type { $term-type } else (),
-                                if($term-status gt '') then attribute status  { $term-status } else ()
-                            )
-                            ,
                             
-                            (: Text - skip if text matches placeholder - if Sanskrit parse hyphens :)
+                            else ( 
+                                
+                                (: Set lang :)
+                                attribute xml:lang { $term-lang },
+                                
+                                (: Set type :)
+                                if($term-type gt '') then 
+                                    attribute type { $term-type } 
+                                else (),
+                                
+                                (: Set status :)
+                                if($term-status gt '') then 
+                                    attribute status  { $term-status } 
+                                else ()
+                                
+                            ),
+                            
+                            (: Sanskrit - skip if text matches placeholder, parse hyphens and lower case :)
                             if ($term-lang eq 'Sa-Ltn') then
                                 if(not($term-text eq common:local-text('glossary.term-empty-sa-ltn', 'en'))) then
                                     text { $term-text ! replace(., '\-', '­') ! lower-case(.) }
                                 else ()
-                                
+                            
+                            (: Wylie - skip if text matches placeholder :)
                             else if ($term-lang eq 'Bo-Ltn') then
                                 if(not($term-text eq common:local-text('glossary.term-empty-bo-ltn', 'en'))) then
                                     text { $term-text }
                                 else ()
-                                
+                            
                             else 
                                 text { $term-text }
                             

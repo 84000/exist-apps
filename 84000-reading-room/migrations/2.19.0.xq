@@ -34,7 +34,7 @@ declare function local:update-versions() {
                 concat($gloss/@xml:id, ',', $term-skt/text(), ',', lower-case($term-skt/text()))
         ),:)
         
-        util:log('info', concat('update-skt-term-case:', $text-id)),
+        util:log('info', concat('migrate-to-2-19-0:', $text-id)),
         
         (: Update the file and the trigger will correct the terms, and flag it for deployment :)
         update-tei:minor-version-increment($tei, 'correct-sanskrit-terms-case')

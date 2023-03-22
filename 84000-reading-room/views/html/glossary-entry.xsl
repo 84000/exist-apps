@@ -147,22 +147,26 @@
                                                                 <xsl:choose>
                                                                     <xsl:when test="position() eq 1">
                                                                         <h2 class="no-bottom-margin">
-                                                                            <span>
-                                                                                <xsl:call-template name="class-attribute">
-                                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
-                                                                                </xsl:call-template>
-                                                                                <xsl:apply-templates select="text()"/>
-                                                                            </span>
+                                                                            <xsl:call-template name="glossary-term">
+                                                                                <xsl:with-param name="term-text" select="text()"/>
+                                                                                <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                                                <xsl:with-param name="term-type" select="@type"/>
+                                                                                <xsl:with-param name="term-status" select="@status"/>
+                                                                                <xsl:with-param name="glossary-type" select="@glossary-type"/>
+                                                                                <xsl:with-param name="interpolation" select="@flagged"/>
+                                                                            </xsl:call-template>
                                                                         </h2>
                                                                     </xsl:when>
                                                                     <xsl:otherwise>
                                                                         <span class="h2">
-                                                                            <span>
-                                                                                <xsl:call-template name="class-attribute">
-                                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
-                                                                                </xsl:call-template>
-                                                                                <xsl:apply-templates select="text()"/>
-                                                                            </span>
+                                                                            <xsl:call-template name="glossary-term">
+                                                                                <xsl:with-param name="term-text" select="text()"/>
+                                                                                <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                                                <xsl:with-param name="term-type" select="@type"/>
+                                                                                <xsl:with-param name="term-status" select="@status"/>
+                                                                                <xsl:with-param name="glossary-type" select="@glossary-type"/>
+                                                                                <xsl:with-param name="interpolation" select="@flagged"/>
+                                                                            </xsl:call-template>
                                                                         </span>
                                                                     </xsl:otherwise>
                                                                 </xsl:choose>
@@ -176,12 +180,17 @@
                                                     <xsl:variable name="title-lang" select="."/>
                                                     <xsl:variable name="title-terms-lang" select="$request-entity-data/m:term[@xml:lang eq $title-lang]"/>
                                                     <div>
-                                                        <ul class="list-inline inline-dots sml-margin top">
+                                                        <ul class="list-inline inline-dots row-margin">
                                                             <xsl:for-each select="$title-terms-lang">
                                                                 <li>
-                                                                    <span class="{ common:lang-class($title-lang) }">
-                                                                        <xsl:value-of select="."/>
-                                                                    </span>
+                                                                    <xsl:call-template name="glossary-term">
+                                                                        <xsl:with-param name="term-text" select="text()"/>
+                                                                        <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                                        <xsl:with-param name="term-type" select="@type"/>
+                                                                        <xsl:with-param name="term-status" select="@status"/>
+                                                                        <xsl:with-param name="glossary-type" select="@glossary-type"/>
+                                                                        <xsl:with-param name="interpolation" select="@flagged"/>
+                                                                    </xsl:call-template>
                                                                 </li>
                                                             </xsl:for-each>
                                                         </ul>
@@ -193,13 +202,13 @@
                                             <!-- Types -->
                                             <div class="text-right">
                                                 
-                                                <div class="sml-margin bottom">
+                                                <div>
                                                     <xsl:call-template name="entity-types-list">
                                                         <xsl:with-param name="entity" select="$request-entity"/>
                                                     </xsl:call-template>
                                                 </div>
                                                 
-                                                <div>
+                                                <div class="row-margin">
                                                     <span class="nowrap">
                                                         <span class="badge-text">
                                                             <xsl:value-of select="'Publications: '"/>
@@ -223,7 +232,7 @@
                                         
                                         <div class="entity-detail collapse in persist" id="{ concat($item-id, '-detail') }">
                                             
-                                            <div class="top-margin">
+                                            <div class="row-margin">
                                                 
                                                 <!-- Entity definition -->
                                                 <xsl:if test="$request-entity/m:content[@type eq 'glossary-definition'][node()]">
@@ -269,13 +278,21 @@
                                                                         
                                                                         <span>
                                                                             <h3>
-                                                                                <xsl:value-of select="m:term[@xml:lang eq 'en'][1] ! functx:capitalize-first(.)"/>
+                                                                                <xsl:variable name="translation-term" select="m:term[@xml:lang eq 'en'][1]"/>
+                                                                                <xsl:call-template name="glossary-term">
+                                                                                    <xsl:with-param name="term-text" select="$translation-term/text()"/>
+                                                                                    <xsl:with-param name="term-lang" select="$translation-term/@xml:lang"/>
+                                                                                    <xsl:with-param name="term-type" select="$translation-term/@type"/>
+                                                                                    <xsl:with-param name="term-status" select="$translation-term/@status"/>
+                                                                                    <xsl:with-param name="glossary-type" select="@type"/>
+                                                                                </xsl:call-template>
                                                                             </h3>
                                                                         </span>
                                                                         
+                                                                        <!-- Summary for content editors -->
                                                                         <xsl:if test="$tei-editor">
                                                                             <span>
-                                                                                <ul class="list-inline inline-dots inline-pad-first">
+                                                                                <ul class="list-inline inline-dots">
                                                                                     
                                                                                     <xsl:variable name="term-group-instances" select="$request-entity/m:instance[@id = $term-group/@id]"/>
                                                                                     <xsl:variable name="term-group-instances-flagged" select="$term-group-instances[m:flag]"/>
@@ -442,9 +459,12 @@
                                                                                 <xsl:for-each select="$additional-terms">
                                                                                     <xsl:sort select="@normalized-string"/>
                                                                                     <li>
-                                                                                        <span class="{ common:lang-class(@xml:lang) }">
-                                                                                            <xsl:value-of select="text() ! normalize-space(.)"/>
-                                                                                        </span>
+                                                                                        <xsl:call-template name="glossary-term">
+                                                                                            <xsl:with-param name="term-text" select="text()"/>
+                                                                                            <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                                                            <xsl:with-param name="term-type" select="@type"/>
+                                                                                            <xsl:with-param name="glossary-type" select="@glossary-type"/>
+                                                                                        </xsl:call-template>
                                                                                     </li>
                                                                                 </xsl:for-each>
                                                                             </ul>
@@ -571,7 +591,7 @@
             
             <!-- Location -->
             <xsl:for-each select="$text/m:bibl">
-                <nav role="navigation" aria-label="Breadcrumbs" class="text-muted">
+                <nav role="navigation" aria-label="Breadcrumbs" class="text-muted small">
                     <xsl:value-of select="'in '"/>
                     <ul class="breadcrumb">
                         
@@ -594,7 +614,7 @@
             <!-- Translators -->
             <xsl:variable name="translators" select="$text/m:publication/m:contributors/m:author[normalize-space(text())]"/>
             <xsl:if test="$translators">
-                <div class="text-muted">
+                <div class="text-muted small">
                     <xsl:value-of select="'Translation by '"/>
                     <xsl:value-of select="string-join($translators ! normalize-space(data()), ' · ')"/>
                 </div>
@@ -609,41 +629,19 @@
                 <!--<xsl:if test="$term-lang-terms[text()[not(normalize-space(.) = $entity-data/m:label[@xml:lang eq $term-lang]/text())]]">-->
                 <xsl:if test="$term-lang-terms[text()]">
                     <div>
-                        <ul class="list-inline inline-dots inline-pad-first">
+                        <ul class="list-inline inline-dots">
                             <xsl:choose>
                                 <xsl:when test="$term-lang-terms">
                                     <xsl:for-each select="$term-lang-terms">
                                         <li>
                                             
-                                            <span>
-                                                
-                                                <xsl:call-template name="class-attribute">
-                                                    <xsl:with-param name="base-classes" as="xs:string*">
-                                                        <xsl:value-of select="'term'"/>
-                                                        <xsl:if test="@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
-                                                            <xsl:value-of select="'reconstructed'"/>
-                                                        </xsl:if>
-                                                    </xsl:with-param>
-                                                    <xsl:with-param name="lang" select="$term-lang"/>
-                                                </xsl:call-template>
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="$term-lang eq 'en'">
-                                                        <xsl:value-of select="text() ! functx:capitalize-first(.)"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:value-of select="text()"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                            </span>
-                                            
-                                            <xsl:if test="$tei-editor and @status eq 'verified'">
-                                                <xsl:value-of select="' '"/>
-                                                <span class="alternative">
-                                                    <xsl:value-of select="'Verified'"/>
-                                                </span>
-                                            </xsl:if>
+                                            <xsl:call-template name="glossary-term">
+                                                <xsl:with-param name="term-text" select="text()"/>
+                                                <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                <xsl:with-param name="term-type" select="@type"/>
+                                                <xsl:with-param name="term-status" select="@status"/>
+                                                <xsl:with-param name="glossary-type" select="$entry/@type"/>
+                                            </xsl:call-template>
                                             
                                         </li>
                                     </xsl:for-each>
@@ -659,7 +657,7 @@
             <xsl:variable name="alternative-terms" select="$entry/m:alternative"/>
             <xsl:if test="$tei-editor and $alternative-terms">
                 <div>
-                    <ul class="list-inline inline-dots inline-pad-first">
+                    <ul class="list-inline inline-dots">
                         <xsl:for-each select="$alternative-terms">
                             <li>
                                 <span>
@@ -701,7 +699,7 @@
             <xsl:choose>
                 <xsl:when test="$tei-editor and $entity-definition and (not($entry-definition) or $instance[@use-definition = ('both','append','prepend','override')])">
                     
-                    <div class="well well-sm top-margin bottom-margin">
+                    <div class="well well-sm row-margin">
                         
                         <h4 class="no-top-margin">
                             <xsl:value-of select="'Text displays entity definition: '"/>
@@ -718,7 +716,7 @@
                         <!-- Entity definition -->
                         <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $instance[@use-definition = ('both','append','prepend','override')])">
                             <div>
-                                <header class="text-muted italic">
+                                <header class="text-muted italic small">
                                     <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
                                 </header>
                                 <xsl:sequence select="$entity-definition-html"/>
@@ -728,7 +726,7 @@
                         <!-- Entry definition as epilogue -->
                         <xsl:if test="($entry-definition and $entity-definition and $instance[@use-definition = ('both','prepend')])">
                             <div>
-                                <header class="text-muted italic">
+                                <header class="text-muted italic small">
                                     <xsl:value-of select="'In this text:'"/>
                                 </header>
                                 <xsl:sequence select="$entry-definition-html"/>
@@ -740,9 +738,9 @@
                 </xsl:when>
                 <xsl:when test="($entry-definition and not($entity-definition)) or ($entry-definition and $instance[not(@use-definition eq 'override')])">
                     
-                    <div class="top-margin">
-                        <header class="text-muted italic">
-                            <xsl:value-of select="'Defined in this text:'"/>
+                    <div class="row-margin">
+                        <header class="text-muted italic small">
+                            <xsl:value-of select="'Definition in this text:'"/>
                         </header>
                         <xsl:sequence select="$entry-definition-html"/>
                     </div>
@@ -752,7 +750,7 @@
             
             <!-- Count of references -->
             <xsl:variable name="count-entry-locations" select="count($text/m:glossary-cache/m:gloss[@id eq $entry/@id]/m:location)"/>
-            <div>
+            <div class="row-margin">
                 <a class="small underline">
                     <xsl:attribute name="href" select="$href"/>
                     <xsl:attribute name="target" select="$target"/>
@@ -773,7 +771,7 @@
             <!-- Editor options -->
             <xsl:if test="$tei-editor">
                 
-                <div>
+                <div class="row-margin">
                     <ul class="list-inline inline-dots">
                         
                         <li class="small">

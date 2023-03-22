@@ -533,6 +533,13 @@
         
     </xsl:function>
     
+    <xsl:function name="common:lower-case-first" as="xs:string?">
+        <xsl:param name="arg" as="xs:string?"/>
+        
+        <xsl:sequence select="concat(lower-case(substring($arg,1,1)),substring($arg,2))"/>
+        
+    </xsl:function>
+    
     <xsl:function name="functx:is-a-number" as="xs:boolean">
         <xsl:param name="value" as="xs:anyAtomicType?"/>
         

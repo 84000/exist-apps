@@ -305,14 +305,14 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                         text {
                             if($attribution[@xml:lang eq 'bo']) then
                                 replace(common:wylie-from-bo(normalize-space($attribution/text())), '/$', '')
+                            
                             else if($attribution[@xml:lang eq 'Sa-Ltn']) then
-                                functx:capitalize-first(
+                                replace(
                                     replace(
-                                        replace(
-                                            normalize-space($attribution/text())  (: Normalize space :)
-                                        , '^\*', '')                              (: Remove leading * :)
-                                    , '­', '-')                                   (: Soft to hard-hyphens :)
-                                )                                                 (: Title case :)
+                                        normalize-space($attribution/text())  (: Normalize space :)
+                                    , '^\*', '')                              (: Remove leading * :)
+                                , '­', '-')                                   (: Soft to hard-hyphens :)
+                                
                             else
                                 normalize-space($attribution/text())
                         }
@@ -538,7 +538,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
             
             let $part-id := ($part/@xml:id, $part/@type)[1]
             
-            return
+            return (
                 for $element at $index in 
                     if($element-name eq 'milestone') then
                         $part//tei:milestone[@xml:id]
@@ -550,8 +550,12 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                         attribute id { $element/@xml:id },
                         attribute part-id { $part-id },
                         attribute index { $index },
+                        if($element[@n gt '']) then
+                            attribute label { $element/@n }
+                        else (),
                         $element/ancestor-or-self::tei:*[@key][1]/@key
                     }
+            )
     
     let $elements :=
         (: Index per doc, not per part :)
@@ -567,6 +571,24 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                         attribute source-key { $toh-key },
                         attribute index { $index }
                     }
+                    
+        (: Re-label based on pre-labelled elements :)
+        else if($element-name eq 'milestone') then
+            for $element in $elements
+            let $part-id := $element/@part-id/string()
+            group by $part-id
+            return (
+                for $element-single at $index in $element[not(@label)]
+                return
+                    element { QName('http://read.84000.co/ns/1.0', $element-name) } {
+                        $element-single/@*,
+                        attribute label { $index }
+                    }
+                ,
+                for $element-single in $element[@label]
+                return
+                    $element-single
+            )
         else
             $elements
     

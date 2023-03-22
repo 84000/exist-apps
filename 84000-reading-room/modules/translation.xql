@@ -1741,8 +1741,7 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                         $marked-paragraphs[exist:match]
                     }
             
-            else
-                ()
+            else ()
                 
         )}
 };

@@ -419,7 +419,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     attribute xml:lang { 'en' },
                     $term/@type,
                     $term/@status,
-                    normalize-space($term/text())
+                    $term/text() ! normalize-space(.)
                 }
                 
             else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative'))]) then
@@ -632,7 +632,7 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                     (: Merge entries :)
                     distinct-values($term-glosses/@type) ! ( text{ common:ws(2) }, element type { concat('eft:', .) } ),
                     local:distinct-terms($term-glosses/tei:term[not(@xml:lang)][not(@type)][normalize-space(text())]) ! ( text{ common:ws(2) }, element translation { . } ),
-                    local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! ( text{ common:ws(2) }, element sanskrit { . } ),
+                    local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! ( text{ common:ws(2) }, element sanskrit { lower-case(.) } ),
                     local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'zh'][normalize-space(text())]) ! ( text{ common:ws(2) }, element chinese { . } ),
                     
                     (: Definition :)

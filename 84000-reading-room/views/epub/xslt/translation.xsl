@@ -22,27 +22,21 @@
                     
                     
                     <!-- If the first parent head is the same as the main title we want to use the translation part head in the first chapter, so not here -->
-                    <xsl:if test="$translation-head and not(data($first-part-head) eq data($main-title))">
+                    <xsl:if test="$translation-head and data($first-part-head) and not(data($first-part-head) eq data($main-title))">
                         <div class="h3">
-                            <xsl:value-of select="$translation-head"/>
-                        </div>
-                    </xsl:if>
-                    
-                    <xsl:if test="$translation-head">
-                        <div class="h3">
-                            <xsl:apply-templates select="$translation-head[1]"/>
+                            <xsl:value-of select="$translation-head[1]/node()"/>
                         </div>
                     </xsl:if>
                     
                     <xsl:if test="$honoration">
                         <div class="h2">
-                            <xsl:apply-templates select="$honoration[1]"/>
+                            <xsl:apply-templates select="$honoration[1]/node()"/>
                         </div>
                     </xsl:if>
                     
                     <xsl:if test="$main-title">
                         <div class="h1">
-                            <xsl:apply-templates select="$main-title[1]"/>
+                            <xsl:apply-templates select="$main-title[1]/node()"/>
                             <xsl:if test="$sub-title">
                                 <br/>
                                 <small>

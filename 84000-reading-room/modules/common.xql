@@ -301,8 +301,7 @@ function common:format-number($number as numeric) as xs:string {
             $c,
             if ($i mod 3 eq 0 and not($i eq count($rev))) then 
                 $comma 
-            else 
-                ()
+            else ()
         )
     
     return 
@@ -318,6 +317,13 @@ declare
     %test:assertEquals('ᴅᴏᴍ') 
 function common:small-caps($string as xs:string) as xs:string {
     translate($string, 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')
+};
+
+declare
+    %test:args('Dom')
+    %test:assertEquals('dom') 
+function common:lower-case-first($string as xs:string) as xs:string {
+    concat(lower-case(substring($string,1,1)),substring($string,2))
 };
 
 declare

@@ -13,11 +13,17 @@
         <xsl:variable name="part" select="m:translation//m:part[@id eq $part-id]"/>
         
         <xsl:call-template name="epub-page">
-            <xsl:with-param name="page-title" select="$part/tei:head[@type eq $part/@type][1]"/>
+            <xsl:with-param name="page-title" select="($part/tei:head[@type eq $part/@type][not(@key) or @key eq $toh-key][data()], $part/parent::m:part[@type eq 'translation']/tei:head[@type eq 'translation'][not(@key) or @key eq $toh-key])[1]"/>
             <xsl:with-param name="content">
                 
                 <section epub:type="chapter" class="new-page text">
+                    
+                    <xsl:if test="not($part/tei:head[@type eq $part/@type][not(@key) or @key eq $toh-key][data()])">
+                        <xsl:apply-templates select="$part/parent::m:part[@type eq 'translation']/tei:head[@type eq 'translation'][not(@key) or @key eq $toh-key][data()]"/>
+                    </xsl:if>
+                    
                     <xsl:apply-templates select="$part"/>
+                
                 </section>
                 
             </xsl:with-param>

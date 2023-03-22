@@ -266,7 +266,10 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
 
 declare function local:glossary-tidy($doc, $do-all as xs:boolean) {
 
-    (: Convert bo-ltn to bo term for glossary items :)
+    (: 
+        Temporary function for migration to 2.19.0
+        Migrates glossary entries to new format
+    :)
     
     let $translation-id := tei-content:id($doc/tei:TEI)
     where $translation-id
@@ -275,6 +278,7 @@ declare function local:glossary-tidy($doc, $do-all as xs:boolean) {
         util:log('info', concat('trigger-glossary-tidy:', $translation-id)),
     
         for $gloss in $doc//tei:div[@type eq 'glossary']//tei:gloss
+        
         let $skt-text := $gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text()
         let $skt-text-normalized := $skt-text ! normalize-unicode(lower-case(.))
         

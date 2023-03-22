@@ -119,7 +119,7 @@
             <xsl:variable name="instances-use-definition" select="if($entity-definition) then $entity/m:instance[@use-definition = ('both','append','prepend','override')] | $entity/m:instance[@id = $related-entries-no-definition/@id] else ()"/>
             <xsl:variable name="glossary-notes" select="$entity/m:content[@type eq 'glossary-notes'][node()]"/>
             
-            <div class="well well-sm">
+            <div class="well well-sm top-margin">
                 
                 <ul class="list-inline inline-dots">
                     

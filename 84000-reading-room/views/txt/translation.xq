@@ -51,7 +51,7 @@ declare function local:parse-node($response as element(m:response), $element as 
                     let $part := $node/ancestor::m:part[@prefix][1]
                     where $cache-milestone
                     return (
-                        text { '{{milestone:{label:' || concat($part/@prefix, '.', $cache-milestone/@index) || ',id:' || $node/@xml:id || '}}}' }
+                        text { '{{milestone:{label:' || concat($part/@prefix, '.', ($cache-milestone/@label, $cache-milestone/@index)[1]) || ',id:' || $node/@xml:id || '}}}' }
                     )
                 
                 (: Output refs with cRef :)
