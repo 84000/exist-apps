@@ -11,7 +11,6 @@
     <xsl:variable name="section" select="/m:response/m:section" as="element(m:section)?"/>
     <xsl:variable name="knowledgebase" select="/m:response/m:knowledgebase" as="element(m:knowledgebase)?"/>
     <xsl:variable name="entities" select="/m:response/m:entities/m:entity" as="element(m:entity)*"/>
-    <!--<xsl:variable name="quotes" select="/m:response/m:quotes/m:quote" as="element(m:quote)*"/>-->
     <xsl:variable name="requested-resource" select="/m:response/m:request/@resource-id" as="xs:string?"/>
     <xsl:variable name="requested-part" select="/m:response/m:request/@part" as="xs:string?"/>
     <xsl:variable name="requested-passage" select="/m:response/m:request/@passage-id" as="xs:string?"/>
@@ -39,7 +38,7 @@
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))][string-join(text(), '') ! normalize-space(.)]]">
+        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative','translationAlternative'))][string-join(text(), '') ! normalize-space(.)]]">
             <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
             <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
@@ -205,7 +204,7 @@
                         <xsl:if test="@xml:lang eq 'Sa-Ltn'">
                             <xsl:value-of select="'break'"/>
                         </xsl:if>
-                        <xsl:if test="@rend = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                        <xsl:if test="@rend = ('reconstruction','semanticReconstruction','transliterationReconstruction')">
                             <xsl:value-of select="'reconstructed'"/>
                         </xsl:if>
                     </xsl:with-param>
@@ -1375,7 +1374,7 @@
                         
                         <!-- Main term -->
                         <h3 class="term">
-                            <xsl:variable name="main-term" select="($glossary-item/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en'])[1]"/>
+                            <xsl:variable name="main-term" select="($glossary-item/tei:term[not(@type = ('definition','alternative','translationAlternative'))][not(@xml:lang) or @xml:lang eq 'en'])[1]"/>
                             <xsl:call-template name="glossary-term">
                                 <xsl:with-param name="term-text" select="$main-term/text()"/>
                                 <xsl:with-param name="term-lang" select="$main-term/@xml:lang"/>
@@ -1388,7 +1387,7 @@
                         <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
                             
                             <xsl:variable name="term-lang" select="."/>
-                            <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq $term-lang][normalize-space(text())]"/>
+                            <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative','translationAlternative'))][@xml:lang eq $term-lang][normalize-space(text())]"/>
                             <xsl:variable name="term-empty-text">
                                 <xsl:call-template name="text">
                                     <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
@@ -1428,7 +1427,7 @@
                         </xsl:for-each>
                         
                         <!-- Alternatives -->
-                        <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type eq 'alternative'][normalize-space(data())]"/>
+                        <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type = ('alternative','translationAlternative')][normalize-space(data())]"/>
                         <xsl:if test="($tei-editor or $view-mode[@id = ('annotation','tests')]) and $alternative-terms">
                             <ul class="list-inline inline-dots">
                                 <xsl:for-each select="$alternative-terms">
@@ -1441,7 +1440,7 @@
                                                 </xsl:with-param>
                                                 <xsl:with-param name="lang" select="@xml:lang"/>
                                             </xsl:call-template>
-                                            <xsl:value-of select="normalize-space(data())"/>
+                                            <xsl:apply-templates select="string-join(text()) ! normalize-space(.)"/>
                                         </span>
                                     </li>
                                 </xsl:for-each>
@@ -1449,7 +1448,7 @@
                         </xsl:if>
                         
                         <!-- Definition -->
-                        <xsl:variable name="entry-definition" select="$glossary-item/tei:term[@type eq 'definition'][node()]"/>
+                        <xsl:variable name="entry-definition" select="$glossary-item/tei:*[@type eq 'definition'][node()]"/>
                         
                         <!-- Entity -->
                         <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
@@ -1680,7 +1679,7 @@
                     <xsl:if test="$interpolation">
                         <xsl:value-of select="'interpolation'"/>
                     </xsl:if>
-                    <xsl:if test="$term-type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')">
+                    <xsl:if test="$root//m:attestation-types/m:attestation-type[@id eq $term-type or m:migrate[@id eq $term-type]][@prepend eq 'asterisk']">
                         <xsl:value-of select="'reconstructed'"/>
                     </xsl:if>
                 </xsl:with-param>

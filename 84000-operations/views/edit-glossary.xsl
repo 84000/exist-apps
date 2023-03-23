@@ -52,7 +52,7 @@
                     </h3>
                     
                     <!-- Text title -->
-                    <div class="h4 no-bottom-margin">
+                    <header>
                         
                         <xsl:variable name="main-title-limited" select="common:limit-str($main-title, 80)"/>
                         <a>
@@ -95,7 +95,7 @@
                             <xsl:sequence select="ops:translation-status($text/@status-group)"/>
                         </div>
                         
-                    </div>
+                    </header>
                     
                     <!-- Status and filter rows -->
                     <xsl:if test="not($request-filter eq 'blank-form')">
@@ -536,6 +536,7 @@
                         <xsl:call-template name="form">
                             
                             <xsl:with-param name="form-action" select="'update-glossary'"/>
+                            <xsl:with-param name="form-class" select="'form-horizontal labels-left'"/>
                             <xsl:with-param name="form-content">
                                 
                                 <!-- Go to the normal list on adding a new item -->
@@ -660,6 +661,7 @@
                                                 
                                                 <xsl:call-template name="glossary-terms">
                                                     <xsl:with-param name="entry" select="."/>
+                                                    <xsl:with-param name="languages" select="('Bo-Ltn','Sa-Ltn')"/>
                                                 </xsl:call-template>
                                                 
                                             </xsl:with-param>
@@ -672,6 +674,7 @@
                                                     
                                                     <xsl:with-param name="show-tab" select="'glossary-form'"/>
                                                     <xsl:with-param name="form-action" select="'update-glossary'"/>
+                                                    <xsl:with-param name="form-class" select="'form-horizontal labels-left'"/>
                                                     <xsl:with-param name="form-content">
                                                         
                                                         <xsl:call-template name="glossary-form">
@@ -1054,6 +1057,7 @@
                                                                     <div class="list-group-item">
                                                                         <xsl:call-template name="glossary-terms">
                                                                             <xsl:with-param name="entry" select="$loop-glossary"/>
+                                                                            <xsl:with-param name="languages" select="('Bo-Ltn','Sa-Ltn')"/>
                                                                         </xsl:call-template>
                                                                     </div>
                                                                     
@@ -1463,12 +1467,9 @@
         <xsl:variable name="element-id" select="string-join(('main-term', $entry/@id), '-')"/>
         <div class="form-group">
             <label for="{ $element-id }" class="col-sm-2 control-label">
-                <xsl:value-of select="'Glossary main term:'"/>
+                <xsl:value-of select="'Translated term:'"/>
             </label>
-            <div class="col-sm-2">
-                <input type="text" class="form-control" value="Translation" disabled="disabled"/>
-            </div>
-            <div class="col-sm-6">
+            <div class="col-sm-8">
                 <input type="text" name="main-term" id="{ $element-id }" value="{ $main-term/text() }" class="form-control"/>
             </div>
         </div>
@@ -1478,11 +1479,30 @@
         <xsl:variable name="source-terms-count" select="count($source-terms)"/>
         <div class="add-nodes-container">
             
+            <!-- Add alternatives as Additional English terms -->
+            <!-- This redundant if is added for exist 4.7.1 -->
+            <xsl:if test="$entry">
+                <xsl:for-each select="$entry/m:alternative">
+                    
+                    <xsl:call-template name="term-input">
+                        <xsl:with-param name="id" select="$entry/@id"/>
+                        <xsl:with-param name="index" select="$source-terms-count + position()"/>
+                        <xsl:with-param name="input-name" select="'term'"/>
+                        <xsl:with-param name="label" select="''"/>
+                        <xsl:with-param name="term-text" select="text()"/>
+                        <xsl:with-param name="lang" select="'en'"/>
+                        <xsl:with-param name="language-options" select="('en-alt', 'Bo-Ltn', 'Sa-Ltn', 'zh')"/>
+                    </xsl:call-template>
+                    
+                </xsl:for-each>
+            </xsl:if>
+            
             <!-- Add input for Sanskrit and Wylie if this is new -->
             <xsl:for-each select="(1 to (if($source-terms-count gt 0) then count($source-terms) else 2))">
                 
                 <xsl:variable name="index" select="."/>
                 
+                <!-- Add fields if there is no existing Wylie or Sanskrit -->
                 <xsl:variable name="element-lang" as="xs:string">
                     <xsl:choose>
                         <xsl:when test="not($source-terms[$index]) and $index eq 1">
@@ -1502,44 +1522,21 @@
                     <xsl:with-param name="index" select="$index"/>
                     <xsl:with-param name="input-name" select="'term'"/>
                     <xsl:with-param name="label" select="'Equivalent(s):'"/>
-                    <xsl:with-param name="term" select="$source-terms[$index]/text()"/>
-                    <xsl:with-param name="lang" select="if(tokenize($source-terms[$index]/@type, '\s+')[. = ('semanticReconstruction')]) then concat($element-lang, '-sr') else if(tokenize($source-terms[$index]/@type, '\s+')[. = ('transliterationReconstruction')]) then concat($element-lang, '-tr') else if(tokenize($source-terms[$index]/@type, '\s+')[. = ('sourceAttested')]) then concat($element-lang, '-sa') else $element-lang"/>
+                    <xsl:with-param name="term-text" select="$source-terms[$index]/text()"/>
+                    <xsl:with-param name="lang" select="$element-lang"/>
+                    <xsl:with-param name="type" select="($source-terms[$index]/@type, $root//m:attestation-types/m:attestation-type[@default][1]/@id)[1]"/>
                     <xsl:with-param name="status" select="($source-terms[$index]/@status, '')[1]"/>
-                    <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'Sa-Ltn-sa', 'zh')"/>
+                    <xsl:with-param name="language-options" select="('en-alt', 'Bo-Ltn', 'Sa-Ltn', 'zh')"/>
+                    <xsl:with-param name="type-options" select="$root//m:attestation-types/m:attestation-type[m:appliesToLang/@xml:lang = $element-lang]"/>
                 </xsl:call-template>
                 
             </xsl:for-each>
             
-            <!-- Add alternatives as Additional English terms -->
-            <!-- This redundant if is added for exist 4.7.1 -->
-            <xsl:if test="$entry">
-                <xsl:for-each select="$entry/m:alternative">
-                    
-                    <xsl:call-template name="term-input">
-                        <xsl:with-param name="id" select="$entry/@id"/>
-                        <xsl:with-param name="index" select="$source-terms-count + position()"/>
-                        <xsl:with-param name="input-name" select="'term'"/>
-                        <xsl:with-param name="label" select="''"/>
-                        <xsl:with-param name="term" select="text()"/>
-                        <xsl:with-param name="lang" select="'en'"/>
-                        <xsl:with-param name="language-options" select="('en', 'Bo-Ltn', 'Sa-Ltn', 'Sa-Ltn-sr', 'Sa-Ltn-tr', 'Sa-Ltn-sa', 'zh')"/>
-                    </xsl:call-template>
-                    
-                </xsl:for-each>
-            </xsl:if>
-            
-            <div class="row">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <p class="text-muted small">
-                        <xsl:call-template name="hyphen-help-text"/>
-                    </p>
-                </div>
-            </div>
-            
             <!-- Add more terms -->
             <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-2">
-                    <a href="#add-nodes" class="add-nodes">
+                
+                <div class="col-sm-2">
+                    <a href="#add-nodes" class="add-nodes pull-right">
                         <span class="monospace">
                             <xsl:value-of select="'+'"/>
                         </span>
@@ -1547,14 +1544,26 @@
                     </a>
                 </div>
                 
-                <div class="col-sm-8">
+                <div class="col-sm-10">
                     <p class="text-muted small">
                         <xsl:value-of select="'Additional Translation terms will be added as alternative spellings'"/>
+                    </p>
+                </div>
+                
+            </div>
+            
+            <!-- Hyphen help text -->
+            <div class="row">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <p class="text-muted small">
+                        <xsl:call-template name="hyphen-help-text"/>
                     </p>
                 </div>
             </div>
         
         </div>
+        
+        <hr class="sml-margin"/>
         
         <!-- Type term|person|place|text -->
         <div class="form-group">
@@ -1563,35 +1572,49 @@
                 <xsl:value-of select="'Glossary type:'"/>
             </label>
             
-            <div class="col-sm-2">
-                <select name="glossary-type" id="{ concat('glossary-type-', $entry/@id) }" class="form-control">
-                    <option value="term">
-                        <xsl:if test="$entry[@type eq 'term']">
-                            <xsl:attribute name="selected" select="'selected'"/>
-                        </xsl:if>
-                        <xsl:value-of select="'Term'"/>
-                    </option>
-                    <option value="person">
-                        <xsl:if test="$entry[@type eq 'person']">
-                            <xsl:attribute name="selected" select="'selected'"/>
-                        </xsl:if>
-                        <xsl:value-of select="'Person'"/>
-                    </option>
-                    <option value="place">
-                        <xsl:if test="$entry[@type eq 'place']">
-                            <xsl:attribute name="selected" select="'selected'"/>
-                        </xsl:if>
-                        <xsl:value-of select="'Place'"/>
-                    </option>
-                    <option value="text">
-                        <xsl:if test="$entry[@type eq 'text']">
-                            <xsl:attribute name="selected" select="'selected'"/>
-                        </xsl:if>
-                        <xsl:value-of select="'Text'"/>
-                    </option>
-                </select>
+            <div class="col-sm-10">
+                <div class="radio-inline">
+                    <label>
+                        <input type="radio" name="glossary-type" value="term" id="{ concat('glossary-type-', $entry/@id) }">
+                            <xsl:if test="not($entry) or $entry[@type eq 'term']">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="' Term'"/>
+                    </label>
+                </div>
+                <div class="radio-inline">
+                    <label>
+                        <input type="radio" name="glossary-type" value="person">
+                            <xsl:if test="$entry[@type eq 'person']">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="' Person'"/>
+                    </label>
+                </div>
+                <div class="radio-inline">
+                    <label>
+                        <input type="radio" name="glossary-type" value="place">
+                            <xsl:if test="$entry[@type eq 'place']">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="' Place'"/>
+                    </label>
+                </div>
+                <div class="radio-inline">
+                    <label>
+                        <input type="radio" name="glossary-type" value="text">
+                            <xsl:if test="$entry[@type eq 'text']">
+                                <xsl:attribute name="checked" select="'checked'"/>
+                            </xsl:if>
+                        </input>
+                        <xsl:value-of select="' Text'"/>
+                    </label>
+                </div>
             </div>
-            
+             
         </div>
         
         <!-- Mode match|marked -->
@@ -1601,8 +1624,8 @@
                 <xsl:value-of select="'Find instances:'"/>
             </label>
             
-            <div class="col-sm-2">
-                <div class="radio">
+            <div class="col-sm-10">
+                <div class="radio-inline">
                     <label>
                         <input type="radio" name="glossary-mode" value="match" id="{ concat('glossary-mode-', $entry/@id) }">
                             <xsl:if test="not($entry) or $entry[not(@mode = ('marked', 'surfeit'))]">
@@ -1612,10 +1635,7 @@
                         <xsl:value-of select="' Match'"/>
                     </label>
                 </div>
-            </div>
-            
-            <div class="col-sm-2">
-                <div class="radio">
+                <div class="radio-inline">
                     <label>
                         <input type="radio" name="glossary-mode" value="marked">
                             <xsl:if test="$entry[@mode eq 'marked']">
@@ -1625,10 +1645,7 @@
                         <xsl:value-of select="' Marked'"/>
                     </label>
                 </div>
-            </div>
-            
-            <div class="col-sm-2">
-                <div class="radio">
+                <div class="radio-inline">
                     <label>
                         <input type="radio" name="glossary-mode" value="surfeit">
                             <xsl:if test="$entry[@mode eq 'surfeit']">
@@ -1642,16 +1659,18 @@
             
         </div>
         
+        <hr class="sml-margin"/>
+        
         <!-- Definition -->
         <xsl:variable name="definitions" select="$entry/m:definition[node()]"/>
         <xsl:variable name="entity-definitions" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
         <div class="form-group">
             
             <label for="{ concat('term-definition-text-', $entry/@id, '-1') }" class="col-sm-2 control-label">
-                <xsl:value-of select="'Definition:'"/>
+                <xsl:value-of select="'Definition in this text:'"/>
             </label>
             
-            <div class="col-sm-8 add-nodes-container">
+            <div class="col-sm-10 add-nodes-container">
                 
                 <xsl:for-each select="(1 to (if(count($definitions) gt 0) then count($definitions) else 1))">
                     <xsl:variable name="index" select="."/>
@@ -1670,7 +1689,7 @@
                                 <xsl:apply-templates select="$definition"/>
                             </xsl:variable>
                             
-                            <xsl:attribute name="rows" select="ops:textarea-rows(string-join($definition-escaped/m:escaped/text()), 2, 105)"/>
+                            <xsl:attribute name="rows" select="ops:textarea-rows(string-join($definition-escaped/m:escaped/text()), 2, 130)"/>
                             
                             <xsl:sequence select="$definition-escaped/m:escaped/data()"/>
                             
@@ -1693,7 +1712,7 @@
         
         <!-- Glossary definition tag reference -->
         <div class="form-group">
-            <div class="col-sm-12">
+            <div class="col-sm-offset-2 col-sm-10">
                 <xsl:call-template name="definition-tag-reference">
                     <xsl:with-param name="element-id" select="($entry/@id, 'new-glossary')[1]"/>
                 </xsl:call-template>
@@ -1701,14 +1720,13 @@
         </div>
         
         <!-- Include entity definition -->
-        <!-- Submit button -->
         <div class="form-group">
             
             <label class="col-sm-2 control-label" for="use-definition">
                 <xsl:value-of select="'Definition status:'"/>
             </label>
             
-            <div class="col-sm-6">
+            <div class="col-sm-10">
                 <select name="use-definition" id="use-definition" class="form-control">
                     <option value="">
                         <xsl:value-of select="'INCOMPATIBLE: only show an entity definition if there is no glossary definition'"/>
@@ -1736,7 +1754,13 @@
                 </select>
             </div>
             
-            <div class="col-sm-2">
+        </div>
+        
+        <hr class="sml-margin"/>
+        
+        <!-- Submit button -->
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
                 <button type="submit" class="btn btn-primary pull-right" data-loading="Applying changes...">
                     <xsl:if test="/m:response/m:text[@locked-by-user gt '']">
                         <xsl:attribute name="disabled" select="'disabled'"/>
@@ -1744,7 +1768,6 @@
                     <xsl:value-of select="'Apply changes'"/>
                 </button>
             </div>
-            
         </div>
         
     </xsl:template>
@@ -1791,6 +1814,7 @@
                     <div class="list-group-item">
                         <xsl:call-template name="glossary-terms">
                             <xsl:with-param name="entry" select="$entry"/>
+                            <xsl:with-param name="languages" select="('Bo-Ltn','Sa-Ltn')"/>
                         </xsl:call-template>
                     </div>
                     
@@ -1926,7 +1950,7 @@
             
             <xsl:with-param name="show-tab" select="'entity'"/>
             <xsl:with-param name="form-action" select="'update-entity'"/>
-            <xsl:with-param name="form-class" select="'form-horizontal'"/>
+            <xsl:with-param name="form-class" select="'form-horizontal labels-left'"/>
             <xsl:with-param name="glossary-id" select="$glossary-entry/@id"/>
             <xsl:with-param name="target-id" select="concat('expand-item-entity-', $glossary-entry/@id, '-detail')"/>
             

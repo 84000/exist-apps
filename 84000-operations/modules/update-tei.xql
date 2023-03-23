@@ -725,25 +725,18 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     (: Main term :)
                     common:ws(7),
                     element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
+                        (:attribute type {'translationMain'},:)
                         text { $main-term }
                     },
                     
                     (: Source terms and alternatives :)
                     for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-text-')], '-')
-                    let $term-index := substring-after($term-param, 'term-text-')
                     let $term-text := request:get-parameter($term-param, '')
-                    let $term-lang-type := request:get-parameter(concat('term-lang-', $term-index), '')
-                    let $term-type := 
-                        if(matches($term-lang-type, '\-sr$')) then 
-                            'semanticReconstruction' 
-                        else if(matches($term-lang-type, '\-tr$')) then 
-                            'transliterationReconstruction' 
-                        else if(matches($term-lang-type, '\-sa$')) then 
-                            'sourceAttested' 
-                        else ()
-                    
+                    let $term-index := substring-after($term-param, 'term-text-')
+                    let $term-lang := request:get-parameter(concat('term-lang-', $term-index), '') ! common:valid-lang(.)
+                    let $term-type := request:get-parameter(concat('term-type-', $term-index), '')
+                    let $term-type := ($glossary:attestation-types//m:attestation-type[@id eq $term-type]/m:migrate/@id, $glossary:attestation-types//m:attestation-type[@id eq $term-type]/@id)[1]
                     let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
-                    let $term-lang := common:valid-lang(replace($term-lang-type, '\-(sr|tr|sa)$', ''))
                     where $term-text gt ''
                     return (
                         common:ws(7),
@@ -751,7 +744,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                         
                             (: If more than one en term is passed then make it an alternative :)
                             if($term-lang eq 'en') then
-                                attribute type {'alternative'}
+                                attribute type {'alternative'}(:translationAlternative:)
                             
                             else ( 
                                 
@@ -806,7 +799,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     
                     (: Copy other nodes :)
                     if ($existing-item) then
-                        for $node in $existing-item/tei:gloss/*[not(self::tei:term)]
+                        for $node in $existing-item/tei:gloss/*[not(self::tei:term)][not(@type eq 'definition')]
                         return (
                             common:ws(7),
                             $node

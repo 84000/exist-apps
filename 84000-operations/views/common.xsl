@@ -558,39 +558,36 @@
         <xsl:param name="entity" as="element(m:entity)?"/>
         
         <!-- Warning -->
-        <div class="row">
-            <div class="col-sm-offset-2 col-sm-8">
-                <xsl:choose>
-                    
-                    <!-- When there is an entity  -->
-                    <xsl:when test="$entity">
-                        
-                        <div class="alert alert-danger">
-                            <p class="small text-center">
-                                <xsl:value-of select="'NOTE: Updates to this '"/>
-                                <strong>
-                                    <xsl:value-of select="'shared entity'"/>
-                                </strong>
-                                <xsl:value-of select="' must apply for all grouped entries listed below!'"/>
-                            </p>
-                        </div>
-                        
-                    </xsl:when>
-                    
-                    <!-- When there is no entity -->
-                    <xsl:otherwise>
-                        
-                        <div class="alert alert-danger">
-                            <p class="small text-center">
-                                <xsl:value-of select="'Please check &#34;possible matches&#34; for an existing entity before creating a new one!'"/>
-                            </p>
-                        </div>
-                        
-                    </xsl:otherwise>
-                    
-                </xsl:choose>
-            </div>
-        </div>
+        <xsl:choose>
+            
+            <!-- When there is an entity  -->
+            <xsl:when test="$entity">
+                
+                <div class="alert alert-danger">
+                    <p class="small text-center">
+                        <xsl:value-of select="'NOTE: Updates to this '"/>
+                        <strong>
+                            <xsl:value-of select="'shared entity'"/>
+                        </strong>
+                        <xsl:value-of select="' must apply for all grouped entries listed below!'"/>
+                    </p>
+                </div>
+                
+            </xsl:when>
+            
+            <!-- When there is no entity -->
+            <xsl:otherwise>
+                
+                <div class="alert alert-danger">
+                    <p class="small text-center">
+                        <xsl:value-of select="'Please check &#34;possible matches&#34; for an existing entity before creating a new one!'"/>
+                    </p>
+                </div>
+                
+            </xsl:otherwise>
+            
+        </xsl:choose>
+        
         
     </xsl:template>
     
@@ -618,7 +615,7 @@
                             <xsl:with-param name="index" select="position()"/>
                             <xsl:with-param name="input-name" select="'entity-label'"/>
                             <xsl:with-param name="label" select="'Label (internal use):'"/>
-                            <xsl:with-param name="term" select="text()"/>
+                            <xsl:with-param name="term-text" select="text()"/>
                             <xsl:with-param name="lang" select="@xml:lang"/>
                             <xsl:with-param name="language-options" select="('mixed', 'bo', 'Bo-Ltn', 'Sa-Ltn')"/>
                         </xsl:call-template>
@@ -630,7 +627,7 @@
                         <xsl:with-param name="index" select="1"/>
                         <xsl:with-param name="input-name" select="'entity-label'"/>
                         <xsl:with-param name="label" select="'Label (internal use):'"/>
-                        <xsl:with-param name="term" select="$default-label-text"/>
+                        <xsl:with-param name="term-text" select="$default-label-text"/>
                         <xsl:with-param name="lang" select="$default-label-lang"/>
                         <xsl:with-param name="language-options" select="('mixed', 'bo', 'Bo-Ltn', 'Sa-Ltn')"/>
                     </xsl:call-template>
@@ -638,15 +635,15 @@
             </xsl:choose>
             
             <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-2">
-                    <a href="#add-nodes" class="add-nodes">
+                <div class="col-sm-2">
+                    <a href="#add-nodes" class="add-nodes pull-right">
                         <span class="monospace">
                             <xsl:value-of select="'+'"/>
                         </span>
                         <xsl:value-of select="' add a label'"/>
                     </a>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-10">
                     <p class="text-muted small">
                         <xsl:value-of select="'Standard hyphens added to Sanskrit strings will be converted to soft-hyphens when saved'"/>
                     </p>
@@ -654,6 +651,8 @@
             </div>
             
         </div>
+        
+        <hr class="sml-margin"/>
         
         <!-- Type checkboxes -->
         <xsl:if test="$entity-types">
@@ -683,6 +682,8 @@
             </div>
         </xsl:if>
         
+        <hr class="sml-margin"/>
+        
         <!-- Entity definition -->
         <div class="form-group">
             
@@ -691,7 +692,7 @@
                 <xsl:value-of select="'Definition (public):'"/>
             </label>
             
-            <div class="col-sm-8 add-nodes-container">
+            <div class="col-sm-10 add-nodes-container">
                 
                 <xsl:variable name="entity-definitions" select="$entity/m:content[@type eq 'glossary-definition']"/>
                 
@@ -736,7 +737,7 @@
         
         <!-- Glossary definition tag reference -->
         <div class="form-group">
-            <div class="col-sm-12">
+            <div class="col-sm-offset-2 col-sm-10">
                 <xsl:call-template name="definition-tag-reference">
                     <xsl:with-param name="element-id" select="concat($context-id, '-', ($entity/@xml:id, 'new-entity')[1])"/>
                 </xsl:call-template>
@@ -751,7 +752,7 @@
                 <xsl:value-of select="'Notes (internal):'"/>
             </label>
             
-            <div class="col-sm-8 add-nodes-container">
+            <div class="col-sm-10 add-nodes-container">
                 
                 <xsl:variable name="entity-notes" select="$entity/m:content[@type eq 'glossary-notes']"/>
                 
@@ -786,7 +787,7 @@
         <!-- Submit button / un-link option -->
         <div class="form-group">
             
-            <div class="col-sm-offset-2 col-sm-6">
+            <div class="col-sm-offset-2 col-sm-8">
                 
                 <xsl:if test="$instance">
                     <div class="checkbox">
@@ -971,63 +972,59 @@
         
         <xsl:param name="element-id" as="xs:string" required="true"/>
         
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-8">
-                <div class="panel panel-default no-bottom-margin">
-                    <div class="panel-heading" role="tab">
-                        <a href="{ concat('#tag-reference-', $element-id) }" aria-controls="{ concat('tag-reference-', $element-id) }" id="{ concat('#tag-reference-heading-', $element-id) }" class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
-                            <h5 class="text-muted small">
-                                <xsl:value-of select="'Tag reference for definitions'"/>
-                            </h5>
-                            <span class="text-right">
-                                <i class="fa fa-plus collapsed-show"/>
-                                <i class="fa fa-minus collapsed-hide"/>
-                            </span>
-                        </a>
-                    </div>
-                    <div id="{ concat('tag-reference-', $element-id) }" aria-labelledby="{ concat('#tag-reference-heading-', $element-id) }" class="panel-body collapse" role="tabpanel" aria-expanded="false">
-                        
-                        <p class="small text-muted">
-                            <xsl:value-of select="'These are the valid tags that can be used in definitions. For more details refer to the 84000 TEI guidelines.'"/>
-                        </p>
-                        
+        <div class="panel panel-default no-bottom-margin">
+            <div class="panel-heading" role="tab">
+                <a href="{ concat('#tag-reference-', $element-id) }" aria-controls="{ concat('tag-reference-', $element-id) }" id="{ concat('#tag-reference-heading-', $element-id) }" class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                    <h5 class="text-muted italic">
+                        <xsl:value-of select="'Tag reference for definitions'"/>
+                    </h5>
+                    <span class="text-right">
+                        <i class="fa fa-plus collapsed-show"/>
+                        <i class="fa fa-minus collapsed-hide"/>
+                    </span>
+                </a>
+            </div>
+            <div id="{ concat('tag-reference-', $element-id) }" aria-labelledby="{ concat('#tag-reference-heading-', $element-id) }" class="panel-body collapse" role="tabpanel" aria-expanded="false">
+                
+                <p class="small text-muted">
+                    <xsl:value-of select="'These are the valid tags that can be used in definitions. For more details refer to the 84000 TEI guidelines.'"/>
+                </p>
+                
+                <p>
+                    
+                    <xsl:variable name="serialization-parameters" as="element(output:serialization-parameters)">
+                        <output:serialization-parameters>
+                            <output:method value="xml"/>
+                            <output:version value="1.1"/>
+                            <output:indent value="no"/>
+                            <output:omit-xml-declaration value="yes"/>
+                        </output:serialization-parameters>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="samples">
+                        <term type="ignore">affliction</term>
+                        <distinct>dhāraṇī</distinct>
+                        <emph>Reality</emph>
+                        <foreign xml:lang="Sa-Ltn">āyatana</foreign>
+                        <hi rend="small-caps">bce</hi>
+                        <mantra xml:lang="Sa-Ltn">oṃ</mantra>
+                        <ptr target="#UT22084-001-001"/>
+                        <ref target="http://tripitaka.cbeta.org/T15n0599 ">cbeta.org</ref>
+                        <title xml:lang="en">The Rice Seedling</title>
+                    </xsl:variable>
+                    
+                    <xsl:for-each select="$samples/*">
                         <p>
-                            
-                            <xsl:variable name="serialization-parameters" as="element(output:serialization-parameters)">
-                                <output:serialization-parameters>
-                                    <output:method value="xml"/>
-                                    <output:version value="1.1"/>
-                                    <output:indent value="no"/>
-                                    <output:omit-xml-declaration value="yes"/>
-                                </output:serialization-parameters>
-                            </xsl:variable>
-                            
-                            <xsl:variable name="samples">
-                                <term type="ignore">affliction</term>
-                                <distinct>dhāraṇī</distinct>
-                                <emph>Reality</emph>
-                                <foreign xml:lang="Sa-Ltn">āyatana</foreign>
-                                <hi rend="small-caps">bce</hi>
-                                <mantra xml:lang="Sa-Ltn">oṃ</mantra>
-                                <ptr target="#UT22084-001-001"/>
-                                <ref target="http://tripitaka.cbeta.org/T15n0599 ">cbeta.org</ref>
-                                <title xml:lang="en">The Rice Seedling</title>
-                            </xsl:variable>
-                            
-                            <xsl:for-each select="$samples/*">
-                                <p>
-                                    <code>
-                                        <xsl:value-of select="replace(normalize-space(serialize(., $serialization-parameters)), '\s*xmlns=&#34;\S*&#34;', '')"/>
-                                    </code>
-                                </p>
-                            </xsl:for-each>
+                            <code>
+                                <xsl:value-of select="replace(normalize-space(serialize(., $serialization-parameters)), '\s*xmlns=&#34;\S*&#34;', '')"/>
+                            </code>
                         </p>
-                        
-                    </div>
-                </div>
+                    </xsl:for-each>
+                </p>
+                
             </div>
         </div>
-        
+
     </xsl:template>
     
     <!-- Output a text input control with an associated language dropdown -->
@@ -1037,23 +1034,16 @@
         <xsl:param name="index" as="xs:integer" required="true"/>
         <xsl:param name="input-name" as="xs:string" required="true"/>
         <xsl:param name="label" as="xs:string" required="true"/>
-        <xsl:param name="term" as="xs:string?"/>
+        <xsl:param name="term-text" as="xs:string?"/>
         <xsl:param name="lang" as="xs:string?"/>
+        <xsl:param name="type" as="xs:string?"/>
         <xsl:param name="status" as="xs:string?"/>
         <xsl:param name="language-options" as="xs:string*"/>
+        <xsl:param name="type-options" as="element(m:attestation-type)*"/>
         
         <div class="form-group add-nodes-group">
             
-            <xsl:if test="$index eq 1">
-                <label for="{ concat($input-name, '-', $id, '-', $index) }" class="col-sm-2 control-label">
-                    <xsl:value-of select="$label"/>
-                </label>
-            </xsl:if>
-            
             <div class="col-sm-2">
-                <xsl:if test="not($index eq 1)">
-                    <xsl:attribute name="class" select="'col-sm-offset-2 col-sm-2'"/>
-                </xsl:if>
                 <xsl:call-template name="select-language">
                     <xsl:with-param name="language-options" select="$language-options"/>
                     <xsl:with-param name="selected-language" select="$lang"/>
@@ -1062,23 +1052,27 @@
                 </xsl:call-template>
             </div>
             
-            <div class="col-sm-6">
+            <div class="col-sm-8">
+                
                 <div>
+                    
                     <xsl:if test="not(empty($status))">
                         <xsl:attribute name="class" select="'input-group'"/>
                     </xsl:if>
+                    
                     <input type="text" name="{ concat($input-name, '-text-', $index) }" id="{ concat($input-name, '-', $id, '-', $index) }" class="form-control">
                         <xsl:attribute name="value">
                             <xsl:choose>
                                 <xsl:when test="matches($lang,'^sa\-ltn', 'i')">
-                                    <xsl:attribute name="value" select="replace($term, '­', '-'(: This is a soft-hyphen :))"/>
+                                    <xsl:attribute name="value" select="replace($term-text, '­', '-'(: This is a soft-hyphen :))"/>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <xsl:attribute name="value" select="$term"/>
+                                    <xsl:attribute name="value" select="$term-text"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:attribute>
                     </input>
+                    
                     <xsl:if test="not(empty($status))">
                         <span class="input-group-addon">
                             <label>
@@ -1092,7 +1086,23 @@
                         </span>
                     </xsl:if>
                 </div>
+                
             </div>
+            
+            <xsl:if test="$type-options">
+                <div class="col-sm-2">
+                    <select name="{ concat($input-name, '-type-', $index) }" class="form-control">
+                        <xsl:for-each select="$type-options">
+                            <option value="{ @id }">
+                                <xsl:if test="@id eq $type  or m:migrate[@id eq $type]">
+                                    <xsl:attribute name="selected" select="'selected'"/>
+                                </xsl:if>
+                                <xsl:value-of select="concat(@code, ' / ', m:label) ! normalize-space(.)"/>
+                            </option>
+                        </xsl:for-each>
+                    </select>
+                </div>
+            </xsl:if>
             
         </div>
     
@@ -1112,20 +1122,22 @@
             <xsl:if test="$language-options = ''">
                 <option value=""/>
             </xsl:if>
-            <xsl:if test="$language-options = 'en'">
+            <xsl:if test="$language-options = ('en','en-alt','mixed')">
                 <option value="en">
                     <xsl:if test="$selected-language = ('','en')">
                         <xsl:attribute name="selected" select="'selected'"/>
                     </xsl:if>
-                    <xsl:value-of select="'Translation'"/>
-                </option>
-            </xsl:if>
-            <xsl:if test="$language-options = 'mixed'">
-                <option value="en">
-                    <xsl:if test="$selected-language = ('','en')">
-                        <xsl:attribute name="selected" select="'selected'"/>
-                    </xsl:if>
-                    <xsl:value-of select="'English / Mixed'"/>
+                    <xsl:choose>
+                        <xsl:when test="$language-options = 'en-alt'">
+                            <xsl:value-of select="'Alt. translation'"/>
+                        </xsl:when>
+                        <xsl:when test="$language-options = 'mixed'">
+                            <xsl:value-of select="'English / Mixed'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'Translation'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </option>
             </xsl:if>
             <xsl:if test="$language-options = 'bo'">
@@ -1160,7 +1172,7 @@
                     <xsl:value-of select="'Sanskrit* / Reconstructed'"/>
                 </option>
             </xsl:if>
-            <xsl:if test="$language-options = 'Sa-Ltn-sr'">
+            <!--<xsl:if test="$language-options = 'Sa-Ltn-sr'">
                 <option value="sa-ltn-sr">
                     <xsl:if test="$selected-language eq 'Sa-Ltn-sr'">
                         <xsl:attribute name="selected" select="'selected'"/>
@@ -1183,7 +1195,7 @@
                     </xsl:if>
                     <xsl:value-of select="'Sanskrit* / Source Attested'"/>
                 </option>
-            </xsl:if>
+            </xsl:if>-->
             <xsl:if test="$language-options = 'zh'">
                 <option value="zh">
                     <xsl:if test="$selected-language eq 'zh'">
@@ -1200,7 +1212,7 @@
                     <xsl:value-of select="'Pali'"/>
                 </option>
             </xsl:if>
-            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc','Sa-Ltn-tr','Sa-Ltn-sr','Sa-Ltn-sa','zh','Pi-Ltn'))">
+            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc',(:'Sa-Ltn-tr','Sa-Ltn-sr','Sa-Ltn-sa',:)'zh','Pi-Ltn'))">
                 <option>
                     <xsl:attribute name="value" select="$selected-language"/>
                     <xsl:attribute name="selected" select="'selected'"/>
@@ -1221,6 +1233,9 @@
         
         <xsl:param name="entry" as="element(m:entry)"/>
         <xsl:param name="list-class" as="xs:string?"/>
+        <xsl:param name="languages" as="xs:string*"/>
+        
+        <xsl:variable name="languages" select="if(count($languages) gt 0) then $languages else distinct-values($entry/m:term/@xml:lang)[not(.eq 'en')]" as="xs:string*"/>
         
         <ul class="list-inline inline-dots">
             
@@ -1251,13 +1266,13 @@
             </li>
             
             <!-- Main terms -->
-            <xsl:for-each select="$entry/m:term[not(@xml:lang eq 'en')]">
+            <xsl:for-each select="$entry/m:term[@xml:lang = $languages]">
                 <xsl:sort select="if(@xml:lang eq 'Bo-Ltn') then 1 else if(@xml:lang eq 'bo') then 2 else if(@xml:lang eq 'Sa-Ltn') then 3 else 4"/>
                 <li>
                     <span>
-                        <xsl:attribute name="class">
-                            <xsl:value-of select="ops:lang-class(@xml:lang)"/>
-                        </xsl:attribute>
+                        <xsl:call-template name="ops:class-attribute">
+                            <xsl:with-param name="lang" select="@xml:lang"/>
+                        </xsl:call-template>
                         <xsl:value-of select="text()"/>
                     </span>
                     <xsl:if test="tokenize(@status, ' ')[. = ('verified')]">
@@ -1272,9 +1287,9 @@
             <xsl:for-each select="$entry/m:alternative">
                 <li class="text-warning">
                     <span>
-                        <xsl:attribute name="class">
-                            <xsl:value-of select="ops:lang-class(@xml:lang)"/>
-                        </xsl:attribute>
+                        <xsl:call-template name="ops:class-attribute">
+                            <xsl:with-param name="lang" select="@xml:lang"/>
+                        </xsl:call-template>
                         <xsl:value-of select="text()"/>
                     </span>
                 </li>
@@ -1493,6 +1508,7 @@
                             <xsl:call-template name="glossary-terms">
                                 <xsl:with-param name="entry" select="$entry"/>
                                 <xsl:with-param name="list-class" select="'no-bottom-margin'"/>
+                                <xsl:with-param name="languages" select="('Bo-Ltn','Sa-Ltn')"/>
                             </xsl:call-template>
                         </div>
                         

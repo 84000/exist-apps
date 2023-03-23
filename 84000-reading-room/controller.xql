@@ -44,7 +44,7 @@ declare variable $var-debug :=
         <var name="common:data-path" value="{ $common:data-path }"/>
     </debug>;
 
-declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as node(){
+declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as element() {
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     {
         (: Model optional :)
@@ -491,13 +491,14 @@ return
         
         else
             (: It's data :)
-            if($resource-suffix eq 'html') then
+            (:if($resource-suffix eq 'html') then
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="text/html"/>
                     </forward>
                 </dispatch>
-            else if($resource-suffix eq 'pdf') then
+            else:) 
+            if($resource-suffix eq 'pdf') then
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/pdf"/>
@@ -527,13 +528,7 @@ return
                 </dispatch>
             else
                 (: Return an error :)
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <error-handler>
-                        <forward servlet="XSLTServlet">
-                            <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, "/views/html/error.xsl")}"/>
-                        </forward>
-                    </error-handler>
-                </dispatch>
+                local:dispatch((),(),())
                 
     else
         (: Auth required and not given. Show login. :)

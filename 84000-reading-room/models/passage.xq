@@ -121,6 +121,7 @@ return
                     $outlines-related,
                     $glossary-cache,
                     $entities:flags,
+                    $glossary:attestation-types,
                     $strings
                 )
             )

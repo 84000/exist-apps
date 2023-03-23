@@ -282,6 +282,7 @@ let $xml-response :=
             $glossary,
             $entities,
             $glossary-cache,
+            $glossary:attestation-types,
             $update-tei:blocking-jobs,
             $entities:predicates,
             $entities:types,

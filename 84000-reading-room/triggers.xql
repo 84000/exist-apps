@@ -133,7 +133,7 @@ declare function local:temporary-ids($doc) {
         <p tid="1">Text <span tid="1">sub-node</span> more text.</p>
     :)
     let $tid-elements := (
-        $doc//tei:text//tei:p
+        $doc//tei:text//tei:p[not(parent::tei:gloss)]
         | $doc//tei:text//tei:label[not(parent::tei:p)]
         | $doc//tei:text//tei:table
         | $doc//tei:text//tei:head[not(parent::tei:table)]
@@ -255,6 +255,7 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
                 let $bo-term := 
                     element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
                         attribute xml:lang { 'bo' },
+                        $bo-ltn-term/@type,
                         text { common:bo-term($bo-ltn-term/text()) } 
                     }
             

@@ -179,22 +179,24 @@
                                                 <xsl:for-each select="('Bo-Ltn','Sa-Ltn')">
                                                     <xsl:variable name="title-lang" select="."/>
                                                     <xsl:variable name="title-terms-lang" select="$request-entity-data/m:term[@xml:lang eq $title-lang]"/>
-                                                    <div>
-                                                        <ul class="list-inline inline-dots row-margin">
-                                                            <xsl:for-each select="$title-terms-lang">
-                                                                <li>
-                                                                    <xsl:call-template name="glossary-term">
-                                                                        <xsl:with-param name="term-text" select="text()"/>
-                                                                        <xsl:with-param name="term-lang" select="@xml:lang"/>
-                                                                        <xsl:with-param name="term-type" select="@type"/>
-                                                                        <xsl:with-param name="term-status" select="@status"/>
-                                                                        <xsl:with-param name="glossary-type" select="@glossary-type"/>
-                                                                        <xsl:with-param name="interpolation" select="@flagged"/>
-                                                                    </xsl:call-template>
-                                                                </li>
-                                                            </xsl:for-each>
-                                                        </ul>
-                                                    </div>
+                                                    <xsl:if test="$title-terms-lang">
+                                                        <div>
+                                                            <ul class="list-inline inline-dots row-margin">
+                                                                <xsl:for-each select="$title-terms-lang">
+                                                                    <li>
+                                                                        <xsl:call-template name="glossary-term">
+                                                                            <xsl:with-param name="term-text" select="text()"/>
+                                                                            <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                                            <xsl:with-param name="term-type" select="@type"/>
+                                                                            <xsl:with-param name="term-status" select="@status"/>
+                                                                            <xsl:with-param name="glossary-type" select="@glossary-type"/>
+                                                                            <xsl:with-param name="interpolation" select="@flagged"/>
+                                                                        </xsl:call-template>
+                                                                    </li>
+                                                                </xsl:for-each>
+                                                            </ul>
+                                                        </div>
+                                                    </xsl:if>
                                                 </xsl:for-each>
                                                 
                                             </div>
@@ -236,13 +238,13 @@
                                                 
                                                 <!-- Entity definition -->
                                                 <xsl:if test="$request-entity/m:content[@type eq 'glossary-definition'][node()]">
-                                                    <blockquote>
+                                                    <!--<blockquote>-->
                                                         <xsl:for-each select="$request-entity/m:content[@type eq 'glossary-definition']">
                                                             <p class="definition">
                                                                 <xsl:apply-templates select="node()"/>
                                                             </p>
                                                         </xsl:for-each>
-                                                    </blockquote>
+                                                    <!--</blockquote>-->
                                                 </xsl:if>
                                                 
                                                 <!-- Glossary entries: grouped by translation -->
@@ -396,15 +398,17 @@
                                                             
                                                             <xsl:variable name="main-title" select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
                                                             
-                                                            <a class="entity-list-item block-link">
-                                                                <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
-                                                                <span>
+                                                            <div class="entity-list-item">
+                                                                <h4>
                                                                     <xsl:attribute name="class">
                                                                         <xsl:value-of select="string-join(('results-list-item-heading', common:lang-class($main-title/@xml:lang)),' ')"/>
                                                                     </xsl:attribute>
-                                                                    <xsl:value-of select="normalize-space($main-title/text())"/>
-                                                                </span>
-                                                            </a>
+                                                                    <a target="_self">
+                                                                        <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
+                                                                        <xsl:value-of select="normalize-space($main-title/text())"/>
+                                                                    </a>
+                                                                </h4>
+                                                            </div>
                                                             
                                                         </xsl:for-each>
                                                         
@@ -437,15 +441,19 @@
                                                                 </xsl:call-template>
                                                             </xsl:variable>
                                                             
-                                                            <a class="entity-list-item block-link">
-                                                                
-                                                                <!-- Link to the glossary, checking if it's already included in this page -->
-                                                                <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html', '#', $related-entity/@xml:id)"/>
-                                                                <xsl:attribute name="data-href-override" select="concat('#', $related-entity/@xml:id)"/>
-                                                                <xsl:attribute name="data-postscroll-mark" select="concat('#', $related-entity/@xml:id)"/>
+                                                            <div class="entity-list-item">
                                                                 
                                                                 <h4 class="{ common:lang-class($entity-data/m:label[@type eq 'primary']/@xml:lang) }">
-                                                                    <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>
+                                                                    <a>
+                                                                        
+                                                                        <!-- Link to the glossary, checking if it's already included in this page -->
+                                                                        <xsl:attribute name="href" select="concat('/glossary/', $related-entity/@xml:id, '.html', '#', $related-entity/@xml:id)"/>
+                                                                        <xsl:attribute name="data-href-override" select="concat('#', $related-entity/@xml:id)"/>
+                                                                        <xsl:attribute name="data-postscroll-mark" select="concat('#', $related-entity/@xml:id)"/>
+                                                                        
+                                                                        <xsl:value-of select="normalize-space($entity-data/m:label[@type eq 'primary']/text())"/>
+                                                                        
+                                                                    </a>
                                                                 </h4>
                                                                 
                                                                 <xsl:for-each select="('Sa-Ltn','en')[not(. = $entity-data/m:label[@type eq 'primary']/@xml:lang)]">
@@ -473,7 +481,7 @@
                                                                     
                                                                 </xsl:for-each>
                                                                 
-                                                            </a>
+                                                            </div>
                                                             
                                                         </xsl:for-each>
                                                         

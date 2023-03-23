@@ -188,7 +188,7 @@
     </xsl:function>
     
     <!-- Standardise wayward lang ids -->
-    <xsl:function name="ops:lang-class" as="xs:string">
+    <xsl:function name="ops:lang-class" as="xs:string?">
         <xsl:param name="lang" as="xs:string?"/>
         <xsl:choose>
             <xsl:when test="lower-case($lang) eq 'bo'">
@@ -209,11 +209,21 @@
             <xsl:when test="lower-case($lang) = 'ja'">
                 <xsl:value-of select="'text-ja'"/>
             </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="''"/>
-            </xsl:otherwise>
         </xsl:choose>
     </xsl:function>
+    
+    <xsl:template name="ops:class-attribute">
+        
+        <xsl:param name="classes" as="xs:string*"/>
+        <xsl:param name="lang" as="xs:string?"/>
+        
+        <xsl:variable name="class-str" select="string-join(($classes, $lang ! ops:lang-class(.)), ' ')"/>
+        
+        <xsl:if test="$class-str gt ''">
+            <xsl:attribute name="class" select="$class-str"/>
+        </xsl:if>
+        
+    </xsl:template>
     
     <!-- Limit string length ... -->
     <xsl:function name="ops:limit-str" as="xs:string">

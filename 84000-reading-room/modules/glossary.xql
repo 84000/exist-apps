@@ -51,55 +51,43 @@ declare variable $glossary:attestation-types :=
     <attestation-types xmlns="http://read.84000.co/ns/1.0">
         <attestation-type id="attestedSource" code="AS" >
             <label>Attested in source text</label>
-            <description>This term is attested in the manuscript used as a source for this translation.</description>
-            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <description>This term is attested in the Sanskrit manuscript used as a source for this translation.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
             <appliesToLang xml:lang="Bo-Ltn"/>
             <appliesToLang xml:lang="bo"/>
-            <appliesToLang xml:lang="zh"/>
             <migrate id="sourceAttested"/>
         </attestation-type>
         <attestation-type id="attestedOther" code="AO">
             <label>Attested in other text</label>
-            <description>This term is attested in other manuscripts of the Kangyur or Tengyur.</description>
-            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
-            <appliesToLang xml:lang="Bo-Ltn"/>
-            <appliesToLang xml:lang="bo"/>
-            <appliesToLang xml:lang="zh"/>
+            <description>This term is attested in other Sanskrit manuscripts of the Kangyur or Tengyur.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="attestedDictionary" code="AD">
             <label>Attested in dictionary</label>
-            <description>This term is attested in widely trusted dictionaries.</description>
-            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
-            <appliesToLang xml:lang="Bo-Ltn"/>
-            <appliesToLang xml:lang="bo"/>
-            <appliesToLang xml:lang="zh"/>
+            <description>This term is attested in Tibetan-Sanskrit dictionaries.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
         <attestation-type id="attestedApproximate" code="AA">
             <label>Approximate attestation</label>
-            <description>The attestation of this name is approximate. It is based on other names where the transcription is attested in dictionaries or other manuscripts.</description>
-            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
-            <appliesToLang xml:lang="Bo-Ltn"/>
-            <appliesToLang xml:lang="bo"/>
-            <appliesToLang xml:lang="zh"/>
+            <description>The attestation of this name is approximate. It is based on other names where Tibetan-Sanskrit relationship is attested in dictionaries or other manuscripts.</description>
+            <appliesToLang xml:lang="Sa-Ltn"/>
         </attestation-type>
-        <attestation-type id="reconstructedPhonetic" code="RP">
+        <attestation-type id="reconstructedPhonetic" code="RP" prepend="asterisk">
             <label>Reconstruction from Tibetan phonetic rendering</label>
             <description>This term is a reconstruction based on the Tibetan phonetic rendering of the term.</description>
-            <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
+            <appliesToLang xml:lang="Sa-Ltn"/>
             <migrate id="transliterationReconstruction"/>
         </attestation-type>
-        <attestation-type id="reconstructedSemantic" code="RS">
+        <attestation-type id="reconstructedSemantic" code="RS" prepend="asterisk">
             <label>Reconstruction from Tibetan semantic rendering</label>
             <description>This term is a reconstruction based on the semantics of the Tibetan translation.</description>
-            <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
+            <appliesToLang xml:lang="Sa-Ltn"/>
             <migrate id="semanticReconstruction"/>
         </attestation-type>
         <attestation-type id="sourceUnspecified" code="SU" default="true">
             <label>Source Unspecified</label>
             <description>This term has been supplied from an unspecified source, which most often is a widely trusted dictionary.</description>
             <appliesToLang xml:lang="Sa-Ltn"/>
-            <appliesToLang xml:lang="Bo-Ltn"/>
-            <appliesToLang xml:lang="bo"/>
             <appliesToLang xml:lang="zh"/>
         </attestation-type>
     </attestation-types>;
@@ -201,9 +189,9 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     
     let $terms :=
         if($valid-lang = ('en', '')) then
-            $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+            $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative', 'translationAlternative'))][not(@xml:lang)]
         else
-            $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
+            $glossaries//tei:gloss/tei:term[ft:query(., $query)][not(@type = ('definition', 'alternative', 'translationAlternative'))][@xml:lang eq $valid-lang]
     
     for $term in $terms
     let $parent := 
@@ -226,9 +214,9 @@ declare function glossary:glossary-startletter($type as xs:string*, $lang as xs:
     
     let $terms :=
         if($valid-lang = ('en', '')) then
-            $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][not(@xml:lang)]
+            $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative', 'translationAlternative'))][not(@xml:lang)]
         else
-            $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative'))][@xml:lang eq $valid-lang]
+            $glossaries//tei:gloss/tei:term[matches(., $match-regex, 'i')][not(@type = ('definition', 'alternative', 'translationAlternative'))][@xml:lang eq $valid-lang]
     
     for $term in $terms
     let $parent := 
@@ -288,39 +276,39 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
                     $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
                        [matches(., $regex, 'i')]
                        [not(@xml:lang) or @xml:lang eq 'en']
-                       [not(@type = ('definition','alternative'))]
+                       [not(@type = ('definition','alternative','translationAlternative'))]
                 else
                     $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
                         [matches(., $regex, 'i')]
                         [@xml:lang eq $valid-lang]
-                        [not(@type = ('definition','alternative'))]
+                        [not(@type = ('definition','alternative','translationAlternative'))]
         
         (\: All terms for type and lang :\)
         else if($valid-type) then
             if($valid-lang = ('en', '')) then
                 $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
                     [not(@xml:lang) or @xml:lang eq 'en']
-                    [not(@type = ('definition','alternative'))]
+                    [not(@type = ('definition','alternative','translationAlternative'))]
             else
                 $glossary:tei//tei:back//tei:gloss[@xml:id][@type = $valid-type]/tei:term
                     [@xml:lang eq $valid-lang]
-                    [not(@type = ('definition','alternative'))]
+                    [not(@type = ('definition','alternative','translationAlternative'))]
         
         (\: All terms for cumulative glossary :\)
         else if($type eq 'all') then
             $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
-                [not(@type = ('definition','alternative'))]
+                [not(@type = ('definition','alternative', translationAlternative'))]
         
         (\: All terms for lang only :\)
         else
             if($valid-lang = ('en', '')) then
                 $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
                     [not(@xml:lang) or @xml:lang eq 'en']
-                    [not(@type = ('definition','alternative'))]
+                    [not(@type = ('definition','alternative','translationAlternative'))]
             else
                 $glossary:tei//tei:back//tei:gloss[@xml:id]/tei:term
                     [@xml:lang eq $valid-lang]
-                    [not(@type = ('definition','alternative'))]
+                    [not(@type = ('definition','alternative','translationAlternative'))]
     
     return
         element { QName('http://read.84000.co/ns/1.0','glossary') } {
@@ -412,9 +400,9 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
         glossary:sort-term($gloss),
         
         (: Terms and definition :)
-        for $term in $gloss/tei:term
+        for $term in ($gloss/tei:term | $gloss/tei:p[@type eq 'definition'])
         return 
-             if($term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq 'en']) then
+             if($term[not(@type = ('definition','alternative','translationAlternative'))][not(@xml:lang) or @xml:lang eq 'en']) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
                     attribute xml:lang { 'en' },
                     $term/@type,
@@ -422,7 +410,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                     $term/text() ! normalize-space(.)
                 }
                 
-            else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative'))]) then
+            else if($term[@xml:lang][not(@xml:lang eq 'en')][not(@type = ('definition','alternative','translationAlternative'))]) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {
                     $term/@xml:lang,
                     $term/@type,
@@ -435,7 +423,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
                         $term/text() ! normalize-unicode(.) ! normalize-space(.) ! replace(.,'&#160;+$','')
                 }
             
-            else if ($term[@type eq 'alternative']) then
+            else if ($term[@type = ('alternative','translationAlternative')]) then
                 element { QName('http://read.84000.co/ns/1.0', 'alternative') } {
                     $term/@xml:lang,
                     normalize-space(data($term))
@@ -513,7 +501,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
 
 declare function glossary:sort-term($gloss as element(tei:gloss)) as element(m:sort-term) {
 
-    let $sort-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))][1]/data() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+    let $sort-term := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative','translationAlternative'))][1]/data() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
     let $terms-en := $gloss/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition'))]/data() ! normalize-space(.)
     let $term-word-count := max($terms-en ! count(tokenize(., '\s+')))
     let $term-letter-count := max($terms-en ! string-length(.))
@@ -575,8 +563,7 @@ declare function local:distinct-terms($terms as element(tei:term)*) as xs:string
     let $term-text := string-join($term/text(), '') ! normalize-space(.)
     where $term-text
     let $term-text-sort := common:normalized-chars(lower-case($term-text))
-    let $star := local:term-star($term)
-    let $term-text-starred := concat($star, $term-text)
+    let $term-text-starred := concat($glossary:attestation-types//m:attestation-type[@id eq $term/@type or m:migrate[@id eq $term/@type]][@prepend eq 'asterisk'] ! '*', $term-text)
     let $term-text-sort-starred := concat($star, $term-text-sort)
     group by $term-text-sort-starred
     order by $term-text-sort[1]
@@ -588,9 +575,9 @@ declare function local:distinct-terms($terms as element(tei:term)*) as xs:string
     string-join( local:concat-terms($terms), '; ')
 };:)
 
-declare function local:term-star($term as element(tei:term)) as xs:string {
+(:declare function local:term-star($term as element(tei:term)) as xs:string {
     if($term[@type = ('reconstruction', 'semanticReconstruction','transliterationReconstruction')]) then '*' else ''
-};
+};:)
 
 declare function glossary:cache-combined-xml($request-xml as element(m:request), $cache-key as xs:string) as xs:boolean {
     
@@ -675,7 +662,7 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                             $tei[1]//tei:titleStmt/tei:author[@role eq "translatorEng"] !  ( text{ common:ws(3) }, element translator { attribute uri { concat('http://purl.84000.co/resource/core/eft:', contributors:contributor-id(@ref)) }, normalize-space(text()) } ),
                             
                             (: Definition :)
-                            $gloss/tei:term[@type eq 'definition'][descendant::text()[normalize-space()]] !  ( text{ common:ws(3) }, element definition { string-join(descendant::text() ! normalize-space(.), '') } ),
+                            $gloss/tei:*[@type eq 'definition'][descendant::text()[normalize-space()]] !  ( text{ common:ws(3) }, element definition { string-join(descendant::text() ! normalize-space(.), '') } ),
                             
                             text{ common:ws(2) }
                             
@@ -786,15 +773,14 @@ declare function glossary:item-count($tei as element(tei:TEI)) as xs:integer {
         <bool>
         {
             for $term in 
-                $gloss/tei:term[@xml:lang eq 'en'][not(@type = ('definition','alternative'))] 
-                | $gloss/tei:term[not(@xml:lang)][not(@type = ('definition','alternative'))]
-                | $gloss/tei:term[@type = 'alternative']
+                $gloss/tei:term[@xml:lang eq 'en'][not(@type = ('definition','alternative','translationAlternative'))] 
+                | $gloss/tei:term[not(@xml:lang)][not(@type = ('definition','alternative','translationAlternative'))]
+                | $gloss/tei:term[@type = ('alternative','translationAlternative')]
             let $term-str := normalize-space(data($term))
-            return 
-                (
-                    <phrase>{ $term-str }</phrase>,
-                    <phrase>{ $term-str }s</phrase>
-                )
+            return (
+                <phrase>{ $term-str }</phrase>,
+                <phrase>{ $term-str }s</phrase>
+            )
         }
         </bool>
     </query>
@@ -927,7 +913,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
             let $instances-entity-definition := $entities:entities//m:entity[m:content[@type eq 'glossary-definition'][node()]]/m:instance
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition[@use-definition = ('both','append','prepend','override')]/@id)/self::tei:gloss
-                | $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition/@id)/self::tei:gloss[not(tei:term[@type eq 'definition'][node()])]
+                | $tei//tei:back//tei:div[@type eq 'glossary']//id($instances-entity-definition/@id)/self::tei:gloss[not(tei:*[@type eq 'definition'][node()])]
         
         (: Entities with only one entry :)
         else if($filter = ('shared-entities', 'exclusive-entities')) then
@@ -984,7 +970,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
     (: Filter by search term :)
     let $tei-gloss := 
         if(normalize-space($search) gt '') then
-            $tei-gloss[tei:term[ft:query(., local:search-query($search), local:search-options())]]
+            $tei-gloss[ft:query(tei:term[not(@type eq 'definition')], local:search-query($search), local:search-options())]
         else
             $tei-gloss
     
