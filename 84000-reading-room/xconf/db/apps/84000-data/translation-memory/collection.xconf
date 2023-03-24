@@ -3,7 +3,7 @@
     
     <!-- /db/apps/84000-data/translation-memory/ -->
     
-    <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14">
+    <index xmlns:tmx="http://www.lisa.org/tmx14" xmlns:eft="http://read.84000.co/ns/1.0">
         
         <lucene>
             

@@ -553,7 +553,9 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                         if($element[@n gt '']) then
                             attribute label { $element/@n }
                         else (),
-                        $element/ancestor-or-self::tei:*[@key][1]/@key
+                        if($element-name eq 'end-note') then
+                            $element/ancestor-or-self::*/@key[1]
+                        else ()
                     }
             )
     
