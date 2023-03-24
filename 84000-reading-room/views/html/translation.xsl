@@ -234,7 +234,7 @@
                                 </form>
                                 <hr/>
                                 
-                                <xsl:if test="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
+                                <xsl:if test="m:translation/m:downloads/m:download[@type = ('pdf','epub'(:,'azw3':))]">
                                     
                                     <h4>
                                         <xsl:value-of select="'Other ways to read'"/>
@@ -260,7 +260,7 @@
                                                 </tr>
                                             </xsl:if>
                                             
-                                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
+                                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub'(:,'azw3':))]">
                                                 <tr>
                                                     <td class="icon">
                                                         <a target="_blank">
@@ -536,7 +536,7 @@
             <xsl:with-param name="additional-links">
                 
                 <!-- Add OPDS auto-discovery links for other formats -->
-                <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('epub', 'azw3', 'pdf')]">
+                <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('epub',(:'azw3',:) 'pdf')]">
                     <link rel="alternate">
                         <xsl:attribute name="href" select="@url"/>
                         <xsl:choose>
@@ -960,7 +960,7 @@
                     </xsl:if>
                     
                     <!-- Additional front-matter -->
-                    <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf', 'epub', 'azw3')]]">
+                    <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf',(:'epub',:)'azw3')]]">
                         
                         <!-- Download options -->
                         <nav class="download-options hidden-print text-center bottom-margin" aria-label="download-options-header">
@@ -969,7 +969,7 @@
                                 <xsl:value-of select="'Options for downloading this publication'"/>
                             </header>
                             
-                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf', 'epub', 'azw3')]">
+                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub'(:,'azw3':))]">
                                 <a target="_blank">
                                     <xsl:attribute name="title">
                                         <xsl:call-template name="download-label">

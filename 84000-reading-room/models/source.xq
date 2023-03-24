@@ -35,7 +35,7 @@ let $request :=
 
 (: Suppress cache if there's a highlight :)
 (: Update the cache-key string to invalidate existing cache :)
-let $cache-key := if($request[@highlight eq '']) then 'source-cache-1' else ()
+let $cache-key := if($request[@highlight eq '']) then 'source-cache-2' else ()
 let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 

@@ -1243,7 +1243,7 @@
                                         
                                         <ul class="translation-links">
                                             <xsl:variable name="title-en" select="$text-1/m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
-                                            <xsl:for-each select="$text-1/m:downloads/m:download[@type = ('html', 'pdf', 'epub', 'azw3')]">
+                                            <xsl:for-each select="$text-1/m:downloads/m:download[@type = ('html','pdf','epub'(:,'azw3':))]">
                                                 <li>
                                                     <a>
                                                         <xsl:attribute name="title">
@@ -1289,7 +1289,7 @@
                                                     </a>
                                                 </li>
                                             </xsl:if>
-                                            <xsl:if test="$text-1/m:downloads/m:download[@type = ('epub', 'azw3')]">
+                                            <xsl:if test="$text-1/m:downloads/m:download[@type = ('epub'(:,'azw3':))]">
                                                 <li class="hidden-print">
                                                     <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-muted">
                                                         <i class="fa fa-info-circle" aria-hidden="true"/>
