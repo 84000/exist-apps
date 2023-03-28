@@ -446,7 +446,8 @@ blockquote > .rw-paragraph:first-child {
 }
 
 /* footnote links */
-.footnote-link {
+.footnote-link,
+.annotation {
     font-size: .75em;
     line-height: .75em;
     vertical-align: super;
@@ -571,6 +572,9 @@ img.logo-84000 {
 #abbreviations p {
     margin-bottom: 8pt;
 }
+.attestation-type h4 {
+    text-align: left;
+}
 
 /* Bibliography */
 #bibliography p.bibl {
@@ -581,8 +585,8 @@ img.logo-84000 {
 
 /* Glossary */
 .glossary-item {
-    margin-bottom: 12pt;
-    page-break-inside: avoid;
+    margin-top: 12pt;
+    /* page-break-inside: avoid; */
 }
 .glossary-item .term {
     text-align: left;

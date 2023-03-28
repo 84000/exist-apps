@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="tei-to-xhtml.xsl"/>
     
@@ -211,6 +211,58 @@
                 </xsl:for-each>
                 
             </ul>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <!-- Pop-up for attestation types -->
+    <xsl:template name="attestation-types-footer">
+        
+        <!-- General pop-up -->
+        <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
+            <div class="fix-height">
+                <div class="container">
+                    <div class="data-container tei-parser">
+                        <!-- Ajax data here -->
+                    </div>
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Attestation types -->
+        <div class="hidden hidden-print">
+            <xsl:call-template name="attestation-types"/>
+        </div>
+        
+    </xsl:template>
+    
+    <!-- Pop-up for tei-editor -->
+    <xsl:template name="tei-editor-footer">
+        
+        <xsl:if test="$tei-editor">
+            <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
+                <div class="fix-height">
+                    <div class="container">
+                        <div class="data-container">
+                            <!-- Ajax data here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="fixed-btn-container close-btn-container">
+                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="fa fa-times"/>
+                        </span>
+                    </button>
+                </div>
+            </div>
         </xsl:if>
         
     </xsl:template>

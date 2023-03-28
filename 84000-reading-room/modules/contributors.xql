@@ -147,15 +147,16 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-ackn
         }
 };
 
-declare function contributors:team($team-id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:team) {
+declare function contributors:team($team-id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:team)? {
     
     let $team := $contributors:contributors/id(lower-case($team-id))[self::m:team]
-    let $team-ref := contributors:contributor-uri($team/@xml:id)
+    let $team-ref := $team/@xml:id ! contributors:contributor-uri(.)
     let $team-texts := 
         if($include-acknowledgements or $include-persons) then
             $contributors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author[@ref = $team-ref]]
         else ()
     
+    where $team
     return
         element { node-name($team) } {
             $team/@*[not(local-name() = ('start-letter', 'sort-name'))],

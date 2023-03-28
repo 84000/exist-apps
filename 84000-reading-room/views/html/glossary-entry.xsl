@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -462,7 +462,7 @@
                                                                     <xsl:variable name="additional-terms" select="$entity-data/m:term[@xml:lang eq $additional-terms-lang]"/>
                                                                     
                                                                     <xsl:if test="$additional-terms">
-                                                                        <div>
+                                                                        <div class="tei-parser">
                                                                             <ul class="list-inline inline-dots">
                                                                                 <xsl:for-each select="$additional-terms">
                                                                                     <xsl:sort select="@normalized-string"/>
@@ -520,25 +520,9 @@
                 </div>
             </main>
             
-            <!-- Pop-up for tei-editor -->
-            <xsl:if test="$tei-editor">
-                <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
-                    <div class="fix-height">
-                        <div class="container">
-                            <div class="data-container">
-                                <!-- Ajax data here -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="fixed-btn-container close-btn-container">
-                        <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                            <span aria-hidden="true">
-                                <i class="fa fa-times"/>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </xsl:if>
+            <xsl:call-template name="attestation-types-footer"/>
+            
+            <xsl:call-template name="tei-editor-footer"/>
             
         </xsl:variable>
         
@@ -636,7 +620,7 @@
 
                 <!--<xsl:if test="$term-lang-terms[text()[not(normalize-space(.) = $entity-data/m:label[@xml:lang eq $term-lang]/text())]]">-->
                 <xsl:if test="$term-lang-terms[text()]">
-                    <div>
+                    <div class="tei-parser">
                         <ul class="list-inline inline-dots">
                             <xsl:choose>
                                 <xsl:when test="$term-lang-terms">

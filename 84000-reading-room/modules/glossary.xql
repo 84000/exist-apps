@@ -52,7 +52,7 @@ declare variable $glossary:attestation-types :=
         <attestation-type id="attestedSource" code="AS" >
             <label>Attested in source text</label>
             <description>This term is attested in the Sanskrit manuscript used as a source for this translation.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
             <appliesToLang xml:lang="Bo-Ltn"/>
             <appliesToLang xml:lang="bo"/>
             <migrate id="sourceAttested"/>
@@ -60,28 +60,28 @@ declare variable $glossary:attestation-types :=
         <attestation-type id="attestedOther" code="AO">
             <label>Attested in other text</label>
             <description>This term is attested in other Sanskrit manuscripts of the Kangyur or Tengyur.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
         </attestation-type>
         <attestation-type id="attestedDictionary" code="AD">
             <label>Attested in dictionary</label>
             <description>This term is attested in Tibetan-Sanskrit dictionaries.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
         </attestation-type>
         <attestation-type id="attestedApproximate" code="AA">
             <label>Approximate attestation</label>
             <description>The attestation of this name is approximate. It is based on other names where Tibetan-Sanskrit relationship is attested in dictionaries or other manuscripts.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
         </attestation-type>
-        <attestation-type id="reconstructedPhonetic" code="RP" prepend="asterisk">
+        <attestation-type id="reconstructedPhonetic" code="RP">
             <label>Reconstruction from Tibetan phonetic rendering</label>
             <description>This term is a reconstruction based on the Tibetan phonetic rendering of the term.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
             <migrate id="transliterationReconstruction"/>
         </attestation-type>
-        <attestation-type id="reconstructedSemantic" code="RS" prepend="asterisk">
+        <attestation-type id="reconstructedSemantic" code="RS">
             <label>Reconstruction from Tibetan semantic rendering</label>
             <description>This term is a reconstruction based on the semantics of the Tibetan translation.</description>
-            <appliesToLang xml:lang="Sa-Ltn"/>
+            <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
             <migrate id="semanticReconstruction"/>
         </attestation-type>
         <attestation-type id="sourceUnspecified" code="SU" default="true">
@@ -563,7 +563,7 @@ declare function local:distinct-terms($terms as element(tei:term)*) as xs:string
     let $term-text := string-join($term/text(), '') ! normalize-space(.)
     where $term-text
     let $term-text-sort := common:normalized-chars(lower-case($term-text))
-    let $term-text-starred := concat($glossary:attestation-types//m:attestation-type[@id eq $term/@type or m:migrate[@id eq $term/@type]][@prepend eq 'asterisk'] ! '*', $term-text)
+    let $term-text-starred := concat($glossary:attestation-types//m:attestation-type[@id eq $term/@type or m:migrate[@id eq $term/@type]][contains(@rend, 'asterisk')] ! '*', $term-text)
     let $term-text-sort-starred := concat($star, $term-text-sort)
     group by $term-text-sort-starred
     order by $term-text-sort[1]

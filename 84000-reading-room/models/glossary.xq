@@ -216,6 +216,7 @@ let $xml-response :=
                 }
             },
             $entities:flags,
+            $glossary:attestation-types,
             $downloads
         )
     )

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -1134,86 +1134,101 @@
         
         <xsl:param name="end-notes" select="$translation/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id] | $knowledgebase/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id]" as="element(tei:note)*"/>
         
-        <xsl:variable name="end-notes-part" select="($translation/m:part[@type eq 'end-notes'] | $knowledgebase/m:part[@type eq 'end-notes'])[1]"/>
+        <!--<xsl:variable name="end-notes-render" as="element(tei:note)*">
+            <xsl:choose>
+                <xsl:when test="$view-mode[@parts eq 'passage']">
+                    <xsl:sequence select="$end-notes[@xml:id eq $requested-passage]"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:sequence select="$end-notes[@xml:id]"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>-->
         
-        <xsl:apply-templates select="$end-notes-part/tei:head"/>
-        
-        <xsl:for-each select="$end-notes[@xml:id]">
+        <xsl:if test="$end-notes">
             
-            <xsl:sort select="key('end-notes-pre-processed', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
+            <xsl:variable name="end-notes-part" select="($translation/m:part[@type eq 'end-notes'] | $knowledgebase/m:part[@type eq 'end-notes'])[1]"/>
             
-            <xsl:variable name="end-note" select="."/>
-            <xsl:variable name="end-notes-pre-processed" select="key('end-notes-pre-processed', @xml:id, $root)[@source-key eq $toh-key][1]" as="element(m:end-note)?"/>
-            <xsl:variable name="part" select="key('text-parts', $end-notes-pre-processed/@part-id, $root)[1]" as="element(m:part)?"/>
+            <xsl:apply-templates select="$end-notes-part/tei:head"/>
             
-            <!-- Filter out notes with a different source key -->
-            <xsl:if test="$end-notes-pre-processed">
-                <div class="rw footnote">
-                    
-                    <xsl:attribute name="id" select="concat('end-note-', $end-note/@xml:id)"/>
-                    
-                    <xsl:call-template name="data-location-id-attribute">
-                        <xsl:with-param name="node" select="$end-note"/>
-                    </xsl:call-template>
-                    
-                    <!-- Defer the glossary parsing -->
-                    <xsl:if test="$view-mode[@glossary eq 'defer']">
-                        <xsl:call-template name="in-view-replace-attribute">
-                            <xsl:with-param name="element-id" select="$end-note/@xml:id"/>
-                            <xsl:with-param name="fragment-id" select="concat('end-note-', $end-note/@xml:id)"/>
-                        </xsl:call-template>
-                    </xsl:if>
-                    
-                    <div class="gtr">
+            <xsl:for-each select="$end-notes">
+                
+                <xsl:sort select="key('end-notes-pre-processed', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
+                
+                <xsl:variable name="end-note" select="."/>
+                <xsl:variable name="end-notes-pre-processed" select="key('end-notes-pre-processed', @xml:id, $root)[@source-key eq $toh-key][1]" as="element(m:end-note)?"/>
+                <xsl:variable name="part" select="key('text-parts', $end-notes-pre-processed/@part-id, $root)[1]" as="element(m:part)?"/>
+                
+                <!-- Filter out notes with a different source key -->
+                <xsl:if test="$end-notes-pre-processed">
+                    <div class="rw footnote">
                         
-                        <xsl:choose>
+                        <xsl:attribute name="id" select="concat('end-note-', $end-note/@xml:id)"/>
+                        
+                        <xsl:call-template name="data-location-id-attribute">
+                            <xsl:with-param name="node" select="$end-note"/>
+                        </xsl:call-template>
+                        
+                        <!-- Defer the glossary parsing -->
+                        <xsl:if test="$view-mode[@glossary eq 'defer']">
+                            <xsl:call-template name="in-view-replace-attribute">
+                                <xsl:with-param name="element-id" select="$end-note/@xml:id"/>
+                                <xsl:with-param name="fragment-id" select="concat('end-note-', $end-note/@xml:id)"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        
+                        <div class="gtr">
                             
-                            <!-- Internal links to hash locations -->
-                            <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
+                            <xsl:choose>
                                 
-                                <a>
+                                <!-- Internal links to hash locations -->
+                                <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
                                     
-                                    <xsl:call-template name="href-attribute">
-                                        <xsl:with-param name="fragment-id" select="$end-note/@xml:id"/>
-                                        <xsl:with-param name="part-id" select="$part/@id"/>
-                                        <xsl:with-param name="mark-id" select="$end-note/@xml:id"/>
-                                    </xsl:call-template>
+                                    <a>
+                                        
+                                        <xsl:call-template name="href-attribute">
+                                            <xsl:with-param name="fragment-id" select="$end-note/@xml:id"/>
+                                            <xsl:with-param name="part-id" select="$part/@id"/>
+                                            <xsl:with-param name="mark-id" select="$end-note/@xml:id"/>
+                                        </xsl:call-template>
+                                        
+                                        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf')]">
+                                            <!-- marks a target -->
+                                            <xsl:attribute name="class" select="'milestone footnote-number'"/>
+                                            <xsl:attribute name="title" select="concat('Go to note ', $end-notes-pre-processed/@index, ' in the text')"/>
+                                        </xsl:if>
+                                        
+                                        <xsl:call-template name="bookmark-label">
+                                            <xsl:with-param name="prefix" select="$end-notes-part/@prefix"/>
+                                            <xsl:with-param name="index" select="$end-notes-pre-processed/@index"/>
+                                        </xsl:call-template>
+                                        
+                                    </a>
                                     
-                                    <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf')]">
-                                        <!-- marks a target -->
-                                        <xsl:attribute name="class" select="'milestone footnote-number'"/>
-                                        <xsl:attribute name="title" select="concat('Go to note ', $end-notes-pre-processed/@index, ' in the text')"/>
-                                    </xsl:if>
-                                    
+                                </xsl:when>
+                                
+                                <!-- Just text -->
+                                <xsl:otherwise>
                                     <xsl:call-template name="bookmark-label">
                                         <xsl:with-param name="prefix" select="$end-notes-part/@prefix"/>
                                         <xsl:with-param name="index" select="$end-notes-pre-processed/@index"/>
                                     </xsl:call-template>
-                                    
-                                </a>
+                                </xsl:otherwise>
                                 
-                            </xsl:when>
+                            </xsl:choose>
                             
-                            <!-- Just text -->
-                            <xsl:otherwise>
-                                <xsl:call-template name="bookmark-label">
-                                    <xsl:with-param name="prefix" select="$end-notes-part/@prefix"/>
-                                    <xsl:with-param name="index" select="$end-notes-pre-processed/@index"/>
-                                </xsl:call-template>
-                            </xsl:otherwise>
-                            
-                        </xsl:choose>
+                        </div>
+                        
+                        <div>
+                            <xsl:apply-templates select="node()"/>
+                        </div>
                         
                     </div>
-                    
-                    <div>
-                        <xsl:apply-templates select="node()"/>
-                    </div>
-                    
-                </div>
-            </xsl:if>
+                </xsl:if>
+                
+            </xsl:for-each>
             
-        </xsl:for-each>
+        </xsl:if>
         
     </xsl:template>
     
@@ -1318,6 +1333,8 @@
             
             <xsl:apply-templates select="$glossary-part/tei:head"/>
             
+            <xsl:call-template name="attestation-types"/>
+            
             <xsl:for-each select="$glossary-render">
                 
                 <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
@@ -1353,7 +1370,7 @@
                     <div class="gtr">
                         <xsl:choose>
                             
-                            <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
+                            <xsl:when test="$view-mode[not(@client = ('ebook', 'app', 'pdf'))]">
                                 
                                 <xsl:call-template name="bookmark-link">
                                     <xsl:with-param name="bookmark-target-hash" select="$glossary-item/@xml:id"/>
@@ -1671,6 +1688,7 @@
         <xsl:param name="interpolation" as="xs:boolean?"/>
         
         <xsl:variable name="term-lang" select="if($term-lang gt '') then $term-lang else 'en' "/>
+        <xsl:variable name="attestation-for-lang" select="$root//m:attestation-types/m:attestation-type[@id eq $term-type or m:migrate[@id eq $term-type]]/m:appliesToLang[@xml:lang eq $term-lang]"/>
         
         <span>
             
@@ -1679,7 +1697,7 @@
                     <xsl:if test="$interpolation">
                         <xsl:value-of select="'interpolation'"/>
                     </xsl:if>
-                    <xsl:if test="$root//m:attestation-types/m:attestation-type[@id eq $term-type or m:migrate[@id eq $term-type]][@prepend eq 'asterisk']">
+                    <xsl:if test="$attestation-for-lang[contains(@rend, 'asterisk')]">
                         <xsl:value-of select="'reconstructed'"/>
                     </xsl:if>
                 </xsl:with-param>
@@ -1694,6 +1712,30 @@
                     <xsl:apply-templates select="string-join($term-text) ! normalize-space(.)"/>
                 </xsl:otherwise>
             </xsl:choose>
+            
+            <xsl:if test="$attestation-for-lang[contains(@rend, 'note')] and $view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
+                <xsl:value-of select="' '"/>
+                <xsl:choose>
+                    <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'app')]">
+                        <a class="annotation pop-up">
+                            
+                            <xsl:call-template name="href-attribute">
+                                <xsl:with-param name="fragment-id" select="concat('att-type-', $attestation-for-lang/parent::m:attestation-type/@id)"/>
+                                <xsl:with-param name="part-id" select="'glossary'"/>
+                            </xsl:call-template>
+                            
+                            <xsl:value-of select="$attestation-for-lang/parent::m:attestation-type/@code"/>
+                            
+                        </a>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <span class="annotation">
+                            <xsl:value-of select="$attestation-for-lang/parent::m:attestation-type/@code"/>
+                        </span>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+            </xsl:if>
             
             <xsl:if test="($tei-editor or $view-mode[@id  eq 'annotation']) and $term-status eq 'verified'">
                 <xsl:value-of select="' '"/>
@@ -1813,6 +1855,64 @@
                 </xsl:with-param>
                 <xsl:with-param name="view-mode" select="$view-mode"/>
             </xsl:call-template>
+        </xsl:if>
+        
+    </xsl:template>
+    <xsl:template name="attestation-types">
+        
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
+            
+            <div class="nested-section relative">
+                
+                <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
+                    <xsl:attribute name="class" select="'nested-section relative visible-print-block'"/>
+                </xsl:if>
+                
+                <xsl:call-template name="milestone-row">
+                    <xsl:with-param name="content">
+                        
+                        <div class="rw-heading heading-section nested nested-1">
+                            <header>
+                                <h3 class="section-title">
+                                    <xsl:value-of select="'Types of attestation for Sanskrit names and terms'"/>
+                                </h3>
+                            </header>
+                        </div>
+                        
+                    </xsl:with-param>
+                    <xsl:with-param name="row-type" select="'section-head'"/>
+                </xsl:call-template>
+                
+                <xsl:call-template name="milestone-row">
+                    <xsl:with-param name="content">
+                        
+                        <xsl:for-each select="$root//m:attestation-types/m:attestation-type">
+                            <div class="attestation-type small">
+                                <div id="att-type-{ @id }">
+                                    <h4>
+                                        <xsl:value-of select="@code ! upper-case(.) ! normalize-space(.)"/>
+                                        <xsl:value-of select="' / '"/>
+                                        <xsl:value-of select="m:label ! normalize-space(.)"/>
+                                    </h4>
+                                    <xsl:for-each select="m:description">
+                                        <p>
+                                            <xsl:apply-templates select="node()"/>
+                                        </p>
+                                    </xsl:for-each>
+                                </div>
+                            </div>
+                        </xsl:for-each>
+                        
+                        <xsl:if test="$view-mode[not(@client = ('ebook'))]">
+                            <hr/>
+                        </xsl:if>
+                        
+                    </xsl:with-param>
+                    <xsl:with-param name="row-type" select="'attestation-types'"/>
+                </xsl:call-template>
+                
+            </div>
+            
         </xsl:if>
         
     </xsl:template>
@@ -2192,7 +2292,7 @@
                                 <xsl:choose>
                                     
                                     <!-- show a relative link -->
-                                    <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
+                                    <xsl:when test="$view-mode[not(@client = ('ebook', 'app', 'pdf'))]">
                                         
                                         <xsl:call-template name="bookmark-link">
                                             <xsl:with-param name="bookmark-target-hash" select="$milestone/@xml:id"/>
@@ -2273,7 +2373,7 @@
                     <xsl:choose>
                         
                         <!-- show a link -->
-                        <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))] and $part[@id]">
+                        <xsl:when test="$view-mode[not(@client = ('ebook', 'app', 'pdf'))] and $part[@id]">
                             <xsl:call-template name="bookmark-link">
                                 <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
                                 <xsl:with-param name="bookmark-target-part" select="$part/@id"/>

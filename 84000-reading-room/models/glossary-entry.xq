@@ -81,7 +81,8 @@ let $xml-response :=
                     $entities-related
                 }
             },
-            $entities:flags
+            $entities:flags,
+            $glossary:attestation-types
         )
     )
 

@@ -786,7 +786,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             (: evaluate if there's enough in this part for a preview :)
             (: evaluate all sections in the root, or the first section in sub-divs :)
             
-            let $output-ids-int := $output-ids ! replace(., '^node\-', '')
+            let $output-ids-int := ($output-ids ! replace(., '^node\-', ''))[functx:is-a-number(.)]
             let $part-sections := $part/tei:div[@type = ('chapter', 'section')]
             
             let $preview := 
@@ -903,10 +903,12 @@ declare function local:preview-nodes($content-nodes as node()*, $index as xs:int
     
 };
 
-declare function local:passage-in-content($content as element()*, $passage-id as xs:string?) as element()? {
+declare function local:passage-in-content($content as element()*, $passage-id as xs:string?, $exclude-notes as xs:boolean?) as element()? {
     
     if(starts-with($passage-id, 'node-')) then
         $content//tei:*[@tid eq replace($passage-id, '^node\-', '')][1]
+    else if($exclude-notes) then
+        $content/id($passage-id)[1][not(self::tei:note)]
     else 
         $content/id($passage-id)[1]
         
@@ -957,7 +959,7 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
         if($passage-id = ('summary','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($summary, $passage-id)) then
+            if(local:passage-in-content($summary, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -985,7 +987,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
         if($passage-id = ('acknowledgment','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($acknowledgment, $passage-id)) then
+            if(local:passage-in-content($acknowledgment, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -1013,7 +1015,7 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
         if($passage-id = ('preface','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($preface, $passage-id)) then
+            if(local:passage-in-content($preface, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -1041,7 +1043,7 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
         if($passage-id = ('introduction','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($introduction, $passage-id)) then
+            if(local:passage-in-content($introduction, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -1094,7 +1096,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                     if($passage-id = ($part/@xml:id, 'body', 'all')) then
                         'complete'
                     else if($view-mode[@parts = ('passage')]) then
-                        if(local:passage-in-content($part, $passage-id)) then
+                        if(local:passage-in-content($part, $passage-id, true())) then
                             'passage'
                         else
                             'empty'
@@ -1124,7 +1126,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
         if($passage-id = ('appendix', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($appendix, $passage-id)) then
+            if(local:passage-in-content($appendix, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -1169,21 +1171,32 @@ declare function translation:abbreviations($tei as element(tei:TEI)) as element(
 declare function translation:abbreviations($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'abbreviations'
+    
     let $abbreviations := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+        
             attribute type { $type },
-            $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq $type]
-            | $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:div[@type eq "section"][tei:list[@type eq $type]]
+            
+            element { QName('http://www.tei-c.org/ns/1.0', 'head') } {
+                attribute type { $type },
+                text { map:get($translation:type-labels, $type) }
+            },
+            
+            if($tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq $type]) then
+                element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+                    attribute type { 'section' },
+                    $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq $type]
+                }
+            else
+                $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:div[@type eq "section"][tei:list[@type eq $type]]
+            
         }
     
-    where $abbreviations//tei:list[@type eq $type]
-    
-    (:let $content-directive := local:content-directive($abbreviations, ($type, 'back'), $passage-id, $view-mode, 'complete'):)
     let $content-directive := 
         if($passage-id = ('abbreviations', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($abbreviations, $passage-id)) then
+            if(local:passage-in-content($abbreviations, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -1191,9 +1204,10 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
             'empty'
         else
             'complete'
-
+    
+    where $abbreviations[descendant::tei:list[@type eq $type]]
     return
-        translation:part($abbreviations, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ())
+        translation:part($abbreviations, $content-directive, $type, map:get($translation:type-prefixes, $type), (), ())
 
 };
 
@@ -1213,7 +1227,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         if($passage-id = ('end-notes', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($end-notes, $passage-id)) then
+            if(local:passage-in-content($end-notes, $passage-id, false())) then
                 'passage'
             else
                 'passage'
@@ -1258,7 +1272,7 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
         if($passage-id = ('bibliography', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($bibliography, $passage-id)) then
+            if(local:passage-in-content($bibliography, $passage-id, true())) then
                 'passage'
             else
                 'empty'
@@ -1294,7 +1308,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
         else if($passage-id = ('glossary', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($glossary, $passage-id)) then
+            if(local:passage-in-content($glossary, $passage-id, true())) then
                 'passage'
             else
                 'passage'
