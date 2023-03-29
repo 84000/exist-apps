@@ -3,7 +3,7 @@
     
     <!-- /db/apps/84000-data/azw3/ -->
     
-    <index xmlns:m="http://read.84000.co/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0">
+    <index xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0">
         
         <!-- Range indexes -->
         <range>

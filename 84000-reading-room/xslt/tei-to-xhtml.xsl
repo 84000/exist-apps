@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -1734,7 +1734,6 @@
                         </span>
                     </xsl:otherwise>
                 </xsl:choose>
-                
             </xsl:if>
             
             <xsl:if test="($tei-editor or $view-mode[@id  eq 'annotation']) and $term-status eq 'verified'">
@@ -1862,15 +1861,14 @@
         
         <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
             
-            <div class="nested-section relative">
+            <div class="nested-section relative attestation-types">
                 
                 <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
-                    <xsl:attribute name="class" select="'nested-section relative visible-print-block'"/>
+                    <xsl:attribute name="class" select="'nested-section relative attestation-types visible-print-block'"/>
                 </xsl:if>
                 
                 <xsl:call-template name="milestone-row">
                     <xsl:with-param name="content">
-                        
                         <div class="rw-heading heading-section nested nested-1">
                             <header>
                                 <h3 class="section-title">
@@ -1878,35 +1876,31 @@
                                 </h3>
                             </header>
                         </div>
-                        
                     </xsl:with-param>
                     <xsl:with-param name="row-type" select="'section-head'"/>
                 </xsl:call-template>
                 
                 <xsl:call-template name="milestone-row">
                     <xsl:with-param name="content">
-                        
                         <xsl:for-each select="$root//m:attestation-types/m:attestation-type">
-                            <div class="attestation-type small">
-                                <div id="att-type-{ @id }">
-                                    <h4>
+                            <div class="small">
+                                <div class="attestation-type" id="att-type-{ @id }">
+                                    <div class="code">
                                         <xsl:value-of select="@code ! upper-case(.) ! normalize-space(.)"/>
-                                        <xsl:value-of select="' / '"/>
-                                        <xsl:value-of select="m:label ! normalize-space(.)"/>
-                                    </h4>
-                                    <xsl:for-each select="m:description">
-                                        <p>
-                                            <xsl:apply-templates select="node()"/>
-                                        </p>
-                                    </xsl:for-each>
+                                    </div>
+                                    <div class="detail">
+                                        <h4>
+                                            <xsl:value-of select="m:label ! normalize-space(.)"/>
+                                        </h4>
+                                        <xsl:for-each select="m:description">
+                                            <p>
+                                                <xsl:apply-templates select="node()"/>
+                                            </p>
+                                        </xsl:for-each>
+                                    </div>
                                 </div>
                             </div>
                         </xsl:for-each>
-                        
-                        <xsl:if test="$view-mode[not(@client = ('ebook'))]">
-                            <hr/>
-                        </xsl:if>
-                        
                     </xsl:with-param>
                     <xsl:with-param name="row-type" select="'attestation-types'"/>
                 </xsl:call-template>

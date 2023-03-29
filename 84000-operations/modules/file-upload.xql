@@ -163,21 +163,20 @@ declare function file-upload:generate-tei($text-id as xs:string, $submission-id 
                         
                         let $store-tei := xmldb:store($submission/@file-collection, xmldb:encode($submission/m:tei-file/@file-name), $tei-from-transform)
                         
-                        let $set-permissions :=
-                            (
-                                sm:chown(xs:anyURI(concat($submission/@file-collection, '/', xmldb:encode($submission/m:tei-file/@file-name))), $file-upload:app-user),
-                                sm:chgrp(xs:anyURI(concat($submission/@file-collection, '/', xmldb:encode($submission/m:tei-file/@file-name))), $file-upload:app-user-group),
-                                sm:chmod(xs:anyURI(concat($submission/@file-collection, '/', xmldb:encode($submission/m:tei-file/@file-name))), 'rw-rw-r--')
-                            )
+                        let $set-permissions := (
+                            sm:chown(xs:anyURI(concat($submission/@file-collection, '/', xmldb:encode($submission/m:tei-file/@file-name))), $file-upload:app-user),
+                            sm:chgrp(xs:anyURI(concat($submission/@file-collection, '/', xmldb:encode($submission/m:tei-file/@file-name))), $file-upload:app-user-group),
+                            sm:chmod(xs:anyURI(concat($submission/@file-collection, '/', xmldb:encode($submission/m:tei-file/@file-name))), 'rw-rw-r--')
+                        )
                         
                         return 
                             <updated xmlns="http://read.84000.co/ns/1.0" update="generate-file" tei-generated="{ $submission/m:tei-file/@file-name }" directory="{ $submission/@file-collection }"/>
-                    else
-                        ()
-            else
-                ()
-    else
-        ()
+                    else ()
+                    
+            else ()
+            
+    else ()
+    
 };
 
 declare function file-upload:conversion-local($submission as element()) as node() {

@@ -572,10 +572,6 @@ img.logo-84000 {
 #abbreviations p {
     margin-bottom: 8pt;
 }
-.attestation-type h4 {
-    text-align: left;
-    margin-top: 8pt;
-}
 
 /* Bibliography */
 #bibliography p.bibl {
@@ -613,6 +609,30 @@ img.logo-84000 {
     /* font-size: .75em; */
     padding-bottom: .5em;
     padding-right: .75em;
+}
+
+.attestation-types {
+    border: 1px solid #888888;
+    margin-top: 14pt;
+    padding-bottom: 14pt;
+    border-radius: 2px;
+    background-color: #f5f5f5;
+}
+.attestation-type {
+    display: block;
+    padding-left: 35pt;
+}
+.attestation-type .code {
+    display: block;
+    float: left;
+    text-align: left;
+    margin-left: -35pt;
+    width: 30pt;
+    font-style: italic;
+}
+.attestation-type h4 {
+    text-align: left;
+    margin-top: 8pt;
 }
 
 /* Headings */
