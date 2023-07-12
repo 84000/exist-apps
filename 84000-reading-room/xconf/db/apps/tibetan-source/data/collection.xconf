@@ -5,12 +5,17 @@
     
     <index xmlns:tei="http://www.tei-c.org/ns/1.0">
         
-        <lucene diacritics="no">
+        <lucene>
             
-            <!--
-            <analyzer id="tws" class="org.tbrc.lucene.analysis.TibWhitespaceAnalyzer"/>
-            <text match="//tei:p" analyzer="tws"/>
-            -->
+            <analyzer id="bo" class="io.bdrc.lucene.bo.TibetanAnalyzer">
+                <param name="segmentInWords" type="boolean" value="false"/>
+                <param name="lemmatize" type="boolean" value="true"/>
+                <param name="filterChars" type="boolean" value="true"/>
+                <param name="inputMethod" type="java.lang.String" value="unicode"/>
+                <param name="stopFilename" type="java.lang.String" value=""/>
+            </analyzer>
+            
+            <text qname="tei:p" analyzer="bo"/>
             
         </lucene>
         

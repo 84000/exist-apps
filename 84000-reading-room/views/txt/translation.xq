@@ -56,7 +56,7 @@ declare function local:parse-node($response as element(m:response), $element as 
                 
                 (: Output refs with cRef :)
                 else if($node[self::tei:ref]) then
-                    let $cache-folio := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'folio-refs']/m:folio-ref[@id eq $node/@xml:id][@resource-id eq $toh-key]
+                    let $cache-folio := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'folio-refs']/m:folio-ref[@id eq $node/@xml:id][@source-key eq $toh-key]
                     where $cache-folio
                     return (
                         text { '{{page:{number:' || $cache-folio/@index-in-resource || ',id:' || $node/@xml:id || ',folio:' || $node/@cRef || $cache-folio[@cRef-volume gt ''] ! concat(',volume:', ./@cRef-volume) || '}}}' }
@@ -64,7 +64,7 @@ declare function local:parse-node($response as element(m:response), $element as 
                 
                 (: Output notes :)
                 else if($node[self::tei:note]) then
-                    let $cache-note := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'end-notes']/m:end-note[@id eq $node/@xml:id]
+                    let $cache-note := $response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'end-notes']/m:end-note[@id eq $node/@xml:id][@source-key eq $toh-key]
                     where $cache-note
                     return (
                         text { '{{note:{index:' || $cache-note/@index || ',id:' || $node/@xml:id || '}}}' }
@@ -91,8 +91,8 @@ declare function local:parse-node($response as element(m:response), $element as 
     )
     
     (: Look for groups down the tree :) 
-    else if($element[*]) then
-        for $child-element in $element/*
+    else if($element[*[not(@content-status eq 'unpublished')]]) then
+        for $child-element in $element/*[not(@content-status eq 'unpublished')]
         return
             local:parse-node($response, $child-element, $toh-key)
     

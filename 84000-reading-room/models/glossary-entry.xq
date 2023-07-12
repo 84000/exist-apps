@@ -37,11 +37,12 @@ let $exclude-flagged := if($view-mode[@id eq 'editor']) then () else 'requires-a
 let $exclude-status := if(not($view-mode/@id eq 'editor')) then 'excluded' else ''
 
 (: The requested entity :)
-let $request-entity := $entities:entities//m:entity/id($resource-id)[1]
+let $request-entity := $entities:entities/id($resource-id)[self::m:entity][1]
+
 (: Perhaps this is a legacy link :)
 let $request-entity := 
-    if(not($request-entity/m:instance) and $request-entity[m:relation[@predicate eq 'sameAs']]) then
-        $entities:entities//m:entity/id($request-entity/m:relation[@predicate eq 'sameAs']/@id)[1]
+    if(not($request-entity)) then
+        $entities:entities//m:relation[@predicate eq 'sameAs'][@id eq $resource-id][1]/parent::m:entity
     else $request-entity
 
 let $request := 
@@ -59,39 +60,53 @@ let $request :=
 (: Cache for a day :)
 let $cache-key := 
     if($request/m:view-mode[@cache eq 'use-cache']) then
-        format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || '-' || replace($common:app-version, '\.', '-')
+        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+        where $entities-timestamp instance of xs:dateTime
+        return
+            lower-case(
+                string-join((
+                    current-dateTime() ! format-dateTime(., "[Y0001]-[M01]-[D01]"),
+                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $common:app-version ! replace(., '\.', '-')
+                ),'-')
+            )
     else ()
 
 let $cached := common:cache-get($request, $cache-key)
 
-return if($cached) then $cached else
-
-(: Get related entities :)
-let $entities-related := entities:related($request-entity, false(), $exclude-flagged, $exclude-status)
-
-let $xml-response :=
-    common:response(
-        $request/@model, 
-        $common:app-id, 
-        (
-            $request,
+return 
+    if($cached) then 
+        $cached 
+    
+    else
+        
+        (: Get related entities data :)
+        let $entities :=
             element { QName('http://read.84000.co/ns/1.0', 'entities')} {
                 $request-entity,
                 element related {
-                    $entities-related
+                    entities:related($request-entity, false(), ('glossary','knowledgebase'), $exclude-flagged, $exclude-status)
                 }
-            },
-            $entities:flags,
-            $glossary:attestation-types
-        )
-    )
-
-return
-
-    (: html :)
-    if($request/@resource-suffix = ('html')) then 
-        common:html($xml-response, concat($common:app-path, "/views/html/glossary-entry.xsl"), $cache-key)
-    
-    (: xml :)
-    else 
-        common:serialize-xml($xml-response)
+            }
+        
+        let $xml-response :=
+            common:response(
+                $request/@model, 
+                $common:app-id, 
+                (
+                    $request,
+                    $entities,
+                    $entities:flags,
+                    $glossary:attestation-types
+                )
+            )
+        
+        return
+        
+            (: html :)
+            if($request/@resource-suffix = ('html')) then 
+                common:html($xml-response, concat($common:app-path, "/views/html/glossary-entry.xsl"), $cache-key)
+            
+            (: xml :)
+            else 
+                common:serialize-xml($xml-response)

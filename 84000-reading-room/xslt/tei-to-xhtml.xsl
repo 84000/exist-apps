@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -9,14 +9,14 @@
     <!-- Global variables -->
     <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
     <xsl:variable name="section" select="/m:response/m:section" as="element(m:section)?"/>
-    <xsl:variable name="knowledgebase" select="/m:response/m:knowledgebase" as="element(m:knowledgebase)?"/>
-    <xsl:variable name="entities" select="/m:response/m:entities/m:entity" as="element(m:entity)*"/>
+    <xsl:variable name="article" select="/m:response/m:article" as="element(m:article)?"/>
+    <xsl:variable name="entities" select="/m:response/m:entities//m:entity" as="element(m:entity)*"/>
     <xsl:variable name="requested-resource" select="/m:response/m:request/@resource-id" as="xs:string?"/>
     <xsl:variable name="requested-part" select="/m:response/m:request/@part" as="xs:string?"/>
     <xsl:variable name="requested-passage" select="/m:response/m:request/@passage-id" as="xs:string?"/>
     <xsl:variable name="requested-commentary" select="/m:response/m:request/@commentary" as="xs:string?"/>
-    <xsl:variable name="toh-key" select="$translation/m:source/@key" as="xs:string?"/>
-    <xsl:variable name="kb-id" select="$knowledgebase/m:page/@xml:id" as="xs:string?"/>
+    <xsl:variable name="toh-key" select="($translation/m:source/@key, $article/m:page/@kb-id)" as="xs:string?"/>
+    <xsl:variable name="text-id" select="($translation/@id, $article/m:page/@xml:id)" as="xs:string?"/>
     <xsl:variable name="part-status" select="if(not($translation//m:part[@content-status = ('preview', 'passage', 'empty')])) then 'complete' else if($translation//m:part[@content-status eq 'complete']) then 'part' else 'empty'" as="xs:string"/>
     
     <!-- Useful keys -->
@@ -27,18 +27,14 @@
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
     <xsl:key name="milestones-pre-processed" match="m:pre-processed[@type eq 'milestones']/m:milestone" use="@id"/>
     <xsl:key name="glossary-pre-processed" match="m:pre-processed[@type eq 'glossary']/m:gloss" use="@id"/>
-    <xsl:key name="quotes-outbound" match="m:pre-processed[@type eq 'quotes'][@text-id eq $translation/@id]/m:quote" use="@id"/>
-    <xsl:key name="quotes-inbound" match="m:pre-processed[@type eq 'quotes'][@text-id ne $translation/@id]/m:quote" use="m:source/@location-id"/>
-    <xsl:key name="entity-instance" match="m:entities/m:entity/m:instance" use="@id"/>
-    <xsl:key name="related-entries" match="m:entities/m:related/m:text/m:entry" use="@id"/>
-    <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
-    <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
-    
-    <xsl:variable name="count-milestones" select="count(/m:response/m:text-outline[@text-id eq $translation/@id]/m:pre-processed[@type eq 'milestones']/m:milestone)"/>
+    <xsl:key name="quotes-outbound" match="m:pre-processed[@type eq 'quotes'][@text-id eq $text-id]/m:quote" use="@id"/>
+    <xsl:key name="quotes-inbound" match="m:pre-processed[@type eq 'quotes'][@text-id ne $text-id]/m:quote" use="m:source/@location-id"/>
+
+    <xsl:variable name="count-milestones" select="count(/m:response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'milestones']/m:milestone)" as="xs:integer"/>
     
     <!-- Pre-sort the glossaries by priority -->
     <xsl:variable name="glossary-prioritised" as="element(tei:gloss)*">
-        <xsl:perform-sort select="($translation | $knowledgebase)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang)][not(@type = ('definition','alternative','translationAlternative'))][string-join(text(), '') ! normalize-space(.)]]">
+        <xsl:perform-sort select="($translation | $article)/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type eq 'translationAlternative')][string-join(text(), '') ! normalize-space(.)]]">
             <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@word-count ! common:enforce-integer(.)" order="descending"/>
             <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@letter-count[not(. eq '')] ! common:enforce-integer(.)" order="descending"/>
         </xsl:perform-sort>
@@ -246,23 +242,8 @@
     </xsl:template>
     
     <xsl:template match="tei:foreign">
-        <span>
-            <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes" select="'foreign'"/>
-                <xsl:with-param name="lang" select="@xml:lang"/>
-            </xsl:call-template>
-            <xsl:apply-templates select="node()"/>
-        </span>
-    </xsl:template>
-    
-    <xsl:template match="tei:emph">
         <em>
             <xsl:call-template name="class-attribute">
-                <xsl:with-param name="base-classes">
-                    <xsl:if test="@rend eq 'bold'">
-                        <xsl:value-of select="'text-bold'"/>
-                    </xsl:if>
-                </xsl:with-param>
                 <xsl:with-param name="lang" select="@xml:lang"/>
             </xsl:call-template>
             <xsl:apply-templates select="node()"/>
@@ -272,6 +253,26 @@
     <xsl:template match="tei:distinct">
         <em>
             <xsl:call-template name="class-attribute">
+                <xsl:with-param name="lang" select="@xml:lang"/>
+            </xsl:call-template>
+            <xsl:apply-templates select="node()"/>
+        </em>
+    </xsl:template>
+    
+    <xsl:template match="tei:emph">
+        <em>
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes">
+                    <xsl:if test="@rend eq 'bold'">
+                        <xsl:value-of select="'text-bold'"/>
+                    </xsl:if>
+                    <xsl:if test="@rend eq 'underline'">
+                        <xsl:value-of select="'underline'"/>
+                    </xsl:if>
+                    <xsl:if test="@rend eq 'line-through'">
+                        <xsl:value-of select="'line-through'"/>
+                    </xsl:if>
+                </xsl:with-param>
                 <xsl:with-param name="lang" select="@xml:lang"/>
             </xsl:call-template>
             <xsl:apply-templates select="node()"/>
@@ -305,7 +306,7 @@
             <xsl:when test="$ref[@cRef]">
                 
                 <!-- Set the index -->
-                <xsl:variable name="ref-index" select="if($ref[@xml:id]) then key('folio-refs-pre-processed', $ref/@xml:id, $root)[1]/@index-in-resource else ()"/>
+                <xsl:variable name="folio-ref-index" select="if($ref[@xml:id]) then key('folio-refs-pre-processed', $ref/@xml:id, $root)[1]/@index-in-resource else ()"/>
 
                 <xsl:choose>
                     
@@ -317,7 +318,7 @@
                     </xsl:when>
                     
                     <!-- Check for index -->
-                    <xsl:when test="$ref-index and $toh-key">
+                    <xsl:when test="$folio-ref-index and $toh-key">
                         <xsl:choose>
                             
                             <!-- If it's html then add a link -->
@@ -326,11 +327,13 @@
                                 <a class="ref folio-ref log-click">
                                     <!-- define an anchor so we can link back to this point -->
                                     <xsl:attribute name="id" select="$ref/@xml:id"/>
-                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $ref-index)"/>
+                                    <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
+                                    <xsl:attribute name="data-folio" select="$ref/@cRef"/>
                                     <xsl:attribute name="target" select="concat('source-', $toh-key)"/>
-                                    <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $ref-index)"/>
+                                    <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh, ' (source text)')"/>
+                                    <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                     <xsl:attribute name="data-loading" select="concat('Loading ', $translation/m:source/m:toh, '...')"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </a>
@@ -340,7 +343,7 @@
                             <xsl:otherwise>
                                 
                                 <span class="ref">
-                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $ref-index)"/>
+                                    <xsl:attribute name="data-href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </span>
                                 
@@ -452,127 +455,144 @@
         
         <xsl:variable name="element" select="."/>
         
-        <!-- Output the ref prologue -->
-        <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
-            <div class="rw rw-first rw-paragraph">
-                <p class="ref-prologue">
-                    <xsl:apply-templates select="$ref-prologue"/>
-                </p>
-            </div>
-            <br/>
+        <!-- Ignore any nodes with @rend='default-text' unless it's editor mode -->
+        <xsl:if test="$element[not(@rend eq 'default-text')] or $view-mode[@id eq 'editor']">
+            
+            <!-- Output the ref prologue -->
+            <xsl:if test="$ref-prologue-container and count($element | $ref-prologue-container) eq count($element)">
+                <div class="rw rw-first rw-paragraph">
+                    <p class="ref-prologue">
+                        <xsl:apply-templates select="$ref-prologue"/>
+                    </p>
+                </div>
+                <br/>
+            </xsl:if>
+            
+            <!-- Output the milestone -->
+            <xsl:call-template name="milestone-row">
+                
+                <xsl:with-param name="content">
+                    
+                    <xsl:element name="{ if($element/self::tei:lg) then 'div' else if($element/self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
+                        
+                        <!-- id -->
+                        <xsl:call-template name="id-attribute">
+                            <xsl:with-param name="node" select="$element"/>
+                        </xsl:call-template>
+                        
+                        <!-- class -->
+                        <xsl:call-template name="class-attribute">
+                            
+                            <xsl:with-param name="base-classes" as="xs:string*">
+                                
+                                <xsl:if test="($element/@rend, $element/@type) = 'mantra'">
+                                    <xsl:value-of select="'mantra'"/>
+                                </xsl:if>
+                                
+                                <xsl:if test="$element/@rend eq 'italic'">
+                                    <xsl:value-of select="'italic'"/>
+                                </xsl:if>
+                                
+                                <xsl:if test="$element/@rend eq 'default-text'">
+                                    <xsl:value-of select="'default-text'"/>
+                                </xsl:if>
+                                
+                                <xsl:if test="$element/@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
+                                    <xsl:value-of select="'italic'"/>
+                                </xsl:if>
+                                
+                                <xsl:choose>
+                                    <xsl:when test="$element/self::tei:trailer">
+                                        <xsl:value-of select="'trailer'"/>
+                                    </xsl:when>
+                                    <xsl:when test="$element/self::tei:bibl">
+                                        <xsl:value-of select="'bibl'"/>
+                                    </xsl:when>
+                                    <xsl:when test="$element/self::tei:lg">
+                                        <xsl:value-of select="'line-group'"/>
+                                    </xsl:when>
+                                    <xsl:when test="$element/self::tei:q">
+                                        <xsl:value-of select="'quote'"/>
+                                    </xsl:when>
+                                </xsl:choose>
+                                
+                            </xsl:with-param>
+                            
+                            <xsl:with-param name="html-classes" as="xs:string*">
+                                <!-- If this is a blockquote with a ptr, or it's a paragraph with a quote, then it's a quote container -->
+                                <xsl:if test="$element[self::tei:q]/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target] or $element[tei:q/tei:ptr[@type eq 'quote-ref'][@xml:id][@target]]">
+                                    <xsl:value-of select="'quote-container'"/>
+                                </xsl:if>
+                            </xsl:with-param>
+                            
+                        </xsl:call-template>
+                        
+                        <!-- Outbound quote links -->
+                        <xsl:variable name="quote-refs" as="element(tei:ptr)*">
+                            <xsl:if test="$element[not(tei:l)]/parent::tei:q[descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]] and not($element/following-sibling::tei:*[not(self::tei:orig)])">
+                                <xsl:sequence select="$element/parent::tei:q/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]"/>
+                            </xsl:if>
+                        </xsl:variable>
+                        <xsl:variable name="quotes-outbound" as="element(m:quote)*">
+                            <xsl:if test="$quote-refs">
+                                <xsl:variable name="quote-ref-targets" select="$quote-refs/@target ! replace(., '^#', '')"/>
+                                <xsl:sequence select="key('quotes-outbound', $quote-refs/@xml:id, $root)"/>
+                            </xsl:if>
+                        </xsl:variable>
+                        
+                        <!-- Output the content, filtering out the ref prologue -->
+                        <xsl:call-template name="parse-content">
+                            <xsl:with-param name="node" select="$element"/>
+                        </xsl:call-template>
+                        
+                        <!-- Output quote links -->
+                        <xsl:for-each select="$quotes-outbound">
+                            
+                            <xsl:value-of select="' '"/>
+                            
+                            <span id="{ @id }">
+                                <xsl:call-template name="quote-link">
+                                    <xsl:with-param name="quote" select="."/>
+                                </xsl:call-template>
+                            </span>
+                            
+                        </xsl:for-each>
+                        
+                        <!-- Add link to tei editor -->
+                        <xsl:call-template name="tei-editor">
+                            <xsl:with-param name="node" select="$element"/>
+                        </xsl:call-template>
+                        
+                    </xsl:element>
+                    
+                </xsl:with-param>
+                
+                <xsl:with-param name="row-type">
+                    
+                    <xsl:choose>
+                        <xsl:when test="($element/@rend, $element/@type) = 'mantra'">
+                            <xsl:value-of select="'mantra'"/>
+                        </xsl:when>
+                        <xsl:when test="$element/self::tei:trailer">
+                            <xsl:value-of select="'trailer'"/>
+                        </xsl:when>
+                        <xsl:when test="$element/self::tei:lg">
+                            <xsl:value-of select="'line-group'"/>
+                        </xsl:when>
+                        <xsl:when test="$element/self::tei:q">
+                            <xsl:value-of select="'blockquote'"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="'paragraph'"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                </xsl:with-param>
+                
+            </xsl:call-template>
+            
         </xsl:if>
         
-        <!-- Output the milestone -->
-        <xsl:call-template name="milestone-row">
-            
-            <xsl:with-param name="content">
-                <xsl:element name="{ if($element/self::tei:lg) then 'div' else if($element/self::tei:q) then 'blockquote' else 'p' }" namespace="http://www.w3.org/1999/xhtml">
-                    
-                    <!-- id -->
-                    <xsl:call-template name="id-attribute">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                    <!-- Outbound quote links -->
-                    <xsl:variable name="quote-refs" as="element(tei:ptr)*">
-                        <xsl:if test="$element[not(tei:l)]/parent::tei:q[descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]] and not($element/following-sibling::tei:*[not(self::tei:orig)])">
-                            <xsl:sequence select="$element/parent::tei:q/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target]"/>
-                        </xsl:if>
-                    </xsl:variable>
-                    <xsl:variable name="quotes-outbound" as="element(m:quote)*">
-                        <xsl:if test="$quote-refs">
-                            <xsl:variable name="quote-ref-targets" select="$quote-refs/@target ! replace(., '^#', '')"/>
-                            <xsl:sequence select="key('quotes-outbound', $quote-refs/@xml:id, $root)"/>
-                        </xsl:if>
-                    </xsl:variable>
-                    
-                    <!-- class -->
-                    <xsl:call-template name="class-attribute">
-                        
-                        <xsl:with-param name="base-classes" as="xs:string*">
-                            
-                            <xsl:if test="($element/@rend, $element/@type) = 'mantra'">
-                                <xsl:value-of select="'mantra'"/>
-                            </xsl:if>
-                            
-                            <xsl:if test="$element/@type = ('sdom', 'bar_sdom', 'spyi_sdom')">
-                                <xsl:value-of select="'italic'"/>
-                            </xsl:if>
-                            
-                            <xsl:choose>
-                                <xsl:when test="$element/self::tei:trailer">
-                                    <xsl:value-of select="'trailer'"/>
-                                </xsl:when>
-                                <xsl:when test="$element/self::tei:bibl">
-                                    <xsl:value-of select="'bibl'"/>
-                                </xsl:when>
-                                <xsl:when test="$element/self::tei:lg">
-                                    <xsl:value-of select="'line-group'"/>
-                                </xsl:when>
-                                <xsl:when test="$element/self::tei:q">
-                                    <xsl:value-of select="'quote'"/>
-                                </xsl:when>
-                            </xsl:choose>
-                            
-                        </xsl:with-param>
-                        
-                        <xsl:with-param name="html-classes" as="xs:string*">
-                            <!-- If this is a blockquote with a ptr, or it's a paragraph with a quote, then it's a quote container -->
-                            <xsl:if test="$element[self::tei:q]/descendant::tei:ptr[@type eq 'quote-ref'][@xml:id][@target] or $element[tei:q/tei:ptr[@type eq 'quote-ref'][@xml:id][@target]]">
-                                <xsl:value-of select="'quote-container'"/>
-                            </xsl:if>
-                        </xsl:with-param>
-                        
-                    </xsl:call-template>
-                    
-                    <!-- Output the content, filtering out the ref prologue -->
-                    <xsl:call-template name="parse-content">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                    <!-- Output quote links -->
-                    <xsl:for-each select="$quotes-outbound">
-                        
-                        <xsl:value-of select="' '"/>
-                        
-                        <span id="{ @id }">
-                            <xsl:call-template name="quote-link">
-                                <xsl:with-param name="quote" select="."/>
-                            </xsl:call-template>
-                        </span>
-                        
-                    </xsl:for-each>
-                    
-                    <!-- Add link to tei editor -->
-                    <xsl:call-template name="tei-editor">
-                        <xsl:with-param name="node" select="$element"/>
-                    </xsl:call-template>
-                    
-                </xsl:element>
-            </xsl:with-param>
-            
-            <xsl:with-param name="row-type">
-                <xsl:choose>
-                    <xsl:when test="($element/@rend, $element/@type) = 'mantra'">
-                        <xsl:value-of select="'mantra'"/>
-                    </xsl:when>
-                    <xsl:when test="$element/self::tei:trailer">
-                        <xsl:value-of select="'trailer'"/>
-                    </xsl:when>
-                    <xsl:when test="$element/self::tei:lg">
-                        <xsl:value-of select="'line-group'"/>
-                    </xsl:when>
-                    <xsl:when test="$element/self::tei:q">
-                        <xsl:value-of select="'blockquote'"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="'paragraph'"/>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:with-param>
-                        
-        </xsl:call-template>
-    
     </xsl:template>
     
     <xsl:template match="tei:l">
@@ -646,13 +666,13 @@
             
             <xsl:variable name="pointer" select="."/>
             <xsl:variable name="target-type" select="if(starts-with($pointer/@target, '#')) then 'id' else if(starts-with($pointer/@target, 'http')) then 'url' else ''"/>
-            <xsl:variable name="pointer-target" select="if($target-type eq 'id') then replace($pointer/@target, '^#(end\-note\-)?', '') else $pointer/@target"/>
+            <xsl:variable name="target-string" select="if($target-type eq 'id') then replace($pointer/@target, '^#(end\-note\-)?', '') else $pointer/@target"/>
             
             <!-- Look through the various keys to find this id -->
             <xsl:variable name="target" as="element()?">
                 <xsl:if test="$target-type eq 'id'">
                     <xsl:call-template name="target-element">
-                        <xsl:with-param name="target-id" select="$pointer-target"/>
+                        <xsl:with-param name="target-id" select="$target-string"/>
                     </xsl:call-template>
                 </xsl:if>
             </xsl:variable>
@@ -682,7 +702,7 @@
                     <xsl:choose>
                         
                         <!-- External text -->
-                        <xsl:when test="$target/ancestor::m:pre-processed[not(@text-id eq $translation/@id)]">
+                        <xsl:when test="$target/ancestor::m:pre-processed[not(@text-id eq $text-id)]">
                             <xsl:attribute name="target" select="concat($target/ancestor::m:pre-processed/@text-id, '.html')"/>
                         </xsl:when>
                         
@@ -697,7 +717,7 @@
                 
                 <xsl:when test="$target-type eq 'url'">
                     
-                    <xsl:attribute name="href" select="$pointer-target"/>
+                    <xsl:attribute name="href" select="$target-string"/>
                     <xsl:attribute name="target" select="'_blank'"/>
                     
                 </xsl:when>
@@ -727,7 +747,7 @@
                 
                 <!-- Just output the target -->
                 <xsl:otherwise>
-                    <xsl:apply-templates select="$pointer-target"/>
+                    <xsl:apply-templates select="$target-string"/>
                 </xsl:otherwise>
                 
             </xsl:choose>
@@ -747,7 +767,27 @@
         </sup>
     </xsl:template>
     <xsl:template match="tei:hi[@rend eq 'small-caps']">
-        <xsl:value-of select="translate(lower-case(text()), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
+        <span>
+            <xsl:value-of select="translate(lower-case(text()), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
+        </span>
+    </xsl:template>
+    <xsl:template match="tei:hi">
+        <span>
+            <xsl:call-template name="class-attribute">
+                <xsl:with-param name="base-classes">
+                    <xsl:if test="@rend eq 'bold'">
+                        <xsl:value-of select="'text-bold'"/>
+                    </xsl:if>
+                    <xsl:if test="@rend eq 'underline'">
+                        <xsl:value-of select="'underline'"/>
+                    </xsl:if>
+                    <xsl:if test="@rend eq 'line-through'">
+                        <xsl:value-of select="'line-through'"/>
+                    </xsl:if>
+                </xsl:with-param>
+            </xsl:call-template>
+            <xsl:apply-templates select="node()"/>
+        </span>
     </xsl:template>
     
     <!-- Table -->
@@ -1080,7 +1120,7 @@
     <xsl:template match="tei:note[@place eq 'end'][@xml:id]">
         
         <xsl:variable name="note" select="."/>
-        <xsl:variable name="end-notes-pre-processed" select="key('end-notes-pre-processed', $note/@xml:id, $root)[1]" as="element(m:end-note)?"/>
+        <xsl:variable name="end-notes-pre-processed" select="key('end-notes-pre-processed', @xml:id, $root)[1]" as="element(m:end-note)?"/>
         
         <a class="footnote-link">
             
@@ -1132,7 +1172,7 @@
     <!-- List at the end -->
     <xsl:template name="end-notes">
         
-        <xsl:param name="end-notes" select="$translation/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id] | $knowledgebase/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id]" as="element(tei:note)*"/>
+        <xsl:param name="end-notes" select="$translation/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id] | $article/m:part[@type eq 'end-notes']//tei:note[@place eq 'end'][@xml:id]" as="element(tei:note)*"/>
         
         <!--<xsl:variable name="end-notes-render" as="element(tei:note)*">
             <xsl:choose>
@@ -1147,7 +1187,7 @@
         
         <xsl:if test="$end-notes">
             
-            <xsl:variable name="end-notes-part" select="($translation/m:part[@type eq 'end-notes'] | $knowledgebase/m:part[@type eq 'end-notes'])[1]"/>
+            <xsl:variable name="end-notes-part" select="($translation/m:part[@type eq 'end-notes'] | $article/m:part[@type eq 'end-notes'])[1]"/>
             
             <xsl:apply-templates select="$end-notes-part/tei:head"/>
             
@@ -1243,7 +1283,7 @@
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="base-classes">
                     <xsl:choose>
-                        <xsl:when test="@type eq 'ignore'">
+                        <xsl:when test="@rend eq 'ignore'">
                             <xsl:value-of select="'ignore'"/>
                         </xsl:when>
                         <xsl:otherwise>
@@ -1262,7 +1302,7 @@
                 <xsl:choose>
                     
                     <!-- Check the type -->
-                    <xsl:when test="@type eq 'ignore'">
+                    <xsl:when test="@rend eq 'ignore'">
                         <xsl:value-of select="false()"/>
                     </xsl:when>
                     
@@ -1316,7 +1356,7 @@
     <!-- Glossary -->
     <xsl:template name="glossary">
         
-        <xsl:variable name="glossary-part" select="($translation/m:part[@type eq 'glossary'] | $knowledgebase/m:part[@type eq 'glossary'])[1]"/>
+        <xsl:variable name="glossary-part" select="($translation/m:part[@type eq 'glossary'] | $article/m:part[@type eq 'glossary'])[1]"/>
         
         <xsl:variable name="glossary-render" as="element(tei:gloss)*">
             <xsl:choose>
@@ -1332,6 +1372,8 @@
         <xsl:if test="$glossary-render">
             
             <xsl:apply-templates select="$glossary-part/tei:head"/>
+            
+            <xsl:variable name="resource-type" select="if($article) then 'knowledgebase' else 'translation'"/>
             
             <xsl:call-template name="attestation-types"/>
             
@@ -1390,8 +1432,8 @@
                     <div class="glossary-content">
                         
                         <!-- Main term -->
-                        <h3 class="term">
-                            <xsl:variable name="main-term" select="($glossary-item/tei:term[not(@type = ('definition','alternative','translationAlternative'))][not(@xml:lang) or @xml:lang eq 'en'])[1]"/>
+                        <h3>
+                            <xsl:variable name="main-term" select="($glossary-item/tei:term[not(@type eq 'translationAlternative')][not(@xml:lang) or @xml:lang eq 'en'])[1]"/>
                             <xsl:call-template name="glossary-term">
                                 <xsl:with-param name="term-text" select="$main-term/text()"/>
                                 <xsl:with-param name="term-lang" select="$main-term/@xml:lang"/>
@@ -1404,20 +1446,21 @@
                         <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
                             
                             <xsl:variable name="term-lang" select="."/>
-                            <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type = ('definition','alternative','translationAlternative'))][@xml:lang eq $term-lang][normalize-space(text())]"/>
+                            <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type eq 'translationAlternative')][@xml:lang eq $term-lang][normalize-space(text())]"/>
                             <xsl:variable name="term-empty-text">
                                 <xsl:call-template name="text">
                                     <xsl:with-param name="global-key" select="concat('glossary.term-empty-', lower-case($term-lang))"/>
                                 </xsl:call-template>
                             </xsl:variable>
                             
-                            <xsl:if test="$term-lang-terms or $term-empty-text gt ''">
+                            <xsl:if test="$term-lang-terms or ($translation and $term-empty-text gt '')">
                                 <div>
                                     <ul class="list-inline inline-dots">
                                         <xsl:choose>
                                             
                                             <xsl:when test="$term-lang-terms">
                                                 <xsl:for-each select="$term-lang-terms">
+                                                    <xsl:sort select="@n ! xs:integer(.)"/>
                                                     <li>
                                                         <xsl:call-template name="glossary-term">
                                                             <xsl:with-param name="term-text" select="text()"/>
@@ -1444,9 +1487,9 @@
                         </xsl:for-each>
                         
                         <!-- Alternatives -->
-                        <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type = ('alternative','translationAlternative')][normalize-space(data())]"/>
+                        <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type eq 'translationAlternative'][normalize-space(data())]"/>
                         <xsl:if test="($tei-editor or $view-mode[@id = ('annotation','tests')]) and $alternative-terms">
-                            <ul class="list-inline inline-dots">
+                            <ul class="list-inline inline-dots hidden-print">
                                 <xsl:for-each select="$alternative-terms">
                                     <li>
                                         <span>
@@ -1465,20 +1508,12 @@
                         </xsl:if>
                         
                         <!-- Definition -->
-                        <xsl:variable name="entry-definition" select="$glossary-item/tei:*[@type eq 'definition'][node()]"/>
+                        <xsl:variable name="entry-definition" select="$glossary-item/tei:note[@type eq 'definition'][descendant::text()[normalize-space()]]"/>
                         
                         <!-- Entity -->
                         <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
                         <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
                         <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
-                        
-                        <xsl:if test="$tei-editor and not($entity)">
-                            <div class="footer">
-                                <span class="label label-warning">
-                                    <xsl:value-of select="'No shared entity assigned'"/>
-                                </span>
-                            </div>
-                        </xsl:if>
                         
                         <!-- Definitions -->
                         <xsl:if test="$entry-definition or $entity-definition">
@@ -1486,8 +1521,8 @@
                             <div class="footer">
                                 
                                 <!-- Entry definition as prologue -->
-                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entity-instance[not(@use-definition = ('override','both','prepend'))])">
-                                    <xsl:for-each select="$entry-definition">
+                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entry-definition[not(@use-definition = ('override','both','prepend'))])">
+                                    <xsl:for-each select="$entry-definition/tei:p">
                                         <p>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="base-classes" select="'definition'"/>
@@ -1498,7 +1533,7 @@
                                 </xsl:if>
                                 
                                 <!-- Entity definition -->
-                                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entity-instance[@use-definition = ('both','append','prepend','override')])">
+                                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entry-definition[@use-definition = ('both','append','prepend','override')])">
                                     <h4 class="heading">
                                         <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
                                     </h4>
@@ -1513,11 +1548,11 @@
                                 </xsl:if>
                                 
                                 <!-- Entry definition as epilogue -->
-                                <xsl:if test="($entry-definition and $entity-definition and $entity-instance[@use-definition = ('both','prepend')])">
+                                <xsl:if test="($entry-definition and $entity-definition and $entry-definition[@use-definition = ('both','prepend')])">
                                     <h4 class="heading">
                                         <xsl:value-of select="'In this text:'"/>
                                     </h4>
-                                    <xsl:for-each select="$entry-definition">
+                                    <xsl:for-each select="$entry-definition/tei:p">
                                         <p>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="base-classes" select="'definition'"/>
@@ -1585,7 +1620,7 @@
                         
                         <!-- Link to the Glossary / Knowledge Base -->
                         <xsl:variable name="glossary-instances" select="$entity/m:instance[@type eq 'glossary-item'][not(@id eq $glossary-item/@xml:id)]"/>
-                        <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $kb-id)][$environment/m:enable[@type eq 'knowledgebase']]"/>
+                        <xsl:variable name="knowledgebase-instances" select="$entity/m:instance[@type eq 'knowledgebase-article'][not(@id eq $toh-key)]"/>
                         <xsl:variable name="requires-attention" select="$entity-instance/m:flag[@type eq 'requires-attention']"/>
                         <xsl:variable name="further-resources-links">
                             <xsl:if test="($glossary-instances, $knowledgebase-instances)">
@@ -1622,40 +1657,63 @@
                             </xsl:if>
                         </xsl:variable>
                         
-                        <xsl:if test="($tei-editor (:or not($requires-attention):) and $view-mode[@client = ('browser', 'ajax', 'ebook', 'pdf')])">
-                            <div class="footer entity-content" role="navigation">
+                        <!-- Editor options -->
+                        <xsl:if test="($tei-editor (:or not($requires-attention):) and $view-mode[@client = ('browser', 'ajax')])">
+                            <div class="footer entity-content hidden-print" role="navigation">
                                 
                                 <xsl:if test="$tei-editor">
-                                    <xsl:attribute name="class" select="'footer entity-content well well-sm'"/>
-                                </xsl:if>
-                                
-                                <xsl:if test="$tei-editor and $requires-attention">
-                                    <div>
-                                        <span class="label label-danger">
-                                            <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
-                                        </span>
-                                    </div>
+                                    <xsl:attribute name="class" select="'footer entity-content hidden-print well well-sm'"/>
                                 </xsl:if>
                                 
                                 <xsl:sequence select="$further-resources-links"/>
                                 
-                                <!-- Link to glossary tool -->
-                                <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations']">
-                                    <div>
+                                <xsl:if test="$tei-editor and ($requires-attention or not($entity) or $environment/m:url[@id eq 'operations'])">
+                                    <ul class="list-inline">
                                         
-                                        <xsl:variable name="resource-id" select="if($knowledgebase) then $knowledgebase/m:page/@xml:id else $glossary-part/parent::m:translation/@id"/>
-                                        <xsl:variable name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'"/>
+                                        <xsl:if test="$requires-attention ">
+                                            <li>
+                                                <span class="label label-danger">
+                                                    <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
+                                                </span>
+                                            </li>
+                                            
+                                        </xsl:if>
                                         
-                                        <a target="84000-glossary-tool" class="editor">
-                                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html', '?resource-id=', $resource-id, '&amp;resource-type=', $resource-type,'&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
-                                            <xsl:value-of select="'Open in the glossary editor'"/>
-                                        </a>
+                                        <xsl:if test="not($entity)">
+                                            <li>
+                                                <span class="label label-warning">
+                                                    <xsl:value-of select="'No shared entity assigned'"/>
+                                                </span>
+                                            </li>
+                                        </xsl:if>
                                         
-                                    </div>
+                                        <!-- Link to glossary tool -->
+                                        <xsl:if test="$environment/m:url[@id eq 'operations']">
+                                            <li>
+                                                
+                                                <xsl:variable name="resource-type" select="if($article) then 'knowledgebase' else 'translation'"/>
+                                                
+                                                <a target="84000-glossary-tool" class="editor">
+                                                    <xsl:choose>
+                                                        <xsl:when test="$resource-type eq 'knowledgebase'">
+                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;filter=check-none&amp;max-records=1#glossary-form-', $glossary-item/@xml:id)"/>
+                                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                                            <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/', $resource-type, '/', $requested-resource, '.html?view-mode=editor#parts')"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html', '?resource-id=', $text-id, '&amp;resource-type=', $resource-type,'&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                    <xsl:value-of select="'Open in the glossary editor'"/>
+                                                </a>
+                                                
+                                            </li>
+                                        </xsl:if>
+                                        
+                                    </ul>
                                 </xsl:if>
                                 
                             </div>
-                            
                         </xsl:if>
                         
                     </div>
@@ -1664,17 +1722,26 @@
                 
             </xsl:for-each>
             
-        </xsl:if>
-        
-        <!-- Link to glossary form -->
-        <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
-        <xsl:if test="$tei-editor and $environment/m:url[@id eq 'operations'] and m:knowledgebase/m:page[@xml:id gt '']">
-            <div>
-                <a class="editor" target="84000-operations">
-                    <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-glossary.html', '?resource-id=', m:knowledgebase/m:page/@xml:id, '&amp;resource-type=knowledgebase&amp;filter=blank-form')"/>
-                    <xsl:value-of select="'Add a glossary entry'"/>
-                </a>
-            </div>
+            <!-- Link to glossary form -->
+            <!-- Knowledge base only, editor mode, operations app, no child divs and an id -->
+            <xsl:if test="$tei-editor and $view-mode[@client = ('browser','ajax')] and $environment/m:url[@id eq 'operations'] and $resource-type eq 'knowledgebase'">
+                <div class="rw glossary-item hidden-print">
+                    <a class="editor" target="84000-operations">
+                        <xsl:choose>
+                            <xsl:when test="$resource-type eq 'knowledgebase'">
+                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;filter=blank-form#glossary-form-blank')"/>
+                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/', $resource-type, '/', $requested-resource, '.html?view-mode=editor#parts')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/text(), '/edit-glossary.html', '?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;filter=blank-form')"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:value-of select="'Add a glossary entry'"/>
+                    </a>
+                </div>
+            </xsl:if>
+            
         </xsl:if>
         
     </xsl:template>
@@ -1694,6 +1761,7 @@
             
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="base-classes" as="xs:string*">
+                    <xsl:value-of select="'term'"/>
                     <xsl:if test="$interpolation">
                         <xsl:value-of select="'interpolation'"/>
                     </xsl:if>
@@ -1716,8 +1784,23 @@
             <xsl:if test="$attestation-for-lang[contains(@rend, 'note')] and $view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
                 <xsl:value-of select="' '"/>
                 <xsl:choose>
-                    <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'app')]">
-                        <a class="annotation pop-up">
+                    <xsl:when test="$view-mode[@client = ('browser', 'ajax', 'app', 'ebook')]">
+                        <a class="attestation">
+                            
+                            <xsl:choose>
+                                
+                                <xsl:when test="$view-mode[@client = ('ebook', 'app')]">
+                                    <xsl:attribute name="epub:type" select="'noteref'"/>
+                                </xsl:when>
+                                
+                                <xsl:otherwise>
+                                    <xsl:call-template name="class-attribute">
+                                        <xsl:with-param name="base-classes" select="'attestation'"/>
+                                        <xsl:with-param name="html-classes" select="'pop-up'"/>
+                                    </xsl:call-template>
+                                </xsl:otherwise>
+                                
+                            </xsl:choose>
                             
                             <xsl:call-template name="href-attribute">
                                 <xsl:with-param name="fragment-id" select="concat('att-type-', $attestation-for-lang/parent::m:attestation-type/@id)"/>
@@ -1729,7 +1812,7 @@
                         </a>
                     </xsl:when>
                     <xsl:otherwise>
-                        <span class="annotation">
+                        <span class="attestation">
                             <xsl:value-of select="$attestation-for-lang/parent::m:attestation-type/@code"/>
                         </span>
                     </xsl:otherwise>
@@ -1861,10 +1944,10 @@
         
         <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
             
-            <div class="nested-section relative attestation-types">
+            <div class="nested-section relative bottom-margin attestation-types">
                 
                 <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
-                    <xsl:attribute name="class" select="'nested-section relative attestation-types visible-print-block'"/>
+                    <xsl:attribute name="class" select="'nested-section relative bottom-margin attestation-types visible-print-block'"/>
                 </xsl:if>
                 
                 <xsl:call-template name="milestone-row">
@@ -1938,7 +2021,24 @@
                 <xsl:with-param name="node" select="$part"/>
             </xsl:call-template>
             
-            <xsl:apply-templates select="$part/node()"/>
+            <xsl:choose>
+                <!-- Keep this for ebooks -->
+                <xsl:when test="$part[@content-status eq 'unpublished']">
+                    
+                    <xsl:apply-templates select="$part/tei:head[@type eq $part/@type][1]"/>
+                    
+                    <div class="rw rw-paragraph">
+                        <p class="center">
+                            <xsl:value-of select="'[This chapter is not yet published]'"/>
+                        </p>
+                    </div>
+                    
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:apply-templates select="$part/node()"/>
+                </xsl:otherwise>
+            </xsl:choose>
+            
             
             <!-- Add link to tei editor -->
             <xsl:call-template name="tei-editor">
@@ -2080,9 +2180,9 @@
             <xsl:with-param name="header-content">
                 <h2>
                     
-                    <xsl:call-template name="id-attribute">
+                    <!--<xsl:call-template name="id-attribute">
                         <xsl:with-param name="node" select="."/>
-                    </xsl:call-template>
+                    </xsl:call-template>-->
                     
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
@@ -2163,63 +2263,139 @@
         </span>
     </xsl:template>
 
-    <xsl:template match="tei:media">
-        <xsl:choose>
+    <xsl:template match="tei:media[@mimeType eq 'audio/mpeg']">
+
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
+            <xsl:call-template name="milestone-row">
+                <xsl:with-param name="content">
+                    <audio controls="controls">
+                        <xsl:attribute name="title" select="tei:desc"/>
+                        <source type="audio/mpeg">
+                            <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
+                        </source>
+                        Your browser does not support the <code>audio</code> element.
+                    </audio>
+                </xsl:with-param>
+                <xsl:with-param name="row-type" select="'audio'"/>
+            </xsl:call-template>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template match="tei:media[@mimeType eq 'image/png']">
+        
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook')]">
             
-            <xsl:when test="@mimeType eq 'audio/mpeg' and $view-mode[@client = ('browser', 'ajax')]">
-                <xsl:call-template name="milestone-row">
-                    <xsl:with-param name="content">
-                        <audio controls="controls">
-                            <xsl:attribute name="title" select="tei:desc"/>
-                            <source type="audio/mpeg">
-                                <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
-                            </source>
-                            Your browser does not support the <code>audio</code> element.
-                        </audio>
-                    </xsl:with-param>
-                    <xsl:with-param name="row-type" select="'audio'"/>
-                </xsl:call-template>
-            </xsl:when>
+            <xsl:variable name="caption" select="tei:desc/text() ! normalize-space()"/>
             
-            <xsl:when test="@mimeType eq 'image/png' and $view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook')]">
-                <xsl:variable name="caption" select="tei:desc/text() ! normalize-space()"/>
+            <xsl:variable name="img">
                 <xsl:choose>
-                    <xsl:when test="$caption">
-                        <xsl:choose>
-                            <xsl:when test="$view-mode[@client eq 'ebook']">
-                                <div class="row sml-margin top bottom">
-                                    <xsl:apply-templates select="$caption"/>
-                                    <img>
-                                        <xsl:attribute name="src" select="concat('image', @url)"/>
-                                        <xsl:attribute name="title" select="$caption"/>
-                                    </img>
-                                </div>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <div class="row sml-margin top bottom">
-                                    <div class="col-sm-8 col-xs-6">
-                                        <xsl:apply-templates select="$caption"/>
-                                    </div>
-                                    <div class="col-sm-4 col-xs-6">
-                                        <img class="img-responsive pull-right">
-                                            <xsl:attribute name="src" select="concat($reading-room-path, @url)"/>
-                                            <xsl:attribute name="title" select="$caption"/>
-                                        </img>
-                                    </div>
-                                </div>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        
+                    
+                    <!-- epubs -->
+                    <xsl:when test="$view-mode[@client eq 'ebook']">
+                        <img>
+                            <xsl:attribute name="src">
+                                <xsl:choose>
+                                    <xsl:when test="matches(@url, '^http', 'i')">
+                                        <xsl:value-of select="@url"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat('image', @url)"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
+                            <xsl:attribute name="title" select="$caption"/>
+                        </img>
                     </xsl:when>
+                    
+                    <!-- notes -->
+                    <xsl:when test="ancestor::tei:note">
+                        <img class="img-responsive pull-right">
+                            <xsl:attribute name="src">
+                                <xsl:choose>
+                                    <xsl:when test="matches(@url, '^http', 'i')">
+                                        <xsl:value-of select="@url"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat($reading-room-path, @url)"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
+                            <xsl:attribute name="title" select="$caption"/>
+                        </img>
+                    </xsl:when>
+                    
+                    <!-- other -->
                     <xsl:otherwise>
                         <img class="img-responsive">
-                            <xsl:attribute name="src" select="@url"/>
+                            <xsl:attribute name="src">
+                                <xsl:choose>
+                                    <xsl:when test="matches(@url, '^http', 'i')">
+                                        <xsl:value-of select="@url"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat($reading-room-path, @url)"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
                         </img>
                     </xsl:otherwise>
+                    
                 </xsl:choose>
-            </xsl:when>
+            </xsl:variable>
             
-        </xsl:choose>
+            <!-- Image link -->
+            <xsl:variable name="img-link">
+                <xsl:choose>
+                    <xsl:when test="@source">
+                        <a>
+                            <xsl:attribute name="href" select="@source ! normalize-space()"/>
+                            <xsl:attribute name="target" select="'_blank'"/>
+                            <xsl:attribute name="title" select="$caption"/>
+                            <xsl:sequence select="$img"/>
+                        </a>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:sequence select="$img"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+            
+            <!-- Image containers -->
+            <xsl:choose>
+                
+                <!-- epubs -->
+                <xsl:when test="$view-mode[@client eq 'ebook']">
+                    <span class="img-block">
+                        <xsl:sequence select="$img-link"/>
+                    </span>
+                </xsl:when>
+                
+                <!-- notes -->
+                <xsl:when test="ancestor::tei:note">
+                    <div class="row sml-margin top bottom">
+                        <div class="col-sm-8 col-xs-6">
+                            <xsl:apply-templates select="$caption"/>
+                        </div>
+                        <div class="col-sm-4 col-xs-6">
+                            <xsl:sequence select="$img-link"/>
+                        </div>
+                    </div>
+                </xsl:when>
+                
+                <!-- others -->
+                <xsl:otherwise>
+                    <span class="img-inline">
+                        <xsl:if test="not(preceding-sibling::* | preceding-sibling::text()[matches(.,'\p{L}','i')])">
+                            <xsl:attribute name="class" select="'img-inline inline-left'"/>
+                        </xsl:if>
+                        <xsl:sequence select="$img-link"/>
+                    </span>
+                </xsl:otherwise>
+                
+            </xsl:choose>
+            
+        </xsl:if>
         
     </xsl:template>
     
@@ -2240,7 +2416,7 @@
         <div>
             
             <xsl:choose>
-                <xsl:when test="($translation | $knowledgebase)">
+                <xsl:when test="($translation | $article)">
                     
                     <!-- Find adjacent milestone -->
                     <xsl:variable name="milestone" select="($element/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][1][self::tei:milestone] | $element/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | $element/parent::tei:seg/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][1][self::tei:milestone] | $element/parent::tei:seg/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
@@ -2466,7 +2642,7 @@
                 </xsl:when>
                 
                 <!-- A knowledge base page -->
-                <xsl:when test="$knowledgebase">
+                <xsl:when test="$article">
                     <xsl:attribute name="id" select="$id"/>
                 </xsl:when>
                 
@@ -2619,10 +2795,9 @@
         <xsl:if test="$tei-editor and $view-mode[not(@client = ('ebook', 'app'))] and $id gt ''">
             
             <!-- Knowledge base only -->
-            <xsl:variable name="resource-id" select="if($knowledgebase[m:page/@kb-id]) then $knowledgebase/m:page/@xml:id else ()(:$translation/@id:)"/>
-            <xsl:variable name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'"/>
+            <xsl:variable name="resource-type" select="if($article) then 'knowledgebase' else 'translation'"/>
             
-            <xsl:if test="$resource-id">
+            <xsl:if test="$resource-type eq 'knowledgebase'">
                 
                 <xsl:if test="$node[text()]">
                     <xsl:value-of select="' '"/>
@@ -2635,12 +2810,13 @@
                         <xsl:attribute name="title" select="concat('Comment: ', $node/comment() ! normalize-space(.))"/>
                     </xsl:if>
                     
-                    <xsl:attribute name="href" select="concat('/tei-editor.html?resource-type=', $resource-type, '&amp;resource-id=', $resource-id,'&amp;passage-id=', $id, '#ajax-source')"/>
+                    <xsl:attribute name="href" select="concat('/tei-editor.html?resource-type=', $resource-type, '&amp;resource-id=', $text-id,'&amp;passage-id=', $id, '#ajax-source')"/>
                     <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                    <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/', $resource-type, '/', $requested-resource, '.html?view-mode=editor', '#parts')"/>
                     
                     <xsl:choose>
                         <xsl:when test="$node[self::m:part | self::tei:div]">
-                            <xsl:value-of select="'Add Section'"/>
+                            <xsl:value-of select="concat('Add a section', if($node/tei:head[@type eq $node/@type]) then concat(' after &#34;', $node/tei:head[@type eq $node/@type][1]/data(),'&#34;') else ())"/>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:value-of select="'Edit'"/>
@@ -2652,6 +2828,7 @@
             </xsl:if>
             
         </xsl:if>
+    
     </xsl:template>
     
     <!-- Table of Contents - html rendering - derived from parts, not a part itself -->
@@ -2774,10 +2951,16 @@
                                     
                                     <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
                                     
+                                    <xsl:if test="$part[@content-status eq 'unpublished']">
+                                        <span class="small">
+                                            <xsl:value-of select="' [not yet published]'"/>
+                                        </span>
+                                    </xsl:if>
+                                    
                                 </a>
                                 
                                 <!-- Move down the tree -->
-                                <xsl:if test="$sub-parts">
+                                <xsl:if test="$sub-parts and $part[not(@content-status eq 'unpublished')]">
                                     <ol>
                                         <xsl:call-template name="toc-parts">
                                             <xsl:with-param name="parts" select="$sub-parts"/>
@@ -2790,7 +2973,7 @@
                         </xsl:when>
                         
                         <!-- Move straight down the tree -->
-                        <xsl:when test="$sub-parts">
+                        <xsl:when test="$sub-parts and $part[not(@content-status eq 'unpublished')]">
                             <xsl:call-template name="toc-parts">
                                 <xsl:with-param name="parts" select="$sub-parts"/>
                                 <xsl:with-param name="doc-type" select="$doc-type"/>
@@ -2813,7 +2996,15 @@
                                 
                                 <navLabel>
                                     <text>
-                                        <xsl:apply-templates select="$part-head/text()"/>
+                                        
+                                        <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
+                                        
+                                        <xsl:if test="$part[@content-status eq 'unpublished']">
+                                            <span class="small">
+                                                <xsl:value-of select="' [not yet published]'"/>
+                                            </span>
+                                        </xsl:if>
+                                        
                                     </text>
                                 </navLabel>
                                 
@@ -2822,7 +3013,7 @@
                                 </content>
                                 
                                 <!-- Move down the tree -->
-                                <xsl:if test="$sub-parts">
+                                <xsl:if test="$sub-parts and $part[not(@content-status eq 'unpublished')]">
                                     <xsl:call-template name="toc-parts">
                                         <xsl:with-param name="parts" select="$sub-parts"/>
                                         <xsl:with-param name="doc-type" select="$doc-type"/>
@@ -2833,7 +3024,7 @@
                         </xsl:when>
                         
                         <!-- Move straight down the tree -->
-                        <xsl:when test="$sub-parts">
+                        <xsl:when test="$sub-parts and $part[not(@content-status eq 'unpublished')]">
                             <xsl:call-template name="toc-parts">
                                 <xsl:with-param name="parts" select="$sub-parts"/>
                                 <xsl:with-param name="doc-type" select="$doc-type"/>
@@ -2862,31 +3053,53 @@
                                 </xsl:choose>
                             </td>
                             <td>
-                                <a class="log-click" target="_self">
-                                    
-                                    <xsl:choose>
+                                <xsl:choose>
+                                    <xsl:when test="$part[@content-status eq 'unpublished']">
                                         
-                                        <!-- Set href for crawlers, but override in Reading Room -->
-                                        <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
-                                            <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
-                                            <xsl:attribute name="data-href-override" select="concat('#', $part/@id)"/>
-                                        </xsl:when>
+                                        <span class="text-muted">
+                                            <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
+                                            <span class="small">
+                                                <xsl:value-of select="' [not yet published]'"/>
+                                            </span>
+                                        </span>
                                         
-                                        <!-- PDFs use hash -->
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="href" select="concat('#', $part/@id)"/>
-                                        </xsl:otherwise>
+                                    </xsl:when>
+                                    <xsl:otherwise>
                                         
-                                    </xsl:choose>
-                                    
-                                    <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
-                                    
-                                </a>
+                                        <a class="log-click" target="_self">
+                                            
+                                            <xsl:choose>
+                                                
+                                                <!-- Set href for crawlers, but override in Reading Room -->
+                                                <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
+                                                    <xsl:attribute name="href" select="concat('?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
+                                                    <xsl:attribute name="data-href-override" select="concat('#', $part/@id)"/>
+                                                    <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
+                                                </xsl:when>
+                                                
+                                                <!-- PDFs use hash -->
+                                                <xsl:otherwise>
+                                                    <xsl:attribute name="href" select="concat('#', $part/@id)"/>
+                                                </xsl:otherwise>
+                                                
+                                            </xsl:choose>
+                                            
+                                            <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
+                                            
+                                        </a>
+                                        
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </td>
                         </tr>
                     </xsl:if>
                     
                     <xsl:choose>
+                        
+                        <!-- Don't drill down into unpublished -->
+                        <xsl:when test="$part[@content-status eq 'unpublished']">
+                            <!-- Don't drill down -->
+                        </xsl:when>
                         
                         <!-- Create an expandable block for sub-sections -->
                         <xsl:when test="$sub-parts-with-headings">
@@ -3049,7 +3262,7 @@
         <xsl:param name="part-id" as="xs:string?"/>
         <xsl:param name="mark-id" as="xs:string?"/>
         <xsl:param name="resource-id" select="$requested-resource" as="xs:string"/>
-        <xsl:param name="resource-type" select="if($knowledgebase) then 'knowledgebase' else 'translation'" as="xs:string"/>
+        <xsl:param name="resource-type" select="if($article) then 'knowledgebase' else 'translation'" as="xs:string"/>
         
         <xsl:choose>
             
@@ -3168,13 +3381,13 @@
         
         <xsl:choose>
             
-            <xsl:when test="$target-element/ancestor::m:pre-processed[not(@text-id eq $translation/@id)]">
+            <xsl:when test="$target-element/ancestor::m:pre-processed[not(@text-id eq $text-id)]">
                 
                 <xsl:call-template name="href-attribute">
                     <xsl:with-param name="fragment-id" select="$target-element/@id"/>
                     <xsl:with-param name="mark-id" select="$mark-id"/>
                     <xsl:with-param name="resource-id" select="$target-element/ancestor::m:pre-processed/@text-id"/>
-                    <xsl:with-param name="resource-type" select="($target-element/ancestor::m:pre-processed/@resource-type, 'translation')[1]"/>
+                    <xsl:with-param name="resource-type" select="($target-element/ancestor::m:pre-processed/@resource-type, if($article) then 'knowledgebase' else 'translation')[1]"/>
                 </xsl:call-template>
                 
             </xsl:when>
@@ -3273,9 +3486,6 @@
             <xsl:when test="$type eq 'epub'">
                 <xsl:value-of select="'Download EPUB'"/>
             </xsl:when>
-            <xsl:when test="$type eq 'azw3'">
-                <xsl:value-of select="'Download AZW3 (Kindle)'"/>
-            </xsl:when>
             <xsl:when test="$type eq 'pdf'">
                 <xsl:value-of select="'Download PDF'"/>
             </xsl:when>
@@ -3294,9 +3504,6 @@
                 </xsl:when>
                 <xsl:when test="$type eq 'epub'">
                     <xsl:attribute name="class" select="'fa fa-book'"/>
-                </xsl:when>
-                <xsl:when test="$type eq 'azw3'">
-                    <xsl:attribute name="class" select="'fa fa-amazon'"/>
                 </xsl:when>
                 <xsl:when test="$type eq 'pdf'">
                     <xsl:attribute name="class" select="'fa fa-file-pdf-o'"/>
@@ -3327,12 +3534,13 @@
                 <xsl:when test="$translation">
                     <xsl:attribute name="data-bookmark" select="string-join((($translation/m:titles/m:title[@xml:lang eq 'en'])[1], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
                 </xsl:when>
-                <xsl:when test="$knowledgebase">
-                    <xsl:attribute name="data-bookmark" select="string-join((($knowledgebase/m:page/m:titles/m:title[@xml:lang eq 'en'])[1], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
+                <xsl:when test="$article">
+                    <xsl:attribute name="data-bookmark" select="string-join((($article/m:page/m:titles/m:title[@xml:lang eq 'en'])[1], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
                 </xsl:when>
             </xsl:choose>
             
             <xsl:attribute name="class" select="$link-class"/>
+            
             <xsl:value-of select="$bookmark-label"/>
             
         </a>
@@ -3825,7 +4033,7 @@
             </xsl:when>
             
             <!-- Check for content flags -->
-            <xsl:when test="$node[ancestor-or-self::tei:term[@type eq 'ignore']]">
+            <xsl:when test="$node[ancestor-or-self::tei:term[@rend eq 'ignore']]">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
@@ -3850,7 +4058,7 @@
             </xsl:when>
             
             <!-- TEI elements we don't want to process -->
-            <xsl:when test="$node/ancestor-or-self::tei:ptr | $node/ancestor-or-self::tei:ref[@target] | $node/ancestor-or-self::tei:lb | $node/ancestor-or-self::tei:milestone | $node/ancestor-or-self::tei:head | $node/ancestor-or-self::tei:term[parent::tei:gloss][not(@type eq 'definition')]">
+            <xsl:when test="$node/ancestor-or-self::tei:ptr | $node/ancestor-or-self::tei:ref[@target] | $node/ancestor-or-self::tei:lb | $node/ancestor-or-self::tei:milestone | $node/ancestor-or-self::tei:head | $node/ancestor-or-self::tei:term[parent::tei:gloss]">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
@@ -3860,7 +4068,7 @@
             </xsl:when>
             
             <!-- Check if deferred -->
-            <xsl:when test="$view-mode[@glossary eq 'defer'] and ($node/ancestor::tei:*[@tid] or $node/ancestor::tei:note[@place eq 'end'][@xml:id] or $node/ancestor::tei:gloss[@xml:id] or $node/ancestor::tei:orig)">
+            <xsl:when test="$view-mode[@glossary eq 'defer'] and ($node/ancestor::*[@tid] or $node/ancestor::tei:note[@place eq 'end'][@xml:id] or $node/ancestor::tei:gloss[@xml:id] or $node/ancestor::tei:orig)">
                 <xsl:value-of select="false()"/>
             </xsl:when>
             
@@ -3880,7 +4088,7 @@
     <!-- Get relevant terms from gloss -->
     <xsl:function name="m:glossary-terms-to-match" as="xs:string*">
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
-        <xsl:sequence select="$glossary-items/tei:term[not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
+        <xsl:sequence select="$glossary-items/tei:term[not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
     </xsl:function>
     
     <!-- Check the context of the node is somewhere that can be quoted -->
@@ -4308,12 +4516,10 @@
         <xsl:param name="expand-id" as="xs:string"/>
         <xsl:param name="prepend-hr" as="xs:boolean" select="true()"/>
         
-        <xsl:variable name="toh-key" select="$toh-key"/>
-        
         <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
         <xsl:variable name="summary" select="$text/m:part[@type eq 'summary']/tei:p"/>
         <xsl:variable name="titleVariants" select="$text/m:title-variants/m:title[normalize-space(string-join(text(), ' '))] | $text/m:title-variants/m:note[@type eq 'title'][normalize-space(string-join(text(), ''))]"/>
-        <xsl:variable name="supplementaryAttributions" select="$text/m:source/m:attribution[@ref][@role = $supplementaryRoles]"/>
+        <xsl:variable name="supplementaryAttributions" select="$text/m:source/m:attribution[@role = $supplementaryRoles]"/>
         
         <xsl:if test="$summary or $titleVariants or $supplementaryAttributions">
             
@@ -4331,7 +4537,7 @@
             
             <xsl:variable name="summary-content">
                 
-                <div class="well well-sm small">
+                <div class="well well-sm small no-bottom-margin">
                     
                     <h4 class="no-top-margin">
                         <xsl:value-of select="'Summary'"/>
@@ -4351,7 +4557,7 @@
                     
                     <xsl:if test="$titleVariants">
                         <div>
-                            <xsl:attribute name="id" select="concat($toh-key, '-title-variants')"/>
+                            <xsl:attribute name="id" select="concat('title-variants-', $text/@id)"/>
                             <h4>
                                 <xsl:value-of select="'Title variants'"/>
                             </h4>
@@ -4370,7 +4576,7 @@
                     
                     <xsl:if test="$supplementaryAttributions">
                         <div>
-                            <xsl:attribute name="id" select="concat($toh-key, '-supplementary-roles')"/>
+                            <xsl:attribute name="id" select="concat('supplementary-roles-', $text/@id)"/>
                             <xsl:for-each select="$supplementaryRoles">
                                 <xsl:variable name="supplementaryRole" select="."/>
                                 <xsl:variable name="roleAttributions" select="$supplementaryAttributions[@role eq $supplementaryRole]"/>
@@ -4387,11 +4593,11 @@
                                     </h4>
                                     <ul>
                                         <xsl:for-each select="$roleAttributions">
-                                            <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
-                                            <xsl:variable name="entity" select="$entities/id($entity-id)"/>
+                                            <xsl:variable name="attribution" select="."/>
+                                            <xsl:variable name="entity" select="$entities/m:instance[@id eq $attribution/@xml:id]/parent::m:entity"/>
                                             <li>
                                                 <xsl:call-template name="attribution-label">
-                                                    <xsl:with-param name="attribution" select="."/>
+                                                    <xsl:with-param name="attribution" select="$attribution"/>
                                                     <xsl:with-param name="entity" select="$entity"/>
                                                     <xsl:with-param name="page" select="key('related-pages', $entity/m:instance/@id, $root)[1]"/>
                                                 </xsl:call-template>
@@ -4426,24 +4632,34 @@
         
         <xsl:param name="text" as="element(m:text)?"/>
         
-        <xsl:if test="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
+        <xsl:variable name="list-output" as="element(xhtml:li)*">
+            <xsl:for-each select="$text/m:source/m:attribution[@role eq 'author'][normalize-space(text())]">
+                
+                <xsl:variable name="attribution" select="."/>
+                <xsl:variable name="entity" select="$entities/m:instance[@id eq $attribution/@xml:id]/parent::m:entity" as="element(m:entity)?"/>
+                <xsl:variable name="kb-instance" select="$entity/m:instance[@type eq 'knowledgebase-article'][1]" as="element(m:instance)?"/>
+                
+                <xsl:if test="$kb-instance">
+                    <li>
+                        <xsl:call-template name="attribution-label">
+                            <xsl:with-param name="attribution" select="."/>
+                            <xsl:with-param name="entity" select="$entity"/>
+                            <xsl:with-param name="page" select="key('related-pages', $kb-instance/@id, $root)[1]"/>
+                        </xsl:call-template>
+                    </li>
+                </xsl:if>
+                
+            </xsl:for-each>
+        </xsl:variable>
+        
+        <xsl:if test="$list-output">
             <hr/>
             <div role="navigation" aria-label="The attributed authors of the source text" class="small">
                 <span class="text-muted">
                     <xsl:value-of select="'by '"/>
                 </span>
                 <ul class="list-inline inline-dots">
-                    <xsl:for-each select="$text/m:source/m:attribution[@ref][@role eq 'author'][normalize-space(text())]">
-                        <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
-                        <xsl:variable name="entity" select="$entities/id($entity-id)"/>
-                        <li>
-                            <xsl:call-template name="attribution-label">
-                                <xsl:with-param name="attribution" select="."/>
-                                <xsl:with-param name="entity" select="$entity"/>
-                                <xsl:with-param name="page" select="key('related-pages', $entity/m:instance/@id, $root)[1]"/>
-                            </xsl:call-template>
-                        </li>
-                    </xsl:for-each>
+                    <xsl:sequence select="$list-output"/>
                 </ul>
             </div>
         </xsl:if>
@@ -4479,132 +4695,6 @@
                 <xsl:sequence select="$attribution-element"/>
             </xsl:otherwise>
         </xsl:choose>
-        
-    </xsl:template>
-    
-    <!-- Entities derived metadata -->
-    <xsl:template name="entity-data">
-        
-        <xsl:param name="entity" as="element(m:entity)?"/>
-        
-        <xsl:if test="$entity">
-            
-            <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
-            
-            <xsl:if test="$related-entries">
-                
-                <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
-                    
-                    <xsl:attribute name="ref" select="$entity/@xml:id"/>
-                    
-                    <xsl:attribute name="related-entries" select="count($related-entries)"/>
-                    
-                    <xsl:variable name="term-empty-bo">
-                        <xsl:call-template name="text">
-                            <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="term-empty-sa-ltn">
-                        <xsl:call-template name="text">
-                            <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="terms-bo" select="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() ! normalize-space(.) = ('', $term-empty-bo))]"/>
-                    <xsl:variable name="terms-sa" select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() ! normalize-space(.) = ('', $term-empty-sa-ltn))]"/>
-                    <xsl:variable name="terms-wy" select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn'][text()]"/>
-                    <xsl:variable name="terms-en" select="$related-entries/m:term[@xml:lang eq 'en'][text()]"/>
-                    
-                    <xsl:variable name="primary-terms" as="element(m:term)*">
-                        <xsl:choose>
-                            <xsl:when test="$terms-bo">
-                                <xsl:sequence select="$terms-bo"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:sequence select="$terms-sa"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="sorted-terms" as="element(m:term)*">
-                        <xsl:perform-sort select="$primary-terms">
-                            <!--<xsl:sort select="string-length(lower-case(data()))" order="descending"/>-->
-                            <xsl:sort select="count($related-entries/m:term/data() ! lower-case(.) = data() ! lower-case(.))" order="descending"/>
-                        </xsl:perform-sort>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="primary-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
-                    <xsl:variable name="primary-term-entry" select="$primary-term/parent::m:entry"/>
-                    
-                    <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                        <xsl:attribute name="type" select="'primary'"/>
-                        <xsl:attribute name="xml:lang" select="$primary-term/@xml:lang"/>
-                        <xsl:value-of select="$primary-term"/>
-                    </xsl:element>
-                    
-                    <xsl:if test="$primary-term[@xml:lang eq 'bo']">
-                        
-                        <xsl:variable name="sorted-wylie-terms" as="element(m:term)*">
-                            <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Bo-Ltn']">
-                                <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
-                            </xsl:perform-sort>
-                        </xsl:variable>
-                        
-                        <xsl:variable name="wylie-term" select="$sorted-wylie-terms[1]"/>
-                        
-                        <xsl:if test="$wylie-term">
-                            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                                <xsl:attribute name="type" select="'secondary'"/>
-                                <xsl:attribute name="xml:lang" select="$wylie-term/@xml:lang"/>
-                                <xsl:value-of select="$wylie-term"/>
-                            </xsl:element>
-                        </xsl:if>
-                        
-                        <xsl:variable name="sorted-sanskrit-terms" as="element(m:term)*">
-                            <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Sa-Ltn']">
-                                <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
-                            </xsl:perform-sort>
-                        </xsl:variable>
-                        
-                        <xsl:variable name="sanskrit-term" select="$sorted-sanskrit-terms[1]"/>
-                        
-                        <xsl:if test="$sanskrit-term">
-                            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
-                                <xsl:attribute name="type" select="'secondary'"/>
-                                <xsl:attribute name="xml:lang" select="$sanskrit-term/@xml:lang"/>
-                                <xsl:value-of select="$sanskrit-term"/>
-                            </xsl:element>
-                        </xsl:if>
-                        
-                    </xsl:if>
-                    
-                    <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')">
-                        
-                        <xsl:variable name="term-group" select="."/>
-                        <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')"/>
-                        
-                        <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
-                            <xsl:variable name="term-entry-id" select="parent::m:entry/@id[1]"/>
-                            <xsl:attribute name="xml:lang" select="@xml:lang"/>
-                            <xsl:attribute name="normalized-string" select="$normalized-string"/>
-                            <xsl:attribute name="word-count" select="count(tokenize($normalized-string, '\s+'))"/>
-                            <xsl:attribute name="letter-count" select="string-length($normalized-string)"/>
-                            <xsl:attribute name="type" select="@type"/>
-                            <xsl:attribute name="glossary-type" select="parent::m:entry/@type[1]"/>
-                            <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
-                                <xsl:attribute name="flagged" select="true()"/>
-                            </xsl:if>
-                            <xsl:value-of select="$term-group[1]/text()"/>
-                        </xsl:element>
-                        
-                    </xsl:for-each-group>
-                    
-                </xsl:element>
-                
-            </xsl:if>
-            
-        </xsl:if>
         
     </xsl:template>
     

@@ -66,13 +66,9 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $instance-entries := glossary:entries($entity/m:instance/@id, false())
     
     let $search-terms := distinct-values((
-    
         $search-terms,
-        
         $instance-entries/m:term[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data(),
-        
         $instance-entries/m:alternatives[@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]/data()
-        
     )[not(. = $glossary:empty-term-placeholders)] ! lower-case(.) ! common:normalized-chars(.) (:! replace(.,"’", "'"):))
     
     let $exclude-ids := distinct-values((
@@ -103,37 +99,17 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $exclude-page := $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/id($exclude-ids)
     
     let $matching-instance-ids := (
-        $glossary:tei//tei:back//tei:gloss[tei:term[ft:query(., $search-query)][not(@type eq 'definition')][@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]] except $exclude-gloss,
-        $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc[tei:titleStmt/tei:title[ft:query(., $search-query)]]/tei:publicationStmt/tei:idno except $exclude-page
+        $glossary:tei//tei:back//tei:gloss[tei:term[ft:query(., $search-query)][@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]] except $exclude-gloss,
+        $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc[tei:titleStmt/tei:title[ft:query(., $search-query)]]/tei:publicationStmt/tei:idno except $exclude-page,
+        $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:author[ft:query(., $search-query)][@xml:id],
+        $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:editor[ft:query(., $search-query)][@xml:id]
     )/@xml:id/string()
     
     let $matching-instance-ids := distinct-values($matching-instance-ids)
     let $matching-instance-ids := subsequence($matching-instance-ids, 1, 1024)
     
-    let $matching-entity-ids := (
-    
-        $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:author
-            [ft:query(., $search-query)][@ref]
-            
-        | $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:editor
-            [ft:query(., $search-query)][@ref]
-            
-    )/@ref/string() ! replace(., '^eft:', '')
-    
-    let $matching-entity-ids := distinct-values($matching-entity-ids)
-    let $matching-entity-ids := subsequence($matching-entity-ids, 1, 1024)
     let $similar-entities := 
-        for $similar-entity in (
-            (:if($entity[m:type/@type = $entities:types//m:type[@glossary-type]/@id]) then
-                $entities:entities//m:entity
-                    [m:instance/@id = $matching-instance-ids]
-                    [m:type/@type = $entity/m:type/@type]
-            else :)
-                $entities:entities//m:entity
-                    [m:instance/@id = $matching-instance-ids]
-            | $entities:entities//m:entity/id($matching-entity-ids)
-        )
-        
+        for $similar-entity in $entities:entities//m:entity[m:instance/@id = $matching-instance-ids]
         order by 
             if($similar-entity[m:label/text() = $search-terms]) then 1 else 0 descending,
             count($similar-entity/m:instance) descending
@@ -144,106 +120,136 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
         subsequence($similar-entities, 1, 100)
 };
 
-declare function entities:related($entities as element(m:entity)*) as element()* {
-    entities:related($entities, false(), 'requires-attention', 'excluded')
-};
-
-declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
-
-    (: Related entities :)
-    let $related-entities := (
-        if($include-unrelated) then (
-            $entities:entities//m:entity/id($entities/m:relation/@id)
-            | $entities:entities//m:entity[m:relation[@id = $entities/@xml:id]]
-        )
-        else (
-            $entities:entities//m:entity/id($entities/m:relation[not(@predicate = ('sameAs', 'isUnrelated'))]/@id)
-            | $entities:entities//m:entity[m:relation[not(@predicate = ('sameAs', 'isUnrelated'))][@id = $entities/@xml:id]]
-        )
-    )
+declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $include-related-content as xs:string*, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
     
-    (: All the entities we want data about :)
-    let $lookup-entities := ($entities | $related-entities)
-    let $exclude-instances := 
-        if($exclude-flagged) then 
-            $lookup-entities/m:instance[m:flag[@type = $exclude-flagged]] 
-        else ()
+    let $entities-id-chunks := common:ids-chunked($entities/@xml:id)
     
-    let $lookup-instances := $lookup-entities/m:instance except $exclude-instances
-    
-    (: Get glossary entries :)
-    let $glossary-id-chunks := common:ids-chunked($lookup-instances[@type eq 'glossary-item']/@id)
-    let $glosses := (:$glossary:tei/id($lookup-instances[@type eq 'glossary-item']/@id)/self::tei:gloss[not(@mode eq 'surfeit')]:)
-        for $key in map:keys($glossary-id-chunks)
-        let $glossary-ids-key := map:get($glossary-id-chunks, $key)
+    let $entities-id-relations :=
+        for $key in map:keys($entities-id-chunks)
+        let $entities-ids-key := map:get($entities-id-chunks, $key)
         return
-            $glossary:tei/id($glossary-ids-key)/self::tei:gloss[not(@mode eq 'surfeit')]
+            if($include-unrelated) then 
+                $entities:entities//m:entity[m:relation[@id = $entities-ids-key]]
+            else 
+                $entities:entities//m:entity[m:relation[not(@predicate = ('isUnrelated'))][@id = $entities-ids-key]]
+    
+    let $entities-relation-chunks := 
+        if($include-unrelated) then 
+            common:ids-chunked($entities/m:relation/@id)
+        else
+            common:ids-chunked($entities/m:relation[not(@predicate = ('isUnrelated'))]/@id)
+    
+    let $entities-relation-entities := 
+        for $key in map:keys($entities-relation-chunks)
+        let $entities-relation-key := map:get($entities-relation-chunks, $key)
+        return
+            $entities:entities//m:entity/id($entities-relation-key)
+    
+    let $related-entities := ($entities-id-relations | $entities-relation-entities) except $entities
     
     return (
-    
+        
+        (: Related entities :)
         $related-entities,
+        
+        (: Related content :)
+        if(count($include-related-content) gt 0) then
+            
+            local:entities-content($entities | $related-entities, $include-related-content, $exclude-flagged, $exclude-status)
+            
+        else ()
+        
+        
+    )
+};
+
+declare function local:entities-content($entities as element(m:entity)*, $content-types as xs:string*, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
     
-        (: Related glossaries - grouped by text :)
-        for $gloss in $glosses
+    (: All the entities we want data about :)
+    let $exclude-instances := 
+        if($exclude-flagged) then 
+            $entities/m:instance[m:flag[@type = $exclude-flagged]] 
+        else ()
+    
+    (: Instances of those entities :)
+    let $lookup-instances := $entities/m:instance except $exclude-instances
+  
+    return (
+    
+        (: Related articles :)
+        (: Just base this on $exclude-status for now :)
+        if($content-types = 'knowledgebase' and $lookup-instances[@type eq 'knowledgebase-article']) then
+            knowledgebase:pages($lookup-instances[@type eq 'knowledgebase-article']/@id, if(count($exclude-status) gt 0) then true() else false(), ())
+        else (),
         
-        let $tei := $gloss/ancestor::tei:TEI
-        let $text-id := tei-content:id($tei)
-        
-        group by $text-id
-        let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
-        
-        where not($glossary-status = $exclude-status)
-        let $text-type := tei-content:type($tei[1])
-        let $glossary-cache := glossary:glossary-cache($tei[1], (), false())
-        
-        return
-            element { QName('http://read.84000.co/ns/1.0', 'text') } {
-        
-                attribute id { $text-id }, 
-                attribute type { $text-type },
-                (:attribute count-glosses { count($gloss) },:)
-                
-                $tei[1]//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
-                
-                tei-content:titles-all($tei[1]),
-                
-                if($text-type eq 'translation') then 
-                    translation:publication($tei[1])
-                else (),
-                
-                (: Add Toh :)
-                for $toh-key in $tei[1]//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+        (: Related glossary entries :)
+        if($content-types = 'glossary') then
+            let $glossary-id-chunks := common:ids-chunked($lookup-instances[@type eq 'glossary-item']/@id)
+            
+            let $glosses := 
+                for $key in map:keys($glossary-id-chunks)
+                let $glossary-ids-key := map:get($glossary-id-chunks, $key)
                 return
-                    (: Must group these in m:bibl to keep track of @key group :)
-                    element bibl {
-                        translation:toh($tei[1], $toh-key),
-                        tei-content:ancestors($tei[1], $toh-key, 1)
-                    }
-                ,
-                
-                for $gloss-single in $gloss
-                let $gloss-id := $gloss-single/@xml:id
-                group by $gloss-id
-                return
-                    glossary:glossary-entry($gloss-single[1], false())
-                ,
-                
-                element glossary-cache {
-                
-                    let $glossary-id-chunks := common:ids-chunked($gloss/@xml:id)
-                    for $key in map:keys($glossary-id-chunks)
+                    $glossary:tei/id($glossary-ids-key)/self::tei:gloss[not(@mode eq 'surfeit')]
+            
+            (: Related glossaries - grouped by text :)
+            for $gloss in $glosses
+            
+            let $tei := $gloss/ancestor::tei:TEI
+            let $text-id := tei-content:id($tei)
+            let $text-type := tei-content:type($tei)
+            
+            where $text-type eq 'translation'
+            group by $text-id
+            let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
+            
+            where not($glossary-status = $exclude-status)
+            let $text-type := tei-content:type($tei[1])
+            let $glossary-cache := glossary:glossary-cache($tei[1], (), false())
+            
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'text') } {
+            
+                    attribute id { $text-id }, 
+                    attribute type { $text-type },
+                    (:attribute count-glosses { count($gloss) },:)
+                    
+                    $tei[1]//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
+                    
+                    tei-content:titles-all($tei[1]),
+                    
+                    if($text-type eq 'translation') then 
+                        translation:publication($tei[1])
+                    else (),
+                    
+                    (: Add Toh :)
+                    for $toh-key in $tei[1]//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                     return
-                        $glossary-cache/m:gloss[range:eq(@id, map:get($glossary-id-chunks, $key))]
+                        (: Must group these in m:bibl to keep track of @key group :)
+                        element bibl {
+                            translation:toh($tei[1], $toh-key),
+                            tei-content:ancestors($tei[1], $toh-key, 1)
+                        }
+                    ,
+                    
+                    for $gloss-single in $gloss
+                    let $gloss-id := $gloss-single/@xml:id
+                    group by $gloss-id
+                    return
+                        glossary:glossary-entry($gloss-single[1], false())
+                    ,
+                    
+                    element glossary-cache {
+                    
+                        let $glossary-id-chunks := common:ids-chunked($gloss/@xml:id)
+                        for $key in map:keys($glossary-id-chunks)
+                        return
+                            $glossary-cache/m:gloss[range:eq(@id, map:get($glossary-id-chunks, $key))]
+                        
+                    }
                     
                 }
-                
-            }
-        ,
-        
-        (: Related articles :)
-        let $knowledgebase-ids := $lookup-instances[@type eq 'knowledgebase-article']/@id
-        return
-            knowledgebase:pages($knowledgebase-ids, true())
+        else ()
         
     )
 };

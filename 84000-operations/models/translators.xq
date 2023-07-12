@@ -15,8 +15,7 @@ let $delete-translator-id := request:get-parameter('delete', '')
 let $delete-translator := 
     if($delete-translator-id gt '') then
         contributors:delete($contributors:contributors/m:contributors/m:person[@xml:id eq $delete-translator-id])
-    else
-        ()
+    else ()
 
 let $xml-response := 
     common:response(
@@ -24,7 +23,7 @@ let $xml-response :=
         'operations', 
         (
             <request xmlns="http://read.84000.co/ns/1.0" include-acknowledgements="{ $include-acknowledgements }"/>,
-            contributors:persons($include-acknowledgements, true()),
+            contributors:persons($include-acknowledgements),
             contributors:institutions(false()),
             contributors:teams(true(), false(), false())
         )

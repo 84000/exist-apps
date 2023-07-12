@@ -41,8 +41,8 @@ let $xml-response :=
             <translation 
                 xmlns="http://read.84000.co/ns/1.0" 
                 id="{ $text-id }"
-                status="{ tei-content:translation-status($tei) }"
-                status-group="{ tei-content:translation-status-group($tei) }">
+                status="{ tei-content:publication-status($tei) }"
+                status-group="{ tei-content:publication-status-group($tei) }">
                 { 
                     translation:title-element($tei, ()),
                     translation:toh($tei,'')

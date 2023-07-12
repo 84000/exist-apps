@@ -1,5 +1,9 @@
 xquery version "3.0";
 
+declare namespace m = "http://read.84000.co/ns/1.0";
+
+import module namespace common="http://read.84000.co/common" at "../84000-reading-room/modules/common.xql";
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
@@ -24,6 +28,15 @@ else if ($exist:path = ('', '/') or $exist:resource = ('index.html', 'index.htm'
     (: forward root path to translations.html :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <redirect url="translations.html"/>
+    </dispatch>
+
+(: Editor :)
+(: Module located in operations app :)
+else if ($resource-id = ("create-article") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="/84000-operations/models/{ $resource-id }.xq">
+            <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+        </forward>
     </dispatch>
 
 else if (ends-with($exist:resource, ".xml")) then

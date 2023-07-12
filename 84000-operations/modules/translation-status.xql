@@ -69,7 +69,7 @@ declare function translation-status:text($text as element(m:text), $include-subm
     
     (: Get the translation status :)
     let $tei := tei-content:tei($text/@text-id, 'translation')
-    let $translation-status := tei-content:translation-status($tei)
+    let $translation-status := tei-content:publication-status($tei)
     let $translation-status-index := $translation-status:text-statuses-sorted/m:status[@type eq 'translation'][@status-id eq $translation-status]/@index ! xs:integer(.)
     
     (: Get the next due date after now :)
@@ -302,14 +302,14 @@ declare function translation-status:update($text-id as xs:string) as element()? 
     let $word-count := 
         if(tei-content:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-word-count)) then
            xs:integer($cached-word-count)
-        else if(tei-content:translation-status-group($tei) eq 'published') then
+        else if(tei-content:publication-status-group($tei) eq 'published') then
             translation:word-count($tei)
         else 0
    
     let $glossary-count := 
         if(tei-content:is-current-version($tei-version-str, $cached-version-str) and functx:is-a-number($cached-glossary-count)) then
            xs:integer($cached-glossary-count)
-        else if(tei-content:translation-status-group($tei) eq 'published') then
+        else if(tei-content:publication-status-group($tei) eq 'published') then
             translation:glossary-count($tei)
         else 0
     
@@ -394,7 +394,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                 Date input is named based on @index in the text-statuses-selected
             :)
             (:$existing-value/m:target-date:)
-            for $text-status in tei-content:text-statuses-selected(tei-content:translation-status($tei), 'translation')/m:status[@target-date]
+            for $text-status in tei-content:text-statuses-selected(tei-content:publication-status($tei), 'translation')/m:status[@target-date]
                 let $request-target-date := request:get-parameter(concat('target-date-', $text-status/@index), 'not-in-request')
                 let $existing-target-date := $existing-value/m:target-date[@status-id eq $text-status/@status-id]
             return 

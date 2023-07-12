@@ -92,7 +92,7 @@ return
                 
                 let $cache-filename-txt := common:cache-filename($request-txt, $cache-key)
                 let $cache-collection-txt := common:cache-collection($request-txt)
-                let $cache-collection-txt-rel := substring-after($cache-collection-txt, concat($common:data-path, '/'))
+                let $cache-collection-txt-rel := substring-after($cache-collection-txt, concat($common:cache-path, '/'))
                 let $cache-filename-dict := common:cache-filename($request-dict, $cache-key)
                 let $cache-collection-dict := common:cache-collection($request-dict)
                 let $sync-folder-txt := concat($sync-folder, '/', $cache-collection-txt-rel)

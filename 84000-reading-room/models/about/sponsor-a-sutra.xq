@@ -24,12 +24,12 @@ return if($cached) then $cached else
 
 let $sponsorship-texts := translations:sponsorship-texts()
 
-let $entities := 
+(:let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        let $attribution-entity-ids := $sponsorship-texts//m:attribution/@ref ! replace(., '^eft:', '')
+        let $attribution-ids := $sponsorship-texts//m:attribution/@xml:id
         return 
-            $entities:entities/m:entity/id($attribution-entity-ids)
-    }
+            $entities:entities/m:instance[@id = $attribution-ids]/parent::m:entity
+    }:)
 
 let $xml-response :=
     common:response(
@@ -43,7 +43,7 @@ let $xml-response :=
                 <value key="#feSiteUrl">{ $common:environment/m:url[@id eq 'front-end'][1]/text() }</value>
             </replace-text>,
             $sponsorship-texts,
-            $entities,
+            (:$entities,:)
             $sponsorship:cost-groups
         )
     )

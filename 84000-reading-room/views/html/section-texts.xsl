@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -17,6 +17,7 @@
                     <th>#</th>
                     <th>Toh.</th>
                     <th>Title</th>
+                    <th>Pages</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -49,29 +50,32 @@
                                 </xsl:otherwise>
                                 
                             </xsl:choose>
+                            
+                            <span class="text-muted small">
+                                <xsl:value-of select="' \ '"/>
+                                <xsl:value-of select="@id"/>
+                            </span>
+                            
                         </td>
                         <td class="nowrap">
-                            <div class="center-vertical full-width">
-                                <span class="small">
-                                    <xsl:value-of select="@id"/>
-                                </span>
-                                <span>
-                                    <xsl:copy-of select="common:translation-status(@status-group)"/>
-                                </span>
-                            </div>
+                            <span class="small">
+                                <xsl:value-of select="concat(fn:format-number(xs:integer(m:source/m:location/@count-pages),'#,##0'), ' pages')"/>
+                            </span>
+                        </td>
+                        <td class="nowrap">
+                            <span class="text-right">
+                                <xsl:copy-of select="common:translation-status(@status-group)"/>
+                            </span>
                         </td>
                     </tr>
                     <tr class="sub">
-                        <td class="small">
+                        <td class="small text-muted" colspan="3">
                             <xsl:value-of select="'File: '"/>
                             <a class="break">
                                 <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', @resource-id, '.tei')"/>
                                 <xsl:attribute name="target" select="concat(@resource-id, '.tei')"/>
                                 <xsl:value-of select="@document-url"/>
                             </a>
-                        </td>
-                        <td class="small">
-                            <xsl:value-of select="concat(fn:format-number(xs:integer(m:source/m:location/@count-pages),'#,##0'), ' pages')"/>
                         </td>
                     </tr>
                 </xsl:for-each>

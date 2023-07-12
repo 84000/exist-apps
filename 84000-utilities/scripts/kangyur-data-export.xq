@@ -105,14 +105,15 @@ element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
                 attribute target-media { 'text/tei' },
                 attribute url { 'https://read.84000-translate.org/translation/' || $text-id || '.tei'  }
             },:)
-            for $contributor in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@ref gt ''][@role = ('dharmaMaster', 'translatorMain', 'translatorEng', 'reviser', 'advisor', 'associateEditor', 'finalReviewer', 'externalReviewer')]
-            let $contributor-id := lower-case(replace($contributor/@ref/string(), '^(eft:|contributors\.xml#)', '', 'i'))(:contributors:contributor-id($contributor/@ref/string()):)
+            for $attribution in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[@role = ('dharmaMaster', 'translatorMain', 'translatorEng', 'reviser', 'advisor', 'associateEditor', 'finalReviewer', 'externalReviewer')]
+            let $attribution-id := $attribution/@xml:id
+            let $contributor := $contributors:contributors//m:instance[@id eq $attribution-id]/parent::m:*[@xml:id]
             return
-            element attribution {
-                $contributor/@role,
-                attribute resource { lower-case(concat('eft:', $contributor-id)) },
-                $contributors:contributors//*[@xml:id eq $contributor-id]/m:label
-            }
+                element attribution {
+                    $attribution/@role,
+                    attribute resource { lower-case(concat('eft:', $contributor/@xml:id)) },
+                    $contributor/m:label
+                }
         }
     }
 

@@ -13,7 +13,7 @@
                 <param name="segmentInWords" type="boolean" value="false"/>
                 <param name="lemmatize" type="boolean" value="true"/>
                 <param name="filterChars" type="boolean" value="false"/>
-                <param name="inputMethod" type="java.lang.String" value="ewts"/>
+                <param name="inputMethod" type="java.lang.String" value="unicode"/>
                 <param name="stopFilename" type="java.lang.String" value=""/>
             </analyzer>
             

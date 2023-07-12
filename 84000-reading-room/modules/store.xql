@@ -55,13 +55,13 @@ declare function store:download-master($file-name as xs:string, $translations-ma
     let $local-downloads-data := translations:downloads($toh-keys)
     let $local-text := $local-downloads-data/m:text[@id eq $text-id][1]
     let $tei-local-version := $local-text/m:downloads[1]/@tei-version
-    let $tei-local-status := $local-text/@translation-status
+    let $tei-local-status := $local-text/@publication-status
     
     (: Get master file versions :)
     let $master-downloads-data := store:master-downloads-data(xs:anyURI(concat($translations-master-host, '/downloads.xml?resource-ids=', string-join($toh-keys, ','))))
     let $master-text := $master-downloads-data//m:text[@id eq $text-id][1]
     let $tei-master-version := $master-text/m:downloads[1]/@tei-version
-    let $tei-master-status := $master-text/@translation-status
+    let $tei-master-status := ($master-text/@translation-status, $master-text/@publication-status)[1]
     
     (: Download the tei from master if the versions differ :)
     let $download-tei :=
@@ -119,7 +119,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
         )
     
     (: Download other files :)
-    let $downloadable-extensions := ('pdf', 'epub', 'azw3', 'rdf')
+    let $downloadable-extensions := ('pdf', 'epub', 'rdf')
     let $download-files := 
     
         (: loop through one or all file types in the master data :)
@@ -190,12 +190,10 @@ declare function store:create($file-name as xs:string) as element() {
     (: Select which file types to process :)
     let $file-types := ('pdf', 'epub', 'rdf', 'cache')
     let $file-types := 
-        (: See if the file extension is a file type :)
-        if($file-extension = $file-types) then
+        (: Validate the file extension :)
+        if($file-types[. = $file-extension]) then
             $file-extension
-        (: If it's azw3 set to epub as it generates both formats :)
-        else if($file-extension eq 'azw3') then
-            'epub'
+        
         (: Default to all formats :)
         else
             $file-types
@@ -232,13 +230,7 @@ declare function store:create($file-name as xs:string) as element() {
                 for $toh-key in $toh-keys
                 
                     (: Get document version in data store :)
-                    let $store-version := 
-                        (: Check the azw3 version :)
-                        if($file-type eq 'epub' and $file-extension eq 'azw3') then
-                            download:stored-version-str($toh-key, $file-extension)
-                        (: Check the $file-type version :)
-                        else
-                            download:stored-version-str($toh-key, $file-type)
+                    let $store-version := download:stored-version-str($toh-key, $file-type)
                 
                 return
                     if(compare($store-version, $tei-version) ne 0)then
@@ -250,15 +242,10 @@ declare function store:create($file-name as xs:string) as element() {
                                 store:store-new-pdf($file-path, $tei-version)
                         
                         else if($file-type eq 'epub') then
-                            (:'Store new ebooks':)
+                            (:'Store new epub':)
                             let $epub-file-path := concat($common:data-path, '/epub/', $toh-key, '.epub')
-                            let $store-new-epub := store:store-new-epub($epub-file-path, $tei-version)
-                            let $azw3-file-path := concat($common:data-path, '/azw3/', $toh-key, '.azw3')
-                            let $store-new-azw3 := store:store-new-azw3($azw3-file-path, $tei-version)
-                            return (
-                                $store-new-epub,
-                                $store-new-azw3
-                            )
+                            return 
+                                store:store-new-epub($epub-file-path, $tei-version)
                         
                         else if($file-type eq 'rdf') then
                             (:'Store new rdf':)
@@ -298,7 +285,7 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
     
     (: Check the file is there :)
     let $file-exists := 
-        if($file-extension = ('pdf', 'epub', 'azw3')) then
+        if($file-extension = ('pdf', 'epub')) then
             util:binary-doc-available(concat($file-collection, '/', $file-name))
         else
             doc-available(concat($file-collection, '/', $file-name))
@@ -408,6 +395,7 @@ declare function store:store-new-epub($file-path as xs:string, $version as xs:st
             </error>
 };
 
+(:
 declare function store:store-new-azw3($file-path as xs:string, $version as xs:string) as element() {
     
     let $ebook-config := $store:conf/m:ebooks
@@ -422,7 +410,7 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
             
             let $log := util:log('info', concat('store-new-azw3:', $file-name))
     
-            (: Sync file to file system :)
+            (\: Sync file to file system :\)
             let $sync-path := $ebook-config/m:sync-path/text()
             let $sync :=
                 if($sync-path) then
@@ -433,7 +421,7 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
                     )
                 else ()
             
-            (: Run script to generate azw3 :)
+            (\: Run script to generate azw3 :\)
             let $options := 
                 <options>
                     <workingDir>/{ $sync-path }</workingDir>
@@ -456,7 +444,7 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
                     '--chapter', '/'
                 ), $options)
             
-            (: Upload to database :)
+            (\: Upload to database :\)
             let $store-file := 
                 xmldb:store(
                     $file-collection, 
@@ -484,7 +472,7 @@ declare function store:store-new-azw3($file-path as xs:string, $version as xs:st
         <error xmlns="http://read.84000.co/ns/1.0">
             <message>{ concat('Azw3 generation failed: Ebook generation config not found (', $file-path, ')') }</message>
         </error>
-};
+};:)
 
 declare function store:store-new-rdf($file-path as xs:string, $version as xs:string) as element() {
     

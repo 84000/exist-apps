@@ -12,14 +12,14 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $source:source-data-path := '/db/apps/tibetan-source/data/';
+declare variable $source:source-data-path := '/db/apps/tibetan-source/data';
 
 declare variable $source:kangyur-work := 'UT4CZ5369';
-declare variable $source:ekangyur-path := concat($source:source-data-path, $source:kangyur-work);
+declare variable $source:ekangyur-path := string-join(($source:source-data-path, $source:kangyur-work), '/');
 declare variable $source:ekangyur-volume-offset := 126;
 
 declare variable $source:tengyur-work := 'UT23703';
-declare variable $source:etengyur-path := concat($source:source-data-path, $source:tengyur-work);
+declare variable $source:etengyur-path := string-join(($source:source-data-path, $source:tengyur-work), '/');
 declare variable $source:etengyur-volume-offset := 316;
 
 declare function source:etext-path($work as xs:string) as xs:string {
@@ -141,10 +141,9 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
     let $etext-volume-number := source:etext-volume-number($work, $volume-number)
     let $etext-id := source:etext-id($work, $etext-volume-number)
     let $etext-volume := source:etext-volume($etext-id)
-    (: Cast @n as xs:integer in 4.7.1 - can be removed in 5.3.0 :)
-    let $page := $etext-volume//tei:p[xs:integer(@n) eq $page-number]
-    let $preceding-page := $etext-volume//tei:p[xs:integer(@n) eq $page-number - 1]
-    let $trailing-page := $etext-volume//tei:p[xs:integer(@n) eq $page-number + 1]
+    let $page := $etext-volume//tei:p[range:eq(@n, $page-number)]
+    let $preceding-page := $etext-volume//tei:p[range:eq(@n, $page-number - 1)]
+    let $trailing-page := $etext-volume//tei:p[range:eq(@n, $page-number + 1)]
     let $preceding-lines := 1
     let $preceding-milestone-n := count($preceding-page/tei:milestone[@unit eq 'line']) - ($preceding-lines - 1)
     let $trailing-lines := 3
@@ -169,7 +168,7 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             }
             </bool>
         </query>
-        
+    
     let $page-highlighted := $page[ft:query(., $query, $options)]
     
     let $page-expanded := util:expand($page-highlighted, "expand-xincludes=no")
@@ -180,27 +179,17 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
         else
             $page-expanded
     
-    let $paragraph := 
-        element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
-            attribute class {'selected'},
-            $page-expanded/node()
-        }
-    
     (: Context around the page, in case page break comes in the middle of a passage :)
     let $preceding-paragraph := 
         if($add-context) then
-            element { QName('http://www.tei-c.org/ns/1.0', 'p') } { 
-                $preceding-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $preceding-milestone-n]
-                | $preceding-page/node()[preceding-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) ge $preceding-milestone-n]] 
-            }
+            $preceding-page/tei:milestone[@unit eq 'line'][range:eq(@n, $preceding-milestone-n)]
+            | $preceding-page/node()[preceding-sibling::tei:milestone[@unit eq 'line'][range:ge(@n, $preceding-milestone-n)]] 
         else ()
     
     let $trailing-paragraph := 
         if($add-context) then
-            element { QName('http://www.tei-c.org/ns/1.0', 'p') } {  
-                $trailing-page/tei:milestone[@unit eq 'line'][xs:integer(@n) eq $trailing-milestone-n]
-                | $trailing-page/node()[following-sibling::tei:milestone[@unit eq 'line'][xs:integer(@n) le $trailing-milestone-n]] 
-            }
+            $trailing-page/tei:milestone[@unit eq 'line'][range:eq(@n, $trailing-milestone-n)]
+            | $trailing-page/node()[following-sibling::tei:milestone[@unit eq 'line'][range:le(@n, $trailing-milestone-n)]] 
         else ()
     
     return 
@@ -212,10 +201,13 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             attribute etext-id { $etext-id },
             element language {
                 attribute xml:lang {'bo'},
-                $preceding-paragraph,
-                $paragraph,
-                $trailing-paragraph
-            }
+                if($preceding-paragraph) then element { QName('http://www.tei-c.org/ns/1.0', 'p') } { $preceding-paragraph } else (),
+                element { QName('http://www.tei-c.org/ns/1.0', 'p') } { attribute class {'selected'}, $page-expanded/node() },
+                if($trailing-paragraph) then element { QName('http://www.tei-c.org/ns/1.0', 'p') } { $trailing-paragraph } else ()
+            }(:,
+            element lucene-keys {
+                util:index-keys(($preceding-paragraph | $page | $trailing-paragraph), (), function($key, $count) { <index-key name="{$key}"/>}, -1, "lucene-index")
+            }:)
         }
 };
 

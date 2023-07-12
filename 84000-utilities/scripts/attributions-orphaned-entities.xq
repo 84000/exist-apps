@@ -6,50 +6,60 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 
-declare variable $teis := collection($common:translations-path)//tei:TEI;
+declare variable $local:tei := (
+    collection($common:translations-path)//tei:TEI
+    | collection(concat($common:tei-path, '/layout-checks'))//tei:TEI
+);
 
-declare function local:texts() {
-    (: Loop all attribution @refs :)
-    for $tei in $teis
-    let $text-id := tei-content:id($tei)
+(: Attributions without entities 
+    NOTE: there are lots of these as not all attributions have been assigned :)
+declare function local:texts-with-issues() {
+
+    for $attribution in $local:tei//tei:sourceDesc/tei:bibl/tei:author[@xml:id][not(@role eq 'translatorMain')] | $local:tei//tei:sourceDesc/tei:bibl/tei:editor[@xml:id]
+    let $attribution-instances := $entities:entities//m:instance[@id = $attribution/@xml:id]
+    let $text-id := tei-content:id($attribution/ancestor::tei:TEI)
+    where not($attribution-instances)
     order by $text-id
-    
-    let $attribution-issues :=
-        for $attribution in $tei//tei:sourceDesc/tei:bibl/tei:author[@ref] | $tei//tei:sourceDesc/tei:bibl/tei:editor[@ref]
-        (: Check the entity exists :)
-        let $entity-id := replace($attribution/@ref, '^eft:', '')
-        where not($entities:entities//m:entity/id($entity-id))
-        return $attribution
-    
-    where $attribution-issues
     return 
-        element {'text'} {
-            attribute id { $text-id },
-            $attribution-issues
-        }
+        $attribution
+        
 };
 
-declare function local:entities() {
-    (: Loop all attribution @refs :)
-    for $attribution in $teis//tei:sourceDesc/tei:bibl/tei:author[@ref] | $teis//tei:sourceDesc/tei:bibl/tei:editor[@ref]
-    let $entity-id := replace($attribution/@ref, '^eft:', '')
+(: Entities without attributions :)
+declare function local:entities-with-issues() {
+    
+    for $attribution-instance in $entities:entities//m:instance[@type eq 'source-attribution']
+    let $entity := $attribution-instance/parent::m:entity
+    let $entity-id := $entity/@xml:id
+    let $text-attributions := $local:tei/id($attribution-instance/@id)[self::tei:author | self::tei:editor][not(@role eq 'translatorMain')]
+    where count($attribution-instance) gt count($text-attributions)
     group by $entity-id
-    (: Check the entity exists :)
-    where not($entities:entities//m:entity/id($entity-id))
-    return 
-    element { 'entity' } {
-        attribute id { $entity-id },
-        for $single in $attribution
-        return
-            element { 'attribution' } {
-                attribute text-id {
-                    tei-content:id($single/ancestor::tei:TEI[1])
-                },
-                $single
-            }
-    }
+    return
+        element { 'entity' } {
+            attribute id { $entity-id },
+            $attribution-instance[not(@id = $text-attributions/@xml:id)]
+        }
+    
 };
 
-(:local:texts():)
-local:entities()
+(: Entities without pages :)
+declare function local:authors-without-pages() {
+    
+    for $attribution in $local:tei//tei:sourceDesc/tei:bibl/tei:author[not(@role eq 'translatorTib')]
+    let $attribution-entity := $entities:entities//m:instance[@id eq $attribution/@xml:id]/parent::m:entity
+    where not($attribution-entity/m:instance[@type eq 'knowledgebase-article'])
+    return 
+        element { 'id' } {
+            attribute id { $attribution/@xml:id },
+            element { 'attribution' } {
+                attribute text-id { tei-content:id($attribution/ancestor::tei:TEI[1]) },
+                $attribution
+            },
+            $attribution-entity  
+        }
+        
+};
 
+local:texts-with-issues()
+(:local:entities-with-issues():)
+(:local:authors-without-pages():)

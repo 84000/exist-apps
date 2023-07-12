@@ -10,6 +10,7 @@ import module namespace functx="http://www.functx.com";
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
+import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "knowledgebase.xql";
 
 declare variable $section:sections := collection($common:sections-path);
 declare variable $section:texts := collection($common:translations-path);
@@ -58,27 +59,99 @@ declare function section:text($tei as element(tei:TEI), $resource-id as xs:strin
     element { QName('http://read.84000.co/ns/1.0', 'text') }{
         attribute id { tei-content:id($tei) },
         attribute resource-id { $resource-id },
-        attribute status { tei-content:translation-status($tei) },
-        attribute status-group { tei-content:translation-status-group($tei) },
+        attribute status { tei-content:publication-status($tei) },
+        attribute status-group { tei-content:publication-status-group($tei) },
         attribute document-url { base-uri($tei) },
         attribute canonical-html { translation:canonical-html($resource-id, '') },
-        attribute last-updated { tei-content:last-updated($tei//tei:fileDesc) },
+        attribute last-updated { tei-content:last-modified($tei) },
         tei-content:source($tei, $resource-id),
         translation:toh($tei, $resource-id),
         tei-content:ancestors($tei, $resource-id, 0),
         translation:titles($tei, $resource-id),
         translation:title-variants($tei, $resource-id),
         translation:publication($tei),
+        translation:publication-status($tei//tei:sourceDesc/tei:bibl[@key eq $resource-id], ()),
         translation:downloads($tei, $resource-id, 'any-version'),
         translation:summary($tei)
     }
 };
 
-declare function section:child-sections($tei as element(tei:TEI), $include-text-stats as xs:boolean, $include-texts as xs:string) as element(m:section) {
-    section:child-sections($tei, $include-text-stats, $include-texts, 1)
+
+declare function section:publication-status($section-id as xs:string, $sponsorship-text-ids as xs:string*) as element(m:translation-summary) {
+    
+    let $section-tei := tei-content:tei($section-id, 'section')
+    
+    where $section-tei
+    return
+        element { QName('http://read.84000.co/ns/1.0','translation-summary') } {
+        
+            attribute section-id { $section-id },
+            attribute document-url { base-uri($section-tei) },
+            element title { tei-content:title-any($section-tei) },
+            
+            (: Get publication status of texts in child sections :)
+            let $subsection-statuses :=
+                for $sub-section-fileDesc in $tei-content:sections-collection//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
+                order by $sub-section-fileDesc/tei:sourceDesc/@sort-index ! xs:integer(.) ascending
+                return 
+                    section:publication-status($sub-section-fileDesc/tei:publicationStmt/tei:idno/@xml:id, $sponsorship-text-ids)
+            
+            (: Get publication status of texts in this section :)
+            let $section-statuses := 
+                for $bibl in $tei-content:translations-collection//tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $section-id]]
+                return
+                    translation:publication-status($bibl, $sponsorship-text-ids)
+            
+            let $combined-statuses := $subsection-statuses/descendant-or-self::m:publication-status | $section-statuses/self::m:publication-status
+            
+            return (
+                $subsection-statuses,
+                $section-statuses,
+                local:publication-summary($section-statuses, 'toh', 'children'),
+                local:publication-summary($section-statuses[@bibl-first], 'text', 'children'),
+                local:publication-summary($combined-statuses, 'toh', 'descendant'),
+                local:publication-summary($combined-statuses[@bibl-first], 'text', 'descendant')
+            )
+        
+        }
 };
 
-declare function section:child-sections($tei as element(tei:TEI), $include-text-stats as xs:boolean, $include-texts as xs:string, $nest as xs:integer) as element(m:section) {
+declare function local:publication-summary($publication-statuses as element(m:publication-status)*, $grouping as xs:string, $scope as xs:string) as element(m:publications-summary) {
+    
+    let $publication-statuses-first-block := $publication-statuses[@block-index ! xs:integer(.) eq 1]
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'publications-summary') } {
+            
+            attribute grouping { $grouping },
+            attribute scope { $scope },
+            
+            element { QName('http://read.84000.co/ns/1.0', 'texts') } {
+                attribute total { count($publication-statuses-first-block) },
+                attribute published { count($publication-statuses-first-block[@status = $translation:published-status-ids]) },
+                attribute translated { count($publication-statuses-first-block[@status = $translation:translated-status-ids]) },
+                attribute in-translation { count($publication-statuses-first-block[@status = $translation:in-translation-status-ids]) },
+                attribute not-started { count($publication-statuses-first-block[not(@status = ($translation:published-status-ids | $translation:translated-status-ids | $translation:in-translation-status-ids))]) },
+                attribute sponsored { count($publication-statuses-first-block[@sponsored]) }
+            },
+            
+            element { QName('http://read.84000.co/ns/1.0', 'pages') } {
+                attribute total { sum($publication-statuses/@count-pages) },
+                attribute published { sum($publication-statuses[@status = $translation:published-status-ids]/@count-pages) },
+                attribute translated { sum($publication-statuses[@status = $translation:translated-status-ids]/@count-pages) },
+                attribute in-translation { sum($publication-statuses[@status = $translation:in-translation-status-ids]/@count-pages) },
+                attribute not-started { sum($publication-statuses[not(@status = ($translation:published-status-ids | $translation:translated-status-ids | $translation:in-translation-status-ids))]/@count-pages) },
+                attribute sponsored { sum($publication-statuses[@sponsored]/@count-pages) }
+            }
+            
+        }
+    
+};
+
+declare function section:child-sections($tei as element(tei:TEI), $include-texts as xs:string) as element(m:section) {
+    section:child-sections($tei, $include-texts, 1)
+};
+
+declare function section:child-sections($tei as element(tei:TEI), $include-texts as xs:string, $nest as xs:integer) as element(m:section) {
     
     let $id := tei-content:id($tei) ! upper-case(.)
     
@@ -89,14 +162,14 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
         for $child-section in $section:sections//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
             order by $child-section/tei:teiHeader//tei:sourceDesc/@sort-index ! xs:integer(.) ascending
         return
-            section:child-sections($child-section, $include-text-stats, $include-texts, $nest + 1)
+            section:child-sections($child-section, $include-texts, $nest + 1)
     
     (: Child texts for stats :)
     let $child-texts := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
-    let $child-texts-fileDesc-published := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:published-status-ids]]
-    let $child-texts-fileDesc-translated := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:translated-status-ids]]
-    let $child-texts-fileDesc-in-translation := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:in-translation-status-ids]]
-    let $child-texts-fileDesc-in-progress := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:in-progress-status-ids]]
+    let $child-texts-fileDesc-published := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:published-status-ids]]
+    let $child-texts-fileDesc-translated := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:translated-status-ids]]
+    let $child-texts-fileDesc-in-translation := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:in-translation-status-ids]]
+    let $child-texts-fileDesc-in-progress := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:in-progress-status-ids]]
     
     let $child-texts-bibls := $child-texts/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
     let $child-texts-bibls-published := $child-texts-fileDesc-published/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
@@ -109,9 +182,10 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
         if(($include-texts = ('descendants', 'descendants-published')) or ($include-texts = ('children', 'children-published') and ($nest eq 1 or ($type eq 'grouping' and $nest eq 2)))) then
             (: List child texts :)
             for $text-tei in 
+            
                 (: published only :)
                 if($include-texts = ('children-published', 'descendants-published')) then
-                    $child-texts[tei:teiHeader//tei:publicationStmt[@status = $translation:published-status-ids]]
+                    $child-texts[tei:teiHeader//tei:publicationStmt/tei:availability[@status = $translation:published-status-ids]]
                 else
                     $child-texts
             
@@ -122,122 +196,9 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                     
         else ()
     
-    (: Get stats on progress :)
-    let $text-stats := 
-        if($include-text-stats) then
-            
-            let $count-text-children :=             count($child-texts-bibls)
-            let $count-published-children :=        count($child-texts-bibls-published)
-            let $count-translated-children :=       count($child-texts-bibls-translated)
-            let $count-in-translation-children :=   count($child-texts-bibls-in-translation)
-            let $count-in-progress-children :=      count($child-texts-bibls-in-progress)
-            
-            let $sum-pages-text-children :=            sum($child-texts-bibls/tei:location/@count-pages ! common:integer(.)) 
-            let $sum-pages-published-children :=       sum($child-texts-bibls-published/tei:location/@count-pages ! common:integer(.))
-            let $sum-pages-translated-children :=      sum($child-texts-bibls-translated/tei:location/@count-pages ! common:integer(.))
-            let $sum-pages-in-translation-children :=  sum($child-texts-bibls-in-translation/tei:location/@count-pages ! common:integer(.))
-            let $sum-pages-in-progress-children :=     sum($child-texts-bibls-in-progress/tei:location/@count-pages ! common:integer(.))
-            
-            let $sum-child-sections-count-text-children :=               sum($child-sections//m:stat[@type = 'count-text-children']/@value ! xs:integer(.))
-            let $sum-child-sections-count-published-children :=          sum($child-sections//m:stat[@type = 'count-published-children']/@value ! xs:integer(.))
-            let $sum-child-sections-count-translated-children :=         sum($child-sections//m:stat[@type = 'count-translated-children']/@value ! xs:integer(.))
-            let $sum-child-sections-count-in-translation-children :=     sum($child-sections//m:stat[@type = 'count-in-translation-children']/@value ! xs:integer(.))
-            let $sum-child-sections-count-in-progress-children :=        sum($child-sections//m:stat[@type = 'count-in-progress-children']/@value ! xs:integer(.))
-            
-            let $sum-child-sections-sum-pages-text-children :=           sum($child-sections//m:stat[@type = 'sum-pages-text-children']/@value ! xs:integer(.))
-            let $sum-child-sections-sum-pages-published-children :=      sum($child-sections//m:stat[@type = 'sum-pages-published-children']/@value ! xs:integer(.))
-            let $sum-child-sections-sum-pages-translated-children :=     sum($child-sections//m:stat[@type = 'sum-pages-translated-children']/@value ! xs:integer(.))
-            let $sum-child-sections-sum-pages-in-translation-children := sum($child-sections//m:stat[@type = 'sum-pages-in-translation-children']/@value ! xs:integer(.))
-            let $sum-child-sections-sum-pages-in-progress-children :=    sum($child-sections//m:stat[@type = 'sum-pages-in-progress-children']/@value ! xs:integer(.))
-            
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'text-stats') } { 
-                    element stat {
-                        attribute type { 'count-text-children' },
-                        attribute value { $count-text-children }
-                    },
-                    element stat {
-                        attribute type { 'count-published-children' },
-                        attribute value { $count-published-children }
-                    },
-                    element stat {
-                        attribute type { 'count-translated-children' },
-                        attribute value { $count-translated-children }
-                    },
-                    element stat {
-                        attribute type { 'count-in-translation-children' },
-                        attribute value { $count-in-translation-children }
-                    },
-                    element stat {
-                        attribute type { 'count-in-progress-children' },
-                        attribute value { $count-in-progress-children }
-                    },
-                    element stat {
-                        attribute type { 'count-text-descendants' },
-                        attribute value { $count-text-children + $sum-child-sections-count-text-children }
-                    },
-                    element stat {
-                        attribute type { 'count-published-descendants' },
-                        attribute value { $count-published-children + $sum-child-sections-count-published-children }
-                    },
-                    element stat {
-                        attribute type { 'count-translated-descendants' },
-                        attribute value { $count-translated-children + $sum-child-sections-count-translated-children }
-                    },
-                    element stat {
-                        attribute type { 'count-in-translation-descendants' },
-                        attribute value { $count-in-translation-children + $sum-child-sections-count-in-translation-children }
-                    },
-                    element stat {
-                        attribute type { 'count-in-progress-descendants' },
-                        attribute value { $count-in-progress-children + $sum-child-sections-count-in-progress-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-text-children' },
-                        attribute value { $sum-pages-text-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-published-children' },
-                        attribute value { $sum-pages-published-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-translated-children' },
-                        attribute value { $sum-pages-translated-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-in-translation-children' },
-                        attribute value { $sum-pages-in-translation-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-in-progress-children' },
-                        attribute value { $sum-pages-in-progress-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-text-descendants' },
-                        attribute value { $sum-pages-text-children + $sum-child-sections-sum-pages-text-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-published-descendants' },
-                        attribute value { $sum-pages-published-children + $sum-child-sections-sum-pages-published-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-translated-descendants' },
-                        attribute value { $sum-pages-translated-children + $sum-child-sections-sum-pages-translated-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-in-translation-descendants' },
-                        attribute value { $sum-pages-in-translation-children + $sum-child-sections-sum-pages-in-translation-children }
-                    },
-                    element stat {
-                        attribute type { 'sum-pages-in-progress-descendants' },
-                        attribute value { $sum-pages-in-progress-children + $sum-child-sections-sum-pages-in-progress-children }
-                    }
-                }
-            else ()
-    
     (: Derive last updated from tree :)
     (: child texts :)
-    let $child-texts-last-updated := $child-texts/tei:teiHeader/tei:fileDesc  ! tei-content:last-updated(.)
+    let $child-texts-last-updated := $child-texts ! tei-content:last-modified(.)
     (: sub sections :)
     let $child-sections-last-updated := $child-sections/@last-updated ! xs:dateTime(.)
     let $last-updated := 
@@ -245,7 +206,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
             $child-texts-last-updated, 
             $child-sections-last-updated,
             (: default date :)
-            tei-content:last-updated(<empty/>)
+            xs:dateTime('2010-01-01T00:00:00')
         ))
     
     return 
@@ -266,14 +227,18 @@ declare function section:child-sections($tei as element(tei:TEI), $include-text-
                 common:strip-ids(section:abstract($tei))
             else
                 section:abstract($tei),
-                
+            
             common:strip-ids(section:warning($tei)),
-            $text-stats,
+            
             $child-sections,
+            
             element { QName('http://read.84000.co/ns/1.0', 'texts') }{
                 attribute published-only { if($include-texts = ('children-published', 'descendants-published')) then '1' else '0' },
                 $child-texts-output
-            }
+            },
+            
+            knowledgebase:page($tei)
+            
         }
         
 };
@@ -282,15 +247,17 @@ declare function section:section-tree($tei as element(tei:TEI), $include-text-st
     
     (: Includes ancestors and descendant sections, and about content :)
     
-    let $section := section:child-sections($tei, $include-text-stats, $include-texts)
+    let $section := $tei[tei:teiHeader/tei:fileDesc[@type eq 'section']] ! section:child-sections(., $include-texts)
     
     return
         element { node-name($section) }{
             $section/@*,
             $section/*,
-            section:about($tei),
             tei-content:ancestors($tei, '', 1),
-            section:filters($tei)
+            section:filters($tei),
+            if($include-text-stats) then
+                section:publication-status(tei-content:id($tei), ())
+            else ()
         }
         
 };
@@ -305,12 +272,12 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
             attribute type { $section-tei/tei:teiHeader/tei:fileDesc/@type },
             attribute document-url { base-uri($section-tei) },
             attribute sort-index { $section-tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/@sort-index },
-            attribute last-updated { tei-content:last-updated($section-tei/tei:teiHeader/tei:fileDesc) },
+            attribute last-updated { tei-content:last-modified($section-tei) },
             
             tei-content:title-set($section-tei, 'mainTitle'),
             section:abstract($section-tei),
             section:warning($section-tei),
-            section:about($section-tei),
+            (:section:about($section-tei),:)
             section:filters($section-tei),
             
             element { QName('http://read.84000.co/ns/1.0', 'texts') }{
@@ -320,10 +287,11 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
                 
                 (: Output the texts found in the sections tree - applying the filters :)
                 let $texts := 
-                    for $tei in $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:published-status-ids]]]
-                        for $resource-id in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                    for $tei in $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:published-status-ids]]]
+                    return
+                        for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                         return 
-                            section:text($tei, $resource-id, true())
+                            section:text($tei, $toh-key, true())
                             
                 for $text in $texts
                 where (
@@ -345,12 +313,12 @@ declare function section:texts($section-id as xs:string, $published-only as xs:b
     return
         if($include-descendants)then
             if($published-only)then
-                section:child-sections($tei, true(), 'descendants-published')
+                section:child-sections($tei, 'descendants-published')
             else
-                section:child-sections($tei, true(), 'descendants')
+                section:child-sections($tei, 'descendants')
         else
             if($include-descendants)then
-                section:child-sections($tei, true(), 'children-published')
+                section:child-sections($tei, 'children-published')
             else
-                section:child-sections($tei, true(), 'children')
+                section:child-sections($tei, 'children')
 };

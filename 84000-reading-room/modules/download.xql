@@ -8,7 +8,6 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 import module namespace common = "http://read.84000.co/common" at "common.xql";
 
 declare variable $download:file-versions-file-name := "file-versions.xml";
-declare variable $download:file-versions-azw3 := doc(concat($common:data-path, '/azw3/', $download:file-versions-file-name));
 declare variable $download:file-versions-cache := doc(concat($common:data-path, '/cache/', $download:file-versions-file-name));
 declare variable $download:file-versions-epub := doc(concat($common:data-path, '/epub/', $download:file-versions-file-name));
 declare variable $download:file-versions-pdf := doc(concat($common:data-path, '/pdf/', $download:file-versions-file-name));
@@ -30,9 +29,7 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ty
     
     (: Get document version in data store :)
     let $file-versions-doc :=
-        if($file-type eq 'azw3') then
-            $download:file-versions-azw3
-        else if($file-type eq 'cache') then
+        if($file-type eq 'cache') then
             $download:file-versions-cache
         else if($file-type eq 'epub') then
             $download:file-versions-epub

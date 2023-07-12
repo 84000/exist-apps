@@ -18,6 +18,6 @@ return
         (
             utilities:request(),
             tests:sections($section-id),
-            section:child-sections($tei, false(), 'none')
+            section:child-sections($tei, 'none')
         )
     )

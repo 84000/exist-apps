@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="about.xsl"/>
     <xsl:import href="../widget/charts.xsl"/>
@@ -21,8 +21,8 @@
                         <xsl:with-param name="local-key" select="'kangyur-summary-heading'"/>
                     </xsl:call-template>
                 </h2>
-                <xsl:call-template name="outline-summary">
-                    <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
+                <xsl:call-template name="publications-summary">
+                    <xsl:with-param name="publications-summary" select="m:translation-summary[@section-id eq 'LOBBY']/m:translation-summary[@section-id eq 'O1JC11494']/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']"/>
                 </xsl:call-template>
                 
                 <xsl:call-template name="local-text">
@@ -34,8 +34,8 @@
                         <xsl:with-param name="local-key" select="'combined-summary-heading'"/>
                     </xsl:call-template>
                 </h2>
-                <xsl:call-template name="outline-summary">
-                    <xsl:with-param name="outline-summary" select="m:outline-summary"/>
+                <xsl:call-template name="publications-summary">
+                    <xsl:with-param name="publications-summary" select="m:translation-summary[@section-id eq 'LOBBY']/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']"/>
                 </xsl:call-template>
                 
                 <div id="accordion" class="list-group accordion" role="tablist" aria-multiselectable="false">
@@ -156,17 +156,17 @@
         
     </xsl:template>
     
-    <xsl:template name="outline-summary">
+    <xsl:template name="publications-summary">
         
-        <xsl:param name="outline-summary" as="element(m:outline-summary)*" required="yes"/>
+        <xsl:param name="publications-summary" as="element(m:publications-summary)"/>
         
         <div class="row about-stats">
             <div class="col-sm-6 col-lg-8">
                 
-                <xsl:variable name="total-pages" select="sum($outline-summary/m:tohs/m:pages/@count ! xs:integer(.))"/>
-                <xsl:variable name="published-pages" select="sum($outline-summary/m:tohs/m:pages/@published ! xs:integer(.))"/>
-                <xsl:variable name="translated-pages" select="sum($outline-summary/m:tohs/m:pages/@translated ! xs:integer(.))"/>
-                <xsl:variable name="in-translation-pages" select="sum($outline-summary/m:tohs/m:pages/@in-translation ! xs:integer(.))"/>
+                <xsl:variable name="total-pages" select="sum($publications-summary/m:pages/@total ! xs:integer(.))"/>
+                <xsl:variable name="published-pages" select="sum($publications-summary/m:pages/@published ! xs:integer(.))"/>
+                <xsl:variable name="translated-pages" select="sum($publications-summary/m:pages/@translated ! xs:integer(.))"/>
+                <xsl:variable name="in-translation-pages" select="sum($publications-summary/m:pages/@in-translation ! xs:integer(.))"/>
                 
                 <xsl:call-template name="headline-stat">
                     <xsl:with-param name="colour-class" select="'blue'"/>
@@ -176,7 +176,7 @@
                         </xsl:call-template>
                     </xsl:with-param>
                     <xsl:with-param name="pages-value" select="$published-pages"/>
-                    <xsl:with-param name="texts-value" select="sum($outline-summary/m:tohs/@published ! xs:integer(.))"/>
+                    <xsl:with-param name="texts-value" select="sum($publications-summary/m:texts/@published ! xs:integer(.))"/>
                     <xsl:with-param name="percentage-value" select="xs:integer(($published-pages div $total-pages) * 100)"/>
                 </xsl:call-template>
                 
@@ -188,7 +188,7 @@
                         </xsl:call-template>
                     </xsl:with-param>
                     <xsl:with-param name="pages-value" select="$translated-pages"/>
-                    <xsl:with-param name="texts-value" select="sum($outline-summary/m:tohs/@translated ! xs:integer(.))"/>
+                    <xsl:with-param name="texts-value" select="sum($publications-summary/m:texts/@translated ! xs:integer(.))"/>
                     <xsl:with-param name="percentage-value" select="xs:integer(($translated-pages div $total-pages) * 100)"/>
                 </xsl:call-template>
                 
@@ -200,7 +200,7 @@
                         </xsl:call-template>
                     </xsl:with-param>
                     <xsl:with-param name="pages-value" select="$in-translation-pages"/>
-                    <xsl:with-param name="texts-value" select="sum($outline-summary/m:tohs/@in-translation ! xs:integer(.))"/>
+                    <xsl:with-param name="texts-value" select="sum($publications-summary/m:texts/@in-translation ! xs:integer(.))"/>
                     <xsl:with-param name="percentage-value" select="xs:integer(($in-translation-pages div $total-pages) * 100)"/>
                 </xsl:call-template>
                 
@@ -208,7 +208,7 @@
             <div class="col-sm-6 col-lg-4">
                 
                 <xsl:call-template name="progress-pie-chart">
-                    <xsl:with-param name="outline-summary" select="$outline-summary"/>
+                    <xsl:with-param name="publications-summary" select="$publications-summary"/>
                     <xsl:with-param name="replace-text" select="/m:response/m:replace-text"/>
                     <xsl:with-param name="show-legend" select="false()"/>
                 </xsl:call-template>

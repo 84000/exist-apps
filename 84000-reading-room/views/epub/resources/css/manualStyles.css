@@ -119,6 +119,12 @@ small, .small {
 .break {
     overflow-wrap: break-word;
 }
+.underline {
+    text-decoration: underline;
+}
+.line-through {
+    text-decoration: line-through;
+}
 
 /* other scripts */
 .foreign {
@@ -185,6 +191,9 @@ blockquote .line-group .line {
 .text p {
     text-align: justify;
     text-indent: 22pt;
+}
+.text p.center {
+    text-align: center;
 }
 .text .section-label {
     margin-bottom: 0;
@@ -447,7 +456,7 @@ blockquote > .rw-paragraph:first-child {
 
 /* footnote links */
 .footnote-link,
-.annotation {
+.attestation {
     font-size: .75em;
     line-height: .75em;
     vertical-align: super;
@@ -471,6 +480,10 @@ img.divider {
 }
 img.logo-84000 {
     width: 25%;
+}
+.img-block img {
+    display: block;
+    margin: 12pt auto;
 }
 
 /* line-groups */
@@ -585,6 +598,9 @@ img.logo-84000 {
     margin-top: 12pt;
     /* page-break-inside: avoid; */
 }
+.glossary-item h3 {
+    text-align: left;
+}
 .glossary-item .term {
     text-align: left;
     margin-top: 0pt;
@@ -616,7 +632,7 @@ img.logo-84000 {
     margin-top: 14pt;
     padding-bottom: 14pt;
     border-radius: 2px;
-    background-color: #f5f5f5;
+    /* background-color: #f5f5f5; */
 }
 .attestation-type {
     display: block;

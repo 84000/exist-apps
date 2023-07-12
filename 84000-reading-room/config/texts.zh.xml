@@ -40,7 +40,7 @@
     <item key="translation.partial-text-warning">This webpage does not include the entire published text</item>
     <item key="translation.partial-text-link">The full translation is available to download as pdf at:</item>
     
-    <item key="section.ebook-help-title">Help for downloading eBooks</item>
+    <!--<item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">
         <p>There are many ways to get eBooks onto eReader devices. If you already have a reliable method for this, please simply download
             the texts.</p>
@@ -51,12 +51,12 @@
             <li>Open the browser on your device. (On a Kindle this is “Beta-Browser” under the main menu).</li>
             <li>Use the browser to go to http://read.84000.co</li>
             <li>Select “View All Translated Texts.”</li>
-            <li>Select the “Download AZW3” option for the text you would like to read.</li>
+            <li>Select the “Download EPUB” option for the text you would like to read.</li>
         </ol>
         <p>Unfortunately we cannot test our publications on every device. We try to ensure our texts are readable on as many devices as
             possible by complying with open standards. If you have any feedback about this functionality, or tips for reading them on your
             device, please contact us at <a href="mailto:info@84000.co">info@84000.co</a>.</p>
-    </item>
+    </item>-->
     
     <!-- About -->
     <item key="about.common.sponsor-button-label">贊助一頁佛經</item>

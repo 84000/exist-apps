@@ -8,13 +8,15 @@ import module namespace common="http://read.84000.co/common" at "../../84000-rea
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 import module namespace sponsorship="http://read.84000.co/sponsorship" at "../../84000-reading-room/modules/sponsorship.xql";
+import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
 (: Request parameters :)
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $work := request:get-parameter('work', 'UT4CZ5369')
+let $section-id := request:get-parameter('work', '')
+let $work := request:get-parameter('work', $source:kangyur-work)
 let $status := local:get-status-parameter()
 let $sort := request:get-parameter('sort', '')
 let $pages-min := request:get-parameter('pages-min', '')
@@ -26,6 +28,15 @@ let $toh-max := request:get-parameter('toh-max', '')
 let $target-date-type := request:get-parameter('target-date-type', 'target-date')
 let $target-date-start := request:get-parameter('target-date-start', '')
 let $target-date-end := request:get-parameter('target-date-end', '')
+
+(: Override work with section-id :)
+let $work := 
+    if($section-id eq 'O1JC11494') then
+        $source:kangyur-work
+    else if($section-id eq 'O1JC7630') then
+        $source:tengyur-work
+    else
+        $work
 
 (: Is it a date search? :)
 let $target-date-search := (($target-date-start gt '' or $target-date-end gt '') and $target-date-type = ('target-date'))
@@ -42,7 +53,7 @@ let $translation-statuses :=
 (: Get tei data based on date query result or input parameters :)
 let $texts := 
     if($target-date-search) then 
-        (: Make sure zero results in first search is returned :)
+        (: Ensure a status is selected on a date search :)
         if($translation-statuses) then
             translations:texts($status, $translation-statuses/@text-id, $sort, $deduplicate, '', false())
         else ()
@@ -57,7 +68,7 @@ let $translation-status :=
         else
             $translation-statuses
     }
-    
+
 let $texts := 
     if($sort eq 'due-date') then
         element { node-name($texts) } {

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
     
-    <xsl:variable name="text" select="/m:response/m:text"/>
-    <xsl:variable name="translation-status" select="/m:response/m:translation-status"/>
-    <xsl:variable name="glossary-cache" select="/m:response/m:glossary-cache"/>
+    <xsl:variable name="response" select="/m:response"/>
+    <xsl:variable name="text" select="$response/m:text"/>
+    <xsl:variable name="translation-status" select="$response/m:translation-status"/>
+    <xsl:variable name="glossary-cache" select="$response/m:glossary-cache"/>
     
     <xsl:template match="/m:response">
         
@@ -114,7 +115,7 @@
                                     
                                     <span class="text-right">
                                         
-                                        <xsl:for-each select="('cache', 'pdf', 'epub', 'azw3', 'rdf')">
+                                        <xsl:for-each select="('cache', 'pdf', 'epub', 'rdf')">
                                             
                                             <xsl:variable name="download-type" select="."/>
                                             <xsl:variable name="download" select="$downloads/m:download[@type eq $download-type]"/>
@@ -426,7 +427,7 @@
             <xsl:with-param name="content">
                 
                 <xsl:variable name="summary" select="$text/m:publication/m:contributors/m:summary[1]"/>
-                <xsl:variable name="translator-team-id" select="lower-case(replace($summary/@ref, '^(eft:|contributors\.xml#)', '', 'i'))"/>
+                <xsl:variable name="translator-team" select="/m:response/m:contributor-teams/m:team[m:instance/@id = $summary/@xml:id]"/>
                 
                 <form method="post" class="form-horizontal form-update labels-left top-margin" id="contributors-form" data-loading="Updating contributors...">
                     
@@ -439,22 +440,28 @@
                     <input type="hidden" name="form-expand" value="contributors"/>
                     
                     <div class="row">
+                        
+                        <!-- Specify contributors -->
                         <div class="col-sm-8">
                             
-                            <div class="form-group">
+                            <input type="hidden" name="contribution-id-team" value="{ $summary/@xml:id }"/>
+                            
+                            <!-- Select team -->
+                            <div class="form-group bottom-margin">
+                                
                                 <label class="control-label col-sm-3">
                                     <xsl:value-of select="'Translator Team'"/>
                                 </label>
+                                
                                 <div class="col-sm-9">
-                                    <select class="form-control">
-                                        <xsl:attribute name="name" select="'translator-team-id'"/>
+                                    <select class="form-control" name="contributor-id-team">
                                         <option value="">
                                             <xsl:value-of select="'[none]'"/>
                                         </option>
                                         <xsl:for-each select="/m:response/m:contributor-teams/m:team">
                                             <option>
                                                 <xsl:attribute name="value" select="@xml:id"/>
-                                                <xsl:if test="@xml:id eq $translator-team-id">
+                                                <xsl:if test="@xml:id = $translator-team/@xml:id">
                                                     <xsl:attribute name="selected" select="'selected'"/>
                                                 </xsl:if>
                                                 <xsl:value-of select="m:label/text()"/>
@@ -462,12 +469,14 @@
                                         </xsl:for-each>
                                     </select>
                                 </div>
+                                
                             </div>
                             
-                            <div class="add-nodes-container top-margin">
+                            <!-- Specify contributors -->
+                            <div class="add-nodes-container">
                                 
-                                <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team[@id = $translator-team-id]]"/>
-                                <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person[not(m:team[@id = $translator-team-id])]"/>
+                                <xsl:variable name="team-contributors" select="/m:response/m:contributor-persons/m:person[m:team/@id = $translator-team/@xml:id]"/>
+                                <xsl:variable name="other-contributors" select="/m:response/m:contributor-persons/m:person except $team-contributors"/>
                                 
                                 <xsl:call-template name="contributors-controls">
                                     <xsl:with-param name="text-contributors" select="$text/m:publication/m:contributors/m:*[self::m:author | self::m:editor | self::m:consultant]"/>
@@ -482,12 +491,16 @@
                                 </div>
                                 
                             </div>
+                        
                         </div>
+                        
+                        <!-- The attribution in the text -->
                         <div class="col-sm-4">
                             
                             <div class="text-bold">
                                 <xsl:value-of select="'Attribution'"/>
                             </div>
+                            
                             <xsl:choose>
                                 <xsl:when test="$text/m:publication/m:contributors/m:summary">
                                     <xsl:for-each select="$text/m:publication/m:contributors/m:summary">
@@ -520,7 +533,9 @@
                             </xsl:choose>
                             
                         </div>
+                    
                     </div>
+                    
                     <xsl:if test="$text/m:contributors/tei:div[@type eq 'acknowledgment']/tei:p">
                         <hr class="sml-margin"/>
                         <div>
@@ -529,6 +544,7 @@
                             </p>
                         </div>
                     </xsl:if>
+                    
                     <hr class="sml-margin"/>
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
@@ -577,9 +593,12 @@
                     
                     <xsl:sort select="common:index-of-node($contributor-types, $contributor-types[@node-name eq xs:string(local-name(current()))][@role eq current()/@role])" order="ascending"/>
                     
-                    <xsl:variable name="contributor-id" select="lower-case(replace(@ref, '^(eft:|contributors\.xml#)', '', 'i'))"/>
+                    <xsl:variable name="text-contributor" select="."/>
+                    <xsl:variable name="contributor-id" select="($team-contributors | $other-contributors)[m:instance/@id = $text-contributor/@xml:id]/@xml:id"/>
                     <xsl:variable name="contributor-type" select="concat(node-name(.), '-', @role)"/>
                     <xsl:variable name="index" select="common:index-of-node($text-contributors, .)"/>
+                    
+                    <input type="hidden" name="contribution-id-{ $index }" value="{ $text-contributor/@xml:id }"/>
                     
                     <div class="form-group add-nodes-group">
                         
@@ -619,6 +638,9 @@
             </xsl:when>
             <xsl:otherwise>
                 <!-- No existing contributors so show an set of controls -->
+                
+                <input type="hidden" name="contribution-id-1" value=""/>
+                
                 <div class="form-group add-nodes-group">
                     
                     <div class="col-sm-3">
@@ -661,6 +683,9 @@
         <xsl:param name="selected-value" required="yes"/>
         <select class="form-control">
             <xsl:attribute name="name" select="$control-name"/>
+            <option value="">
+                <xsl:value-of select="'[none]'"/>
+            </option>
             <xsl:for-each select="$contributor-types">
                 <option>
                     <xsl:variable name="value" select="concat(@node-name, '-', @role)"/>
@@ -746,7 +771,7 @@
                         <p>
                             <xsl:value-of select="'Updating the version number will commit the new version to the '"/>
                             <a target="_blank" class="alert-link">
-                                <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master/', substring-after($text/@document-url, concat(/m:response/@data-path, '/tei/')))"/>
+                                <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master/', substring-after($text/@document-url, concat($response/@data-path, '/tei/')))"/>
                                 <xsl:value-of select="'Github repository'"/>
                             </a>
                             <xsl:value-of select="'. '"/>
@@ -789,7 +814,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <select class="form-control" name="translation-status" id="translation-status">
-                                            <xsl:for-each select="m:text-statuses/m:status">
+                                            <xsl:for-each select="$response/m:text-statuses/m:status">
                                                 <xsl:sort select="@value eq '0'"/>
                                                 <xsl:sort select="@value"/>
                                                 <option>
@@ -812,7 +837,7 @@
                                     <div class="col-sm-3">
                                         <input type="date" name="publication-date" id="publication-date" class="form-control">
                                             <xsl:attribute name="value" select="$text/m:publication/m:publication-date"/>
-                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                            <xsl:if test="$response/m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                                 <xsl:attribute name="required" select="'required'"/>
                                             </xsl:if>
                                         </input>
@@ -837,7 +862,7 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </xsl:attribute>
-                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                            <xsl:if test="$response/m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                                 <xsl:attribute name="required" select="'required'"/>
                                             </xsl:if>
                                         </input>
@@ -854,7 +879,7 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </xsl:attribute>
-                                            <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                            <xsl:if test="$response/m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
                                                 <xsl:attribute name="required" select="'required'"/>
                                             </xsl:if>
                                         </input>
@@ -866,7 +891,7 @@
                                 
                                 <!-- Action note -->
                                 <div class="form-group">
-                                    <label class="control-label col-sm-3" for="progress-notes">
+                                    <label class="control-label col-sm-3" for="action-note">
                                         <xsl:value-of select="'Awaiting action from:'"/>
                                     </label>
                                     <div class="col-sm-3">
@@ -912,7 +937,7 @@
                                 
                                 <!-- Target dates -->
                                 <xsl:variable name="target-dates" select="$translation-status/m:text/m:target-date"/>
-                                <xsl:variable name="actual-dates" select="$text/m:status-updates/m:status-update[@update eq 'translation-status']"/>
+                                <xsl:variable name="actual-dates" select="$text/m:status-updates/m:status-update[@type eq 'translation-status']"/>
                                 <div class="form-group">
                                     <label class="control-label col-sm-3 top-margin" for="text-note">
                                         <xsl:value-of select="'Target dates:'"/>
@@ -933,15 +958,15 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <xsl:for-each select="m:text-statuses/m:status[@target-date eq 'true']">
+                                                <xsl:for-each select="$response/m:text-statuses/m:status[@target-date eq 'true']">
                                                     
                                                     <xsl:variable name="status-id" select="@status-id"/>
                                                     <xsl:variable name="status-surpassed" select="@selected eq 'selected' or preceding-sibling::m:status[@selected eq 'selected']"/>
                                                     <xsl:variable name="target-date" select="$target-dates[@status-id eq $status-id][1]"/>
                                                     
-                                                    <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@value eq $status-id][last()] else ()"/>
-                                                    <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@date-time] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@date-time))"/>
-                                                    <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@date-time] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@date-time)))"/>
+                                                    <xsl:variable name="actual-date" select="if($status-surpassed) then $actual-dates[@status eq $status-id][last()] else ()"/>
+                                                    <xsl:variable name="target-date-hit" select="($target-date[@date-time] and $actual-date[@when] and xs:dateTime($target-date/@date-time) ge xs:dateTime($actual-date/@when))"/>
+                                                    <xsl:variable name="target-date-miss" select="($target-date[@date-time] and (xs:dateTime($target-date/@date-time) lt current-dateTime()) or ($actual-date[@when] and xs:dateTime($target-date/@date-time) lt xs:dateTime($actual-date/@when)))"/>
                                                     
                                                     <tr class="vertical-middle">
                                                         <td class="small">
@@ -979,8 +1004,8 @@
                                                         </td>
                                                         <td class="small">
                                                             <xsl:choose>
-                                                                <xsl:when test="$actual-date[@date-time]">
-                                                                    <xsl:value-of select="format-dateTime($actual-date/@date-time, '[D01] [MNn,*-3] [Y]')"/>
+                                                                <xsl:when test="$actual-date[@when]">
+                                                                    <xsl:value-of select="format-dateTime($actual-date/@when, '[D01] [MNn,*-3] [Y]')"/>
                                                                 </xsl:when>
                                                                 <xsl:when test="$target-date[@next eq 'true']">
                                                                     <xsl:choose>
@@ -1022,7 +1047,7 @@
                     <div class="center-vertical full-width">
                         <span>
                             <button type="submit" class="btn btn-primary pull-right">
-                                <xsl:if test="/m:response/m:text[@locked-by-user gt '']">
+                                <xsl:if test="$response/m:text[@locked-by-user gt '']">
                                     <xsl:attribute name="disabled" select="'disabled'"/>
                                 </xsl:if>
                                 <xsl:value-of select="'Update'"/>
@@ -1330,9 +1355,12 @@
         <xsl:param name="toh-key" as="xs:string"/>
         <xsl:param name="entities-sorted" as="element(m:entity)*"/>
         
-        <xsl:variable name="attribution-entity-id" select="$attribution/@ref ! replace(., '^eft:', '')"/>
-        
         <div class="row add-nodes-group sml-margin bottom">
+            
+            <input type="hidden">
+                <xsl:attribute name="name" select="concat('attribution-id-', $toh-key, '-', $attribution-index)"/>
+                <xsl:attribute name="value" select="$attribution/@xml:id"/>
+            </input>
             
             <input type="hidden">
                 <xsl:attribute name="name" select="concat('attribution-revision-', $toh-key, '-', $attribution-index)"/>
@@ -1357,7 +1385,7 @@
             
             <div class="col-sm-3">
                 
-                <xsl:variable name="entity" select="$entities/id($attribution-entity-id)"/>
+                <xsl:variable name="entity" select="key('entity-instance', $attribution/@xml:id, $root)/parent::m:entity[1]" as="element(m:entity)?"/>
                 <xsl:variable name="related-page" select="key('related-pages', $entity/m:instance/@id, $root)[1]"/>
                 <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)"/>
                 
@@ -1369,7 +1397,7 @@
                 <xsl:if test="$entity">
                     
                     <ul class="list-inline inline-dots small add-nodes-remove">
-
+                        
                         <li>
                             <xsl:choose>
                                 <xsl:when test="$related-page">
@@ -1391,7 +1419,7 @@
                                                 <xsl:attribute name="class" select="'label label-default'"/>
                                             </xsl:otherwise>
                                         </xsl:choose>
-                                        <xsl:value-of select="if($related-page/@status) then $related-page/@status else '0'"/>
+                                        <xsl:value-of select="$related-page/@status-group"/>
                                     </span>
                                 </xsl:when>
                                 <xsl:otherwise>
@@ -1430,7 +1458,7 @@
                     <xsl:for-each select="$entities-sorted">
                         <option>
                             <xsl:attribute name="value" select="@xml:id"/>
-                            <xsl:if test="@xml:id eq $attribution-entity-id">
+                            <xsl:if test="@xml:id eq $entity/@xml:id">
                                 <xsl:attribute name="selected" select="'selected'"/>
                             </xsl:if>
                             <xsl:value-of select="(m:label[@xml:lang eq 'en'], m:label[@xml:lang eq 'Sa-Ltn'], m:label)[1] ! lower-case(.)"/>

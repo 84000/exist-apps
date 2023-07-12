@@ -18,49 +18,48 @@ let $recent-notes :=
     let $text-id := tei-content:id($tei)
     (: get notes :)
     let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
-    let $notes := $fileDesc/tei:notesStmt/tei:note
+    let $change := $fileDesc/tei:revisionDesc/tei:change
     (: Get updates in given span :)
     let $start-time := current-dateTime() - xs:yearMonthDuration('P1M')
     let $end-time := current-dateTime()
-    let $notes-in-span :=
-        $notes
-            [@type eq "updated"]
-            [xs:dateTime(@date-time) ge $start-time]
-            [xs:dateTime(@date-time) le $end-time]
-    where $notes-in-span
+    let $changes-in-span :=
+        $change
+            [@when ! xs:dateTime(.) ge $start-time]
+            [@when ! xs:dateTime(.) le $end-time]
+    where $changes-in-span
     return
         element text {
             attribute text-id {tei-content:id($tei)},
-            attribute toh-str {translation:toh-str($fileDesc//tei:bibl[1])},
-            attribute status { tei-content:translation-status($tei) },
-            $notes-in-span
+            attribute toh-str {translation:toh-str($fileDesc//tei:bibl[@key][1])},
+            attribute status { tei-content:publication-status($tei) },
+            $changes-in-span
         }
 
 
 return (
     'New publications:',
     '-----------------',
-    for $text in $recent-notes[tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]]
+    for $text in $recent-notes[tei:change[@type eq 'translation-status'][@status = ('1', '1.a')]]
     return (
         '',
         'Toh ' || $text/@toh-str || ' (' || $text/@text-id || ')' ,
-        for $note in $text/tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]
-        order by $note/@date-time ! xs:dateTime(.) ascending
+        for $change in $text/tei:change[@type eq 'translation-status'][@status = ('1', '1.a')]
+        order by $change/@when ! xs:dateTime(.) ascending
         return
-            '- ' || 'Status ' || $note/@value || ' set by ' || $note/@user || ' on ' || format-dateTime($note/@date-time, '[Y0001]-[M01]-[D01]')
+            '- ' || 'Status ' || $change/@status || ' set by ' || $change/@who || ' on ' || $change/@when ! format-dateTime(., '[Y0001]-[M01]-[D01]')
     ),
     '',
     'New versions:',
     '-------------',
-    for $text in $recent-notes[@status = ('1', '1.a')][tei:note[@update eq 'text-version']]
+    for $text in $recent-notes[@status = ('1', '1.a')][tei:change[@type eq 'text-version']]
     return (
         '',
         'Toh ' || $text/@toh-str || ' (' || $text/@text-id || ')' ,
-        for $note in $text/tei:note[@update eq 'text-version']
-        order by $note/@date-time ! xs:dateTime(.) ascending
+        for $change in $text/tei:change[@type eq 'text-version']
+        order by $change/@when ! xs:dateTime(.) ascending
         return (
-            '- ' || 'Version ' || $note/@value || ' created by ' || $note/@user || ' on ' || format-dateTime($note/@date-time, '[Y0001]-[M01]-[D01]'),
-            '  ' || string-join($note/descendant::text() ! normalize-space(), '')
+            '- ' || 'Version ' || $change/@status || ' created by ' || $change/@who || ' on ' || format-dateTime($change/@when, '[Y0001]-[M01]-[D01]'),
+            '  ' || string-join($change/descendant::text() ! normalize-space(), '')
         )
     )
 )

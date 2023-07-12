@@ -32,7 +32,7 @@ declare function translations:files($publication-statuses as xs:string*) as elem
 
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
     
-        for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt[@status = $publication-statuses]/ancestor::tei:TEI
+        for $tei-availability in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt/tei:availability[@status = $publication-statuses]/ancestor::tei:TEI
             let $base-uri := base-uri($tei)
             let $file-name := util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8')
             order by $file-name
@@ -48,103 +48,13 @@ declare function translations:files($publication-statuses as xs:string*) as elem
     
 };
 
-declare function translations:summary($work as xs:string) as element(m:outline-summary) {
-    
-    let $tei := translations:work-tei($work)
-    
-    let $translated-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('translated')]/@status-id
-    let $in-translation-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('in-translation')]/@status-id
-    let $all-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'][@group = ('published','translated', 'in-translation')]/@status-id
-    
-    let $published-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translation:published-status-ids]]
-    let $translated-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $translated-statuses]]
-    let $in-translation-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $in-translation-statuses]]
-    let $commissioned-fileDesc := $tei/tei:teiHeader/tei:fileDesc[tei:publicationStmt[@status = $all-statuses]]
-    let $sponsorship-text-ids := sponsorship:text-ids('sponsored')
-    let $sponsored-fileDesc := $tei/tei:teiHeader/tei:fileDesc/id($sponsorship-text-ids)/ancestor::tei:fileDesc(:tei:publicationStmt[tei:idno/@xml:id = $sponsorship-text-ids]:)
-    
-    let $all-text-count := count($tei/tei:teiHeader/tei:fileDesc)
-    let $commissioned-text-count := count($commissioned-fileDesc)
-    let $not-started-text-count := $all-text-count - $commissioned-text-count
-    
-    let $all-text-page-count := sum($tei//tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.))
-    let $commissioned-text-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.))
-    let $not-started-text-page-count := $all-text-page-count - $commissioned-text-page-count
-    
-    let $all-toh-count := count($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl)
-    let $commissioned-toh-count := count($commissioned-fileDesc/tei:sourceDesc/tei:bibl)
-    let $not-started-toh-count := $all-toh-count - $commissioned-toh-count
-    
-    let $all-toh-page-count := sum($tei//tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
-    let $commissioned-toh-page-count := sum($commissioned-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.))
-    let $not-started-toh-page-count := $all-toh-page-count - $commissioned-toh-page-count
-    
-    (: Current the ekangyur doesn't represent the entire scope of Kangur pages we intend to translate, so we need to increase the totals :)
-    let $additional-pages := 
-        if($work eq $source:kangyur-work) then
-            $translations:total-kangyur-pages - $all-toh-page-count
-        else
-            0
-    
-    let $all-text-page-count := 
-        if($work eq $source:kangyur-work) then
-            $all-text-page-count + $additional-pages
-        else
-            $all-text-page-count
-            
-    let $all-toh-page-count := 
-        if($work eq $source:kangyur-work) then
-            $translations:total-kangyur-pages
-        else
-            $all-toh-page-count
-    
-    return 
-        <outline-summary xmlns="http://read.84000.co/ns/1.0" work="{ $work }">
-            <texts 
-                count="{ $all-text-count }" 
-                published="{ count($published-fileDesc) }" 
-                translated="{ count($translated-fileDesc) }" 
-                in-translation="{ count($in-translation-fileDesc) }" 
-                commissioned="{ $commissioned-text-count }" 
-                not-started="{ $not-started-text-count }"
-                sponsored="{ count($sponsored-fileDesc) }" >
-                <pages 
-                    count="{ $all-text-page-count }" 
-                    published="{ sum($published-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.)) }" 
-                    translated="{ sum($translated-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.)) }" 
-                    in-translation="{ sum($in-translation-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.)) }" 
-                    commissioned="{ $commissioned-text-page-count }" 
-                    not-started="{ $not-started-text-page-count }"
-                    sponsored="{ sum($sponsored-fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages ! common:integer(.)) }" />
-            </texts>
-            <tohs 
-                count="{ $all-toh-count }" 
-                published="{ count($published-fileDesc/tei:sourceDesc/tei:bibl) }" 
-                translated="{ count($translated-fileDesc/tei:sourceDesc/tei:bibl) }" 
-                in-translation="{ count($in-translation-fileDesc/tei:sourceDesc/tei:bibl) }" 
-                commissioned="{ $commissioned-toh-count }" 
-                not-started="{ $not-started-toh-count }"
-                sponsored="{ count($sponsored-fileDesc/tei:sourceDesc/tei:bibl) }" >
-                <pages 
-                    count="{ $all-toh-page-count }" 
-                    published="{ sum($published-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.)) }" 
-                    translated="{ sum($translated-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.)) }" 
-                    in-translation="{ sum($in-translation-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.)) }" 
-                    commissioned="{ $commissioned-toh-page-count }" 
-                    not-started="{ $not-started-toh-page-count }"
-                    sponsored="{ sum($sponsored-fileDesc/tei:sourceDesc/tei:bibl/tei:location/@count-pages ! common:integer(.)) }" />
-            </tohs>
-            
-        </outline-summary>
-};
-
 declare function translations:texts($status as xs:string*, $resource-ids as xs:string*, $sort as xs:string, $deduplicate as xs:string, $include-downloads as xs:string, $include-folios as xs:boolean) as element(m:texts) {
     
     let $teis := $tei-content:translations-collection//tei:TEI
     
     let $teis :=
         if(count($status[not(. = '')]) gt 0) then
-            $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
+            $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = $status]]
         else
             $teis
     
@@ -158,14 +68,14 @@ declare function translations:texts($status as xs:string*, $resource-ids as xs:s
     
     let $texts := 
         for $tei in $teis
-            let $translation-status-group := tei-content:translation-status-group($tei)
-            let $include-downloads := if ($include-downloads eq '' and $translation-status-group eq 'published') then 'all' else $include-downloads
+            let $publication-status-group := tei-content:publication-status-group($tei)
+            let $include-downloads := if ($include-downloads eq '' and $publication-status-group eq 'published') then 'all' else $include-downloads
             (: If $sort = 'persist' then sort based on the $resource-ids :)
         return
             if($deduplicate = ('text', 'sponsorship')) then
                 translations:filtered-text($tei, '', false(), $include-downloads, $include-folios)
             else
-                for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
                 return
                     translations:filtered-text($tei, $bibl/@key, false(), $include-downloads, $include-folios)
     
@@ -234,7 +144,7 @@ declare function translations:filtered-texts(
         or $toh-min gt 0
         or $status-date-start gt ''
         or $status-date-end gt ''
-        
+    
     return
         (: All tei in this section :)
         let $teis := translations:work-tei($work)
@@ -244,32 +154,33 @@ declare function translations:filtered-texts(
             (: Filter by status achieved date - NOTE: do not do normal status filter as status has a different function in this case :)
             if($status-date-start gt '' or $status-date-end gt '') then
                 for $tei in $teis 
-                    (: We must also weed out cases where the status goes backwards - therefore ignore statuses greater than the current :)
-                    let $tei-status := $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status
+                    (: We must also account for cases where the status goes backwards - therefore ignore statuses greater than the current :)
+                    let $tei-status := $tei//tei:publicationStmt/tei:availability/@status
                     let $tei-selected-status := $selected-statuses[@status-id eq $tei-status]
-                    let $tei-selected-valid-status := $selected-statuses[@selected eq 'selected'][@index ! xs:integer(.) le $tei-selected-status/@index ! xs:integer(.)]
+                    let $tei-selected-valid-status := $selected-statuses[@selected eq 'selected'][@index ! xs:integer(.) ge $tei-selected-status/@index ! xs:integer(.)]
                 where 
-                    $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note
-                        [@update eq 'translation-status']
-                        [if($status-date-start gt '') then (@date-time ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start))) else true()]
-                        [if($status-date-end gt '') then (@date-time ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end))) else true()]
-                        [if($selected-statuses[@selected eq 'selected']) then (@value = $tei-selected-valid-status/@status-id) else true()]
+                    $tei//tei:revisionDesc/tei:change
+                        [@type eq 'translation-status']
+                        [if($status-date-start gt '') then (@when ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start))) else true()]
+                        [if($status-date-end gt '') then (@when ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end))) else true()]
+                        [if($selected-statuses[@selected eq 'selected']) then (@status = $tei-selected-valid-status/@status-id) else true()]
                 return
                     $tei
             
             (: Filter by current status :)
-            else if($selected-statuses[@selected eq 'selected'] ) then
-                (
-                    (: Add tei with selected statuses :)
-                    let $selected-status-ids := $selected-statuses[@selected eq 'selected']/@status-id
-                    return
-                        $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $selected-status-ids]],
-                    
-                    (: If status 0 (not started) is selected then add also @status = '' and not(@status) :)
-                    if(functx:is-value-in-sequence('0', $status)) then
-                        $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = ('', '0') or not(@status)]]
-                    else ()
-                )
+            else if($selected-statuses[@selected eq 'selected'] ) then (
+                (: Add tei with selected statuses :)
+                let $selected-status-ids := $selected-statuses[@selected eq 'selected']/@status-id
+                return
+                    $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = $selected-status-ids]]
+                    | $teis[tei:teiHeader//tei:bibl[@type eq 'translation-blocks']/tei:citedRange[@status = $selected-status-ids]]
+                ,
+                
+                (: If status 0 (not started) is selected then add also @status = '' and not(@status) :)
+                if(functx:is-value-in-sequence('0', $status)) then
+                    $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = ('', '0') or not(@status)]]
+                else ()
+            )
                 
             else
                 $teis
@@ -287,7 +198,7 @@ declare function translations:filtered-texts(
                             if($sponsorship-status//m:cost) then
                                 $sponsorship-status//m:cost/@pages
                             else
-                                $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[1]/tei:location/@count-pages
+                                $tei//tei:sourceDesc/tei:bibl/tei:location[$work eq 'all' or @work eq $work][1]/@count-pages
                                 
                         where 
                             xs:integer($count-pages) ge $pages-min
@@ -297,8 +208,7 @@ declare function translations:filtered-texts(
                         $tei
                 else
                     $teis[
-                        tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
-                            [tei:location/@count-pages gt '0']/tei:location[@count-pages ! xs:integer(.) ge $pages-min][@count-pages ! xs:integer(.) le $pages-max]
+                        tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location[$work eq 'all' or @work eq $work][@count-pages ! xs:integer(.) ge $pages-min][@count-pages ! xs:integer(.) le $pages-max]
                     ]
             else
                 $teis
@@ -311,7 +221,7 @@ declare function translations:filtered-texts(
                 let $sponsorship-group-teis := $teis/id($sponsorship-group-text-ids)/self::tei:idno/ancestor::tei:TEI
                 return
                     $teis except $sponsorship-group-teis
-                    
+            
             (: With the selected sponsorship group :)
             else if($selected-sponsorship-group) then
                 let $sponsorship-group-text-ids := sponsorship:text-ids($selected-sponsorship-group/@id)
@@ -324,7 +234,7 @@ declare function translations:filtered-texts(
                 let $glosses-with-entities := $teis/id($instance-ids)
                 return 
                     $teis[tei:text/tei:back//tei:gloss[not(@mode eq 'surfeit')] except $glosses-with-entities]
-                
+            
             (: Has glossaries requiring attention :)
             else if($selected-entities-group eq 'entities-flagged-attention') then
                 let $instances-requiring-attention := $entities:entities//m:instance[m:flag/@type = 'requires-attention']
@@ -340,7 +250,7 @@ declare function translations:filtered-texts(
             if($toh-min gt 0) then
                 for $tei in $teis
                     let $toh-in-range :=
-                        for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                        for $toh-key in $tei//tei:sourceDesc/tei:bibl[tei:location[$work eq 'all' or @work eq $work]]/@key
                             let $toh := translation:toh($tei, $toh-key)
                             let $toh-number := $toh/@number ! xs:integer(.)
                         where $toh-number ge $toh-min and $toh-number le $toh-max
@@ -357,13 +267,13 @@ declare function translations:filtered-texts(
         (: Return result per Toh or per text :)
         let $texts := 
             for $tei in $teis
-                (: TO DO: This excludes you from downloading a pdf from a 2,2.a status :)
-                let $include-downloads := if (tei-content:translation-status-group($tei) eq 'published') then 'all' else ''
+                let $publication-status := tei-content:publication-status($tei)
+                let $include-downloads := if ($common:environment/m:render/m:status[@type eq 'translation'][@status-id eq $publication-status]) then 'all' else ''
             return
                 if($deduplicate = ('text', 'sponsorship')) then
                     translations:filtered-text($tei, '', $include-sponsors, $include-downloads, false())
                 else
-                    for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+                    for $bibl in $tei//tei:sourceDesc/tei:bibl[tei:location[$work eq 'all' or @work eq $work]]
                     return
                         translations:filtered-text($tei, $bibl/@key, $include-sponsors, $include-downloads, false())
         
@@ -457,16 +367,17 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute last-modified { tei-content:last-modified($tei) },
             attribute locked-by-user { tei-content:locked-by-user($tei) },
             attribute page-url { translation:canonical-html($toh/@key, $archive-path) },
-            attribute status { tei-content:translation-status($tei) },
-            attribute status-group { tei-content:translation-status-group($tei) },
+            attribute status { tei-content:publication-status($tei) },
+            attribute status-group { tei-content:publication-status-group($tei) },
             $toh,
             translation:titles($tei, $toh/@key),
             translation:title-variants($tei, $toh/@key),
             (:tei-content:source-bibl($tei, $toh-key),:)
             tei-content:source($tei, $toh-key),
-            translation:location($tei, $toh-key),
+            (:translation:location($tei, $toh-key),:)
             tei-content:ancestors($tei, $toh-key, 0),
             translation:publication($tei),
+            translation:publication-status($tei//tei:sourceDesc/tei:bibl[@key eq $toh/@key], ()),
             translation:contributors($tei, false()),
             translation:summary($tei, 'show', (), $lang),
             tei-content:status-updates($tei),
@@ -526,7 +437,7 @@ declare function translations:translation-status-texts($status as xs:string*) as
     
     <translation-status-texts xmlns="http://read.84000.co/ns/1.0">
     {
-        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $status]]
+        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = $status]]
             for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         return
             translations:filtered-text($tei, $toh-key, false(), '', false())
@@ -543,14 +454,15 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
             if($resource-ids = 'versioned') then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition[text()]]
             else if($resource-ids = 'translations') then
-                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[@status = $translation:marked-up-status-ids]]
+                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = $translation:marked-up-status-ids]]
             else if($resource-ids = 'placeholders') then
-                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt[not(@status = $translation:marked-up-status-ids)]][tei:editionStmt/tei:edition[text()]]]
+                $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[not(@status = $translation:marked-up-status-ids)]][tei:editionStmt/tei:edition[text()]]]
             else if(count($resource-ids) gt 0) then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]]
             else ()
         
         let $text-id := tei-content:id($tei)
+        let $publication-status := tei-content:publication-status($tei)
         where $text-id
         return
             element { QName('http://read.84000.co/ns/1.0', 'text') }{
@@ -558,7 +470,8 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                 attribute document-url { base-uri($tei) },
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
-                attribute translation-status { tei-content:translation-status($tei) },
+                attribute translation-status { $publication-status },(: Deprecate this attribute when on Distribution :)
+                attribute publication-status { $publication-status },
                 for $resource-id in 
                     if($resource-ids = ('versioned', 'translations', 'placeholders')) then
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
@@ -586,43 +499,53 @@ declare function translations:recent-updates() as element(m:recent-updates) {
             attribute end {$end-time},
         
             for $tei in $tei-content:translations-collection//tei:TEI
-            (: get notes :)
+            
+            (: get changes :)
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
-            let $notes := $fileDesc/tei:notesStmt/tei:note
-            let $translation-status := tei-content:translation-status($tei)
+            let $changes := $fileDesc/tei:revisionDesc/tei:change
+            let $publication-status := tei-content:publication-status($tei)
             
-            let $notes-in-span := $notes[@type eq "updated"][xs:dateTime(@date-time) ge $start-time][xs:dateTime(@date-time) le $end-time]
+            let $changes-in-span := $changes[xs:dateTime(@when) ge $start-time][xs:dateTime(@when) le $end-time]
             
-            where 
-                $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
-                or ($translation-status = ('1', '1.a') and $notes-in-span[@update eq 'text-version'])
+            let $recent-update-type :=
+                if($publication-status = ('1', '1.a') and $changes-in-span[@type eq 'translation-status'][@status = ('1', '1.a')]) then 
+                    'new-publication'
+                else if($publication-status = ('1', '1.a') and $changes-in-span[@type eq 'text-version']) then 
+                    'new-version'
+                else ()
+                
+            where $recent-update-type = ('new-publication', 'new-version')
             
             return 
                 element { QName('http://read.84000.co/ns/1.0', 'text') }{
                     attribute id { tei-content:id($tei) }, 
                     attribute last-modified { tei-content:last-modified($tei) },
-                    attribute status { tei-content:translation-status($tei) },
-                    attribute status-group { tei-content:translation-status-group($tei) },
-                    attribute recent-update { if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then 'new-publication' else 'new-version' },
+                    attribute status { tei-content:publication-status($tei) },
+                    attribute status-group { tei-content:publication-status-group($tei) },
+                    attribute recent-update { $recent-update-type },
                     
                     translation:titles($tei, ()),
                     
-                    for $bibl in $fileDesc/tei:sourceDesc/tei:bibl
+                    for $bibl in $fileDesc/tei:sourceDesc/tei:bibl[@key]
                     return
                         translation:toh($tei, $bibl/@key)
                     ,
                     
-                    let $notes-in-span-sorted :=
-                        for $note in 
-                            if($notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]) then
-                                $notes-in-span[@update eq 'translation-status'][@value = ('1', '1.a')]
-                            else
-                                $notes-in-span[@update eq 'text-version']
-                        order by $note/@date-time ! xs:dateTime(.)
-                        return $note
-                        
+                    let $changes-in-span-display := (
+                        if($recent-update-type eq 'new-publication') then
+                            $changes-in-span[@type eq 'translation-status'][@status = ('1', '1.a')]
+                        else if($recent-update-type eq 'new-version') then
+                            $changes-in-span[@type eq 'text-version']
+                        else()
+                    )
+                    
+                    let $changes-in-span-sorted :=
+                        for $change in $changes-in-span-display
+                        order by $change/@date-time ! xs:dateTime(.)
+                        return $change
+                    
                     return
-                        $notes-in-span-sorted[last()]
+                        $changes-in-span-sorted[last()]
                         
                 }
         )
@@ -631,13 +554,33 @@ declare function translations:recent-updates() as element(m:recent-updates) {
 };
 
 declare function translations:texts-spreadsheet($response as element(m:response)) as element(m:spreadsheet-data) {
-
+    
+    let $text-statuses := $response/m:text-statuses/m:status
+    let $selected-statuses := $text-statuses[@selected eq 'selected']
+    let $status-date-start := $response/m:request/@target-date-start[not(. eq '')] ! xs:date(.) ! xs:dateTime(.)
+    let $status-date-end := $response/m:request/@target-date-end[not(. eq '')] ! xs:date(.) ! xs:dateTime(.)
+    let $target-date-type := $response/m:request/@target-date-type
+    
+    return
     element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
     
         attribute key { concat('84000-report-', format-dateTime(current-dateTime(), '[H01]-[m01]-[D01]-[M01]-[Y0001]'))},
         
         for $text in $response/m:texts/m:text
+        
         let $next-target := $response/m:translation-status/m:text[@text-id eq $text/@id]/m:target-date[@next eq 'true']
+        
+        let $text-status-index := $text-statuses[@status-id eq $text/@status]/@index ! xs:integer(.)
+        let $status-updates := $text/m:status-updates/m:status-update[@type eq 'translation-status'][empty($status-date-start) or @when ! xs:dateTime(.) ge $status-date-start][empty($status-date-end) or @when ! xs:dateTime(.) le $status-date-end][empty($selected-statuses) or @status = $selected-statuses[@index ! xs:integer(.) ge $text-status-index]/@status-id]
+        let $status-updates-block-ids := $status-updates/@target ! replace(., '^#', '')
+        
+        let $text-pages := $text/m:source/m:location/@count-pages ! xs:integer(.)
+        let $status-pages := 
+            if($selected-statuses and $target-date-type eq 'status-date' and (not(empty($status-date-start)) or not(empty($status-date-end)))) then
+                sum($text/m:publication-status[@block-id = ($status-updates-block-ids, $text/@id)]/@count-pages ! xs:integer(.))
+            else 
+                sum($text/m:publication-status[@status = $selected-statuses/@status-id]/@count-pages ! xs:integer(.))
+        
         order by
             $text/m:toh[1]/@number[. gt ''] ! xs:integer(.),
             $text/m:toh[1]/@chapter-number[. gt ''] ! xs:integer(.)
@@ -657,14 +600,25 @@ declare function translations:texts-spreadsheet($response as element(m:response)
                 element Pages { 
                     attribute width { '10' },
                     attribute type { 'number' },
-                    $text/m:source/m:location/@count-pages/string() 
+                    if($status-pages) then
+                        $status-pages
+                    else
+                        $text-pages
                 },
                 element Title { 
                     attribute width { '80' },
                     $text/m:titles/m:title[1]/text() 
                 },
+                element Wylie_Title { 
+                    attribute width { '50' },
+                    $text/m:titles/m:title[@xml:lang eq 'Bo-Ltn'][1]/text() 
+                },
+                element Sanskrit_Title { 
+                    attribute width { '50' },
+                    $text/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][1]/text() 
+                },
                 element Team { 
-                    attribute width { '60' },
+                    attribute width { '50' },
                     $text/m:contributors/m:team[1]/m:label/text()
                 },
                 element Target { 

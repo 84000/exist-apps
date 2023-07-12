@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -197,11 +197,35 @@
                     </div>
                 </div>
                 
+                <!-- Pop-up for attestation types - an additional pop-up is required as initial will be in use for glossary  -->
+                <div id="popup-footer-attestation" class="fixed-footer collapse hidden-print">
+                    <div class="fix-height">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8">
+                                    <div class="data-container tei-parser">
+                                        <!-- Ajax data here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fixed-btn-container close-btn-container">
+                        <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Dual-view pop-up -->
                 <xsl:call-template name="dualview-popup"/>
                 
                 <!-- Contents fly-out -->
                 <div id="contents-sidebar" class="fixed-sidebar collapse width hidden-print">
+                    
+                    <xsl:variable name="text-id" select="m:translation/@id"/>
                     
                     <div class="fix-width">
                         <div class="sidebar-content">
@@ -222,7 +246,7 @@
                                     <xsl:value-of select="'Search this text'"/>
                                 </h4>
                                 <form action="/search.html" method="post" role="search" class="form-horizontal bottom-margin">
-                                    <input type="hidden" name="specified-text" value="{ m:translation/@id }"/>
+                                    <input type="hidden" name="specified-text" value="{ $text-id }"/>
                                     <div class="input-group">
                                         <input type="search" name="search" id="search" class="form-control" placeholder="Search" required="required" aria-label="Search text" value=""/>
                                         <span class="input-group-btn">
@@ -234,7 +258,7 @@
                                 </form>
                                 <hr/>
                                 
-                                <xsl:if test="m:translation/m:downloads/m:download[@type = ('pdf','epub'(:,'azw3':))]">
+                                <xsl:if test="m:translation/m:downloads/m:download[@type = ('pdf','epub')]">
                                     
                                     <h4>
                                         <xsl:value-of select="'Other ways to read'"/>
@@ -260,7 +284,7 @@
                                                 </tr>
                                             </xsl:if>
                                             
-                                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub'(:,'azw3':))]">
+                                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub')]">
                                                 <tr>
                                                     <td class="icon">
                                                         <a target="_blank">
@@ -272,6 +296,7 @@
                                                             <xsl:attribute name="href" select="@download-url"/>
                                                             <xsl:attribute name="download" select="@filename"/>
                                                             <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                                             <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                                             <xsl:call-template name="download-icon">
                                                                 <xsl:with-param name="type" select="@type"/>
@@ -288,6 +313,7 @@
                                                             <xsl:attribute name="href" select="@download-url"/>
                                                             <xsl:attribute name="download" select="@filename"/>
                                                             <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                                             <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                                             <xsl:call-template name="download-label">
                                                                 <xsl:with-param name="type" select="@type"/>
@@ -309,6 +335,7 @@
                                                             </xsl:attribute>
                                                             <xsl:attribute name="href" select="$app-href"/>
                                                             <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                                             <xsl:attribute name="target" select="'84000-comms'"/>
                                                             <xsl:call-template name="download-icon">
                                                                 <xsl:with-param name="type" select="'app'"/>
@@ -324,6 +351,7 @@
                                                             </xsl:attribute>
                                                             <xsl:attribute name="href" select="$app-href"/>
                                                             <xsl:attribute name="class" select="'log-click'"/>
+                                                            <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                                             <xsl:attribute name="target" select="'84000-comms'"/>
                                                             <xsl:call-template name="download-label">
                                                                 <xsl:with-param name="type" select="'app'"/>
@@ -357,132 +385,90 @@
                                 <hr/>
                             </xsl:if>
                             
-                            <h4>
-                                <xsl:value-of select="'How to cite this text'"/>
-                            </h4>
-                            <p class="small text-muted">
-                                <xsl:value-of select="'The following is an example of how to correctly cite this publication. '"/>
-                                <xsl:value-of select="'Links to specific passages can be derived by right-clicking on the milestones markers in the left-hand margin (e.g. s.1). The copied link address can replace the url below.'"/>
-                            </p>
-                            <p class="small break">
-                                <xsl:value-of select="concat(m:translation/m:publication/m:team[1]/m:label[1], ' (tr.). ')"/>
-                                <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
-                                <xsl:value-of select="'('"/>
-                                <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'], m:translation/m:titles/m:title[@xml:lang eq 'bo'])[1]">
-                                    <span>
-                                        <xsl:call-template name="class-attribute">
-                                            <xsl:with-param name="lang" select="@xml:lang"/>
-                                        </xsl:call-template>
-                                        <xsl:value-of select="."/>
-                                    </span>
-                                </xsl:for-each>
-                                <xsl:value-of select="concat(', ', m:translation/m:toh/m:full, '). ')"/>
-                                <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', m:translation/m:publication/m:edition/tei:date[1], ': ')"/>
-                                <br/>
-                                <xsl:value-of select="m:translation/@canonical-html"/>
-                            </p>
-                            <hr/>
+                            <xsl:if test="m:translation/@status = $render-status">
+                                <h4>
+                                    <xsl:value-of select="'How to cite this text'"/>
+                                </h4>
+                                <p class="small text-muted">
+                                    <xsl:value-of select="'The following is an example of how to correctly cite this publication. '"/>
+                                    <xsl:value-of select="'Links to specific passages can be derived by right-clicking on the milestones markers in the left-hand margin (e.g. s.1). The copied link address can replace the url below.'"/>
+                                </p>
+                                <p class="small break">
+                                    <xsl:value-of select="concat(m:translation/m:publication/m:team[1]/m:label[1], ' (tr.). ')"/>
+                                    <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
+                                    <xsl:value-of select="'('"/>
+                                    <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'], m:translation/m:titles/m:title[@xml:lang eq 'bo'])[1]">
+                                        <span>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="lang" select="@xml:lang"/>
+                                            </xsl:call-template>
+                                            <xsl:value-of select="."/>
+                                        </span>
+                                    </xsl:for-each>
+                                    <xsl:value-of select="concat(', ', m:translation/m:toh/m:full, '). ')"/>
+                                    <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', m:translation/m:publication/m:edition/tei:date[1], ': ')"/>
+                                    <br/>
+                                    <xsl:value-of select="m:translation/@canonical-html"/>
+                                </p>
+                                <hr/>
+                            </xsl:if>
                             
                             <h4>
-                                <xsl:value-of select="'Other links'"/>
+                                <xsl:value-of select="'Related links'"/>
                             </h4>
-                            <table class="contents-table bottom-margin">
-                                <tbody>
+                            <ul>
+                                <!-- Add a link to other texts by this author -->
+                                <xsl:for-each select="m:translation/m:source/m:attribution[@role eq 'author'][@xml:id]">
                                     
-                                    <tr>
-                                        <td class="icon">
-                                            <a target="84000-comms">
-                                                <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
-                                                <i class="fa fa-home"/>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a target="84000-comms">
-                                                <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
-                                                <xsl:value-of select="'84000 Homepage'"/>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                    <xsl:variable name="entity" select="key('entity-instance', @xml:id, $root)[1]/parent::m:entity" as="element(m:entity)?"/>
+                                    <xsl:variable name="kb-page" select="key('related-pages', $entity/m:instance[@type eq 'knowledgebase-article'][1]/@id, $root)[1]" as="element(m:page)?"/>
                                     
-                                    <tr>
-                                        <td class="icon">
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link('/', (), '', /m:response/@lang)"/>
-                                                <i class="fa fa-bookmark"/>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link('/', (), '', /m:response/@lang)"/>
-                                                <xsl:value-of select="'Reading Room Lobby'"/>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                    <xsl:if test="$kb-page">
+                                        <li>
+                                            <xsl:value-of select="'Other texts by '"/>
+                                            <xsl:call-template name="attribution-label">
+                                                <xsl:with-param name="attribution" select="."/>
+                                                <xsl:with-param name="entity" select="$entity"/>
+                                                <xsl:with-param name="page" select="$kb-page"/>
+                                            </xsl:call-template>
+                                        </li>
+                                    </xsl:if>
                                     
-                                    <tr>
-                                        <td class="icon">
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
-                                                <i class="fa fa-list"/>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
-                                                <xsl:value-of select="'Published Translations'"/>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    
-                                    <!-- Add a link to other texts by this author -->
-                                    <!--<xsl:for-each select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]">
-                                        <xsl:variable name="entity-id" select="replace(@ref, '^eft:', '')"/>
-                                        <xsl:variable name="entity" select="/m:response/m:entities/m:entity/id($entity-id)"/>
-                                        <xsl:variable name="page" select="$entity/m:instance[@type eq 'knowledgebase-article']/m:page"/>
-                                        <xsl:variable name="href" select="common:internal-link(concat('/knowledgebase/', $page/@kb-id, '.html'), (), '', /m:response/@lang)"/>
-                                        <tr>
-                                            <td class="icon">
-                                                <a>
-                                                    <xsl:attribute name="href" select="$href"/>
-                                                    <i class="fa fa-user"/>
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <ul class="list-inline inline-dots">
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="$href"/>
-                                                            <xsl:value-of select="'Other texts by '"/>
-                                                            <span>
-                                                                <xsl:call-template name="class-attribute">
-                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
-                                                                </xsl:call-template>
-                                                                <xsl:value-of select="normalize-space(text())"/> 
-                                                            </span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                    </xsl:for-each>-->
-                                    
-                                    <tr>
-                                        <td class="icon">
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
-                                                <i class="fa fa-search"/>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a>
-                                                <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
-                                                <xsl:value-of select="'Search the Reading Room'"/>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    
-                                </tbody>
-                            </table>
+                                </xsl:for-each>
+                                
+                                <li>
+                                    <xsl:variable name="section" select="$translation/m:parent"/>
+                                    <xsl:value-of select="'Other texts from '"/>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link(concat('/section/', $section/@id, '.html'), (), '', /m:response/@lang)"/>
+                                        <xsl:value-of select="$section/m:titles/m:title[@xml:lang eq 'en']"/>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
+                                        <xsl:value-of select="'Published Translations'"/>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
+                                        <xsl:value-of select="'Search the Collection'"/>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-link('/', (), '', /m:response/@lang)"/>
+                                        <xsl:value-of select="'Browse the Collection'"/>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a target="84000-comms">
+                                        <xsl:attribute name="href" select="common:homepage-link('', /m:response/@lang)"/>
+                                        <xsl:value-of select="'84000 Homepage'"/>
+                                    </a>
+                                </li>
+                            </ul>
                             
                             <a class="btn btn-danger" target="84000-donate">
                                 <xsl:attribute name="href">
@@ -520,7 +506,6 @@
  
         <!-- Pass the content to the page -->
         <xsl:call-template name="reading-room-page">
-            
             <xsl:with-param name="page-url" select="(m:translation/@canonical-html, '')[1]"/>
             <xsl:with-param name="page-class">
                 <xsl:value-of select="'reading-room'"/>
@@ -536,15 +521,12 @@
             <xsl:with-param name="additional-links">
                 
                 <!-- Add OPDS auto-discovery links for other formats -->
-                <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('epub',(:'azw3',:) 'pdf')]">
+                <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('epub', 'pdf')]">
                     <link rel="alternate">
                         <xsl:attribute name="href" select="@url"/>
                         <xsl:choose>
                             <xsl:when test="@type eq 'epub'">
                                 <xsl:attribute name="type" select="'application/epub+zip'"/>
-                            </xsl:when>
-                            <xsl:when test="@type eq 'azw3'">
-                                <xsl:attribute name="type" select="'application/vnd.amazon.mobi8-ebook'"/>
                             </xsl:when>
                             <xsl:when test="@type eq 'pdf'">
                                 <xsl:attribute name="type" select="'application/pdf'"/>
@@ -558,6 +540,7 @@
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
                 
             </xsl:with-param>
+            <xsl:with-param name="text-id" select="m:translation/@id"/>
         </xsl:call-template>
         
     </xsl:template>
@@ -567,7 +550,7 @@
         <xsl:param name="part" as="node()*"/>
         <xsl:param name="css-classes" as="xs:string" select="''"/>
         
-        <!-- 'hide' allows the inclusion of content in the xml structure without outputting -->
+        <!-- 'hide' allows the inclusion of content in the xml structure without outputting, also skip 'unpublished' -->
         <xsl:if test="$part[@content-status = ('complete', 'preview', 'passage')]">
             <div class="row">
                 <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
@@ -654,6 +637,7 @@
                                 
                                 <xsl:with-param name="section-id" select="$part/@id"/>
                                 <xsl:with-param name="log-click" select="true()"/>
+                                <xsl:with-param name="log-click-text-id" select="$text-id"/>
                                 
                                 <!-- Provide complete navigation links so they will be followed by crawlers and right-click works -->
                                 <xsl:with-param name="href" select="concat('/translation/', $toh-key, '.html?part=', $part/@id, m:view-mode-parameter(()), m:archive-path-parameter(), '#', $part/@id)"/>
@@ -769,7 +753,7 @@
                             </div>
                         </xsl:if>
                         
-                        <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role eq 'author'][@ref]"/>
+                        <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role eq 'author'][@xml:id]"/>
                         <xsl:if test="$sourceAuthors">
                             <div class="panel-row">
                                 <div class="small text-muted">
@@ -803,7 +787,7 @@
                     <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
                     <xsl:for-each select="$supplementaryRoles">
                         <xsl:variable name="supplementaryRole" select="."/>
-                        <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@ref]"/>
+                        <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@xml:id]"/>
                         <xsl:if test="$roleAttributions">
                             <div class="top-margin">
                                 <div class="small text-muted">
@@ -812,7 +796,7 @@
                                             <xsl:value-of select="'Revision'"/>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:value-of select="'Tibetan translation'"/>
+                                            <xsl:value-of select="'Translated into Tibetan by'"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </div>
@@ -865,14 +849,26 @@
                         </img>
                         
                         <div id="toh">
+                            
                             <h4>
+                                
                                 <xsl:apply-templates select="m:translation/m:source/m:toh"/>
+                                
+                                <xsl:if test="m:translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
+                                    <br/>
+                                    <span class="label label-info">
+                                        <xsl:value-of select="'This is a partial publication only including completed chapters'"/>
+                                    </span>
+                                </xsl:if>
+                                
                             </h4>
+                            
                             <xsl:if test="m:translation/m:source[m:scope//text()]">
                                 <p id="location">
                                     <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
                                 </p>
                             </xsl:if>
+                            
                         </div>
                         
                     </xsl:if>
@@ -960,7 +956,7 @@
                     </xsl:if>
                     
                     <!-- Additional front-matter -->
-                    <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf',(:'epub',:)'azw3')]]">
+                    <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf','epub')]]">
                         
                         <!-- Download options -->
                         <nav class="download-options hidden-print text-center bottom-margin" aria-label="download-options-header">
@@ -969,7 +965,7 @@
                                 <xsl:value-of select="'Options for downloading this publication'"/>
                             </header>
                             
-                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub'(:,'azw3':))]">
+                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub')]">
                                 <a target="_blank">
                                     <xsl:attribute name="title">
                                         <xsl:call-template name="download-label">
@@ -979,7 +975,7 @@
                                     <xsl:attribute name="href" select="@download-url"/>
                                     <xsl:attribute name="download" select="@filename"/>
                                     <xsl:attribute name="class" select="'btn-round log-click'"/>
-                                    <xsl:if test="@type = ('pdf', 'epub', 'azw3')">
+                                    <xsl:if test="@type = ('pdf', 'epub')">
                                         <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $toh-key), '#dana-description', /m:response/@lang)"/>
                                     </xsl:if>
                                     <xsl:call-template name="download-icon">

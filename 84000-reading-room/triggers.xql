@@ -3,6 +3,7 @@ xquery version "3.0";
 module namespace trigger="http://exist-db.org/xquery/trigger";
 
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m="http://read.84000.co/ns/1.0";
 
@@ -12,39 +13,99 @@ import module namespace translation="http://read.84000.co/translation" at "modul
 import module namespace glossary="http://read.84000.co/glossary" at "modules/glossary.xql";
 import module namespace functx = "http://www.functx.com";
 
+(: Log other events too :)
+declare function trigger:before-create-collection($uri as xs:anyURI) {
+    local:log-event("before", "create", "collection", $uri)
+};
+
+declare function trigger:after-create-collection($uri as xs:anyURI) {
+    local:log-event("after", "create", "collection", $uri)
+};
+
+declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-delete-collection($uri as xs:anyURI) {
+    local:log-event("before", "delete", "collection", $uri)
+};
+
+declare function trigger:after-delete-collection($uri as xs:anyURI) {
+    local:log-event("after", "delete", "collection", $uri)
+};
+
+declare function trigger:before-create-document($uri as xs:anyURI) {
+    local:log-event("before", "create", "document", $uri)
+};
+
+declare function trigger:before-update-document($uri as xs:anyURI) {
+    local:log-event("before", "update", "document", $uri)
+};
+
+declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+declare function trigger:before-delete-document($uri as xs:anyURI) {
+    local:log-event("before", "delete", "document", $uri)
+};
+
+declare function trigger:after-delete-document($uri as xs:anyURI) {
+    local:log-event("after", "delete", "document", $uri)
+};
+
+(: Process document after update or create :)
 declare function trigger:after-update-document($uri as xs:anyURI) {
-    
-    (:local:log-event("after", "update", "document", $uri),:)
+
+    local:log-event("after", "update", "document", $uri),
     local:after-update-document-functions(doc($uri))
     
 };
 
 declare function trigger:after-create-document($uri as xs:anyURI) {
     
-    (:local:log-event("after", "create", "document", $uri),:)
+    local:log-event("after", "create", "document", $uri),
     local:after-update-document-functions(doc($uri))
     
 };
 
 declare function local:after-update-document-functions($doc) {
     
+     util:log('info', 'after-update-document-functions'),
+        
     (# exist:batch-transaction #) {
         
-        if($doc[tei:TEI/tei:teiHeader/tei:fileDesc[@type = "section"]/tei:publicationStmt/tei:idno[@xml:id]]) then (
-        
-            local:permanent-ids($doc),
-            local:temporary-ids($doc),
-            local:last-updated($doc)
-            
-        )
-        else if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
             
             local:permanent-ids($doc),
             (:local:remove-temporary-ids($doc),:)
             local:temporary-ids($doc),
             local:glossary-bo($doc, false()),
-            (:local:glossary-tidy($doc, false()),:)
-            local:last-updated($doc)
+            util:log('info', 'trigger-completed')
             
         )
         else ()
@@ -57,38 +118,46 @@ declare function local:permanent-ids($doc) {
     (: Add xml:ids to linkable nodes :)
     (: This enables persistent bookmarks :)
     
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    where $translation-id
+    let $tei := $doc/tei:TEI
+    let $text-id := tei-content:id($tei)
+    where $text-id
     return (
     
-        util:log('info', concat('trigger-permanent-ids:', $translation-id)),
+        util:log('info', concat('trigger-permanent-ids:', $text-id)),
     
         let $elements := (
-            $doc//tei:text//tei:milestone
-            | $doc//tei:text//tei:note
-            | $doc//tei:text//tei:ref[@type = ('folio', 'volume')]
-            (:| $doc//tei:text//tei:q[ancestor-or-self::*/@ref]:)
-            | $doc//tei:text//tei:ptr[@type eq 'quote-ref'][@target][ancestor::tei:q]
-            | $doc//tei:div[@type eq 'notes']//tei:item
-            | $doc//tei:div[@type eq 'listBibl']//tei:bibl
-            | $doc//tei:div[@type eq 'glossary']//tei:gloss
+            $tei//tei:text//tei:milestone
+            | $tei//tei:text//tei:note
+            | $tei//tei:text//tei:ref[@type = ('folio', 'volume')]
+            | $tei//tei:text//tei:ptr[@type eq 'quote-ref'][@target][ancestor::tei:q]
+            | $tei//tei:div[@type eq 'notes']//tei:item
+            | $tei//tei:div[@type eq 'listBibl']//tei:bibl
+            | $tei//tei:div[@type eq 'glossary']//tei:gloss
+            | $tei//tei:titleStmt/tei:author
+            | $tei//tei:titleStmt/tei:editor
+            | $tei//tei:titleStmt/tei:consultant
+            | $tei//tei:titleStmt/tei:sponsor
+            | $tei//tei:sourceDesc/tei:bibl/tei:author
+            | $tei//tei:sourceDesc/tei:bibl/tei:editor
+            | $tei//tei:revisionDesc/tei:change
+            (:| $tei//tei:sourceDesc/tei:bibl/tei:citedRange - add these manually:)
         )
         
         (: Add any missing @xml:ids :)
         let $elements-missing-id := $elements[not(@xml:id) or @xml:id eq '']
         
         where $elements-missing-id
-            let $max-id := max($elements/@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
+            let $max-id := max($tei//@xml:id ! substring-after(., concat($text-id, '-')) ! tokenize(., '-')[1][functx:is-a-number(.)] ! common:integer(.))
             for $element at $index in $elements-missing-id
-                let $new-id := concat($translation-id, '-', xs:string(sum(($max-id, $index))))
+                let $new-id := concat($text-id, '-', xs:string(sum(($max-id, $index))))
             return
                 update insert attribute xml:id { $new-id } into $element
         ,
         
         (: If any parts are missing a @xml:id then re-calculate all :)
-        let $part-missing-id := $doc//tei:text//tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')][not(@xml:id) or @xml:id eq '']
+        let $part-missing-id := $tei//tei:text//tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')][not(@xml:id) or @xml:id eq '']
         where $part-missing-id
-            for $part in $doc//tei:text//tei:div[@type][@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
+            for $part in $tei//tei:text//tei:div[@type][@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
             
             (: Get the base type - except for translation :)
             let $base-type := $part/ancestor::tei:div[not(@type eq 'translation')][last()]/@type
@@ -105,7 +174,7 @@ declare function local:permanent-ids($doc) {
                 )
             
             (: Join the elements into an id :)
-            let $part-id := string-join(($translation-id, ($base-type, $part/@type)[1], $part/@xml:lang, $part-indexes), '-')
+            let $part-id := string-join(($text-id, ($base-type, $part/@type)[1], $part/@xml:lang, $part-indexes), '-')
             return
                 update insert attribute xml:id { $part-id } into $part
         
@@ -114,13 +183,13 @@ declare function local:permanent-ids($doc) {
 
 declare function local:temporary-ids($doc) {
 
-    (: Add temporary ids to searchable nodes with no id :)
-    (: This allows the search to link through to this block of text :)
+    (: Add temporary ids to content nodes :)
+    (: This allows enables the TEI editor functionality :)
     (: These only need to persist for a request/response cycle:)
-    (: Copy/pasting elements can introduce duplicates and redundancy so this sorts those out too :)
+    (: Copy/pasting elements can introduce duplicates and redundancy so this should resolve those :)
     
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    where $translation-id
+    let $text-id := tei-content:id($doc/tei:TEI)
+    where $text-id
 
     (: 
         TO DO: replace this with logic
@@ -136,7 +205,7 @@ declare function local:temporary-ids($doc) {
         $doc//tei:text//tei:p[not(parent::tei:gloss)]
         | $doc//tei:text//tei:label[not(parent::tei:p)]
         | $doc//tei:text//tei:table
-        | $doc//tei:text//tei:head[not(parent::tei:table)]
+        | $doc//tei:text//tei:head[not(parent::tei:table)][not(@type eq 'translation')]
         | $doc//tei:text//tei:lg
         | $doc//tei:text//tei:item[parent::tei:list[not(@type = ('abbreviations','glossary'))]][matches(text(), '[\p{L}\p{N}]+', 'i')]
         | $doc//tei:text//tei:ab
@@ -161,7 +230,7 @@ declare function local:temporary-ids($doc) {
     
     return (
     
-        util:log('info', concat('trigger-temporary-ids:', $translation-id)),
+        util:log('info', concat('trigger-temporary-ids:', $text-id)),
         
         (: Elements to update :)
         for $element at $index in $tid-elements-to-update[not(ancestor::tei:note)][not(ancestor::tei:orig)]
@@ -181,11 +250,11 @@ declare function local:remove-temporary-ids($doc) {
 
     (: Remove ids :)
     
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    where $translation-id
+    let $text-id := tei-content:id($doc/tei:TEI)
+    where $text-id
     return (
     
-        util:log('info', concat('trigger-remove-temporary-ids:', $translation-id)),
+        util:log('info', concat('trigger-remove-temporary-ids:', $text-id)),
     
         for $tid in $doc//tei:text//@tid
         return
@@ -194,187 +263,54 @@ declare function local:remove-temporary-ids($doc) {
         
 };
 
-declare function local:last-updated($doc) {
-
-    (: Set last updated note :)
-    
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    where $translation-id
-    return (
-    
-        util:log('info', concat('trigger-last-updated:', $translation-id)),
-    
-        let $notesStmt := $doc//tei:teiHeader/tei:fileDesc/tei:notesStmt
-        let $note := 
-            element { QName('http://www.tei-c.org/ns/1.0', 'note') }{
-                attribute type {'lastUpdated'},
-                attribute date-time { current-dateTime() },
-                attribute user { common:user-name() },
-                text { format-dateTime(current-dateTime(), '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]') }
-            }
-        
-        return
-            if(not($notesStmt)) then 
-                update insert 
-                    element { QName('http://www.tei-c.org/ns/1.0', 'notesStmt') }{
-                        $note
-                    }
-                following $doc//tei:teiHeader/tei:fileDesc/tei:sourceDesc
-            else if (not($notesStmt/tei:note[@type eq 'lastUpdated'])) then 
-                update insert $note into $notesStmt
-            else
-                update replace $notesStmt/tei:note[@type eq 'lastUpdated'] with $note
-                
-    )
-};
-
 declare function local:glossary-bo($doc, $do-all as xs:boolean) {
 
     (: Convert bo-ltn to bo term for glossary items :)
-    
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    where $translation-id
+    let $text-id := tei-content:id($doc/tei:TEI)
+    let $glosses := 
+        if($do-all) then
+            $doc//tei:div[@type eq 'glossary']//tei:gloss
+        else 
+            $doc//tei:div[@type eq 'glossary']//tei:gloss[tei:term[@xml:lang eq 'Bo-Ltn'][not(@n eq (following-sibling::tei:term[1][@xml:lang eq 'bo']/@n, '0')[1])]]
+            
+    where $text-id
     return (
     
-        util:log('info', concat('trigger-glossary-bo:', $translation-id)),
-    
-        let $glosses := 
-            if($do-all) then
-                $doc//tei:div[@type eq 'glossary']//tei:gloss
-            else
-                $doc//tei:div[@type eq 'glossary']//tei:gloss[not(count(tei:term[@xml:lang eq 'bo']) eq count(tei:term[@xml:lang eq 'Bo-Ltn']))]
+        util:log('info', concat('trigger-glossary-bo: ', $text-id, ' (', count($glosses), ' updates)')),
         
+        (: Check for glosses with a Bo-Ltn term that doesn't have a bo equivalent :)
         for $gloss in $glosses
         return (
-            (: Delete existing :)
-            update delete $gloss/tei:term[@xml:lang = 'bo'],
+        
+            (: Remove existing Tibetan :)
+            update delete $gloss/tei:term[@xml:lang eq 'bo']/preceding-sibling::node()[1][. instance of text()],
+            update delete $gloss/tei:term[@xml:lang eq 'bo'],
             
-            (: Insert new :)
-            for $bo-ltn-term in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
+            (: Loop through all Wylie terms to get an index :)
+            for $term-bo-ltn at $index in $gloss/tei:term[@xml:lang = 'Bo-Ltn'][normalize-space(text())]
             
-                let $bo-term := 
-                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                        attribute xml:lang { 'bo' },
-                        $bo-ltn-term/@type,
-                        text { common:bo-term($bo-ltn-term/text()) } 
-                    }
+            let $term-bo := 
+                element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
+                    attribute xml:lang { 'bo' },
+                    $term-bo-ltn/@type,
+                    attribute n { $index },
+                    $term-bo-ltn/@status,
+                    text { $term-bo-ltn/text() ! normalize-unicode(.) ! normalize-space(.) ! common:bo-term(.) } 
+                }
             
-            return
-                update insert (text{ common:ws(7) }, $bo-term) following $bo-ltn-term
+            return (
+                
+                (: Update @n in Wylie :)
+                if($term-bo-ltn[not(@n ! xs:integer(.) eq $index)]) then
+                    update insert attribute n { $index } into $term-bo-ltn
+                else (),
+                
+                (: Insert correct Tibetan :)
+                update insert (text{ common:ws(7) }, $term-bo) following $term-bo-ltn
+                
+            )
+            
         )
-   )
-};
-
-declare function local:glossary-tidy($doc, $do-all as xs:boolean) {
-
-    (: 
-        Temporary function for migration to 2.19.0
-        Migrates glossary entries to new format
-    :)
-    
-    let $translation-id := tei-content:id($doc/tei:TEI)
-    where $translation-id
-    return (
-    
-        util:log('info', concat('trigger-glossary-tidy:', $translation-id)),
-    
-        for $gloss in $doc//tei:div[@type eq 'glossary']//tei:gloss
-        
-        let $skt-text := $gloss/tei:term[@xml:lang eq 'Sa-Ltn']/text()
-        let $skt-text-normalized := $skt-text ! normalize-unicode(lower-case(.))
-        
-        where 
-            $do-all
-            (: Check for new Wylie strings to be transliterated :)
-            or not(count($gloss/tei:term[@xml:lang eq 'bo']) eq count($gloss/tei:term[@xml:lang eq 'Bo-Ltn']))
-            (: Check for Sanskrit terms to be normalized :)
-            or not($skt-text = $skt-text-normalized)
-            (: Check for terms without types :)
-            or $gloss/tei:term[not(@type = ('translation','source','alternative','definition'))]
-        
-        let $new-gloss :=
-            element { QName('http://www.tei-c.org/ns/1.0','gloss') } {
-                
-                (: Copy gloss attributes :)
-                $gloss/@*,
-                
-                (: Translation :)
-                for $term in ($gloss/tei:term[not(@type)][not(@xml:lang)] | $gloss/tei:term[@type eq 'translation'])
-                return (
-                    text{ common:ws(7) },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                        attribute type { 'translation' },
-                        $term/@xml:lang,
-                        text { string-join($term/text()) ! normalize-space(.) }
-                    }
-                ),
-                
-                (: Sanskrit :)
-                for $term in $gloss/tei:term[@xml:lang eq 'Sa-Ltn'][not(@type) or @type = ('source','sourceAttested','semanticReconstruction','transliterationReconstruction')]
-                let $sub-type := $term/@type[. = ('sourceAttested','semanticReconstruction','transliterationReconstruction')]
-                return (
-                    text{ common:ws(7) },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                        attribute type { 'source' },
-                        attribute xml:lang { 'Sa-Ltn' },
-                        if($sub-type) then
-                            attribute subtype { $sub-type/string() }
-                        else ()
-                        ,
-                        text { string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
-                    }
-                ),
-                
-                (: Tibetan :)
-                for $term in $gloss/tei:term[not(@type) or @type eq 'source'][@xml:lang eq 'Bo-Ltn']
-                let $term-bo-ltn := string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.)
-                return (
-                    text{ common:ws(7) },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                        attribute type { 'source' },
-                        attribute xml:lang { 'Bo-Ltn' },
-                        text { $term-bo-ltn }
-                    },
-                    text{ common:ws(7) },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                        attribute type { 'source' },
-                        attribute xml:lang { 'bo' },
-                        text { common:bo-term($term-bo-ltn) }
-                        
-                    }
-                ),
-                
-                (: Other source terms :)
-                for $term in $gloss/tei:term[not(@type) or @type eq 'source'][@xml:lang][not(@xml:lang = ('Sa-Ltn','Bo-Ltn','bo'))]
-                return(
-                    text{ common:ws(7) },
-                    element { QName('http://www.tei-c.org/ns/1.0', 'term') } {
-                        attribute type { 'source' },
-                        $term/@xml:lang,
-                        text { string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
-                    }
-                ),
-                
-                (: Alternatives and definitions :)
-                for $term in $gloss/tei:term[@type][not(@type = ('translation','source','sourceAttested','semanticReconstruction','transliterationReconstruction'))]
-                return (
-                    text{ common:ws(7) },
-                    $term
-                ),
-                
-                (: Retain comments :)
-                for $comment in $gloss/comment()
-                return (
-                    text{ common:ws(7) },
-                    $comment
-                ),
-                
-                (: Whitespace :)
-                text{ common:ws(6) }
-                
-            }
-            return
-                update replace $gloss with $new-gloss
    )
 };
 
@@ -395,10 +331,11 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
         update insert (
             common:ws(1),
             <trigger xmlns="http://read.84000.co/ns/1.0" 
-                event="{string-join(($type, $event, $object-type), "-")}" 
-                uri="{$uri}" 
-                timestamp="{current-dateTime()}" 
+                event="{ string-join(($type, $event, $object-type), "-") }" 
+                uri="{ $uri }" 
+                timestamp="{ current-dateTime() }" 
                 user="{ common:user-name() }"/>
         )
         into $log
 };
+

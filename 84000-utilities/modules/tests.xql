@@ -40,8 +40,8 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
         for $tei in $selected-translations
         
         let $text-id := tei-content:id($tei)
-        let $text-status := tei-content:translation-status($tei)
-        let $text-status-group := tei-content:translation-status-group($tei)
+        let $text-status := tei-content:publication-status($tei)
+        let $text-status-group := tei-content:publication-status-group($tei)
         let $test-validate-schema := tests:validate-schema($tei, $schema)
         let $test-duplicate-ids := tests:duplicate-ids($tei)
         let $test-scoped-ids := tests:scoped-ids($tei)
@@ -585,7 +585,7 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as document-nod
     let $glossary-count-tei := count($tei//tei:back/tei:div[@type='glossary']//tei:gloss[not(@mode eq 'surfeit')])
     let $glossary-count-html := count($html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')])
     
-    let $tei-terms-raw := $tei//tei:back/tei:div[@type='glossary']//tei:gloss[@xml:id][not(@mode eq 'surfeit')]/tei:term[not(@type = 'definition')][not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(string-join(data(), ''))](:[not(tei:ptr)]:)
+    let $tei-terms-raw := $tei//tei:back//tei:gloss[@xml:id][not(@mode eq 'surfeit')]/tei:term[not(@xml:lang) or @xml:lang = ('Sa-Ltn', 'bo', 'Bo-Ltn', 'en')][normalize-space(string-join(descendant::text(), ''))](:[not(tei:ptr)]:)
     let $empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'))
     
     let $tei-terms := (
@@ -594,10 +594,10 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as document-nod
     )
     
     let $html-term-elements := 
-        $html//*[@id eq 'glossary']/*[common:contains-class(@class, 'glossary-item')]//*[common:contains-class(@class, 'term')][normalize-space(string-join(data(), ''))](:[not(xhtml:a[common:contains-class(@class, 'pointer')])]:)
+        $html//xhtml:div[common:contains-class(@class, 'glossary-item')]//*[common:contains-class(@class, 'term')][normalize-space(string-join(descendant::text(), ''))](:[not(xhtml:a[common:contains-class(@class, 'pointer')])]:)
     
     let $html-terms := 
-        $html-term-elements[not(. = $empty-term-placeholders)] ! data(.) (:! tokenize(., '·'):) ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz') ! lower-case(.) ! tests:normalize-whitespace(.)
+        $html-term-elements[not(. = $empty-term-placeholders)] ! normalize-space(string-join(descendant::text(), '')) (:! tokenize(., '·'):) ! translate(., 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ', 'abcdefghijklmnopqrstuvwxyz') ! lower-case(.) ! tests:normalize-whitespace(.)
     
     let $tei-terms-not-found := $tei-terms[not(. = $html-terms)]
     let $html-terms-not-found := $html-terms[not(. = $tei-terms)]
@@ -608,8 +608,8 @@ declare function tests:glossary($tei as element(tei:TEI)*, $html as document-nod
             pass="{ 
                 if(
                     $glossary-count-html > 0 
-                    and $glossary-count-html = $glossary-count-tei 
-                    and count($html-terms) = count($tei-terms) 
+                    and $glossary-count-html eq $glossary-count-tei 
+                    and count($html-terms) eq count($tei-terms) 
                     and (count($tei-terms-not-found) + count($html-terms-not-found)) = 0
                 ) then 1 else 0 
             }">

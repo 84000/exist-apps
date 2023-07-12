@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Indent nested sections -->
     <xsl:template name="indent">
@@ -8,7 +8,7 @@
         <xsl:param name="content"/>
         <span class="indent">
             <xsl:choose>
-                <xsl:when test="$counter eq $finish">
+                <xsl:when test="$counter ge $finish">
                     <xsl:copy-of select="$content"/>
                 </xsl:when>
                 <xsl:otherwise>
@@ -29,6 +29,7 @@
         <xsl:param name="href" as="xs:string" required="true"/>
         <xsl:param name="href-override" as="xs:string?"/>
         <xsl:param name="log-click" as="xs:boolean?"/>
+        <xsl:param name="log-click-text-id" as="xs:string?"/>
         
         <!-- Expand -->
         <a target="_self" title="Read this section">
@@ -44,6 +45,10 @@
                     <xsl:value-of select="' log-click'"/>
                 </xsl:if>
             </xsl:attribute>
+            
+            <xsl:if test="$log-click and $log-click-text-id gt ''">
+                <xsl:attribute name="data-log-click-text-id" select="$log-click-text-id"/>
+            </xsl:if>
             
             <span class="btn-round">
                 <i class="fa fa-angle-down"/>
@@ -113,7 +118,7 @@
                 </xsl:if>
             </xsl:attribute>
             
-            <div role="tab">
+            <div role="tab" class="expand-item-tab">
                 
                 <xsl:attribute name="id" select="concat('expand-item-', $id, '-heading')"/>
                 

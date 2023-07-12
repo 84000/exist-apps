@@ -16,8 +16,8 @@ declare function local:linked-text($tei as element(tei:TEI)) as element(m:text) 
         attribute id { tei-content:id($tei) },
         attribute document-url { base-uri($tei) },
         attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
-        attribute status { tei-content:translation-status($tei) },
-        attribute status-group { tei-content:translation-status-group($tei) },
+        attribute status { tei-content:publication-status($tei) },
+        attribute status-group { tei-content:publication-status-group($tei) },
         
         translation:titles($tei, ()),
         translation:toh($tei, ''),
@@ -33,8 +33,8 @@ declare function local:linked-text($tei as element(tei:TEI)) as element(m:text) 
                         attribute id { tei-content:id($target-tei) },
                         attribute document-url { base-uri($target-tei) },
                         attribute file-name { util:unescape-uri(replace(base-uri($target-tei), ".+/(.+)$", "$1"), 'UTF-8') },
-                        attribute status { tei-content:translation-status($target-tei) },
-                        attribute status-group { tei-content:translation-status-group($target-tei) },
+                        attribute status { tei-content:publication-status($target-tei) },
+                        attribute status-group { tei-content:publication-status-group($target-tei) },
                         
                         translation:titles($target-tei, $link/@target),
                         translation:toh($target-tei, $link/@target)

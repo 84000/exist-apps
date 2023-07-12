@@ -28,7 +28,7 @@ declare function local:results($results as element()*) as element()* {
                         element { 'text' } {
                             attribute id { $bibl/m:toh/@key },
                             attribute canonical-html { $bibl/@canonical-html },
-                            attribute translation-status { $tei/@translation-status-group },
+                            attribute translation-status { $tei/@status-group },
                             eft-json:titles($tei/m:titles/m:title),
                             $bibl/m:toh,
                             eft-json:parent-sections($bibl/m:parent)

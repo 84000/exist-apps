@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -12,51 +12,29 @@
                 <xsl:with-param name="active-tab" select="@model"/>
                 <xsl:with-param name="tab-content">
                     
-                    <!-- Kangyur summary -->
-                    <div class="row">
-                        <div class="col-sm-9">
-                            
-                            <h4>Kangyur Translation Status</h4>
-                            
-                            <xsl:call-template name="outline-summary-table">
-                                <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
-                                <xsl:with-param name="text-statuses" select="m:text-statuses"/>
-                            </xsl:call-template>
-                            
+                    <!-- Section summaries -->
+                    <xsl:for-each select="m:translation-summary[@section-id eq 'LOBBY']/m:translation-summary">
+                        <div class="row">
+                            <div class="col-sm-9">
+                                
+                                <h4>Translation Status - <xsl:value-of select="m:title"/>
+                                </h4>
+                                
+                                <xsl:call-template name="translation-summary-table">
+                                    <xsl:with-param name="translation-summary" select="."/>
+                                </xsl:call-template>
+                                
+                            </div>
+                            <div class="col-sm-3">
+                                
+                                <xsl:call-template name="translation-summary-graph">
+                                    <xsl:with-param name="translation-summary" select="."/>
+                                </xsl:call-template>
+                                
+                            </div>
                         </div>
-                        <div class="col-sm-3">
-                            
-                            <xsl:call-template name="outline-summary-graph">
-                                <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT4CZ5369']"/>
-                            </xsl:call-template>
-                            
-                        </div>
-                    </div>
-                    
-                    <hr/>
-                    
-                    <!-- Tengyur summary -->
-                    <div class="row">
-                        <div class="col-sm-9">
-                            
-                            <h4>Tengyur Translation Status</h4>
-                            
-                            <xsl:call-template name="outline-summary-table">
-                                <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT23703']"/>
-                                <xsl:with-param name="text-statuses" select="m:text-statuses"/>
-                            </xsl:call-template>
-                            
-                        </div>
-                        <div class="col-sm-3">
-                            
-                            <xsl:call-template name="outline-summary-graph">
-                                <xsl:with-param name="outline-summary" select="m:outline-summary[@work eq 'UT23703']"/>
-                            </xsl:call-template>
-                            
-                        </div>
-                    </div>
-                    
-                    <hr/>
+                        <hr/>
+                    </xsl:for-each>
                     
                     <!-- Links -->
                     <h4>Preview data on the public site</h4>
@@ -203,7 +181,6 @@
             
         </xsl:variable>
         
-         
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
@@ -214,198 +191,110 @@
         
     </xsl:template>
     
-    <xsl:template name="outline-summary-table">
-        <xsl:param name="outline-summary" as="element(m:outline-summary)"/>
-        <xsl:param name="text-statuses" as="element(m:text-statuses)"/>
+    <xsl:template name="translation-summary-table">
+        
+        <xsl:param name="translation-summary" as="element(m:translation-summary)"/>
+        
+        <xsl:variable name="publication-summaries" select="$translation-summary/m:publications-summary[@scope eq 'descendant']"/>
+        <xsl:variable name="text-statuses" select="/m:response/m:text-statuses" as="element(m:text-statuses)"/>
+        
         <table class="table progress">
             <tbody>
                 
-                <xsl:variable name="total-pages" select="$outline-summary/m:texts/m:pages/@count"/>
-                <tr class="total">
-                    <td>
-                        <a>
-                            <xsl:attribute name="href" select="concat('search.html?status=none&amp;work=', $outline-summary/@work)"/>
-                            <xsl:value-of select="'Total'"/>
-                        </a>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:texts/@count, '#,###')"/> 
-                        <span class="small text-muted"> texts</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($total-pages, '#,###')"/>
-                        <span class="small text-muted"> pages</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/@count, '#,###')"/>
-                        <span class="small text-muted"> tohs*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/m:pages/@count, '#,###')"/>
-                        <span class="small text-muted"> toh pages*</span>
-                    </td>
-                    <td> - </td>
-                </tr>
+                <xsl:for-each select="('total','published','translated','in-translation','not-started','sponsored')">
+                    
+                    <xsl:variable name="status" select="." as="xs:string"/>
+                    
+                    <xsl:variable name="text-status" as="element(m:status)*">
+                        <xsl:choose>
+                            <xsl:when test="$status eq 'not-started'">
+                                <xsl:sequence select="$text-statuses/m:status[@group = ('not-started', 'in-application')]"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="$text-statuses/m:status[@group eq $status]"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="label">
+                        <xsl:choose>
+                            <xsl:when test="$status eq 'total'">
+                                <xsl:value-of select="'Total'"/>
+                            </xsl:when>
+                            <xsl:when test="$status eq 'published'">
+                                <xsl:value-of select="'Published'"/>
+                            </xsl:when>
+                            <xsl:when test="$status eq 'translated'">
+                                <xsl:value-of select="'Translated'"/>
+                            </xsl:when>
+                            <xsl:when test="$status eq 'in-translation'">
+                                <xsl:value-of select="'In translation'"/>
+                            </xsl:when>
+                            <xsl:when test="$status eq 'not-started'">
+                                <xsl:value-of select="'Not started'"/>
+                            </xsl:when>
+                            <xsl:when test="$status eq 'sponsored'">
+                                <xsl:value-of select="'Sponsored'"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="$status"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <tr class="{ $status }">
+                        <td>
+                            <a>
+                                <xsl:attribute name="href" select="concat('search.html?section-id=', $translation-summary/@section-id, if($text-status) then concat('&amp;status=', string-join($text-status/@status-id, ',')) else (), if($status eq 'sponsored') then concat('&amp;filter=', 'sponsored') else ())"/>
+                                <xsl:value-of select="$label"/>
+                                <xsl:if test="$text-status">
+                                    <small> (<xsl:value-of select="string-join($text-status/@status-id, ', ')"/>)</small>
+                                </xsl:if>
+                            </a>
+                        </td>
+                        <td>
+                            <xsl:value-of select="format-number($publication-summaries[@grouping eq 'text']/m:texts/@*[local-name(.) eq $status], '#,###')"/> 
+                            <span class="small text-muted"> texts</span>
+                        </td>
+                        <td>
+                            <xsl:value-of select="format-number($publication-summaries[@grouping eq 'text']/m:pages/@*[local-name(.) eq $status], '#,###')"/>
+                            <span class="small text-muted"> pages</span>
+                        </td>
+                        <td>
+                            <xsl:if test="not($status eq 'total')">
+                                <span class="text-warning">
+                                    <xsl:value-of select="format-number($publication-summaries[@grouping eq 'text']/m:pages/@*[local-name(.) eq $status] ! xs:integer(.) div $publication-summaries[@grouping eq 'text']/m:pages/@total ! xs:integer(.), '0.#%')"/>
+                                </span>
+                            </xsl:if>
+                        </td>
+                        <td>
+                            <xsl:value-of select="format-number($publication-summaries[@grouping eq 'toh']/m:texts/@*[local-name(.) eq $status], '#,###')"/>
+                            <span class="small text-muted"> tohs*</span>
+                        </td>
+                        <td>
+                            <xsl:value-of select="format-number($publication-summaries[@grouping eq 'toh']/m:pages/@*[local-name(.) eq $status], '#,###')"/>
+                            <span class="small text-muted"> toh pages*</span>
+                        </td>
+                        <td>
+                            <xsl:if test="not($status eq 'total')">
+                                <span class="text-warning">
+                                    <xsl:value-of select="format-number($publication-summaries[@grouping eq 'toh']/m:pages/@*[local-name(.) eq $status] ! xs:integer(.) div $publication-summaries[@grouping eq 'toh']/m:pages/@total ! xs:integer(.), '0.#%')"/>
+                                </span>
+                            </xsl:if>
+                        </td>
+                    </tr>
+                </xsl:for-each>
                 
-                <xsl:variable name="published-pages" select="$outline-summary/m:texts/m:pages/@published"/>
-                <tr class="published">
-                    <td>
-                        <a>
-                            <xsl:attribute name="href" select="concat('search.html?status=', string-join($text-statuses/m:status[@group eq 'published']/@status-id, ','), '&amp;work=', $outline-summary/@work)"/>
-                            <xsl:value-of select="'Published '"/> 
-                            <small>(<xsl:value-of select="string-join($text-statuses/m:status[@group eq 'published']/@status-id, ', ')"/>)</small>
-                        </a>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:texts/@published, '#,###')"/>
-                        <span class="small text-muted"> texts</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($published-pages, '#,###')"/>
-                        <span class="small text-muted"> pages</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/@published, '#,###')"/>
-                        <span class="small text-muted"> tohs*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/m:pages/@published, '#,###')"/>
-                        <span class="small text-muted"> toh pages*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($published-pages div $total-pages, '0.#%')"/>
-                    </td>
-                </tr>
-                
-                <xsl:variable name="translated-pages" select="$outline-summary/m:texts/m:pages/@translated"/>
-                <tr class="translated">
-                    <td>
-                        <a>
-                            <xsl:attribute name="href" select="concat('search.html?status=', string-join($text-statuses/m:status[@group eq 'translated']/@status-id, ','), '&amp;work=', $outline-summary/@work)"/>
-                            <xsl:value-of select="'Translated '"/> 
-                            <small>(<xsl:value-of select="string-join($text-statuses/m:status[@group eq 'translated']/@status-id, ', ')"/>)</small>
-                        </a>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:texts/@translated, '#,###')"/>
-                        <span class="small text-muted"> texts</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($translated-pages, '#,###')"/>
-                        <span class="small text-muted"> pages</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/@translated, '#,###')"/>
-                        <span class="small text-muted"> tohs*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/m:pages/@translated, '#,###')"/>
-                        <span class="small text-muted"> toh pages*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($translated-pages div $total-pages, '0.#%')"/>
-                    </td>
-                </tr>
-                
-                <xsl:variable name="in-translation-pages" select="$outline-summary/m:texts/m:pages/@in-translation"/>
-                <tr class="in-translation">
-                    <td>
-                        <a>
-                            <xsl:attribute name="href" select="concat('search.html?status=', string-join($text-statuses/m:status[@group eq 'in-translation']/@status-id, ','), '&amp;work=', $outline-summary/@work)"/>
-                            <xsl:value-of select="'In Translation '"/>  
-                            <small>(<xsl:value-of select="string-join($text-statuses/m:status[@group eq 'in-translation']/@status-id, ', ')"/>)</small>
-                        </a>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:texts/@in-translation, '#,###')"/>
-                        <span class="small text-muted"> texts</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($in-translation-pages, '#,###')"/>
-                        <span class="small text-muted"> pages</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/@in-translation, '#,###')"/>
-                        <span class="small text-muted"> tohs*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/m:pages/@in-translation, '#,###')"/>
-                        <span class="small text-muted"> toh pages*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($in-translation-pages div $total-pages, '0.#%')"/>
-                    </td>
-                </tr>
-                
-                <xsl:variable name="not-started-pages" select="$outline-summary/m:texts/m:pages/@not-started"/>
-                <tr class="not-started">
-                    <td>
-                        <a>
-                            <xsl:attribute name="href" select="concat('search.html?status=0&amp;work=', $outline-summary/@work)"/>
-                            <xsl:value-of select="'Not Started'"/>
-                        </a>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:texts/@not-started, '#,###')"/>
-                        <span class="small text-muted"> texts</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($not-started-pages, '#,###')"/>
-                        <span class="small text-muted"> pages</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/@not-started, '#,###')"/>
-                        <span class="small text-muted"> tohs*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/m:pages/@not-started, '#,###')"/>
-                        <span class="small text-muted"> toh pages*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($not-started-pages div $total-pages, '0.#%')"/>
-                    </td>
-                </tr>
-                
-                <xsl:variable name="sponsored-pages" select="$outline-summary/m:texts/m:pages/@sponsored"/>
-                <tr class="sponsored">
-                    <td>
-                        <a>
-                            <xsl:attribute name="href" select="concat('search.html?filter=sponsored&amp;work=', $outline-summary/@work)"/>
-                            <xsl:value-of select="'Sponsored'"/>
-                        </a>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:texts/@sponsored, '#,###')"/>
-                        <span class="small text-muted"> texts</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($sponsored-pages, '#,###')"/>
-                        <span class="small text-muted"> pages</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/@sponsored, '#,###')"/>
-                        <span class="small text-muted"> tohs*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($outline-summary/m:tohs/m:pages/@sponsored, '#,###')"/>
-                        <span class="small text-muted"> toh pages*</span>
-                    </td>
-                    <td>
-                        <xsl:value-of select="format-number($sponsored-pages div $total-pages, '0.#%')"/>
-                    </td>
-                </tr>
             </tbody>
         </table>
         
-        <div class="small text-muted">
-            *Tohs can refer to duplicate texts in the Kangyur, hence the higher number when counted by Toh.
-        </div>
+        <div class="small text-muted">*Tohs can refer to duplicate texts in the Kangyur, hence the higher number when counted by Toh.</div>
         
     </xsl:template>
     
-    <xsl:template name="outline-summary-graph">
-        <xsl:param name="outline-summary" as="element(m:outline-summary)"/>
-        <xsl:variable name="chart-id" select="concat('chart-', $outline-summary/@work)"/>
+    <xsl:template name="translation-summary-graph">
+        <xsl:param name="translation-summary" as="element(m:translation-summary)"/>
+        <xsl:variable name="chart-id" select="concat('chart-', $translation-summary/@section-id)"/>
         
         <div style="width:260px;height:260px;margin:0 auto;">
             <canvas>
@@ -418,12 +307,7 @@
                     var ctx = document.getElementById('<xsl:value-of select="$chart-id"/>').getContext('2d');
                     var data = {
                         datasets: [{
-                            data: [
-                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@published"/>, 
-                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@translated"/>, 
-                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@in-translation"/>, 
-                                <xsl:value-of select="$outline-summary/m:texts/m:pages/@not-started"/>
-                            ],
+                            data: [<xsl:value-of select="string-join($translation-summary/m:publications-summary[@scope eq 'descendant'][@grouping eq 'text']/m:pages/@*[local-name(.) = ('published','translated','in-translation','not-started')], ',')"/>],
                             backgroundColor: ['#4d6253','#566e90','#b76c1e','#bbbbbb']
                         }],
                         labels: ['published', 'translated', 'in progress','not started']

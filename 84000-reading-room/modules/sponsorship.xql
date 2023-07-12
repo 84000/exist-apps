@@ -117,35 +117,42 @@ declare function sponsorship:text-status($text-id as xs:string, $estimate-cost a
 
 declare function sponsorship:text-ids($sponsorship-group as xs:string) as xs:string* {
     (
+        (: Any project with a part sponsored :)
         if($sponsorship-group eq 'sponsored')then
-            (: Any project with a part sponsored :)
             $sponsorship:data//m:project
                 [m:cost/m:part/@status eq 'sponsored']/m:text/@text-id
+         
+        (: Any project with all parts sponsored :)
         else if($sponsorship-group eq 'fully-sponsored')then
-            (: Any project with all parts sponsored :)
             $sponsorship:data//m:project
                 [count(m:cost/m:part[@status eq 'sponsored']) eq count(m:cost/m:part)]/m:text/@text-id
+        
+        (: Any project with multiple parts and not all parts sponsored :)
         else if($sponsorship-group eq 'part-sponsored')then
-            (: Any project with multiple parts and not all parts sponsored :)
             $sponsorship:data//m:project
                 [count(m:cost/m:part) gt 1] (: multiple parts :)
                 [m:cost/m:part[@status eq 'sponsored']] (: sponsored parts :)
                 [count(m:cost/m:part) gt count(m:cost/m:part[@status eq 'sponsored'])] (: not all parts sponsored :)/m:text/@text-id
+        
+        (: Any project with a part not sponsored :)
         else if($sponsorship-group eq 'available')then
-            (: Any project with a part not sponsored :)
             $sponsorship:data//m:project
                 [count(m:cost/m:part[@status eq 'sponsored']) lt count(m:cost/m:part)]/m:text/@text-id
+        
+        (: Any project with a part with priority :)
         else if($sponsorship-group eq 'priority')then
-            (: Any project with a part with priority :)
             $sponsorship:data//m:project
                 [m:cost/m:part/@status eq 'priority']/m:text/@text-id
+        
+        (: Any project with a part reserved :)
         else if($sponsorship-group eq 'reserved')then
-            (: Any project with a part reserved :)
             $sponsorship:data//m:project
                 [m:cost/m:part/@status eq 'reserved']/m:text/@text-id
+        
+        (: All texts with a sponsorship status :)
         else
-            (: All texts with a sponsorship status :)
             $sponsorship:data//m:project/m:text/@text-id
+            
     )
 };
 

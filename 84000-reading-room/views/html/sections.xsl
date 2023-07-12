@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -57,7 +57,7 @@
         
     </xsl:template>
     
-    <xsl:template match="m:section">
+    <xsl:template match="m:translation-summary">
         
         <table class="table table-responsive">
             <thead>
@@ -73,10 +73,9 @@
                 </tr>
             </thead>
             <tbody>
-                <xsl:for-each select="m:section">
-                    <xsl:sort select="xs:integer(@sort-index)"/>
-                    <xsl:call-template name="section-row"/>
-                </xsl:for-each>
+                <xsl:call-template name="section-row">
+                    <xsl:with-param name="translation-summary" select="."/>
+                </xsl:call-template>
             </tbody>
         </table>
         
@@ -84,40 +83,42 @@
     
     <xsl:template name="section-row">
         
-        <xsl:variable name="section-texts-id" select="concat('section-texts-', fn:encode-for-uri(@id))"/>
+        <xsl:param name="translation-summary" as="element(m:translation-summary)"/>
         
-        <xsl:variable name="count-text-descendants" select="m:text-stats/m:stat[@type eq 'count-text-descendants']/@value ! xs:integer(.)"/>
-        <xsl:variable name="sum-pages-text-descendants" select="m:text-stats/m:stat[@type eq 'sum-pages-text-descendants']/@value ! xs:integer(.)"/>
+        <xsl:variable name="section-texts-id" select="concat('section-texts-', $translation-summary/@section-id)"/>
         
-        <xsl:variable name="count-text-children" select="m:text-stats/m:stat[@type eq 'count-text-children']/@value ! xs:integer(.)"/>
-        <xsl:variable name="sum-pages-text-children" select="m:text-stats/m:stat[@type eq 'sum-pages-text-children']/@value ! xs:integer(.)"/>
+        <xsl:variable name="count-text-descendants" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:texts/@total ! xs:integer(.)"/>
+        <xsl:variable name="sum-pages-text-descendants" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:pages/@total ! xs:integer(.)"/>
+        
+        <xsl:variable name="count-text-children" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@total ! xs:integer(.)"/>
+        <xsl:variable name="sum-pages-text-children" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:pages/@total ! xs:integer(.)"/>
         
         <tr>
             
             <td>
                 
-                <xsl:if test="m:section">
+                <xsl:if test="m:translation-summary">
                     <xsl:attribute name="rowspan" select="'2'"/>
                 </xsl:if>
                 
                 <xsl:call-template name="indent">
                     <xsl:with-param name="counter" select="1"/>
-                    <xsl:with-param name="finish" select="xs:integer(@nesting)"/>
+                    <xsl:with-param name="finish" select="count(ancestor::m:translation-summary) + 1"/>
                     <xsl:with-param name="content">
                         <div>
                             <span class="text-bold">
-                                <xsl:value-of select="m:titles/m:title[@xml:lang eq 'en']"/>
+                                <xsl:value-of select="$translation-summary/m:title"/>
                             </span>
-                            <small>
-                                <xsl:value-of select="concat(' \ ', @id)"/>
-                            </small>
+                            <span class="small text-muted">
+                                <xsl:value-of select="concat(' \ ', $translation-summary/@section-id)"/>
+                            </span>
                         </div>
                         <div class="sml-margin bottom">
                             <ul class="list-inline inline-dots">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.tei')"/>
-                                        <xsl:attribute name="target" select="concat(@id, '.tei')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.tei')"/>
+                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.tei')"/>
                                         <span class="small">
                                             <xsl:value-of select="'tei'"/>
                                         </span>
@@ -125,8 +126,8 @@
                                 </li>
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.xml')"/>
-                                        <xsl:attribute name="target" select="concat(@id, '.xml')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.xml')"/>
+                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.xml')"/>
                                         <span class="small">
                                             <xsl:value-of select="'xml'"/>
                                         </span>
@@ -134,8 +135,8 @@
                                 </li>
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.json')"/>
-                                        <xsl:attribute name="target" select="concat(@id, '.json')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.json')"/>
+                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.json')"/>
                                         <span class="small">
                                             <xsl:value-of select="'json'"/>
                                         </span>
@@ -143,8 +144,8 @@
                                 </li>
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.html')"/>
-                                        <xsl:attribute name="target" select="concat(@id, '.html')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.html')"/>
+                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.html')"/>
                                         <span class="small">
                                             <xsl:value-of select="'html'"/>
                                         </span>
@@ -152,18 +153,18 @@
                                 </li>
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.navigation.atom')"/>
-                                        <xsl:attribute name="target" select="concat(@id, '.navigation.atom')"/>
+                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.navigation.atom')"/>
+                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.navigation.atom')"/>
                                         <span class="small">
                                             <xsl:value-of select="'navigation.atom'"/>
                                         </span>
                                     </a>
                                 </li>
-                                <xsl:if test="xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']/@value) gt 0">
+                                <xsl:if test="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@published ! xs:integer(.) gt 0">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', @id, '.acquisition.atom')"/>
-                                            <xsl:attribute name="target" select="concat(@id, '.acquisition.atom')"/>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.acquisition.atom')"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.acquisition.atom')"/>
                                             <span class="small">
                                                 <xsl:value-of select="'acquisition.atom'"/>
                                             </span>
@@ -172,8 +173,8 @@
                                 </xsl:if>
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', @id)"/>
-                                        <xsl:attribute name="target" select="concat(@id, 'tests')"/>
+                                        <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', $translation-summary/@section-id)"/>
+                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, 'tests')"/>
                                         <span class="small">
                                             <xsl:value-of select="'run tests'"/>
                                         </span>
@@ -184,7 +185,7 @@
                         <div class="small text-muted">
                             <xsl:value-of select="'TEI file: '"/>
                             <span class="break">
-                                <xsl:value-of select="@document-url"/>
+                                <xsl:value-of select="$translation-summary/@document-url"/>
                             </span>
                         </div>
                     </xsl:with-param>
@@ -199,7 +200,7 @@
                 <a href="#" target="_self">
                     <xsl:choose>
                         <xsl:when test="$count-text-children gt 0">
-                            <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri(@id), '#ajax-source')"/>
+                            <xsl:attribute name="href" select="concat('section-texts.html?section-id=', fn:encode-for-uri($translation-summary/@section-id), '#ajax-source')"/>
                             <xsl:attribute name="data-ajax-target" select="concat('#', $section-texts-id, ' .ajax-target')"/>
                             <xsl:attribute name="aria-controls" select="$section-texts-id"/>
                             <xsl:attribute name="class" select="'underline'"/>
@@ -236,8 +237,8 @@
             <td class="small">
                 <xsl:call-template name="section-stat">
                     <xsl:with-param name="show-stat" select="$count-text-children gt 0"/>
-                    <xsl:with-param name="text-count" select="xs:integer(m:text-stats/m:stat[@type eq 'count-published-children']/@value)"/>
-                    <xsl:with-param name="page-count" select="xs:integer(m:text-stats/m:stat[@type eq 'sum-pages-published-children']/@value)"/>
+                    <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@published ! xs:integer(.)"/>
+                    <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:pages/@published ! xs:integer(.)"/>
                     <xsl:with-param name="page-total" select="$sum-pages-text-children"/>
                 </xsl:call-template>
             </td>
@@ -246,8 +247,8 @@
             <td class="small">
                 <xsl:call-template name="section-stat">
                     <xsl:with-param name="show-stat" select="$count-text-children gt 0"/>
-                    <xsl:with-param name="text-count" select="xs:integer(m:text-stats/m:stat[@type eq 'count-translated-children']/@value)"/>
-                    <xsl:with-param name="page-count" select="xs:integer(m:text-stats/m:stat[@type eq 'sum-pages-translated-children']/@value)"/>
+                    <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@translated ! xs:integer(.)"/>
+                    <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:pages/@translated ! xs:integer(.)"/>
                     <xsl:with-param name="page-total" select="$sum-pages-text-children"/>
                 </xsl:call-template>
             </td>
@@ -256,27 +257,25 @@
             <td class="small">
                 <xsl:call-template name="section-stat">
                     <xsl:with-param name="show-stat" select="$count-text-children gt 0"/>
-                    <xsl:with-param name="text-count" select="xs:integer(m:text-stats/m:stat[@type eq 'count-in-translation-children']/@value)"/>
-                    <xsl:with-param name="page-count" select="xs:integer(m:text-stats/m:stat[@type eq 'sum-pages-in-translation-children']/@value)"/>
+                    <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@in-translation ! xs:integer(.)"/>
+                    <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:pages/@in-translation ! xs:integer(.)"/>
                     <xsl:with-param name="page-total" select="$sum-pages-text-children"/>
                 </xsl:call-template>
             </td>
             
             <!-- Not-started -->
             <td class="small">
-                <xsl:variable name="texts-not-started" select="$count-text-children - sum(m:text-stats/m:stat[@type = ('count-published-children','count-translated-children','count-in-translation-children')]/@value ! xs:integer(.))"/>
-                <xsl:variable name="pages-not-started" select="$sum-pages-text-children - sum(m:text-stats/m:stat[@type = ('sum-pages-published-children','sum-pages-translated-children','sum-pages-in-translation-children')]/@value ! xs:integer(.))"/>
                 <xsl:call-template name="section-stat">
                     <xsl:with-param name="show-stat" select="$count-text-children gt 0"/>
-                    <xsl:with-param name="text-count" select="xs:integer($texts-not-started)"/>
-                    <xsl:with-param name="page-count" select="xs:integer($pages-not-started)"/>
+                    <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@not-started ! xs:integer(.)"/>
+                    <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:pages/@not-started ! xs:integer(.)"/>
                     <xsl:with-param name="page-total" select="$sum-pages-text-children"/>
                 </xsl:call-template>
             </td>
             
         </tr>
         
-        <xsl:if test="m:section">
+        <xsl:if test="m:translation-summary">
             
             <tr>
                 
@@ -308,8 +307,8 @@
                 <td class="small">
                     <xsl:call-template name="section-stat">
                         <xsl:with-param name="show-stat" select="$count-text-descendants gt $count-text-children"/>
-                        <xsl:with-param name="text-count" select="xs:integer(m:text-stats/m:stat[@type eq 'count-published-descendants']/@value)"/>
-                        <xsl:with-param name="page-count" select="xs:integer(m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value)"/>
+                        <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:texts/@published ! xs:integer(.)"/>
+                        <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:pages/@published ! xs:integer(.)"/>
                         <xsl:with-param name="page-total" select="$sum-pages-text-descendants"/>
                     </xsl:call-template>
                 </td>
@@ -318,8 +317,8 @@
                 <td class="small">
                     <xsl:call-template name="section-stat">
                         <xsl:with-param name="show-stat" select="$count-text-descendants gt $count-text-children"/>
-                        <xsl:with-param name="text-count" select="xs:integer(m:text-stats/m:stat[@type eq 'count-translated-descendants']/@value)"/>
-                        <xsl:with-param name="page-count" select="xs:integer(m:text-stats/m:stat[@type eq 'sum-pages-translated-descendants']/@value)"/>
+                        <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:texts/@translated ! xs:integer(.)"/>
+                        <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:pages/@translated ! xs:integer(.)"/>
                         <xsl:with-param name="page-total" select="$sum-pages-text-descendants"/>
                     </xsl:call-template>
                 </td>
@@ -328,20 +327,18 @@
                 <td class="small">
                     <xsl:call-template name="section-stat">
                         <xsl:with-param name="show-stat" select="$count-text-descendants gt $count-text-children"/>
-                        <xsl:with-param name="text-count" select="xs:integer(m:text-stats/m:stat[@type eq 'count-in-translation-descendants']/@value)"/>
-                        <xsl:with-param name="page-count" select="xs:integer(m:text-stats/m:stat[@type eq 'sum-pages-in-translation-descendants']/@value)"/>
+                        <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:texts/@in-translation ! xs:integer(.)"/>
+                        <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:pages/@in-translation ! xs:integer(.)"/>
                         <xsl:with-param name="page-total" select="$sum-pages-text-descendants"/>
                     </xsl:call-template>
                 </td>
                 
                 <!-- Not-started -->
                 <td class="small">
-                    <xsl:variable name="texts-not-started" select="$count-text-descendants ! xs:integer(.) - sum(m:text-stats/m:stat[@type = ('count-published-descendants','count-translated-descendants','count-in-translation-descendants')]/@value ! xs:integer(.))"/>
-                    <xsl:variable name="pages-not-started" select="$sum-pages-text-descendants - sum(m:text-stats/m:stat[@type = ('sum-pages-published-descendants','sum-pages-translated-descendants','sum-pages-in-translation-descendants')]/@value ! xs:integer(.))"/>
                     <xsl:call-template name="section-stat">
                         <xsl:with-param name="show-stat" select="$count-text-descendants gt $count-text-children"/>
-                        <xsl:with-param name="text-count" select="xs:integer($texts-not-started)"/>
-                        <xsl:with-param name="page-count" select="xs:integer($pages-not-started)"/>
+                        <xsl:with-param name="text-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:texts/@not-started ! xs:integer(.)"/>
+                        <xsl:with-param name="page-count" select="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:pages/@not-started ! xs:integer(.)"/>
                         <xsl:with-param name="page-total" select="$sum-pages-text-descendants"/>
                     </xsl:call-template>
                 </td>
@@ -359,9 +356,10 @@
             </td>
         </tr>
         
-        <xsl:for-each select="m:section">
-            <xsl:sort select="xs:integer(@sort-index)"/>
-            <xsl:call-template name="section-row"/>
+        <xsl:for-each select="m:translation-summary">
+            <xsl:call-template name="section-row">
+                <xsl:with-param name="translation-summary" select="."/>
+            </xsl:call-template>
         </xsl:for-each>
         
     </xsl:template>

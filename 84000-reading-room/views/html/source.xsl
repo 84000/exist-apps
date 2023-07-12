@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
-    <!-- TO DO: Using the $toh/@number is a temporary solution until new markers are added to the source -->
-    <xsl:variable name="toh-number" select="/m:response/m:translation/m:toh/@number"/>
+    <!-- Actually we want to use the BDRC ids here, but we don't have them for the Tengyur yet -->
+    <!--<xsl:variable name="toh-number" select="/m:response/m:translation/m:toh/m:ref[@type eq 'bdrc-idx']/@value[1]" as="xs:string?"/>-->
+    <xsl:variable name="toh-number" select="/m:response/m:translation/m:toh/@key ! replace(., '^toh', '')"/>
+    <xsl:variable name="highlight" select="/m:response/m:request/@highlight" as="xs:string?"/>
     
     <xsl:template match="/m:response">
         
@@ -23,12 +25,12 @@
                 </xsl:choose>
             </xsl:variable>
             
-            <xhtml:div class="content-band">
+            <div class="content-band">
                 <main>
-                    <xhtml:div>
+                    <div>
                         
                         <xsl:for-each select="m:source/m:page">
-                            <xhtml:div>
+                            <div>
                                 
                                 <xsl:variable name="folio-string" as="xs:string">
                                     <xsl:choose>
@@ -45,7 +47,7 @@
                                     <xsl:value-of select="concat('Degé ', $work-string, ' volume ', @volume, ', ', $folio-string)"/>
                                 </h1>
                                 
-                                <xhtml:div class="container relative">
+                                <div class="container relative">
                                     
                                     <xsl:apply-templates select="m:language[@xml:lang eq 'bo']"/>
                                     
@@ -54,9 +56,9 @@
                                     
                                     <xsl:if test="$current-ref-index gt 1">
                                         
-                                        <a class="carousel-control left" title="Pevious" data-loading="Loading previous...">
+                                        <a class="carousel-control left" title="Pevious">
                                             
-                                            <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index - 1)"/>
+                                            <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index - 1, $highlight ! concat('&amp;highlight=', .))"/>
                                             
                                             <i class="fa fa-chevron-left" aria-hidden="true"/>
                                             <span class="sr-only">
@@ -69,9 +71,9 @@
                                     
                                     <xsl:if test="$current-ref-index lt $last-ref-index">
                                     
-                                       <a class="carousel-control right" title="Next" data-loading="Loading next...">
+                                       <a class="carousel-control right" title="Next">
                                            
-                                           <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index + 1)"/>
+                                           <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index + 1, $highlight ! concat('&amp;highlight=', .))"/>
                                            
                                            <i class="fa fa-chevron-right" aria-hidden="true"/>
                                            <span class="sr-only">
@@ -82,11 +84,11 @@
                                     
                                     </xsl:if>
                                     
-                                </xhtml:div>
+                                </div>
                                 
                                 <hr/>
                                 
-                                <xhtml:div class="container footer" id="source-footer">
+                                <div class="container footer" id="source-footer">
                                     
                                     <p class="text-center text-muted ">
                                         <xsl:value-of select="concat(if($work eq 'UT23703') then 'eTengyur' else 'eKangyur', ', ', @etext-id, ', page ', @page-in-volume, ' (', @folio-in-etext, ').')"/>
@@ -100,24 +102,24 @@
                                         </a>
                                     </p>
                                     
-                                    <xhtml:div id="etext-description-{ position() }" class="well well-sml collapse text-center">
+                                    <div id="etext-description-{ position() }" class="well well-sml collapse text-center">
                                         <xsl:call-template name="local-text">
                                             <xsl:with-param name="local-key" select="if($work eq 'UT23703') then 'etengyur-description-content' else 'ekangyur-description-content'"/>
                                         </xsl:call-template>
-                                    </xhtml:div>
+                                    </div>
                                     
-                                </xhtml:div>
+                                </div>
                                 
-                            </xhtml:div>
+                            </div>
                         </xsl:for-each>
                         
-                    </xhtml:div>
+                    </div>
                     
                     <!-- Keep outside of ajax data -->
                     <xsl:if test="m:back-link/@url">
-                        <xhtml:div class="hidden-iframe">
+                        <div class="hidden-iframe">
                             <hr class="no-margin"/>
-                            <xhtml:div class="container top-margin bottom-margin">
+                            <div class="container top-margin bottom-margin">
                                 <p class="text-center">
                                     <xsl:call-template name="local-text">
                                         <xsl:with-param name="local-key" select="'backlink-label'"/>
@@ -129,12 +131,12 @@
                                         <xsl:value-of select="m:back-link/@url"/>
                                     </a>
                                 </p>
-                            </xhtml:div>
-                        </xhtml:div>
+                            </div>
+                        </div>
                     </xsl:if>
                     
                 </main>
-            </xhtml:div>
+            </div>
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">

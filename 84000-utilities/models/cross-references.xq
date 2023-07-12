@@ -73,7 +73,7 @@ common:response(
                 
                     attribute id { $target-text-id },
                     attribute resource-id { translation:source-key($target-tei[1], '') },
-                    attribute translation-status-group { tei-content:translation-status-group($target-tei[1]) },
+                    attribute status-group { tei-content:publication-status-group($target-tei[1]) },
                     
                     translation:toh($target-tei[1], $resource-id[1]),
                     translation:titles($target-tei[1], $resource-id[1]),

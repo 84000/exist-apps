@@ -19,11 +19,11 @@ let $new-id :=
 
 let $contributor := 
     if($new-id gt '') then
-        contributors:person($new-id, true(), false())
+        contributors:person($new-id, true())
     else if($post-id gt '') then
-        contributors:person($post-id, true(), false())
+        contributors:person($post-id, true())
     else if($request-id gt '') then
-        contributors:person($request-id, true(), false())
+        contributors:person($request-id, true())
     else ()
 
 let $xml-response := 

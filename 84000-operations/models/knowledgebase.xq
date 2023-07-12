@@ -17,7 +17,7 @@ let $add-article :=
     if($form-action eq 'new-article' and $new-title gt '') then
         update-tei:add-knowledgebase($new-title)
     else ()
-    
+
 let $pages := knowledgebase:pages()
 
 let $xml-response :=
@@ -52,3 +52,4 @@ return
         util:declare-option("exist:serialize", "method=xml indent=no"),
         $xml-response
     )
+    

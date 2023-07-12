@@ -24,31 +24,41 @@ let $update-entity :=
         update-entity:set-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
     else if(request:get-parameter('form-action', '') eq 'instance-clear-flag') then
         update-entity:clear-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
+    (:else if(request:get-parameter('form-action', '') eq 'instance-definition-use') then
+        update-entity:update-instance($request/@instance-id):)
     else ()
 
-let $entity := $entities:entities//m:entity[@xml:id eq $request/@entity-id]
-
-let $xml-response := 
-    common:response(
-        'operations/edit-entity', 
-        'operations', 
-        (
-            $request,
-            $entity,
-            $entities:types,
-            $entities:flags
-        )
-    )
-
-return
-
-    (: return html data :)
-    if($request/@resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/edit-entity.xsl'))
+return 
+    if(request:get-parameter('ajax-target', '') gt '') then (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $update-entity
     )
     
-    (: return xml data :)
-    else (
-        util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
-    )
+    else
+        
+        let $entity := $entities:entities//m:entity[@xml:id eq $request/@entity-id]
+
+        let $xml-response := 
+            common:response(
+                'operations/edit-entity', 
+                'operations', 
+                (
+                    $request,
+                    $entity,
+                    $entities:types,
+                    $entities:flags
+                )
+            )
+        
+        return
+        
+            (: return html data :)
+            if($request/@resource-suffix eq 'html') then (
+                common:html($xml-response, concat(local:app-path(), '/views/edit-entity.xsl'))
+            )
+            
+            (: return xml data :)
+            else (
+                util:declare-option("exist:serialize", "method=xml indent=no"),
+                $xml-response
+            )

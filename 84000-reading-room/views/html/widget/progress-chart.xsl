@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
 
     <xsl:import href="charts.xsl"/>
     <xsl:import href="../../../xslt/webpage.xsl"/>
@@ -51,7 +51,7 @@
                                             </ul>
                                             
                                             <div class="tab-content panel-padding panel-border">
-                                                <xsl:variable name="outline-summary" select="m:outline-summary"/>
+                                                <xsl:variable name="translation-summary" select="m:translation-summary"/>
                                                 <xsl:variable name="replace-text" select="m:replace-text"/>
                                                 <xsl:for-each select="('kangyur', 'combined')">
                                                     <xsl:variable name="tab" select="." as="xs:string"/>
@@ -72,14 +72,14 @@
                                                         <xsl:choose>
                                                             <xsl:when test="$tab eq 'kangyur'">
                                                                 <xsl:call-template name="progress-pie-chart">
-                                                                    <xsl:with-param name="outline-summary" select="$outline-summary[@work eq 'UT4CZ5369']"/>
+                                                                    <xsl:with-param name="publications-summary" select="$translation-summary/m:translation-summary[@section-id eq 'O1JC11494']/m:publications-summary[@scope eq 'descendant'][@grouping eq 'toh']"/>
                                                                     <xsl:with-param name="replace-text" select="$replace-text"/>
                                                                     <xsl:with-param name="show-legend" select="true()"/>
                                                                 </xsl:call-template>
                                                             </xsl:when>
                                                             <xsl:when test="$tab eq 'combined'">
                                                                 <xsl:call-template name="progress-pie-chart">
-                                                                    <xsl:with-param name="outline-summary" select="$outline-summary"/>
+                                                                    <xsl:with-param name="publications-summary" select="$translation-summary/m:publications-summary[@scope eq 'descendant'][@grouping eq 'toh']"/>
                                                                     <xsl:with-param name="replace-text" select="$replace-text"/>
                                                                     <xsl:with-param name="show-legend" select="true()"/>
                                                                 </xsl:call-template>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/webpage.xsl"/>
     
@@ -58,7 +58,7 @@
     <xsl:template name="section-checkbox">
         
         <xsl:param name="section" as="element(m:section)"/>
-        <xsl:variable name="count-published-descendants" select="$section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value" as="xs:integer"/>
+        <xsl:variable name="count-published-descendants" select="//m:translation-summary[@section-id eq $section/@id]/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']/m:texts/@published" as="xs:integer?"/>
         
         <xsl:if test="$count-published-descendants gt 0">
             <div class="nested-checkbox">

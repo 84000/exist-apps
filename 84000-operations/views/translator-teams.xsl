@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -57,17 +57,15 @@
                                                         <xsl:value-of select="m:label"/>
                                                     </a>
                                                     
+                                                    <span class="small text-muted">
+                                                        <xsl:value-of select="concat(' / ', $team-id, ' ')"/>
+                                                    </span>
+                                                    
                                                     <xsl:if test="@rend eq 'hidden'">
                                                         <span class="label label-default">
                                                             <xsl:value-of select="'Hidden'"/>
                                                         </span>
                                                     </xsl:if>
-                                                    
-                                                    <br/>
-                                                    
-                                                    <span class="small text-muted">
-                                                        <xsl:value-of select="$team-id"/>
-                                                    </span>
                                                     
                                                     <br/>
                                                     
@@ -80,16 +78,16 @@
                                                         </xsl:if>
                                                         
                                                         <span class="badge badge-notification">
-                                                            <xsl:value-of select="count(m:acknowledgement)"/>
+                                                            <xsl:value-of select="count(m:instance)"/>
                                                         </span>
                                                         
                                                         <span class="btn-round-text">
                                                             <xsl:choose>
-                                                                <xsl:when test="count(m:acknowledgement) eq 1">
-                                                                    <xsl:value-of select="' acknowledgement'"/>
+                                                                <xsl:when test="count(m:instance) eq 1">
+                                                                    <xsl:value-of select="' project'"/>
                                                                 </xsl:when>
                                                                 <xsl:otherwise>
-                                                                    <xsl:value-of select="' acknowledgements'"/>
+                                                                    <xsl:value-of select="' projects'"/>
                                                                 </xsl:otherwise>
                                                             </xsl:choose>
                                                         </span>
@@ -120,7 +118,9 @@
                                                                 <xsl:variable name="translator" select="."/>
                                                                 <li>
                                                                     <xsl:value-of select="$translator/m:label"/>
-                                                                    <xsl:value-of select="concat(' (', $translator/@xml:id, ')')"/>
+                                                                    <span class="small text-muted">
+                                                                        <xsl:value-of select="concat(' / ', $translator/@xml:id, ' ')"/>
+                                                                    </span>
                                                                 </li>
                                                             </xsl:for-each>
                                                         </ul>
@@ -175,16 +175,5 @@
         </xsl:call-template>
         
     </xsl:template>
-    
-    <!-- 
-    <xsl:template match="tei:org">
-        <span>
-            <xsl:if test="ends-with(@ref, ancestor::m:team/@xml:id)">
-                <xsl:attribute name="class" select="'mark'"/>
-            </xsl:if>
-            <xsl:value-of select="text()"/>
-        </span>
-    </xsl:template>
-     -->
     
 </xsl:stylesheet>

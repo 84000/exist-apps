@@ -58,93 +58,108 @@ let $request :=
 (: Suppress cache if there's user input, or a view-mode :)
 let $cache-key := 
     if($view-mode eq 'default' and $request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
-        let $tei-timestamp := max(collection($common:tei-path)//tei:TEI//tei:notesStmt/tei:note[@type eq "lastUpdated"]/@date-time ! xs:dateTime(.))
-        where $tei-timestamp instance of xs:dateTime
+        let $tei-timestamp := max(($tei ! tei-content:last-modified(.), $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $resource-id]] ! tei-content:last-modified(.)))
+        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
         return 
-            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || replace($common:app-version, '\.', '-'))
-    else ()
-let $cached := common:cache-get($request, $cache-key)
-return if($cached) then $cached else
-
-let $include-texts := 
-    if(xs:boolean($request/@published-only)) then
-        if($request/@child-texts-only eq 'true') then
-            'children-published'
-        else
-            'descendants-published'
-    else
-        if($request/@child-texts-only eq 'true') then
-            'children'
-        else
-            'descendants'
-
-let $filter-section-ids := 
-    for $filter-section-id in $filter-section-ids[not(. eq '')]
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'filter') } {
-            attribute section-id { $filter-section-id }
-        }
-
-let $filter-max-pages := 
-    if(functx:is-a-number($filter-max-pages)) then
-        element { QName('http://read.84000.co/ns/1.0', 'filter') } {
-            attribute max-pages { $filter-max-pages }
-        }
-    else ()
-
-let $apply-filters := 
-    if($filter-section-ids or $filter-max-pages) then (
-        $filter-section-ids,
-        $filter-max-pages
-    )
-    else
-        $filters/tei:div[@xml:id eq $request/@filter-id]/m:filter
-
-let $sections-data :=
-    if(lower-case($request/@resource-id) eq 'all-translated') then 
-        section:all-translated($apply-filters)
-    else
-        section:section-tree($tei, true(), $include-texts)
-
-let $entities := 
-    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        
-        let $attribution-ids := distinct-values($sections-data//m:attribution/@ref ! replace(., '^eft:', ''))
-        let $entity-list := $entities:entities//m:entity[@xml:id = $attribution-ids]
-        let $related := entities:related($entity-list)
-        return (
-            $entity-list,
-            element related { $related }
-        )
-        
-    }
-
-let $xml-response := 
-    if(not($request/@resource-suffix = ('tei'))) then
-        common:response(
-            "section", 
-            $common:app-id,
-            (
-               $request,
-               $sections-data,
-               $entities
+            lower-case(
+                string-join((
+                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $common:app-version ! replace(., '\.', '-')
+                ),'-')
             )
-        )
-    else
-        $tei
+    else ()
 
-return
+let $cached := common:cache-get($request, $cache-key)
+
+return 
+    if($cached) then $cached 
     
-    (: return html data :)
-    if($request/@resource-suffix = ('html')) then 
-        common:html($xml-response, concat($common:app-path, "/views/html/section.xsl"), $cache-key)
+    (: tei :)
+    else if($resource-suffix = ('tei')) then $tei
     
-    (: return tei data :)
-    else if($request/@resource-suffix = ('tei')) then 
-        common:serialize-xml($tei)
-    
-    (: return xml data :)
-    else 
-        common:serialize-xml($xml-response)
+    else
+        
+        let $include-texts := 
+            if(xs:boolean($request/@published-only)) then
+                if($request/@child-texts-only eq 'true') then
+                    'children-published'
+                else
+                    'descendants-published'
+            else
+                if($request/@child-texts-only eq 'true') then
+                    'children'
+                else
+                    'descendants'
+        
+        let $filter-section-ids := 
+            for $filter-section-id in $filter-section-ids[not(. eq '')]
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'filter') } {
+                    attribute section-id { $filter-section-id }
+                }
+        
+        let $filter-max-pages := 
+            if(functx:is-a-number($filter-max-pages)) then
+                element { QName('http://read.84000.co/ns/1.0', 'filter') } {
+                    attribute max-pages { $filter-max-pages }
+                }
+            else ()
+        
+        let $apply-filters := 
+            if($filter-section-ids or $filter-max-pages) then (
+                $filter-section-ids,
+                $filter-max-pages
+            )
+            else
+                $filters/tei:div[@xml:id eq $request/@filter-id]/m:filter
+        
+        let $sections-data :=
+            if(lower-case($request/@resource-id) eq 'all-translated') then 
+                section:all-translated($apply-filters)
+            else
+                section:section-tree($tei, true(), $include-texts)
+        
+        let $entities := 
+            element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+                
+                let $attribution-ids := $sections-data//m:attribution/@xml:id
+                let $entity-list := $entities:entities//m:instance[@id = $attribution-ids]/parent::m:entity
+                let $related := entities:related($entity-list, false(), 'knowledgebase', 'requires-attention', 'excluded')
+                return (
+                    $entity-list,
+                    element related { $related }
+                )
+                
+            }
+        
+        let $xml-response := 
+            if(not($request/@resource-suffix = ('tei'))) then
+                common:response(
+                    $request/@model, 
+                    $common:app-id,
+                    (
+                       $request,
+                       $sections-data,
+                       $entities
+                    )
+                )
+            else
+                $tei
+        
+        return
+            
+            (: return html data :)
+            if($request/@resource-suffix = ('html')) then 
+                common:html($xml-response, concat($common:app-path, "/views/html/section.xsl"), $cache-key)
+            
+            (: return tei data :)
+            else if($request/@resource-suffix = ('tei')) then 
+                common:serialize-xml($tei)
+            
+            (: return xml data :)
+            else 
+                common:serialize-xml($xml-response)
 
         

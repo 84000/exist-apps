@@ -135,7 +135,7 @@
                                                 <xsl:if test="$tei-revised">
                                                     <xsl:attribute name="class" select="'small italic text-danger'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="concat('Version note: ', $translation/m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                <xsl:value-of select="concat('Version note: ', $translation/m:status-updates/m:status-update[@type eq 'text-version'][@current-version eq 'true'][1])"/>
                                             </span>
                                         </li>
                                     </ul>

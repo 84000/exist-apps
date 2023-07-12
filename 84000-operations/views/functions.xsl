@@ -811,7 +811,7 @@
                 </output:serialization-parameters>
             </xsl:variable>
             
-            <!-- Loop through nodes to avoid whitespace from passing node() sequence -->
+            <!-- Loop through nodes to avoid whitespace from passing node() sequence, remove namespaces -->
             <xsl:for-each select="node()">
                 <xsl:value-of select="replace(replace(serialize(., $serialization-parameters), '\s+', ' '), '\s*xmlns=&#34;\S*&#34;', '')"/>
             </xsl:for-each>

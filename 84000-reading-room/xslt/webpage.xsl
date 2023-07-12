@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -74,6 +74,9 @@
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'glossary'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/glossary/search.html', (), '', $lang)"/>
+            </xsl:when>
+            <xsl:when test="/m:response/@model eq 'knowledgebase'">
+                <xsl:value-of select="common:internal-link('https://read.84000.co/knowledgebase.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/sponsors'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsors.html', (), '', $lang)"/>
@@ -226,6 +229,7 @@
         
         <xsl:param name="front-end-path" required="yes" as="xs:string"/>
         <xsl:param name="ga-tracking-id" required="no" as="xs:string?"/>
+        <xsl:param name="text-id" required="no" as="xs:string?"/>
         
         <!-- Shared footer -->
         <xsl:apply-templates select="$eft-footer"/>
@@ -241,7 +245,7 @@
                     window.dataLayer = window.dataLayer || [];
                     function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
-                    gtag('config', '<xsl:value-of select="$ga-tracking-id"/>');
+                    gtag('config', '<xsl:value-of select="$ga-tracking-id"/>' <xsl:if test="$text-id and not($text-id eq '')">, { 'text_id': '<xsl:value-of select="$text-id"/>' }</xsl:if>);
                 </script>
             </xsl:if>
         </xsl:if>
@@ -319,6 +323,7 @@
         <xsl:param name="page-description" required="yes" as="xs:string"/>
         <xsl:param name="content" required="no" as="node()*"/>
         <xsl:param name="additional-links" required="no" as="node()*"/>
+        <xsl:param name="text-id" required="no" as="xs:string?"/>
         
         <html>
             
@@ -362,6 +367,7 @@
                 <xsl:call-template name="html-footer">
                     <xsl:with-param name="front-end-path" select="$front-end-path"/>
                     <xsl:with-param name="ga-tracking-id" select="$ga-tracking-id"/>
+                    <xsl:with-param name="text-id" select="$text-id"/>
                 </xsl:call-template>
                 
             </body>
@@ -404,5 +410,35 @@
         </html>
         
     </xsl:template>
+    
+    <!-- Pop-up for tei-editor -->
+    <xsl:template name="tei-editor-footer">
+        
+        <xsl:if test="$tei-editor">
+            <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
+                <div class="fix-height">
+                    <div class="container">
+                        <div class="data-container">
+                            <!-- Ajax data here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="fixed-btn-container close-btn-container">
+                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="fa fa-times"/>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <!-- Check nodes have more that default text -->
+    <xsl:function name="m:has-user-content" as="xs:boolean">
+        <xsl:param name="content" as="node()*"/>
+        <xsl:sequence select="if($view-mode[@id eq 'editor'] or $content/descendant-or-self::text()[normalize-space(.)][not(ancestor::tei:head)][not(ancestor::*/@rend = 'default-text')]) then true() else false()"/>
+    </xsl:function>
     
 </xsl:stylesheet>

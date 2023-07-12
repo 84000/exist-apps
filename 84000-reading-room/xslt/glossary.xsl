@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="tei-to-xhtml.xsl"/>
     
@@ -29,7 +29,7 @@
                         </xsl:if>
                         <a>
                             <xsl:attribute name="href" select="common:internal-link('/glossary/search.html', $internal-link-attrs, '', $root/m:response/@lang)"/>
-                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                            <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
                             <xsl:value-of select="text()"/>
                         </a>
                     </li>
@@ -44,7 +44,7 @@
                     <a>
                         <xsl:attribute name="href" select="common:internal-link('/glossary/downloads.html', $internal-link-attrs, '', $root/m:response/@lang)"/>
                         <xsl:attribute name="title" select="'Downloads'"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                        <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
                         <i class="fa fa-cloud-download"/>
                         <xsl:value-of select="' Downloads'"/>
                     </a>
@@ -56,7 +56,7 @@
                         <a>
                             <xsl:attribute name="href" select="common:internal-link($page-url, (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
                             <xsl:attribute name="title" select="'Downloads'"/>
-                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                            <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
                             <xsl:value-of select="'Entry'"/>
                         </a>
                     </li>
@@ -72,7 +72,7 @@
                             <a class="editor">
                                 <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?flagged=', @id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
                                 <xsl:attribute name="title" select="concat('Filter by ', m:label)"/>
-                                <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
                                 <xsl:value-of select="m:label"/>
                             </a>
                         </li>
@@ -87,13 +87,13 @@
                                 <xsl:when test="$tei-editor-off">
                                     <xsl:attribute name="href" select="common:internal-link($page-url, m:view-mode-parameter('editor'), '', $root/m:response/@lang)"/>
                                     <xsl:attribute name="class" select="'editor'"/>
-                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                    <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
                                     <xsl:value-of select="'Show Editor'"/>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:attribute name="href" select="$page-url"/>
                                     <xsl:attribute name="class" select="'editor'"/>
-                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                    <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
                                     <xsl:value-of select="'Hide Editor'"/>
                                 </xsl:otherwise>
                             </xsl:choose>
@@ -103,20 +103,22 @@
                 
             </ul>
         </div>
+    
     </xsl:template>
     
     <xsl:template name="editor-summary">
         
         <xsl:param name="entity" as="element(m:entity)?"/>
+        <xsl:param name="page-url" as="xs:string"/>
         
         <xsl:if test="$tei-editor and $entity">
             
             <xsl:variable name="instances-flagged" select="$entity/m:instance[m:flag]"/>
             <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)"/>
             <xsl:variable name="related-entries-excluded" select="$related-entries[parent::m:text/@glossary-status eq 'excluded']"/>
-            <xsl:variable name="related-entries-no-definition" select="$related-entries[not(m:definition[node()])]"/>
+            <xsl:variable name="related-entries-no-definition" select="$related-entries[not(m:definition[descendant::text()[normalize-space()]])]"/>
             <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
-            <xsl:variable name="instances-use-definition" select="if($entity-definition) then $entity/m:instance[@use-definition = ('both','append','prepend','override')] | $entity/m:instance[@id = $related-entries-no-definition/@id] else ()"/>
+            <xsl:variable name="related-entries-use-definition" select="if($entity-definition) then $related-entries[m:definition[@use-definition = ('both','append','prepend','override')][descendant::text()[normalize-space()]]] | $related-entries-no-definition else ()"/>
             <xsl:variable name="glossary-notes" select="$entity/m:content[@type eq 'glossary-notes'][node()]"/>
             
             <div class="well well-sm top-margin">
@@ -125,11 +127,11 @@
                     
                     <li>
                         <span class="small text-muted">
-                            <xsl:if test="$instances-use-definition">
+                            <xsl:if test="$related-entries-use-definition">
                                 <xsl:attribute name="class" select="'small text-danger'"/>
                             </xsl:if>
-                            <xsl:value-of select="count($instances-use-definition)"/>
-                            <xsl:value-of select="if (count($instances-use-definition) eq 1) then ' entry displays entity definition' else ' entries display entity definition'"/>
+                            <xsl:value-of select="count($related-entries-use-definition)"/>
+                            <xsl:value-of select="if (count($related-entries-use-definition) eq 1) then ' entry displays entity definition' else ' entries display entity definition'"/>
                         </span>
                     </li>
                     
@@ -165,6 +167,7 @@
                         <a target="84000-operations" class="editor">
                             <xsl:attribute name="href" select="concat('/edit-entity.html?entity-id=', $entity/@xml:id, '#ajax-source')"/>
                             <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                            <xsl:attribute name="data-editor-callbackurl" select="common:internal-link($page-url, m:view-mode-parameter('editor'), concat('#',$entity/@xml:id), $root/m:response/@lang)"/>
                             <xsl:value-of select="'Entity editor'"/>
                         </a>
                     </li>
@@ -215,8 +218,8 @@
         
     </xsl:template>
     
-    <!-- Pop-up for attestation types -->
-    <xsl:template name="attestation-types-footer">
+    <!-- Pop-up for attestation types and tei editor -->
+    <xsl:template name="glossary-pop-up-footers">
         
         <!-- General pop-up -->
         <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
@@ -241,29 +244,7 @@
             <xsl:call-template name="attestation-types"/>
         </div>
         
-    </xsl:template>
-    
-    <!-- Pop-up for tei-editor -->
-    <xsl:template name="tei-editor-footer">
-        
-        <xsl:if test="$tei-editor">
-            <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
-                <div class="fix-height">
-                    <div class="container">
-                        <div class="data-container">
-                            <!-- Ajax data here -->
-                        </div>
-                    </div>
-                </div>
-                <div class="fixed-btn-container close-btn-container">
-                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                        <span aria-hidden="true">
-                            <i class="fa fa-times"/>
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </xsl:if>
+        <xsl:call-template name="tei-editor-footer"/>
         
     </xsl:template>
     

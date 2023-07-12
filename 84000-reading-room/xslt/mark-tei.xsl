@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Output as website page -->
     <xsl:import href="common.xsl"/>
@@ -61,7 +61,7 @@
                 </xsl:when>
                 
                 <!-- TEI elements we don't want to process -->
-                <xsl:when test="parent::tei:ptr | parent::tei:ref[@target] | parent::tei:lb | parent::tei:milestone | parent::tei:term[not(@type eq 'definition')] | ancestor::tei:head">
+                <xsl:when test="parent::tei:ptr | parent::tei:ref[@target] | parent::tei:lb | parent::tei:milestone | parent::tei:term | ancestor::tei:head">
                     <xsl:value-of select="false()"/>
                 </xsl:when>
                 
@@ -212,7 +212,7 @@
     <!-- Get relevant terms from gloss -->
     <xsl:function name="m:glossary-terms-to-match" as="xs:string*">
         <xsl:param name="glossary-items" as="element(tei:gloss)*"/>
-        <xsl:sequence select="$glossary-items/tei:term[not(@type eq 'definition')][not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
+        <xsl:sequence select="$glossary-items/tei:term[not(@xml:lang) or @xml:lang eq 'en'][normalize-space(data())]/data()"/>
     </xsl:function>
     
 </xsl:stylesheet>

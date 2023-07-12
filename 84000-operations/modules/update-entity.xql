@@ -73,7 +73,7 @@ declare function update-entity:create($label-lang as xs:string?, $label-text as 
 declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:string) as element()? {
     
     let $label-terms := 
-        for $term in $gloss/tei:term[not(@type = ('definition','alternative'))][normalize-space(string-join(text(),''))]
+        for $term in $gloss/tei:term[not(@type eq 'translationAlternative')][normalize-space(string-join(text(),''))]
         order by if($term/@xml:lang eq 'Bo-Ltn') then 1 else if($term/@xml:lang eq 'Sa-Ltn') then 2 else 3
         return 
             $term
@@ -301,93 +301,58 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
     
 };
 
-(: Merge entities together :)
-declare function update-entity:merge($entity-id as xs:string, $target-entity-id as xs:string) as element()* {
+(: Merge entity into target entity :)
+declare function update-entity:merge($entity-id as xs:string, $target-entity-id as xs:string) {
     
-    (# exist:batch-transaction #) {
+    let $entity := $entities:entities/id($entity-id)[self::m:entity]
+    let $target-entity := $entities:entities/id($target-entity-id)[self::m:entity] except $entity
     
-        let $parent := $entities:entities
-        let $entity := $parent/id($entity-id)[self::m:entity]
-        let $target-entity := $parent/id($target-entity-id)[self::m:entity]
+    (: Merge all details into the new entity :)
+    let $merged-entity := 
+        element { node-name($target-entity) } {
         
-        (: Merge all details into the new entity :)
-        let $entity-new := 
-            element { node-name($entity) } {
+            $target-entity/@*,
             
-                $entity/@*,
-                
-                for $entity-node in functx:distinct-deep(($entity/* | $target-entity/*))
-                let $element-name := local-name($entity-node)
-                order by if($element-name eq 'label') then 1 else if($element-name eq 'type') then 2 else if($element-name eq 'instance') then 3 else 4
-                return (
-                    common:ws(2),
-                    $entity-node
-                ),
-                
-                common:ws(1)
-            }
-        
-        (: Record that the other entity has merged (to avoid dead links) :)
-        let $target-entity-new := 
-            element { node-name($target-entity) } {
-            
-                $target-entity/@*,
-                
-                common:ws(2),
-                (
-                    $target-entity/m:label[@xml:lang eq 'en'],
-                    $target-entity/m:label[@xml:lang eq 'Bo-Ltn'],
-                    $target-entity/m:label[not(@xml:lang = ('en','Bo-Ltn'))]
-                )[1],
-                
-                (: Add reference to old entity in new :)
-                common:ws(2),
-                element { QName('http://read.84000.co/ns/1.0', 'relation') } {
-                    attribute predicate { 'sameAs' },
-                    attribute id { $entity-id }
-                },
-                
-                common:ws(1)
-                
-            }
-        
-        where $entity and $target-entity
-        return (
-            
-            (: Update entity :)
-            common:update('entity-merge', $entity, $entity-new, (), ()),
-            
-            (: Update target entity :)
-            common:update('entity-merge-target', $target-entity, $target-entity-new, (), ()),
-            
-            (: Update relations to the target to point to the new :)
-            for $relation in $entities:entities//m:relation[@id eq $target-entity-id]
-            return 
-                common:update('entity-merge-relation', $relation/@id, attribute id { $entity-id }, (), ())
-            (:,
-            
-            (\: Update attributions :\)
-            (\: This is too big an overhead!! :\)
-            for $tei in collection($common:tei-path)//tei:TEI[descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]]
+            for $entity-element in functx:distinct-deep(($entity/* | $target-entity/*))[not(./@predicate eq 'sameAs' and ./@id eq $target-entity-id)]
+            let $element-name := local-name($entity-element)
+            order by 
+                if($element-name eq 'label') then 1 
+                else if($element-name eq 'type') then 2 
+                else if($element-name eq 'instance') then 3 
+                else if($element-name eq 'content') then 4
+                else if($element-name eq 'relation') then 5 
+                else 6
             return (
-                for $attribution-ref in $tei/descendant::tei:*/@ref[. eq concat('eft:', $target-entity-id)]
-                return 
-                    common:update('entity-merge-attribution', $attribution-ref, concat('eft:', $entity-id), (), ())
-                ,
-                update-tei:minor-version-increment($tei, 'entity-merge-attribution')
-            ):)
+                common:ws(2),
+                $entity-element
+            ),
             
-            (:element update-debug {
-                attribute entity-id { $entity-id },
-                element existing-value { $target-entity }, 
-                element new-value { $target-entity-new }(\:, 
-                element parent { $parent }, 
-                element insert-following { () }:\)
-            }:)
+            (: Add reference to old entity in new :)
+            common:ws(2),
+            element { QName('http://read.84000.co/ns/1.0', 'relation') } {
+                attribute predicate { 'sameAs' },
+                attribute id { $entity-id }
+            },
             
-        )
+            common:ws(1)
+        }
+    
+    where $entity and $target-entity
+    return (
+    
+        (: Update relations to the entity to point to the target :)
+        for $relation in $entities:entities//m:relation[@id eq $entity/@xml:id] except ($entity/m:relation | $target-entity/m:relation)
+        return 
+            update replace $relation/@id with attribute id { $target-entity/@xml:id }
+        ,
+        (: Update target entity :)
+        update replace $target-entity with $merged-entity,
         
-    }
+        (: Delete entity :)
+        update delete $entity
+        
+    )
+        
     
 };
 
@@ -405,7 +370,7 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
             element { QName('http://read.84000.co/ns/1.0', 'instance') } {
                 attribute id { $instance-id },
                 attribute type { $instance-type },
-                $existing-instance/@use-definition,
+                $existing-instance/@*[not(local-name(.) = ('id','type'))],
                 $existing-instance/node(),
                 if(not($existing-instance/m:flag[@type eq $flag]) and $entities:flags/m:flag[@id eq $flag]) then (
                     common:ws(3),
@@ -430,6 +395,40 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
             
 };
 
+declare function update-entity:move-instance($instance-id as xs:string, $instance-type as xs:string, $instance-existing as element(m:instance)?, $target-element as element()*) {
+    
+    let $instance-new :=
+        element { QName('http://read.84000.co/ns/1.0','instance') } {
+            attribute id { $instance-id },
+            attribute type { $instance-type },
+            $instance-existing/@*[not(name(.) = ('id','type'))],
+            $instance-existing/node()
+        }
+    
+    where 
+        (: Adding new instance :)
+        not($instance-existing) 
+        (: Moving instance :)
+        or count($target-element | $instance-existing/parent::m:*) gt 1
+        (: Deleting instance :)
+        or not($target-element)
+        
+    return (
+        
+        (: Insert new instance :)
+        if($target-element) then
+            update insert (text{ $common:chr-tab }, $instance-new, text{ common:ws(1) }) into $target-element
+        else (),
+        
+        (: Delete existing :)
+        if($instance-existing) then
+            update delete $instance-existing
+        else ()
+        
+    )
+                    
+};
+
 declare function update-entity:remove-instance($instance-id as xs:string) as element()* {
     
     let $instance := $entities:entities/m:entity/m:instance[@id eq $instance-id][1]
@@ -447,30 +446,6 @@ declare function update-entity:remove-instance($instance-id as xs:string) as ele
             common:update('entity-remove', $entity, (), (), ())
             
     )
-        
-};
-
-declare function update-entity:update-instance($instance-id as xs:string) as element()* {
-    
-    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')[. = ('', 'both', 'append', 'prepend', 'override')]
-    
-    where not($use-definition eq 'no-value-submitted')
-    
-    let $existing-instance := $entities:entities/m:entity/m:instance[@id eq  $instance-id][1]
-    
-    let $new-instance :=
-        element { QName('http://read.84000.co/ns/1.0', 'instance') } {
-            $existing-instance/@*[not(local-name(.) eq 'use-definition')],
-            if($use-definition gt '') then
-                attribute use-definition { $use-definition }
-            else ()
-            ,
-            $existing-instance/node()
-        }
-    
-    where $existing-instance and $new-instance
-    return
-        common:update('entity-update-instance', $existing-instance, $new-instance, (), ())
         
 };
 

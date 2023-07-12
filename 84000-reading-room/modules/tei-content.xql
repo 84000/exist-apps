@@ -3,6 +3,7 @@ xquery version "3.1";
 module namespace tei-content="http://read.84000.co/tei-content";
 
 declare namespace m="http://read.84000.co/ns/1.0";
+declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
 import module namespace functx="http://www.functx.com";
@@ -52,11 +53,13 @@ declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
 };
 
 declare function tei-content:type($tei as element(tei:TEI)) as xs:string {
-    
-    if($tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@m:kb-id]) then
-        'knowledgebase'
-    else if($tei/tei:teiHeader/tei:fileDesc/@type = ('section', 'grouping')) then 
+
+    if($tei/tei:teiHeader/tei:fileDesc[@type = ('section','grouping','pseudo-section')]) then 
         'section'
+    
+    else if($tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']) then
+        'knowledgebase'
+    
     else
         'translation'
     
@@ -82,8 +85,10 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             $tei-content:sections-collection
         
         (: Knowledge base :)
-        else if($resource-type eq 'knowledgebase') then
-            $tei-content:knowledgebase-collection
+        else if($resource-type eq 'knowledgebase') then (
+            $tei-content:knowledgebase-collection,
+            $tei-content:sections-collection
+        )
         
         (: Default to translation :)
         else 
@@ -94,8 +99,8 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     let $tei := 
         if($resource-type eq 'translation') then
             $collection//tei:sourceDesc/tei:bibl[@key = $resource-id-lowercase][1]/ancestor::tei:TEI
-        else if($resource-type eq 'knowledgebase') then
-            $collection//tei:publicationStmt/tei:idno[@m:kb-id eq $resource-id-lowercase][1]/ancestor::tei:TEI
+        else if($resource-type = ('knowledgebase', 'section')) then
+            $collection//tei:publicationStmt/tei:idno[@type eq 'eft-kb-id'][text() eq $resource-id-lowercase][1]/ancestor::tei:TEI
         else ()
     
     (: Fallback to UT number :)
@@ -194,9 +199,9 @@ declare function tei-content:title-set($tei as element(tei:TEI), $type as xs:str
     
 };
 
-declare function tei-content:translation-status($tei as element(tei:TEI)?) as xs:string {
+declare function tei-content:publication-status($tei as element(tei:TEI)?) as xs:string {
 
-    let $status := $tei//tei:teiHeader//tei:publicationStmt/@status
+    let $status := $tei//tei:publicationStmt/tei:availability/@status
     return
         if($status[string() gt '']) then $status
         (: No value - return '0' :)
@@ -205,10 +210,10 @@ declare function tei-content:translation-status($tei as element(tei:TEI)?) as xs
         else ''
 };
 
-declare function tei-content:translation-status-group($tei as element(tei:TEI)) as xs:string? {
+declare function tei-content:publication-status-group($tei as element(tei:TEI)) as xs:string? {
 
     (: Returns the status group of the text :)
-    let $translation-status := tei-content:translation-status($tei)
+    let $translation-status := tei-content:publication-status($tei)
     let $status-type := if(tei-content:type($tei) eq 'translation') then 'translation' else 'article'
     
     return
@@ -286,6 +291,7 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                 for $attribution in $bibl/tei:author | $bibl/tei:editor
                 return 
                     element { QName('http://read.84000.co/ns/1.0', 'attribution') } {
+                        
                         attribute role {
                             if($attribution[@role eq 'translatorTib']) then
                                 'translator'
@@ -294,14 +300,18 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                             else 
                                 'author'
                         },
-                        $attribution/@ref,
+                        
+                        $attribution/@xml:id,
+                        
                         if($attribution[@xml:lang eq 'bo']) then
                             attribute xml:lang {'Bo-Ltn'}
                         else
                             $attribution/@xml:lang
                         ,
+                        
                         $attribution/@revision,
                         $attribution/@key,
+                        
                         text {
                             if($attribution[@xml:lang eq 'bo']) then
                                 replace(common:wylie-from-bo(normalize-space($attribution/text())), '/$', '')
@@ -316,6 +326,7 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                             else
                                 normalize-space($attribution/text())
                         }
+                        
                     }
                 ,
                 
@@ -377,29 +388,8 @@ declare function tei-content:locked-by-user($tei as element(tei:TEI)) as xs:stri
 
 };
 
-(:declare function tei-content:document-url($tei as element(tei:TEI)) as xs:string {
-    
-    (\:let $document-uri := base-uri($tei)
-    let $document-uri-tokenised := tokenize($document-uri, '/')
-    let $document-filename := $document-uri-tokenised[last()]
-    let $document-path := substring-before($document-uri, $document-filename)
-    return
-        concat($document-path, $document-filename):\)
-    base-uri($tei)
-
-};:)
-
-declare function tei-content:last-updated($fileDesc as element()?) as xs:dateTime {
-    xs:dateTime(($fileDesc/tei:notesStmt/tei:note[@type eq "lastUpdated"][@date-time gt ''][1]/@date-time, '2010-01-01T00:00:00')[1])
-};
-
 declare function tei-content:last-modified($tei as element(tei:TEI)) as xs:dateTime {
-    let $document-uri := base-uri($tei)
-    let $document-uri-tokenised := tokenize($document-uri, '/')
-    let $document-filename := $document-uri-tokenised[last()]
-    let $document-path := substring-before($document-uri, $document-filename)
-    return
-        xmldb:last-modified(concat("xmldb:exist://", $document-path), $document-filename)
+    xmldb:last-modified(util:collection-name($tei), util:document-name($tei))
 };
 
 declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as xs:string) as xs:boolean {
@@ -417,9 +407,10 @@ declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as x
 declare function tei-content:next-xml-id($tei as element(tei:TEI)) as xs:string {
 
     let $translation-id := tei-content:id($tei)
-    let $max-id := max($tei//@xml:id ! substring-after(., $translation-id) ! substring(., 2) ! common:integer(.))
+    let $max-id := max($tei//@xml:id ! substring-after(., concat($translation-id, '-')) ! tokenize(., '-')[1][functx:is-a-number(.)] ! common:integer(.))
+    let $next-id := sum(($max-id, 1))
     return
-        string-join(($translation-id, xs:string(sum(($max-id, 1)))), '-')
+        string-join(($translation-id, $next-id ! xs:string(.)), '-')
     
 };
 
@@ -528,6 +519,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
     let $start-time := util:system-dateTime()
     
     let $text-id := tei-content:id($tei)
+    let $text-type := tei-content:type($tei)
     
     let $elements := 
         for $part in 
@@ -558,22 +550,22 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                         else ()
                     }
             )
+    let $keys := ($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key, $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']/text())
     
     let $elements :=
         (: Index per doc, not per part :)
-        if($element-name eq 'end-note') then
-            for $bibl in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
-            let $toh-key := $bibl/@key
+        if($element-name eq 'end-note') then 
+            for $key in $keys
             return
-                for $element at $index in $elements[not(@key) or @key eq $toh-key]
+                for $element at $index in $elements[not(@key) or @key eq $key]
                 return
                     element { QName('http://read.84000.co/ns/1.0', $element-name) } {
                         $element/@id,
                         $element/@part-id,
-                        attribute source-key { $toh-key },
+                        attribute source-key { $key },
                         attribute index { $index }
                     }
-                    
+        
         (: Re-label based on pre-labelled elements :)
         else if($element-name eq 'milestone') then
             for $element in $elements
@@ -632,30 +624,30 @@ declare function tei-content:status-updates($tei as element()) as element(m:stat
     
     element {QName('http://read.84000.co/ns/1.0', 'status-updates')} {
         
-        let $translation-status := tei-content:translation-status($tei)
+        let $translation-status := tei-content:publication-status($tei)
         let $tei-version-number-str := tei-content:version-number-str($tei)
         
         (: Returns notes of status updates :)
-        for $status-update in $tei/tei:teiHeader//tei:notesStmt/tei:note[@update = ('file-created', 'text-version', 'translation-status', 'publication-status')]
-        let $status-update-version-number-str := replace($status-update/@value, '[^0-9\.]', '')
+        for $change in $tei//tei:revisionDesc/tei:change
         return
             element {QName('http://read.84000.co/ns/1.0', 'status-update')} {
-                $status-update/@update,
-                $status-update/@value,
-                $status-update/@date-time,
-                $status-update/@user,
-                attribute days-from-now { days-from-duration(xs:dateTime($status-update/@date-time) - current-dateTime()) },
-                if ($status-update[@update = ('translation-status', 'publication-status')] and $status-update[@value eq $translation-status]) then
+            
+                $change/@*,
+                
+                attribute days-from-now { days-from-duration(xs:dateTime($change/@when) - current-dateTime()) },
+                
+                if ($change[@type = ('translation-status', 'publication-status')] and $change[@status eq $translation-status]) then
                     attribute current-status { true() }
-                else
-                    ()
+                else ()
                 ,
-                if ($status-update[@update eq 'text-version'] and $status-update-version-number-str eq $tei-version-number-str) then
+                
+                if ($change[@type eq 'text-version'] and $change[@status ! replace(., '[^0-9\.]', '') eq $translation-status]) then
                     attribute current-version { true() }
-                else
-                    ()
+                else ()
                 ,
-                $status-update/text()
+                
+                $change/tei:desc/text()
+                
             }
     }
     
@@ -666,16 +658,56 @@ declare function tei-content:new-section($type as xs:string?) as element(tei:div
     if($type eq 'listBibl') then
     
         <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
-            <head type="section" rend="default-text">Bibliography Section Heading</head>
+            <head type="section">Bibliography Section Heading</head>
             <bibl rend="default-text">This is a sample bibliographic reference with a <ref target="https://read.84000.co/translation/toh46.html">link example</ref>.</bibl>
         </div>
         
     else
     
         <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
-            <head type="section" rend="default-text">Article Section Heading</head>
+            <head type="section">Article Section Heading</head>
             <milestone unit="chunk"/>
             <p rend="default-text">Here's a paragraph to get you started. Replace this as you wish<note place="end">This is a ready-made footnote.</note>.</p>
         </div>
+    
+};
+
+declare function tei-content:preview-nodes($content-nodes as node()*, $index as xs:integer, $preview as node()*)  {
+    
+    (: test what there is already :)
+    let $preview-length := string-length(string-join($preview, ''))
+    where $index le count($content-nodes) and $preview-length lt 500
+    return
+        (: If more needed return this node :)
+        let $content-node := $content-nodes[$index]
+        let $preview-text := 
+            if($content-node[normalize-space(.)][not(ancestor-or-self::tei:note | ancestor-or-self::tei:orig)]) then
+                $content-node
+            else ()
+        
+        return (
+            
+            (: Return this as preview text :)
+            $preview-text,
+            
+            (: Move to the next :)
+            tei-content:preview-nodes($content-nodes, $index + 1, ($preview, $preview-text))
+            
+        )
+    
+};
+
+declare function tei-content:preview($content as node()*) {
+
+    let $preview-nodes := tei-content:preview-nodes($content//text(), 1, ())
+    
+    for $node in $content/tei:div[1]/*
+    return
+        if(count($node//text() | $preview-nodes) lt (count($node//text()) + count($preview-nodes))) then (
+            $node/preceding-sibling::*[1][self::tei:milestone | self::tei:lb]
+            | $node/preceding-sibling::*[2][self::tei:milestone | self::tei:lb][following-sibling::*[1][self::tei:milestone | self::tei:lb]],
+            $node
+        )
+        else ()
     
 };

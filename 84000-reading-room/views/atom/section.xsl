@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/2005/Atom" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#default">
+<xsl:stylesheet xmlns="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#default">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -152,14 +152,11 @@
                                     <xsl:apply-templates select="eft:part[@type eq 'summary']" exclude-result-prefixes="xhtml"/>
                                 </eft:summary>
                             </xsl:if>
-                            <xsl:for-each select="eft:downloads/eft:download[@type = ('epub', 'azw3', 'pdf')]">
+                            <xsl:for-each select="eft:downloads/eft:download[@type = ('epub', 'pdf')]">
                                 <link>
                                     <xsl:choose>
                                         <xsl:when test="@type eq 'epub'">
                                             <xsl:attribute name="type" select="'application/epub+zip'"/>
-                                        </xsl:when>
-                                        <xsl:when test="@type eq 'azw3'">
-                                            <xsl:attribute name="type" select="'application/vnd.amazon.mobi8-ebook'"/>
                                         </xsl:when>
                                         <xsl:when test="@type eq 'pdf'">
                                             <xsl:attribute name="type" select="'application/pdf'"/>

@@ -21,6 +21,7 @@ declare variable $common:app-path := concat('/db/apps/', $common:app-id);
 declare variable $common:app-config := concat($common:app-path, '/config');
 declare variable $common:app-version := doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version;
 declare variable $common:log-path := '/db/system/logs';
+declare variable $common:cache-path := '/db/apps/84000-cache';
 declare variable $common:data-collection := '/84000-data';
 declare variable $common:data-path := concat('/db/apps', $common:data-collection);
 declare variable $common:tei-path := concat($common:data-path, '/tei');
@@ -33,8 +34,8 @@ declare variable $common:import-data-path := concat('/db/apps', $common:import-d
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 
-declare variable $common:diacritic-letters := 'āḍéḥīḷḹṃṇñṅṛṝṣśṭūṁ';
-declare variable $common:diacritic-letters-without := 'adehillmnnnrrsstum';
+declare variable $common:diacritic-letters := 'āḍéḥīḷḹṃṇñṅņṛṝṣśṭūṁ';
+declare variable $common:diacritic-letters-without := 'adehillmnnnnrrsstum';
 declare variable $common:chr-nl := '&#10;';
 declare variable $common:chr-tab := '&#32;&#32;&#32;&#32;';
 declare variable $common:node-ws := $common:chr-nl || $common:chr-tab;
@@ -445,6 +446,19 @@ function common:string-is-bo ($string as xs:string) as xs:boolean {
     functx:between-inclusive(min(string-to-codepoints(replace($string, '\W', ''))), 3840, 4095)
 };
 
+declare function common:normalize-bo($string as xs:string) as xs:string {
+(:
+    - Normalize whitespace
+    - Add a zero-length break after a beginning shad
+    - Add a she to the end
+:)
+    replace(
+        replace(
+            replace($string, '\s+', ' ')
+            , '(།)(\S)', '$1​$2')
+   , '་\s+$', '་')
+};
+
 declare function common:unescape($text as xs:string*) as node()* {
     try {
         parse-xml(concat('<doc>',$text,'</doc>'))/doc/node()
@@ -474,12 +488,12 @@ declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $m
 declare function common:mark-text($text as xs:string, $find as xs:string*, $mode as xs:string) as node()* {
     
     (: Standardise the input :)
-    let $find := $find ! common:normalized-chars(.) ! lower-case(.) ! normalize-space(.)
+    let $find := $find ! lower-case(.) ! normalize-unicode(.) ! common:normalized-chars(.) ! normalize-space(.)
     
     (: Tokenise the input (applying mode) :)
     let $find-tokenized :=
         if($mode = ('words')) then
-             $find ! tokenize(., '\s+')
+             $find ! tokenize(., '[^\p{L}]+')
              
         else if($mode = ('tibetan')) then
              $find ! tokenize(., '\s+') ! replace(., '(་|།)$', '')
@@ -490,38 +504,44 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: A list of words with diacritics that are equivalent to a search term, so we can look for those too :)
     let $find-diacritics := 
         if($mode = ('words')) then
-            for $word in tokenize($text, '[^\w­]') (: Not alphanumeric or soft-hyphen (There's a soft-hyphen in there too i.e.[^\w-] !!!) :)
-                let $word-normalized := lower-case(common:normalized-chars($word))
-                (: If it's an input word and it's changed :)
-                where not(lower-case(normalize-unicode($word)) eq $word-normalized)
+            for $word in tokenize($text, '[^\p{L}]+')
+            let $word-standardised := $word ! lower-case(.) ! normalize-unicode(.)
+            let $word-normalized := $word-standardised ! common:normalized-chars(.) 
+            
+            (: Return if it's changed by removing diacritics, and if it's in the search :)
+            where 
+                not($word-standardised eq $word-normalized)
+                and matches($find, $word-normalized, 'i')
             group by $word-normalized
-                for $find-match in $find-tokenized[starts-with(., substring($word-normalized, 1, string-length(.)))]
-                (:group by $find-match:)
-                return
-                    substring($word[1], 1, (string-length($find-match) + string-length(replace($word[1], '\w', ''))))
-        else
-            ()
+            return
+                $word[1]
+        else ()
     
     (: Construct the regex :)
     let $regex := 
         if($mode = ('tibetan')) then
             concat('(', string-join($find-tokenized[not(. = ('།'))] ! functx:escape-for-regex(.), '|'),')')
         else
-            let $escaped := ($find-tokenized, $find-diacritics)[. gt ' '] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
+            let $find-escaped := ($find-tokenized, $find-diacritics)[. gt ' '] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
             return
-                concat('(?:^|\W)(', string-join($escaped, '|'),')(?:\W|$)')
+                concat('\b(', string-join($find-escaped, '|'),')\b')
     
     (: double spaces to support the regex :)
-    let $text := replace($text, '\s+', '  ')
+    let $text := replace($text, '\s+', '  ') (:! common:normalized-chars(.):)
     
     (: Look for matches :)
-    let $analyze-result := analyze-string($text, $regex, 'i')
+    let $analyze-result := analyze-string($text, $regex, 'i;j')
     
     (: Output result :)
     return (
-        (:element regex {$regex},
-        element search-text {$text},
-        $analyze-result,:)
+    
+        (:element debug {
+            element find { $find },
+            element regex {$regex},
+            element search-text {$text},
+            $analyze-result
+        },:)
+        
         for $analyze-result-text in $analyze-result//text()
         return 
             if($analyze-result-text[parent::xpath:group]) then
@@ -530,6 +550,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
                 }
             else
                 text { $analyze-result-text ! replace(., '\s+', ' ') }
+                
     )
         
 };
@@ -963,7 +984,7 @@ declare function common:cache-get($request as element(m:request), $cache-key as 
             else
                 util:binary-doc(concat($cache-collection, '/', $cache-filename))
         
-        (:where $cached:)
+        where $cached
         return (
         
             if(response:exists() and $headers) then response:set-header('X-EFT-Cache', 'from-cache') else (),

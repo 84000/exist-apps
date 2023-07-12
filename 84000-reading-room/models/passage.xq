@@ -47,91 +47,73 @@ let $request :=
         attribute view-mode { $view-mode/@id },
         attribute archive-path { $archive-path },
         
-        $view-mode
+        $view-mode,$passage
         
     }
 
-(: Suppress cache for some requests :)
-let $cache-key := 
-    if($request/m:view-mode[@cache eq 'use-cache'] and $request/@passage-id gt '') then
-        let $tei-timestamp := tei-content:last-modified($tei)
-        where $tei-timestamp instance of xs:dateTime
-        return 
-            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || replace($common:app-version, '\.', '-'))
-    else ()
+let $canonical-id := (
+    $request/@archive-path ! concat('id=', .), 
+    concat('passage=', $request/@passage-id)
+)
 
-let $cached := common:cache-get($request, $cache-key)
+(: Get parts from cache and merge passages :)
+let $text-id := tei-content:id($tei)
 
-return 
-    (: Cached html :)
-    if($cached) then  $cached 
+let $outline := translation:outline-cached($tei)
+let $outlines-related := translation:outlines-related($tei, $passage, ())
+
+let $merged-parts := translation:merge-parts($outline/m:pre-processed[@type eq 'parts'], $passage)
+
+(: Get glossaries :)
+(: Compile all the translation data :)
+let $translation-data :=
+    element { QName('http://read.84000.co/ns/1.0', 'translation')} {
     
-    (: Compile response :)
-    else
-    
-        let $canonical-id := (
-            $request/@archive-path ! concat('id=', .), 
-            concat('passage=', $request/@passage-id)
+        attribute id { tei-content:id($tei) },
+        attribute status { tei-content:publication-status($tei) },
+        attribute status-group { tei-content:publication-status-group($tei) },
+        attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
+        attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
+        
+        translation:titles($tei, $source/@key),
+        $source,
+        translation:toh($tei, $source/@key),
+        tei-content:ancestors($tei, $source/@key, 1),
+        $merged-parts
+        
+    }
+
+let $entities-data := translation:entities((), $passage[@id eq 'glossary']//tei:gloss/@xml:id)
+
+(: Get caches :)
+let $glossary-cache := glossary:glossary-cache($tei, (), false())
+
+(: Calculated strings :)
+let $strings := translation:replace-text($source/@key)
+
+let $xml-response :=
+    common:response(
+        $request/@model, 
+        $common:app-id,
+        (
+            $request,
+            $translation-data,
+            $entities-data,
+            $outline,
+            $outlines-related,
+            $glossary-cache,
+            $entities:flags,
+            $glossary:attestation-types,
+            $strings
         )
-        
-        (: Get parts from cache and merge passages :)
-        let $text-id := tei-content:id($tei)
-        
-        let $outline := translation:outline-cached($tei)
-        let $outlines-related := translation:outlines-related($tei, $passage, ())
-        
-        let $merged-parts := translation:merge-parts($outline/m:pre-processed[@type eq 'parts'], $passage)
-        
-        (: Get glossaries :)
-        (: Compile all the translation data :)
-        let $translation-data :=
-            element { QName('http://read.84000.co/ns/1.0', 'translation')} {
-            
-                attribute id { tei-content:id($tei) },
-                attribute status { tei-content:translation-status($tei) },
-                attribute status-group { tei-content:translation-status-group($tei) },
-                attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
-                attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
-                
-                translation:titles($tei, $source/@key),
-                $source,
-                translation:toh($tei, $source/@key),
-                tei-content:ancestors($tei, $source/@key, 1),
-                $merged-parts
-                
-            }
-            
-        let $entities := translation:entities((), $passage[@id eq 'glossary']//tei:gloss/@xml:id)
-        
-        (: Get caches :)
-        let $glossary-cache := glossary:glossary-cache($tei, (), false())
-        
-        (: Calculated strings :)
-        let $strings := translation:replace-text($source/@key)
+    )
     
-        let $xml-response :=
-            common:response(
-                $request/@model, 
-                $common:app-id,
-                (
-                    $request,
-                    $translation-data,
-                    $entities,
-                    $outline,
-                    $outlines-related,
-                    $glossary-cache,
-                    $entities:flags,
-                    $glossary:attestation-types,
-                    $strings
-                )
-            )
-            
-        return
-            
-            (: html :)
-            if($request/@resource-suffix = ('html')) then 
-                common:html($xml-response, concat($common:app-path, "/views/html/passage.xsl"), $cache-key)
-            
-            (: xml :)
-            else 
-                common:serialize-xml($xml-response)
+return
+    
+    (: html :)
+    if($request/@resource-suffix = ('html')) then 
+        common:html($xml-response, concat($common:app-path, "/views/html/passage.xsl"), ())
+    
+    (: xml :)
+    else 
+        common:serialize-xml($xml-response)

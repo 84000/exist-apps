@@ -29,7 +29,7 @@ let $xml-response :=
             contributors:regions(false()),
             contributors:institution-types(false()),
             if($include-contributors) then
-                contributors:persons(false(), false())
+                contributors:persons(false())
             else ()
         )
     )

@@ -6,26 +6,26 @@ import module namespace local="http://operations.84000.co/local" at "../modules/
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
-import module namespace source="http://read.84000.co/source" at "../../84000-reading-room/modules/source.xql";
+import module namespace section="http://read.84000.co/section" at "../../84000-reading-room/modules/section.xql";
+import module namespace sponsorship="http://read.84000.co/sponsorship" at "../../84000-reading-room/modules/sponsorship.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 
-let $summary-kangyur := translations:summary($source:kangyur-work)
-let $summary-tengyur := translations:summary($source:tengyur-work)
+let $sponsorship-text-ids := sponsorship:text-ids('sponsored')
+let $publication-status := section:publication-status('LOBBY', $sponsorship-text-ids)
 let $text-statuses := tei-content:text-statuses-sorted('translation')
-let $recent-activity := translations:recent-updates()
+let $recent-updates := translations:recent-updates()
 
 let $xml-response :=
     common:response(
         'operations/index', 
         'operations', 
         (
-            $summary-kangyur,
-            $summary-tengyur,
+            $publication-status,
             $text-statuses,
-            $recent-activity
+            $recent-updates
         )
     )
 

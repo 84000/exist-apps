@@ -19,14 +19,21 @@
             <analyzer id="no-stopwords" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
                 <param name="stopwords" type="org.apache.lucene.analysis.util.CharArraySet"/>
             </analyzer>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="2.0"/>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="2.0">
+            <analyzer id="bo" class="io.bdrc.lucene.bo.TibetanAnalyzer">
+                <param name="segmentInWords" type="boolean" value="false"/>
+                <param name="lemmatize" type="boolean" value="true"/>
+                <param name="filterChars" type="boolean" value="true"/>
+                <param name="inputMethod" type="java.lang.String" value="unicode"/>
+                <param name="stopFilename" type="java.lang.String" value=""/>
+            </analyzer>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="5"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="3">
                 <inline qname="tei:ref"/>
                 <ignore qname="tei:biblScope"/>
             </text>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="1.5"/>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="1.5"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="2"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="2"/>
             <text match="//tei:text//tei:p"/>
             <text match="//tei:text//tei:label"/>
             <text match="//tei:text//tei:table"/>
@@ -36,14 +43,17 @@
             <text match="//tei:text//tei:ab"/>
             <text match="//tei:text//tei:trailer"/>
             <text match="//tei:back//tei:bibl"/>
-            <text match="//tei:back//tei:gloss/tei:term" analyzer="no-stopwords" field="full-term"/>
-            <text match="//tei:back//tei:gloss/tei:term"/>
+            <text match="//tei:back//tei:gloss/tei:term">
+                <field name="bo-term" if="@xml:lang='bo'" analyzer="bo"/>
+                <field name="full-term" if="@xml:lang='en'" analyzer="no-stopwords"/>
+            </text>
         </lucene>
         
         <range>
             
             <create qname="@xml:lang" type="xs:string"/>
             
+            <create qname="@n" type="xs:string"/>
             <create qname="@ref" type="xs:string"/>
             <create qname="@key" type="xs:string"/>
             <create qname="@type" type="xs:string"/>
@@ -58,12 +68,12 @@
             <create qname="@status" type="xs:string"/>
             <create qname="@update" type="xs:string"/>
             <create qname="@value" type="xs:string"/>
-            <create qname="@eft:kb-id" type="xs:string"/>
             
             <create qname="@date-time" type="xs:dateTime"/>
             <create qname="@count-pages" type="xs:integer"/>
             <create qname="@tid" type="xs:integer"/>
             
+            <create qname="tei:idno" type="xs:string"/>
             <create qname="tei:term" type="xs:string" case="no"/>
             
         </range>

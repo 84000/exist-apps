@@ -24,8 +24,7 @@ let $institution :=
         $contributors:contributors/m:contributors/m:institution[@xml:id eq $post-id]
     else if($request-id gt '') then
         $contributors:contributors/m:contributors/m:institution[@xml:id eq $request-id]
-    else
-        ()
+    else ()
 
 let $xml-response := 
     common:response(

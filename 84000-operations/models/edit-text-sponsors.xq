@@ -71,7 +71,7 @@ let $xml-response :=
                 id="{ $text-id }"
                 document-url="{ base-uri($tei) }" 
                 locked-by-user="{ tei-content:locked-by-user($tei) }"
-                status="{ tei-content:translation-status($tei) }">
+                status="{ tei-content:publication-status($tei) }">
                 { translation:titles($tei, ()) }
                 { translation:sponsors($tei, true()) }
                 { translation:publication($tei) }

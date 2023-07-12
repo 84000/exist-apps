@@ -34,7 +34,7 @@ declare option exist:serialize "method=json media-type=text/javascript";
             <appIDs>KAZM92M7ZW.co.84000.reader</appIDs>
             <appIDs>L8R7M2F4B8.co.84000.reader</appIDs>
             {
-                for $bibl in $tei-content:translations-collection//tei:fileDesc[tei:publicationStmt/@status = '1']/tei:sourceDesc/tei:bibl
+                for $bibl in $tei-content:translations-collection//tei:fileDesc[tei:publicationStmt/tei:availability/@status = '1']/tei:sourceDesc/tei:bibl[@key]
                 return
                     <paths>/translation/{ $bibl/@key/string() }.html</paths>
             }

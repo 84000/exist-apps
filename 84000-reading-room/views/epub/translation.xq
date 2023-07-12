@@ -99,7 +99,7 @@ let $entries := (
     <entry name="OEBPS/css/fontStyles.css" type="binary">{ common:epub-resource('css/fontStyles.css') }</entry>,
     <entry name="OEBPS/image/logo-stacked.png" type="binary">{ common:epub-resource('image/logo-stacked.png') }</entry>,
     <entry name="OEBPS/image/CC_logo.png" type="binary">{ common:epub-resource('image/CC_logo.png') }</entry>,
-    for $image-url in distinct-values($data/m:response/m:translation/m:part//tei:media[@mimeType eq 'image/png']/@url)
+    for $image-url in distinct-values($data/m:response/m:translation/m:part//tei:media[@mimeType eq 'image/png']/@url)[not(matches(., '^http', 'i'))]
     return
         <entry name="OEBPS/image{ $image-url }" type="binary">{ util:binary-doc(xs:anyURI(concat($common:data-path, $image-url))) }</entry>
     ,

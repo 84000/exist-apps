@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -180,7 +180,7 @@
                             <xsl:for-each select="$tabs-config/m:tabs-config/m:tab">
                                 <li role="presentation">
                                     
-                                    <xsl:if test="@target-id eq 'edit-form'">
+                                    <xsl:if test="count($tabs-config/m:tabs-config/m:tab) eq 1 or @target-id eq 'edit-form'">
                                         <xsl:attribute name="class" select="'active'"/>
                                     </xsl:if>
                                     
@@ -200,13 +200,6 @@
                         
                         <div class="tab-content">
                             
-                            <!-- Callback url -->
-                            <xsl:variable name="callbackurl">
-                                <xsl:if test="m:request/@resource-type eq 'knowledgebase' and m:knowledgebase[m:page]">
-                                    <xsl:value-of select="concat($reading-room-path, '/knowledgebase/', m:knowledgebase/m:page/@kb-id, '.html?view-mode=editor#article')"/>
-                                </xsl:if>
-                            </xsl:variable>
-                            
                             <!-- Edit content -->
                             <div id="edit-form" role="tabpanel" class="tab-pane fade">
                                 
@@ -223,15 +216,15 @@
                                         
                                         <!-- Text area -->
                                         <div class="form-group">
-                                            <textarea name="markdown" class="form-control monospace">
+                                            <textarea name="content-escaped" class="form-control monospace">
                                                 
                                                 <xsl:variable name="passage-tei">
-                                                    <!--<unescaped xmlns="http://read.84000.co/ns/1.0">
-                                                            <xsl:sequence select="$passage/node()"/>
-                                                        </unescaped>-->
-                                                    <div xmlns="http://www.tei-c.org/ns/1.0" type="markup" newline-element="p">
+                                                    <unescaped xmlns="http://read.84000.co/ns/1.0">
+                                                        <xsl:sequence select="$passage/node()[not(. instance of comment())]"/>
+                                                    </unescaped>
+                                                    <!--<div xmlns="http://www.tei-c.org/ns/1.0" type="markup" newline-element="p">
                                                         <xsl:sequence select="$passage/node()"/>
-                                                    </div>
+                                                    </div>-->
                                                 </xsl:variable>
                                                 
                                                 <xsl:variable name="passage-editable">
@@ -240,19 +233,39 @@
                                                 
                                                 <xsl:attribute name="rows" select="common:textarea-rows($passage-editable, 5, 80)"/>
                                                 
-                                                <!--<xsl:sequence select="$passage-editable/m:escaped/data()"/>-->
-                                                <xsl:sequence select="$passage-editable/m:markdown/data()"/>
+                                                <xsl:sequence select="$passage-editable/m:escaped/data()"/>
+                                                <!--<xsl:sequence select="$passage-editable/m:markdown/data()"/>-->
                                                 
                                             </textarea>
                                         </div>
                                         
                                         <!-- Submit button -->
                                         <div class="form-group center-vertical full-width">
-                                            <div class="text-danger small">
+                                            <div class="text-danger">
                                                 <xsl:value-of select="'To delete the element remove all content and update.'"/>
                                                 <br/>
                                                 <xsl:value-of select="'This will also delete associated comments!'"/>
                                             </div>
+                                            <xsl:if test="$passage[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl | self::tei:lg | self::tei:q]">
+                                                <div class="checkbox-inline">
+                                                    <label class="pull-right">
+                                                        <input type="checkbox" name="content-hidden" value="1">
+                                                            <xsl:if test="$passage/ancestor-or-self::*[@rend eq 'default-text']">
+                                                                <xsl:attribute name="checked" select="'checked'"/>
+                                                            </xsl:if>
+                                                        </input>
+                                                        <xsl:value-of select="'Hidden from public (shown in editor mode)'"/>
+                                                    </label>
+                                                </div>
+                                            </xsl:if>
+                                            <xsl:if test="$passage[self::tei:p | self::tei:lg] and not($passage/preceding-sibling::*[1][self::tei:milestone])">
+                                                <div class="checkbox-inline">
+                                                    <label class="pull-right">
+                                                        <input type="checkbox" name="add-milestone" value="1"/>
+                                                        <xsl:value-of select="'Add a preceding milestone'"/>
+                                                    </label>
+                                                </div>
+                                            </xsl:if>
                                             <div>
                                                 <button type="submit" class="btn btn-primary pull-right" data-loading="Updating content...">
                                                     <xsl:if test="(m:translation, m:knowledgebase/m:page)[1][@locked-by-user gt '']">
@@ -265,8 +278,10 @@
                                         
                                     </xsl:with-param>
                                     
-                                    <xsl:with-param name="callbackurl" select="$callbackurl"/>
-                                    
+                                </xsl:call-template>
+                                
+                                <xsl:call-template name="definition-tag-reference">
+                                    <xsl:with-param name="element-id" select="'tei-editor-help'"/>
                                 </xsl:call-template>
                                 
                             </div>
@@ -342,8 +357,6 @@
                                         
                                     </xsl:with-param>
                                     
-                                    <xsl:with-param name="callbackurl" select="$callbackurl"/>
-                                    
                                 </xsl:call-template>
                                 
                             </div>
@@ -394,15 +407,14 @@
                                         
                                     </xsl:with-param>
                                     
-                                    <xsl:with-param name="callbackurl" select="$callbackurl"/>
-                                    
                                 </xsl:call-template>
                                 
                             </div>
                             
                         </div>
                         
-                        <div class="list-group" id="markdown-help-list">
+                        <!--
+                            <div class="list-group" id="markdown-help-list">
                             <xsl:call-template name="expand-item">
                                 <xsl:with-param name="id" select="'markdown-help'"/>
                                 <xsl:with-param name="accordion-selector" select="'markdown-help-list'"/>
@@ -421,20 +433,15 @@
                                         
                                         <pre class="wrap small">
                                             <xsl:value-of select="'The language of a term can be specified [Maitrāyanī](Sa-Ltn), '"/>
-                                            <xsl:value-of select="'and links can be added [84000.co](https://84000.co).'"/>
-                                            <br/>
-                                            <xsl:value-of select="'Specific tags with multiple attributes [Karmaśataka](title lang:Sa-Ltn ref:entity-123) can also be defined.'"/>
-                                            <br/>
+                                            <xsl:value-of select="'and links can be added [84000.co](https://84000.co).'"/><br/>
+                                            <xsl:value-of select="'Specific tags with multiple attributes [Karmaśataka](title lang:Sa-Ltn ref:entity-123) can also be defined.'"/><br/>
                                         </pre>
                                         
                                         <pre class="wrap small">
-                                            <xsl:value-of select="'You can add a notes using the syntax [1](note) and another [2](note).'"/>
+                                            <xsl:value-of select="'You can add a notes using the syntax [1](note) and another [2](note).'"/><br/>
                                             <br/>
-                                            <br/>
-                                            <xsl:value-of select="'n.1 Specify the content of the 1st note like this.'"/>
-                                            <br/>
-                                            <xsl:value-of select="'n.2 And the content for the 2nd on another new line.'"/>
-                                            <br/>
+                                            <xsl:value-of select="'n.1 Specify the content of the 1st note like this.'"/><br/>
+                                            <xsl:value-of select="'n.2 And the content for the 2nd on another new line.'"/><br/>
                                         </pre>
                                         
                                         <pre class="wrap small">
@@ -447,7 +454,7 @@
                                 </xsl:with-param>
                             </xsl:call-template>
                         </div>
-                        
+                        -->
                         
                     </xsl:when>
                     
@@ -589,13 +596,8 @@
     <xsl:template name="form">
         
         <xsl:param name="content" as="node()*"/>
-        <xsl:param name="callbackurl" as="xs:string?"/>
         
         <form action="/tei-editor.html" method="post" data-ajax-target="#ajax-source" class="bottom-margin">
-            
-            <xsl:if test="$callbackurl gt ''">
-                <xsl:attribute name="data-ajax-target-callbackurl" select="$callbackurl"/>
-            </xsl:if>
             
             <input type="hidden" name="resource-id" value="{ m:request/@resource-id }"/>
             <input type="hidden" name="resource-type" value="{ m:request/@resource-type }"/>

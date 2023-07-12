@@ -113,120 +113,134 @@ let $request :=
 (: Cache for a day :)
 let $cache-key := 
     if($request/m:view-mode[@cache eq 'use-cache'] and not($flag) and not($request[@resource-id eq 'downloads']) and not($request/m:search/text() gt '')) then
-        format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || '-' || replace($common:app-version, '\.', '-')
+        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+        where $entities-timestamp instance of xs:dateTime
+        return
+            lower-case(
+                string-join((
+                    current-dateTime() ! format-dateTime(., "[Y0001]-[M01]-[D01]"),
+                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $common:app-version ! replace(., '\.', '-')
+                ),'-')
+            )
     else ()
 
 let $cached := common:cache-get($request, $cache-key)
 
-return if($cached) then $cached else
-
-let $glossary-types := $entity-types/m:type[@selected]/@glossary-type
-
-(: Get matching terms :)
-let $term-matches := 
-    if($flag) then ()
+return 
+    if($cached) then 
+        $cached 
     
-    else if($request/m:search/text() gt '') then
-        glossary:glossary-search($glossary-types, $term-lang/@id, $request/m:search, $exclude-status)
+    else
         
-    else if($alphabet/m:letter[@selected]) then
-        glossary:glossary-startletter($glossary-types, $term-lang/@id, $alphabet/m:letter[@selected]/@regex, $exclude-status)
+        let $glossary-types := $entity-types/m:type[@selected]/@glossary-type
         
-    else ()
-
-(: Convert terms to entries :)
-let $glossary-matches := 
-    if($flag) then
-        glossary:glossary-flagged($flag/@id, $glossary-types)
-    
-    else if($term-matches) then
+        (: Get matching terms :)
+        let $term-matches := 
+            if($flag) then
+                ()
+            
+            else if($request/m:search[text() gt '']) then
+                glossary:glossary-search($glossary-types, $term-lang/@id, $request/m:search, $exclude-status)
+                
+            else if($alphabet/m:letter[@selected]) then
+                glossary:glossary-startletter($glossary-types, $term-lang/@id, $alphabet/m:letter[@selected]/@regex, $exclude-status)
+                
+            else ()
         
-        (: Sort logic :)
-        let $term-matches-sorted :=
-            for $term in $term-matches
+        (: Convert terms to entries :)
+        let $glossary-matches := 
+            if($flag) then
+                glossary:glossary-flagged($flag/@id, $glossary-types)
             
-            let $sort-term := 
-                if(not($term/@xml:lang)) then
-                    $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i')
-                else if($term/@xml:lang eq 'bo') then
-                    $term/text() ! normalize-space(.) ! common:wylie-from-bo(.) ! common:alphanumeric(.)
-                else
-                    $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
-            
-            let $sort-regex := 
-                if($alphabet/m:letter[@selected]) then 
-                    $alphabet/m:letter[@selected]/@regex
-                else if(not($term/@xml:lang)) then
-                    $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i') ! functx:escape-for-regex(.)
-                else if($term/@xml:lang eq 'bo') then 
-                    $request/m:search ! common:wylie-from-bo(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
-                else 
-                    $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
-            
-            let $sort-index := functx:index-of-match-first($sort-term, $sort-regex)
-            
-            order by if($sort-index eq 1) then 0 else 1, $sort-term
-            return $term
+            else if($term-matches) then
+                
+                (: Sort logic :)
+                let $term-matches-sorted :=
+                    for $term in $term-matches
+                    
+                    let $sort-term := 
+                        if(not($term/@xml:lang)) then
+                            $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i')
+                        else if($term/@xml:lang eq 'bo') then
+                            $term/text() ! normalize-space(.) ! common:wylie-from-bo(.) ! common:alphanumeric(.)
+                        else
+                            $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+                    
+                    let $sort-regex := 
+                        if($alphabet/m:letter[@selected]) then 
+                            $alphabet/m:letter[@selected]/@regex
+                        else if(not($term/@xml:lang)) then
+                            $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i') ! functx:escape-for-regex(.)
+                        else if($term/@xml:lang eq 'bo') then 
+                            $request/m:search ! common:wylie-from-bo(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
+                        else 
+                            $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
+                    
+                    let $sort-index := functx:index-of-match-first($sort-term, $sort-regex)
+                    
+                    order by if($sort-index eq 1) then 0 else 1, $sort-term
+                    return $term
+                
+                for $term at $index in $term-matches-sorted
+                let $gloss := $term/parent::tei:gloss
+                let $gloss-id := $gloss/@xml:id
+                where $gloss-id
+                group by $gloss-id
+                order by min($index)
+                return
+                    $gloss[1]
+                    
+            else ()
         
-        for $term at $index in $term-matches-sorted
-        let $gloss := $term/parent::tei:gloss
-        let $gloss-id := $gloss/@xml:id
-        where $gloss-id
-        group by $gloss-id
-        order by min($index)
+        (: Convert entries to entities :)
+        let $matched-entities := 
+            for $gloss at $index in $glossary-matches
+            let $instances-exclude := $entities:entities//m:instance[@id = $gloss/@xml:id][m:flag[@type eq $exclude-flagged]]
+            let $instances := $entities:entities//m:instance[@id = $gloss/@xml:id] except $instances-exclude
+            let $instances-entity := $instances/parent::m:entity
+            let $instances-entity-id := $instances-entity[1]/@xml:id
+            group by $instances-entity-id
+            order by min($index)
+            return
+                $instances-entity[1]
+        
+        (: Extract a subset :)
+        let $matched-entities-subset := subsequence($matched-entities, $first-record, $request/@records-per-page)
+        
+        (: Get related entities :)
+        let $entities-related := entities:related($matched-entities-subset, false(), ('glossary','knowledgebase'), $exclude-flagged, $exclude-status)
+        
+        let $downloads := 
+            if($request[@resource-id eq 'downloads']) then
+                glossary:downloads()
+            else ()
+        
+        let $xml-response :=
+            common:response(
+                $request/@model, 
+                $common:app-id, 
+                (
+                    $request,
+                    element { QName('http://read.84000.co/ns/1.0', 'entities')} {
+                        attribute count-entities { count($matched-entities) },
+                        $matched-entities-subset,
+                        element related { 
+                            $entities-related
+                        }
+                    },
+                    $entities:flags,
+                    $glossary:attestation-types,
+                    $downloads
+                )
+            )
+        
         return
-            $gloss[1]
+        
+            (: html :)
+            if($request/@resource-suffix = ('html')) then 
+                common:html($xml-response, concat($common:app-path, "/views/html/glossary.xsl"), $cache-key)
             
-    else ()
-
-(: Convert entries to entities :)
-let $matched-entities := 
-    for $gloss at $index in $glossary-matches
-    let $instances-exclude := $entities:entities//m:instance[@id = $gloss/@xml:id][m:flag[@type eq $exclude-flagged]]
-    let $instances := $entities:entities//m:instance[@id = $gloss/@xml:id] except $instances-exclude
-    let $instances-entity := $instances/parent::m:entity
-    let $instances-entity-id := $instances-entity[1]/@xml:id
-    group by $instances-entity-id
-    order by min($index)
-    return
-        $instances-entity[1]
-
-(: Extract a subset :)
-let $matched-entities-subset := subsequence($matched-entities, $first-record, $request/@records-per-page)
-
-(: Get related entities :)
-let $entities-related := entities:related($matched-entities-subset, false(), $exclude-flagged, $exclude-status)
-
-let $downloads := 
-    if($request[@resource-id eq 'downloads']) then
-        glossary:downloads()
-    else ()
-
-let $xml-response :=
-    common:response(
-        $request/@model, 
-        $common:app-id, 
-        (
-            $request,
-            element { QName('http://read.84000.co/ns/1.0', 'entities')} {
-                attribute count-entities { count($matched-entities) },
-                $matched-entities-subset,
-                element related { 
-                    $entities-related
-                }
-            },
-            $entities:flags,
-            $glossary:attestation-types,
-            $downloads
-        )
-    )
-
-return
-
-    (: html :)
-    if($request/@resource-suffix = ('html')) then 
-        common:html($xml-response, concat($common:app-path, "/views/html/glossary.xsl"), $cache-key)
-    
-    (: xml :)
-    else 
-        common:serialize-xml($xml-response)
+            (: xml :)
+            else 
+                common:serialize-xml($xml-response)

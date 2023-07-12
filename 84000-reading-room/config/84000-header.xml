@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-header xmlns="http://read.84000.co/ns/1.0">
-    <!-- Updated 16.03.2023 -->
+    <!-- Updated 11.04.2023 -->
     <translation id="tag-line">
         <text xml:lang="en">Translating the words of the Buddha</text>
         <text xml:lang="zh">八萬四千 • 佛典傳譯</text>
@@ -90,6 +90,9 @@
             <item url="https://read.84000.co/glossary/search.html">
                 <label key="label-glossary">Glossary of Terms</label>
             </item>
+            <item url="https://read.84000.co/knowledgebase.html">
+                <label key="label-glossary">Knowledge Base</label>
+            </item>
             <item url="https://read.84000.co/search.html">
                 <label key="label-search">Search</label>
             </item>
@@ -165,9 +168,9 @@
         </item>
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">Donate</label>
-            <item url="https://campaigns.84000.co">
+            <!--<item url="https://campaigns.84000.co">
                 <label key="label-give-monthly">The Perfection of Wisdom for All</label>
-            </item>
+            </item>-->
             <item url="https://84000.co/how-you-can-help/give-monthly">
                 <label key="label-give-monthly">Give Monthly</label>
             </item>
@@ -181,7 +184,7 @@
                 <label key="label-matching-funds">Matching Funds</label>
             </item>
         </item>
-        <banner>
+        <!--<banner>
             <div xmlns="http://www.w3.org/1999/xhtml" id="campaign-pp100k" class="nav-banner collapse persist">
                 <style>
                     .reading-room #campaign-pp100k {
@@ -210,7 +213,7 @@
                     </div>
                 </div>
             </div>
-        </banner>
+        </banner>-->
     </navigation>
     <navigation xml:lang="zh">
         <item class="home" url="https://84000.co/ch">
@@ -226,6 +229,9 @@
             </item>
             <item url="https://read.84000.co/glossary/search.html?lang=zh">
                 <label key="label-glossary">術語表</label>
+            </item>
+            <item url="https://read.84000.co/knowledgebase.html?lang=zh">
+                <label key="label-glossary">Knowledge Base</label>
             </item>
             <item url="https://read.84000.co/search.html?lang=zh">
                 <label key="label-search">雲端藏經閣檢索</label>
@@ -296,9 +302,9 @@
         </item>
         <item class="how-to-help" url="#how-to-help">
             <label key="label-how-to-help">線上捐款</label>
-            <item url="https://campaigns.84000.co/chinese">
+            <!--<item url="https://campaigns.84000.co/chinese">
                 <label key="label-give-monthly">點亮心燈 傳譯般若</label>
-            </item>
+            </item>-->
             <item url="https://84000.co/ch-how-you-can-help/ch-give-monthly">
                 <label key="label-give-monthly">每月定捐</label>
             </item>
@@ -312,7 +318,7 @@
                 <label key="label-matching-funds">對等基金</label>
             </item>
         </item>
-        <banner>
+        <!--<banner>
             <div xmlns="http://www.w3.org/1999/xhtml" id="campaign-pp100k" class="nav-banner collapse persist">
                 <style>
                     .reading-room #campaign-pp100k {
@@ -341,7 +347,7 @@
                     </div>
                 </div>
             </div>
-        </banner>
+        </banner>-->
     </navigation>
     <social xml:lang="en">
         <label key="label-social">Follow our work:</label>

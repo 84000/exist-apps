@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="charts.xsl"/>
     <xsl:import href="../../../xslt/webpage.xsl"/>
+    
+    <xsl:variable name="request" select="/m:response/m:request"/>
     
     <xsl:template match="/m:response">
         
@@ -11,7 +13,7 @@
             <div class="title-band">
                 <div class="container text-center">
                     <h1 class="title">
-                        <xsl:value-of select="'84000 Progress Chart ' || m:request/m:work-name"/>
+                        <xsl:value-of select="'84000 Progress Chart - ' || $request/m:work-name"/>
                     </h1>
                 </div>
             </div>
@@ -23,21 +25,25 @@
                             <div id="eft-progress-chart-single-content">
                                 
                                 <div class="row about-stats">
+                                    
+                                    <xsl:variable name="publications-summary" select="m:translation-summary[@section-id eq $request/@section-id]/m:publications-summary[@scope eq 'descendant'][@grouping eq 'toh']"/>
+                                    
                                     <div class="col-sm-6 col-lg-4">
                                         
                                         <xsl:call-template name="progress-pie-chart">
-                                            <xsl:with-param name="outline-summary" select="m:outline-summary"/>
+                                            <xsl:with-param name="publications-summary" select="$publications-summary"/>
                                             <xsl:with-param name="replace-text" select="m:replace-text"/>
                                             <xsl:with-param name="show-legend" select="false()"/>
                                         </xsl:call-template>
                                         
                                     </div>
+                                    
                                     <div class="col-sm-6 col-lg-8">
                                         
-                                        <xsl:variable name="total-pages" select="sum(m:outline-summary/m:tohs/m:pages/@count ! xs:integer(.))"/>
-                                        <xsl:variable name="published-pages" select="sum(m:outline-summary/m:tohs/m:pages/@published ! xs:integer(.))"/>
-                                        <xsl:variable name="translated-pages" select="sum(m:outline-summary/m:tohs/m:pages/@translated ! xs:integer(.))"/>
-                                        <xsl:variable name="in-translation-pages" select="sum(m:outline-summary/m:tohs/m:pages/@in-translation ! xs:integer(.))"/>
+                                        <xsl:variable name="total-pages" select="sum($publications-summary/m:pages/@total ! xs:integer(.))"/>
+                                        <xsl:variable name="published-pages" select="sum($publications-summary/m:pages/@published ! xs:integer(.))"/>
+                                        <xsl:variable name="translated-pages" select="sum($publications-summary/m:pages/@translated ! xs:integer(.))"/>
+                                        <xsl:variable name="in-translation-pages" select="sum($publications-summary/m:pages/@in-translation ! xs:integer(.))"/>
                                         
                                         <div class="top-margin">
                                             
@@ -77,6 +83,7 @@
                                         </div>
                                         
                                     </div>
+                                
                                 </div>
                                 
                             </div>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -115,7 +115,6 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="index.html">
-                    <xsl:attribute name="data-loading" select="'Loading Summary...'"/>
                     <xsl:value-of select="'Summary'"/>
                 </a>
             </li>
@@ -124,7 +123,6 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="search.html">
-                    <xsl:attribute name="data-loading" select="'Loading Texts...'"/>
                     <xsl:value-of select="'Texts'"/>
                 </a>
             </li>
@@ -133,25 +131,22 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="sections.html">
-                    <xsl:attribute name="data-loading" select="'Loading Sections...'"/>
                     <xsl:value-of select="'Sections'"/>
                 </a>
             </li>
-            <li role="presentation">
+            <!--<li role="presentation">
                 <xsl:if test="$active-tab eq 'operations/knowledgebase'">
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="knowledgebase.html">
-                    <xsl:attribute name="data-loading" select="'Loading Knowledge Base...'"/>
                     <xsl:value-of select="'Knowledge Base'"/>
                 </a>
-            </li>
+            </li>-->
             <li role="presentation">
                 <xsl:if test="$active-tab eq 'operations/sponsors'">
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="sponsors.html">
-                    <xsl:attribute name="data-loading" select="'Loading Sponsors...'"/>
                     <xsl:value-of select="'Sponsors'"/>
                 </a>
             </li>
@@ -160,7 +155,6 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translators.html">
-                    <xsl:attribute name="data-loading" select="'Loading Contributors...'"/>
                     <xsl:value-of select="'Contributors'"/>
                 </a>
             </li>
@@ -169,7 +163,6 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translator-teams.html">
-                    <xsl:attribute name="data-loading" select="'Loading Teams...'"/>
                     <xsl:value-of select="'Teams'"/>
                 </a>
             </li>
@@ -178,7 +171,6 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="translator-institutions.html">
-                    <xsl:attribute name="data-loading" select="'Loading Institutions...'"/>
                     <xsl:value-of select="'Institutions'"/>
                 </a>
             </li>
@@ -187,7 +179,6 @@
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 <a href="sys-config.html">
-                    <xsl:attribute name="data-loading" select="'Loading Config...'"/>
                     <xsl:value-of select="'Config'"/>
                 </a>
             </li>
@@ -328,6 +319,16 @@
                     </a>
                 </li>
             </xsl:if>
+            <xsl:if test="$active-tab eq 'operations/source'">
+                <li role="presentation">
+                    <xsl:attribute name="class" select="'active'"/>
+                    <a>
+                        <xsl:attribute name="href" select="concat('/source.html?text-id=', /m:response/m:request/@text-id)"/>
+                        <xsl:attribute name="data-loading" select="'Loading...'"/>
+                        <xsl:value-of select="'Source Text'"/>
+                    </a>
+                </li>
+            </xsl:if>
         </ul>
     </xsl:template>
     
@@ -352,13 +353,13 @@
                         <div class="pull-quote">
                             
                             <xsl:choose>
-                                <xsl:when test="@translation-status-group eq 'published'">
+                                <xsl:when test="@status-group eq 'published'">
                                     <xsl:attribute name="class" select="'pull-quote green-quote'"/>
                                 </xsl:when>
-                                <xsl:when test="@translation-status-group = ('translated', 'in-translation')">
+                                <xsl:when test="@status-group = ('translated', 'in-translation')">
                                     <xsl:attribute name="class" select="'pull-quote orange-quote'"/>
                                 </xsl:when>
-                                <xsl:when test="@translation-status-group eq 'in-application'">
+                                <xsl:when test="@status-group eq 'in-application'">
                                     <xsl:attribute name="class" select="'pull-quote orange-red'"/>
                                 </xsl:when>
                             </xsl:choose>
@@ -371,7 +372,7 @@
                                 </a>
                                 <span class="text-right">
                                     <xsl:copy-of select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
-                                    <xsl:copy-of select="ops:translation-status(@translation-status-group)"/>
+                                    <xsl:copy-of select="ops:translation-status(@status-group)"/>
                                 </span>
                             </div>
                             
@@ -393,8 +394,8 @@
                                 
                                 <!-- Acknowledgment statement -->
                                 <xsl:choose>
-                                    <xsl:when test="tei:div[@type eq 'acknowledgment']/*">
-                                        <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/*"/>
+                                    <xsl:when test="tei:div[@type eq 'acknowledgment'][descendant::text()[normalize-space()]]">
+                                        <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/node()"/>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <p class="text-muted italic">
@@ -836,7 +837,7 @@
         
         <xsl:param name="entity" as="element(m:entity)"/>
         <xsl:param name="active-glossary-id" as="xs:string"/>
-        <xsl:param name="active-kb-id" as="xs:string"/>
+        <xsl:param name="active-knowledgebase-id" as="xs:string"/>
         
         <h4>
             <xsl:value-of select="$entity/@xml:id"/>
@@ -881,7 +882,7 @@
         <!-- List related knowledgebase pages -->
         <xsl:call-template name="knowledgebase-page-instance">
             <xsl:with-param name="knowledgebase-page" select="/m:response/m:entities/m:related/m:page[@xml:id = $entity/m:instance/@id]"/>
-            <xsl:with-param name="active-kb-id" select="$active-kb-id"/>
+            <xsl:with-param name="knowledgebase-active-id" select="$active-knowledgebase-id"/>
         </xsl:call-template>
         
     </xsl:template>
@@ -976,7 +977,7 @@
             <div class="panel-heading" role="tab">
                 <a href="{ concat('#tag-reference-', $element-id) }" aria-controls="{ concat('tag-reference-', $element-id) }" id="{ concat('#tag-reference-heading-', $element-id) }" class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
                     <h5 class="text-muted italic">
-                        <xsl:value-of select="'Tag reference for definitions'"/>
+                        <xsl:value-of select="'Tag reference'"/>
                     </h5>
                     <span class="text-right">
                         <i class="fa fa-plus collapsed-show"/>
@@ -1002,7 +1003,7 @@
                     </xsl:variable>
                     
                     <xsl:variable name="samples">
-                        <term type="ignore">affliction</term>
+                        <term rend="ignore">affliction</term>
                         <distinct>dhāraṇī</distinct>
                         <emph>Reality</emph>
                         <foreign xml:lang="Sa-Ltn">āyatana</foreign>
@@ -1172,30 +1173,6 @@
                     <xsl:value-of select="'Sanskrit* / Reconstructed'"/>
                 </option>
             </xsl:if>
-            <!--<xsl:if test="$language-options = 'Sa-Ltn-sr'">
-                <option value="sa-ltn-sr">
-                    <xsl:if test="$selected-language eq 'Sa-Ltn-sr'">
-                        <xsl:attribute name="selected" select="'selected'"/>
-                    </xsl:if>
-                    <xsl:value-of select="'Sanskrit* / Semantic Reconstruction'"/>
-                </option>
-            </xsl:if>
-            <xsl:if test="$language-options = 'Sa-Ltn-tr'">
-                <option value="sa-ltn-tr">
-                    <xsl:if test="$selected-language eq 'Sa-Ltn-tr'">
-                        <xsl:attribute name="selected" select="'selected'"/>
-                    </xsl:if>
-                    <xsl:value-of select="'Sanskrit* / Transliteration Reconstruction'"/>
-                </option>
-            </xsl:if>
-            <xsl:if test="$language-options = 'Sa-Ltn-sa'">
-                <option value="sa-ltn-sa">
-                    <xsl:if test="$selected-language eq 'Sa-Ltn-sa'">
-                        <xsl:attribute name="selected" select="'selected'"/>
-                    </xsl:if>
-                    <xsl:value-of select="'Sanskrit* / Source Attested'"/>
-                </option>
-            </xsl:if>-->
             <xsl:if test="$language-options = 'zh'">
                 <option value="zh">
                     <xsl:if test="$selected-language eq 'zh'">
@@ -1212,7 +1189,7 @@
                     <xsl:value-of select="'Pali'"/>
                 </option>
             </xsl:if>
-            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc',(:'Sa-Ltn-tr','Sa-Ltn-sr','Sa-Ltn-sa',:)'zh','Pi-Ltn'))">
+            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc','zh','Pi-Ltn'))">
                 <option>
                     <xsl:attribute name="value" select="$selected-language"/>
                     <xsl:attribute name="selected" select="'selected'"/>
@@ -1316,7 +1293,7 @@
         <xsl:param name="entry" as="element(m:entry)"/>
         <xsl:param name="line-through" select="false()" as="xs:boolean?"/>
         
-        <xsl:if test="$entry/m:definition[node()]">
+        <xsl:if test="$entry/m:definition[descendant::text()[normalize-space()]]">
             <div class="small" title="Glossary definition">
                 
                 <xsl:if test="$line-through">
@@ -1324,7 +1301,7 @@
                     <xsl:attribute name="title" select="'Entity definition incompatible with glossary definition!'"/>
                 </xsl:if>
                 
-                <xsl:for-each select="$entry/m:definition[node()]">
+                <xsl:for-each select="$entry/m:definition/tei:p[descendant::text()[normalize-space()]]">
                     
                     <xsl:variable name="definition-html">
                         <xsl:apply-templates select="node()"/>
@@ -1346,7 +1323,7 @@
         <xsl:param name="entity" as="element(m:entity)?"/>
         <xsl:param name="line-through" select="false()" as="xs:boolean?"/>
         
-        <xsl:if test="$entity/m:content[@type eq 'glossary-definition'][node()]">
+        <xsl:if test="$entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]]">
             
             <div class="text-warning small" title="Entity definition included">
                 
@@ -1355,7 +1332,7 @@
                     <xsl:attribute name="title" select="'Entity definition overrides glossary definition!'"/>
                 </xsl:if>
                 
-                <xsl:for-each select="$entity/m:content[@type eq 'glossary-definition'][node()]">
+                <xsl:for-each select="$entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]]">
                     
                     <xsl:variable name="definition-html">
                         <xsl:apply-templates select="node()"/>
@@ -1377,12 +1354,11 @@
         <xsl:param name="entry" as="element(m:entry)"/>
         <xsl:param name="entity" as="element(m:entity)?"/>
         
-        <xsl:variable name="glossary-definition" select="$entry/m:definition[node()]"/>
-        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
-        <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $entry/@id]"/>
+        <xsl:variable name="entry-definition" select="$entry/m:definition[descendant::text()[normalize-space()]]"/>
+        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]]"/>
         
         <!-- Use entity definition before -->
-        <xsl:if test="$entity-definition and $entity-instance[@use-definition = ('both','prepend')]">
+        <xsl:if test="$entity-definition and $entry-definition[@use-definition = ('both','prepend')]">
             <div class="sml-margin bottom collapse-one-line">
                 <xsl:call-template name="entity-definition">
                     <xsl:with-param name="entity" select="$entity"/>
@@ -1391,21 +1367,21 @@
         </xsl:if>
         
         <!-- Output glossary definition -->
-        <xsl:if test="$glossary-definition">
+        <xsl:if test="$entry-definition">
             <div class="sml-margin bottom collapse-one-line">
                 <xsl:call-template name="glossary-definition">
                     <xsl:with-param name="entry" select="$entry"/>
-                    <xsl:with-param name="line-through" select="if($entity-definition and $entity-instance[@use-definition eq 'override']) then true() else false()"/>
+                    <xsl:with-param name="line-through" select="if($entity-definition and $entry-definition[@use-definition eq 'override']) then true() else false()"/>
                 </xsl:call-template>
             </div>
         </xsl:if>
         
         <!-- Use entity definition after -->
-        <xsl:if test="$entity-definition and $entity-instance[not(@use-definition = ('both','prepend'))]">
+        <xsl:if test="$entity-definition and $entry-definition[not(@use-definition = ('both','prepend'))]">
             <div class="sml-margin bottom collapse-one-line">
                 <xsl:call-template name="entity-definition">
                     <xsl:with-param name="entity" select="$entity"/>
-                    <xsl:with-param name="line-through" select="if($glossary-definition and $entity-instance[not(@use-definition = ('append','override'))]) then true() else false()"/>
+                    <xsl:with-param name="line-through" select="if($entry-definition and $entry-definition[not(@use-definition = ('append','override'))]) then true() else false()"/>
                 </xsl:call-template>
             </div>
         </xsl:if>
@@ -1564,7 +1540,7 @@
                     </span>
                 </xsl:when>
                 <xsl:otherwise>
-                    <a target="_self" class="small" data-loading="Setting flag...">
+                    <a target="_self" data-loading="Setting flag..." class="small">
                         <xsl:attribute name="href" select="replace(replace($flag-options-href, '\{flag\-action\}', 'set-flag'), '\{flag\-id\}', @id)"/>
                         <xsl:value-of select="'Flag this entry: '"/>
                         <xsl:value-of select="m:label"/>
@@ -1579,12 +1555,12 @@
     <xsl:template name="knowledgebase-page-instance">
         
         <xsl:param name="knowledgebase-page" as="element(m:page)*"/>
-        <xsl:param name="active-kb-id" as="xs:string"/>
+        <xsl:param name="knowledgebase-active-id" as="xs:string"/>
         
         <xsl:if test="$knowledgebase-page">
             <fieldset>
                 
-                <xsl:if test="$knowledgebase-page[@xml:id eq $active-kb-id]">
+                <xsl:if test="$knowledgebase-page[@xml:id eq $knowledgebase-active-id]">
                     <xsl:attribute name="class" select="'active'"/>
                 </xsl:if>
                 
@@ -1616,7 +1592,7 @@
                             <xsl:value-of select="' / '"/>
                             <span>
                                 <xsl:choose>
-                                    <xsl:when test="not(@xml:id eq $active-kb-id)">
+                                    <xsl:when test="not(@xml:id eq $knowledgebase-active-id)">
                                         <a class="small">
                                             <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', @xml:id)"/>
                                             <xsl:attribute name="target" select="@kb-id"/>

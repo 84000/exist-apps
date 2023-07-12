@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:util="http://exist-db.org/xquery/util" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -54,7 +54,6 @@
                                     <div>
                                         <a target="_self" class="center-vertical">
                                             <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                            <xsl:attribute name="data-loading" select="'Loading page...'"/>
                                             <span>
                                                 <span class="btn-round sml">
                                                     <i class="fa fa-list"/>
@@ -274,10 +273,10 @@
                                 <div class="col-xs-12 col-md-offset-2 col-md-8">
                                     
                                     <!-- stats -->
-                                    <xsl:variable name="count-texts" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                                    <xsl:variable name="count-published" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                                    <xsl:variable name="count-in-progress" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
-                                    <xsl:variable name="sum-published-pages" as="xs:integer?" select="m:section/m:text-stats/m:stat[@type eq 'sum-pages-published-descendants']/@value"/>
+                                    <xsl:variable name="publications-summary" select="m:section/m:translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']"/>
+                                    <xsl:variable name="count-texts" as="xs:integer?" select="$publications-summary/m:texts/@total"/>
+                                    <xsl:variable name="count-published" as="xs:integer?" select="$publications-summary/m:texts/@published"/>
+                                    <xsl:variable name="count-in-progress" as="xs:integer?" select="sum(($publications-summary/m:texts/@translated ! xs:integer(.), $publications-summary/m:texts/@in-translation) ! xs:integer(.))"/>
                                     
                                     <table class="table table-stats">
                                         <tbody>
@@ -308,7 +307,7 @@
                     <xsl:variable name="tabs">
                         
                         <!-- Texts tab -->
-                        <xsl:if test="$show-texts and (m:section/m:section[not(@type eq 'grouping')] or m:section/m:about[*])">
+                        <xsl:if test="$show-texts and (m:section/m:section[not(@type eq 'grouping')])">
                             <li role="presentation" class="active">
                                 <a href="#texts" aria-controls="texts" role="tab" data-toggle="tab">
                                     <xsl:value-of select="'Texts'"/>
@@ -317,7 +316,7 @@
                         </xsl:if>
                         
                         <!-- Sub-sections tab -->
-                        <xsl:if test="m:section/m:section[not(@type eq 'grouping')] and ($show-texts or m:section/m:about[*])">
+                        <xsl:if test="m:section/m:section[not(@type eq 'grouping')] and $show-texts">
                             <li role="presentation">
                                 <xsl:attribute name="class" select="if(not($show-texts)) then 'active' else ''"/>
                                 <a href="#sections" aria-controls="sections" role="tab" data-toggle="tab">
@@ -327,13 +326,13 @@
                         </xsl:if>
                         
                         <!-- About tab -->
-                        <xsl:if test="m:section/m:about[*]">
+                        <!--<xsl:if test="m:section/m:about[*]">
                             <li role="presentation">
                                 <a href="#about" aria-controls="about" role="tab" data-toggle="tab">
                                     <xsl:value-of select="'About'"/>
                                 </a>
                             </li>
-                        </xsl:if>
+                        </xsl:if>-->
                         
                     </xsl:variable>
                     <xsl:if test="not($section-id = ('lobby', 'all-translated')) and $tabs[xhtml:li]">
@@ -372,7 +371,7 @@
                         </xsl:if>
                         
                         <!-- About text -->
-                        <xsl:if test="m:section/m:about[*]">
+                        <!--<xsl:if test="m:section/m:about[*]">
                             <div role="tabpanel" id="about" class="summary">
                                 
                                 <xsl:variable name="css-class" as="xs:string*">
@@ -389,7 +388,7 @@
                                 </div>
                                 
                             </div>
-                        </xsl:if>
+                        </xsl:if>-->
                         
                         <!-- All texts -->
                         <div role="tabpanel" id="texts">
@@ -699,7 +698,7 @@
     
     <xsl:template name="section-title">
         
-        <xsl:param name="section"/>
+        <xsl:param name="section" as="element(m:section)"/>
         <xsl:param name="primary-section" as="xs:boolean" select="false()"/>
         
         <div class="section-title row">
@@ -726,7 +725,7 @@
                     </xsl:choose>
                 </xsl:element>
                 
-                <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo']/text() or $section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
+                <xsl:if test="$section/m:titles/m:title[@xml:lang = 'bo'][text()] or $section/m:titles/m:title[@xml:lang = 'Bo-Ltn'][text()]">
                     <hr/>
                     <div class="title">
                         <span>
@@ -735,7 +734,7 @@
                             </xsl:call-template>
                             <xsl:value-of select="normalize-space($section/m:titles/m:title[@xml:lang = 'bo'])"/>
                         </span>
-                        <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Bo-Ltn']/text()">
+                        <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Bo-Ltn'][text()]">
                             <xsl:value-of select="' · '"/>
                             <span>
                                 <xsl:call-template name="class-attribute">
@@ -747,7 +746,7 @@
                     </div>
                 </xsl:if>
                 
-                <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Sa-Ltn']/text()">
+                <xsl:if test="$section/m:titles/m:title[@xml:lang = 'Sa-Ltn'][text()]">
                     <hr/>
                     <div>
                         <xsl:call-template name="class-attribute">
@@ -762,6 +761,17 @@
                     <hr/>
                     <div id="abstract">
                         <xsl:apply-templates select="$section/m:abstract/*"/>
+                    </div>
+                </xsl:if>
+                
+                <xsl:if test="$section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $section/m:page/@status]">
+                    <hr/>
+                    <div>
+                        <xsl:value-of select="'Read the knowledge base article '"/>
+                        <a class="underline">
+                            <xsl:attribute name="href" select="concat('/knowledgebase/', $section/m:page/@kb-id, '.html')"/>
+                            <xsl:value-of select="$section/m:page/m:titles/m:title[@type eq 'mainTitle']"/>
+                        </a>
                     </div>
                 </xsl:if>
                 
@@ -1210,40 +1220,39 @@
                                 
                                 <hr class="visible-xs visible-sm sml-margin"/>
                                 
+                                <xsl:variable name="text-pages" select="$text-1/m:source/m:location/@count-pages ! xs:integer(.)" as="xs:integer?"/>
+                                
                                 <div class="small text-warning sml-margin bottom">
-                                    <xsl:value-of select="format-number(m:source/m:location/@count-pages, '#,###')"/>
-                                    <xsl:choose>
-                                        <xsl:when test="m:source/m:location/@count-pages ! xs:integer(.) eq 1">
-                                            <xsl:value-of select="' page'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="' pages'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:choose>
-                                        <xsl:when test="m:source/m:location/@work eq 'UT4CZ5369'">
-                                            <xsl:value-of select="' of the Degé Kangyur'"/>
-                                        </xsl:when>
-                                        <xsl:when test="m:source/m:location/@work eq 'UT23703'">
-                                            <xsl:value-of select="' of the Degé Tengyur'"/>
-                                        </xsl:when>
-                                    </xsl:choose>
+                                    <xsl:value-of select="concat(format-number($text-pages, '#,###'), if($text-pages gt 1) then ' pages' else ' page'), ' of the Degé', if($text-1/m:source/m:location[@work eq 'UT4CZ5369']) then ' Kangyur' else ' Tengyur'"/>
                                 </div>
                                 
                                 <xsl:choose>
                                     <xsl:when test="$text-1/@status-group eq 'published'">
                                         
-                                        <xsl:if test="$text-1/m:publication/m:publication-date[text()]">
-                                            <div class="hidden-xs hidden-sm text-success small italic sml-margin bottom">
-                                                <xsl:value-of select="concat('Published ', format-date($text-1/m:publication/m:publication-date, '[FNn,*-3], [D1o] [MNn,*-3] [Y]'))"/>
-                                            </div>
+                                        <xsl:variable name="publication-date-str" select="$text-1/m:publication/m:publication-date/text() ! format-date(., '[FNn,*-3], [D1o] [MNn,*-3] [Y]')" as="xs:string?"/>
+                                        <xsl:variable name="published-statuses" select="$text-1/m:publication-status[@status-group eq 'published']"/> 
+                                        <xsl:variable name="published-pages" select="if($published-statuses) then sum($published-statuses/@count-pages ! xs:integer(.)) else $text-pages" as="xs:integer?"/>
+                                        
+                                        <xsl:if test="$publication-date-str and $published-pages">
+                                            <xsl:choose>
+                                                <xsl:when test="$published-pages lt $text-pages">
+                                                    <div class="hidden-xs hidden-sm text-success small sml-margin bottom">
+                                                        <xsl:value-of select="concat(format-number($published-pages, '#,###'), if($published-pages gt 1) then ' pages' else ' page', ' published ', $publication-date-str)"/>
+                                                    </div>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <div class="hidden-xs hidden-sm text-success small sml-margin bottom">
+                                                        <xsl:value-of select="concat('Published ', $publication-date-str)"/>
+                                                    </div>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </xsl:if>
                                         
                                         <hr class="visible-xs visible-sm sml-margin"/>
                                         
                                         <ul class="translation-links">
                                             <xsl:variable name="title-en" select="$text-1/m:titles/m:title[@xml:lang='en'][not(@type)]/text()" as="xs:string"/>
-                                            <xsl:for-each select="$text-1/m:downloads/m:download[@type = ('html','pdf','epub'(:,'azw3':))]">
+                                            <xsl:for-each select="$text-1/m:downloads/m:download[@type = ('html','pdf','epub')]">
                                                 <li>
                                                     <a>
                                                         <xsl:attribute name="title">
@@ -1261,6 +1270,7 @@
                                                                 <xsl:attribute name="target" select="'_blank'"/>
                                                                 <xsl:attribute name="download" select="@filename"/>
                                                                 <xsl:attribute name="class" select="'log-click'"/>
+                                                                <xsl:attribute name="data-log-click-text-id" select="$text-1/@id"/>
                                                                 <xsl:attribute name="data-page-alert" select="common:internal-link('/widget/download-dana.html', concat('resource-id=', $text-1/@resource-id), '#dana-description', /m:response/@lang)"/>
                                                             </xsl:otherwise>
                                                         </xsl:choose>
@@ -1279,6 +1289,7 @@
                                                     <a>
                                                         <xsl:attribute name="href" select="$app-href"/>
                                                         <xsl:attribute name="class" select="'log-click'"/>
+                                                        <xsl:attribute name="data-log-click-text-id" select="$text-1/@id"/>
                                                         <xsl:attribute name="target" select="'84000-comms'"/>
                                                         <xsl:call-template name="download-icon">
                                                             <xsl:with-param name="type" select="'app'"/>
@@ -1289,33 +1300,21 @@
                                                     </a>
                                                 </li>
                                             </xsl:if>
-                                            <xsl:if test="$text-1/m:downloads/m:download[@type = ('epub'(:,'azw3':))]">
-                                                <li class="hidden-print">
-                                                    <a data-toggle="modal" href="#ebook-help" data-target="#ebook-help" class="visible-scripts text-muted">
-                                                        <i class="fa fa-info-circle" aria-hidden="true"/>
-                                                        <span>
-                                                            <xsl:call-template name="local-text">
-                                                                <xsl:with-param name="local-key" select="'ebook-help-title'"/>
-                                                            </xsl:call-template>
-                                                        </span>
-                                                    </a>
-                                                </li>
-                                            </xsl:if>
                                         </ul>
                                         
                                     </xsl:when>
                                     <xsl:when test="$text-1/@status-group eq 'translated'">
-                                        <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
+                                        <div class="small italic sml-margin bottom text-muted visible-md visible-lg">
                                             <xsl:value-of select="'Translation in progress'"/>
                                         </div>
                                     </xsl:when>
                                     <xsl:when test="$text-1/@status-group eq 'in-translation'">
-                                        <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
+                                        <div class="small italic sml-margin bottom text-muted visible-md visible-lg">
                                             <xsl:value-of select="'Translation in progress'"/>
                                         </div>
                                     </xsl:when>
                                     <xsl:when test="$text-1/@status-group eq 'in-application'">
-                                        <div class="small italic sml-margin bottom text-warning visible-md visible-lg">
+                                        <div class="small italic sml-margin bottom text-muted visible-md visible-lg">
                                             <xsl:value-of select="'Application pending'"/>
                                         </div>
                                     </xsl:when>
@@ -1482,7 +1481,6 @@
                                 <a target="_self" class="block-link printable">
                                     
                                     <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                    <xsl:attribute name="data-loading" select="'Loading page...'"/>
                                     
                                     <h3 class="panel-row title main-title break">
                                         <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
@@ -1536,9 +1534,13 @@
                             </div>
                             
                             <div class="footer">
-                                <xsl:variable name="count-texts" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-text-descendants']/@value"/>
-                                <xsl:variable name="count-published" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-published-descendants']/@value"/>
-                                <xsl:variable name="count-in-progress" as="xs:integer" select="$section/m:section[@id eq $sub-section-id]/m:text-stats/m:stat[@type eq 'count-in-progress-descendants']/@value"/>
+                                
+                                <!-- stats -->
+                                <xsl:variable name="publications-summary" select="//m:translation-summary[@section-id eq $sub-section-id]/m:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']"/>
+                                <xsl:variable name="count-texts" as="xs:integer?" select="$publications-summary/m:texts/@total"/>
+                                <xsl:variable name="count-published" as="xs:integer?" select="$publications-summary/m:texts/@published"/>
+                                <xsl:variable name="count-in-progress" as="xs:integer?" select="sum(($publications-summary/m:texts/@translated ! xs:integer(.), $publications-summary/m:texts/@in-translation ! xs:integer(.)))"/>
+                                
                                 <table class="table print-centered-margins">
                                     <tbody>
                                         <tr>
@@ -1575,6 +1577,7 @@
                                         </tr>
                                     </tbody>
                                 </table>
+                                
                             </div>
                             
                         </div>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -45,7 +45,7 @@
             </xsl:call-template>
         
             <!-- Published texts with pending refs -->
-            <xsl:variable name="published-pending" select="m:target-text[not(@id = ($invalid-targets/@id))][@translation-status-group eq 'published'][m:ref-context[tei:ref[@rend eq 'pending']]]"/>
+            <xsl:variable name="published-pending" select="m:target-text[not(@id = ($invalid-targets/@id))][@status-group eq 'published'][m:ref-context[tei:ref[@rend eq 'pending']]]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$published-pending"/>
                 <xsl:with-param name="group-id" select="'published-pending'"/>
@@ -54,7 +54,7 @@
             </xsl:call-template>
         
             <!-- Not-published texts with active refs -->
-            <xsl:variable name="non-published-active" select="m:target-text[not(@id = ($invalid-targets/@id))][not(@translation-status-group eq 'published')][m:ref-context[tei:ref[not(@rend eq 'pending')]]]"/>
+            <xsl:variable name="non-published-active" select="m:target-text[not(@id = ($invalid-targets/@id))][not(@status-group eq 'published')][m:ref-context[tei:ref[not(@rend eq 'pending')]]]"/>
             <xsl:call-template name="target-text-list">
                 <xsl:with-param name="target-texts" select="$non-published-active"/>
                 <xsl:with-param name="group-id" select="'non-published-active'"/>
@@ -161,7 +161,7 @@
                                 <!-- Published flag -->
                                 <span class="label label-warning">
                                     <xsl:choose>
-                                        <xsl:when test="$target-text[@translation-status-group eq 'published']">
+                                        <xsl:when test="$target-text[@status-group eq 'published']">
                                             <xsl:attribute name="class" select="'label label-success'"/>
                                             <xsl:value-of select="'Text published'"/>
                                         </xsl:when>

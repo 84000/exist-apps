@@ -4,8 +4,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m = "http://read.84000.co/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "../../modules/common.xql";
-import module namespace translations="http://read.84000.co/translations" at "../../modules/translations.xql";
-import module namespace source="http://read.84000.co/source" at "../../modules/source.xql";
+import module namespace section="http://read.84000.co/section" at "../../modules/section.xql";
 
 declare option exist:serialize "method=xml indent=no";
 
@@ -21,8 +20,7 @@ let $cache-key := format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || 
 let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
-let $summary-kangyur := translations:summary($source:kangyur-work)
-let $summary-tengyur := translations:summary($source:tengyur-work)
+let $publication-status := section:publication-status('LOBBY', ())
 
 let $xml-response :=
     common:response(
@@ -30,8 +28,7 @@ let $xml-response :=
         $common:app-id,
         (
             $request,
-            $summary-kangyur,
-            $summary-tengyur,
+            $publication-status,
             <replace-text xmlns="http://read.84000.co/ns/1.0">
                 <value key="#commsSiteUrl">{ $common:environment/m:url[@id eq 'communications-site'][1]/text() }</value>
                 <value key="#readingRoomSiteUrl">{ $common:environment/m:url[@id eq 'reading-room'][1]/text() }</value>

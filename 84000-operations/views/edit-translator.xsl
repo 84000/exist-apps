@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -31,171 +31,148 @@
                             </xsl:choose>
                         </input>
                         
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <fieldset>
-                                    
-                                    <legend>
-                                        <xsl:choose>
-                                            <xsl:when test="$person-id">
-                                                <xsl:value-of select="concat('ID: ', $person-id)"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="'New contributor'"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </legend>
-                                    
-                                    <xsl:copy-of select="ops:text-input('Name','name', m:person/m:label, 9, 'required')"/>
-                                    
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-3 col-sm-4">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="affiliation[]" value="academic">
-                                                        <xsl:if test="m:person/m:affiliation[@type eq 'academic']">
-                                                            <xsl:attribute name="checked" select="'checked'"/>
-                                                        </xsl:if>
-                                                    </input>
-                                                    <xsl:value-of select="' Academic'"/>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-4">
-                                            <div class="checkbox">
-                                                <label>
-                                                    <input type="checkbox" name="affiliation[]" value="practitioner">
-                                                        <xsl:if test="m:person/m:affiliation[@type eq 'practitioner']">
-                                                            <xsl:attribute name="checked" select="'checked'"/>
-                                                        </xsl:if>
-                                                    </input>
-                                                    <xsl:value-of select="' Practitioner'"/>
-                                                </label>
-                                            </div>
-                                        </div>
+                        <fieldset>
+                            
+                            <legend>
+                                <xsl:choose>
+                                    <xsl:when test="$person-id">
+                                        <xsl:value-of select="concat('ID: ', $person-id)"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="'New contributor'"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </legend>
+                            
+                            <xsl:copy-of select="ops:text-input('Name','name', m:person/m:label, 9, 'required')"/>
+                            
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="affiliation[]" value="academic">
+                                                <xsl:if test="m:person/m:affiliation[@type eq 'academic']">
+                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                </xsl:if>
+                                            </input>
+                                            <xsl:value-of select="' Academic'"/>
+                                        </label>
                                     </div>
-                                    
-                                    <div class="add-nodes-container">
-                                        <xsl:choose>
-                                            <xsl:when test="m:person/m:team">
-                                                <xsl:for-each select="m:person/m:team">
-                                                    <div class="add-nodes-group">
-                                                        <xsl:copy-of select="ops:select-input-name('Team', concat('team-id-', position()), 9, /m:response/m:contributor-teams/m:team, @id)"/>
-                                                    </div>
-                                                </xsl:for-each>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <div class="add-nodes-group">
-                                                    <xsl:copy-of select="ops:select-input-name('Team', 'team-id-1', 9, /m:response/m:contributor-teams/m:team, '')"/>
-                                                </div>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                        <div class="form-group">
-                                            <div class="col-sm-offset-3 col-sm-9">
-                                                <a href="#add-nodes" class="add-nodes">
-                                                    <span class="monospace">
-                                                        <xsl:value-of select="'+'"/>
-                                                    </span>
-                                                    <xsl:value-of select="' add a team'"/>
-                                                </a>
-                                            </div>
-                                        </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="affiliation[]" value="practitioner">
+                                                <xsl:if test="m:person/m:affiliation[@type eq 'practitioner']">
+                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                </xsl:if>
+                                            </input>
+                                            <xsl:value-of select="' Practitioner'"/>
+                                        </label>
                                     </div>
-                                    
-                                    <div class="add-nodes-container">
-                                        <xsl:choose>
-                                            <xsl:when test="m:person/m:institution">
-                                                <xsl:for-each select="m:person/m:institution">
-                                                    <div class="add-nodes-group">
-                                                        <xsl:copy-of select="ops:select-input-name('Institution', concat('institution-id-', position()), 9, /m:response/m:contributor-institutions/m:institution, @id)"/>
-                                                    </div>
-                                                </xsl:for-each>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <div class="add-nodes-group">
-                                                    <xsl:copy-of select="ops:select-input-name('Institution', 'institution-id-1', 9, /m:response/m:contributor-institutions/m:institution, '')"/>
-                                                </div>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                        <div class="form-group">
-                                            <div class="col-sm-offset-3 col-sm-9">
-                                                <a href="#add-nodes" class="add-nodes">
-                                                    <span class="monospace">
-                                                        <xsl:value-of select="'+'"/>
-                                                    </span>
-                                                    <xsl:value-of select="' add an institution'"/>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <hr/>
-                                    
-                                    <div>
-                                        <xsl:if test="$person-id">
-                                            <xsl:choose>
-                                                <xsl:when test="m:person/m:acknowledgement">
-                                                    <!-- Disable if there are acknowledgments -->
-                                                    <span title="You cannot delete a credited translator">
-                                                        <a href="#" class="btn btn-default disabled">
-                                                            <xsl:value-of select="'Delete'"/>
-                                                        </a>
-                                                    </span>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <a class="btn btn-danger">
-                                                        <xsl:attribute name="href" select="concat('/translators.html?delete=', $person-id)"/>
-                                                        <xsl:value-of select="'Delete'"/>
-                                                    </a>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </xsl:if>
-                                        
-                                        <button type="submit" class="btn btn-primary pull-right">
-                                            <xsl:value-of select="'Save'"/>
-                                        </button>
-                                    </div>
-                                    
-                                </fieldset>
+                                </div>
                             </div>
                             
-                            <div class="col-sm-6">
-                                <section>
-                                    
-                                    <xsl:variable name="section-id" select="'person-acknowledgements'"/>
-                                    <xsl:attribute name="id" select="$section-id"/>
-                                    
-                                    <xsl:if test="count(m:person/m:acknowledgement) gt 1">
-                                        
-                                        <xsl:attribute name="class" select="'preview-list preview'"/>
-                                        
-                                        <xsl:call-template name="preview-controls">
-                                            
-                                            <xsl:with-param name="section-id" select="$section-id"/>
-                                            <xsl:with-param name="href" select="concat('#', $section-id)"/>
-                                            
-                                        </xsl:call-template>
-                                        
-                                    </xsl:if>
-                                    
-                                    <h4>
-                                        <xsl:value-of select="'Acknowledgements'"/>
-                                    </h4>
-                                    
-                                    <hr class="sml-margin"/>
-                                    
-                                    <xsl:call-template name="acknowledgements">
-                                        <xsl:with-param name="acknowledgements" select="m:person/m:acknowledgement"/>
-                                        <xsl:with-param name="css-class" select="''"/>
-                                        <xsl:with-param name="group" select="''"/>
-                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
-                                    </xsl:call-template>
-                                    
-                                </section>
+                            <div class="add-nodes-container">
+                                <xsl:choose>
+                                    <xsl:when test="m:person/m:team">
+                                        <xsl:for-each select="m:person/m:team">
+                                            <div class="add-nodes-group">
+                                                <xsl:copy-of select="ops:select-input-name('Team', concat('team-id-', position()), 9, /m:response/m:contributor-teams/m:team, @id)"/>
+                                            </div>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <div class="add-nodes-group">
+                                            <xsl:copy-of select="ops:select-input-name('Team', 'team-id-1', 9, /m:response/m:contributor-teams/m:team, '')"/>
+                                        </div>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <div class="form-group">
+                                    <div class="col-sm-offset-3 col-sm-9">
+                                        <a href="#add-nodes" class="add-nodes">
+                                            <span class="monospace">
+                                                <xsl:value-of select="'+'"/>
+                                            </span>
+                                            <xsl:value-of select="' add a team'"/>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                             
-                        </div>
+                            <div class="add-nodes-container">
+                                <xsl:choose>
+                                    <xsl:when test="m:person/m:institution">
+                                        <xsl:for-each select="m:person/m:institution">
+                                            <div class="add-nodes-group">
+                                                <xsl:copy-of select="ops:select-input-name('Institution', concat('institution-id-', position()), 9, /m:response/m:contributor-institutions/m:institution, @id)"/>
+                                            </div>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <div class="add-nodes-group">
+                                            <xsl:copy-of select="ops:select-input-name('Institution', 'institution-id-1', 9, /m:response/m:contributor-institutions/m:institution, '')"/>
+                                        </div>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <div class="form-group">
+                                    <div class="col-sm-offset-3 col-sm-9">
+                                        <a href="#add-nodes" class="add-nodes">
+                                            <span class="monospace">
+                                                <xsl:value-of select="'+'"/>
+                                            </span>
+                                            <xsl:value-of select="' add an institution'"/>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr/>
+                            
+                            <div>
+                                <xsl:if test="$person-id">
+                                    <xsl:choose>
+                                        <xsl:when test="m:person/m:acknowledgement">
+                                            <!-- Disable if there are acknowledgments -->
+                                            <span title="You cannot delete a credited translator">
+                                                <a href="#" class="btn btn-default disabled">
+                                                    <xsl:value-of select="'Delete'"/>
+                                                </a>
+                                            </span>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <a class="btn btn-danger">
+                                                <xsl:attribute name="href" select="concat('/translators.html?delete=', $person-id)"/>
+                                                <xsl:value-of select="'Delete'"/>
+                                            </a>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:if>
+                                
+                                <button type="submit" class="btn btn-primary pull-right">
+                                    <xsl:value-of select="'Save'"/>
+                                </button>
+                            </div>
+                            
+                        </fieldset>
+                        
                     </form>
+                    
+                    <section id="person-acknowledgements">
+                        
+                        <h3>
+                            <xsl:value-of select="'Acknowledgements'"/>
+                        </h3>
+                        
+                        <xsl:call-template name="acknowledgements">
+                            <xsl:with-param name="acknowledgements" select="m:person/m:acknowledgement"/>
+                            <xsl:with-param name="css-class" select="''"/>
+                            <xsl:with-param name="group" select="''"/>
+                            <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
+                        </xsl:call-template>
+                        
+                    </section>
+                
                 </xsl:with-param>
             </xsl:call-template>
             

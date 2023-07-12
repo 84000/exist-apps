@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -99,13 +99,13 @@
                     <label for="section-id" class="sr-only">Section</label>
                     <select name="section-id" id="section-id" class="form-control">
                         <option value="all">All sections</option>
-                        <xsl:for-each select="m:section | m:section//m:section">
+                        <xsl:for-each select="m:section/descendant-or-self::m:section[not(parent::m:page)]">
                             <option>
                                 <xsl:attribute name="value" select="@id"/>
                                 <xsl:if test="@id eq /m:response/m:request/m:parameter[@name eq 'section-id']">
                                     <xsl:attribute name="selected" select="'selected'"/>
                                 </xsl:if>
-                                <xsl:value-of select="concat(@id, ' / ', common:limit-str(m:titles/m:title[@xml:lang eq 'en']/text(), 100))"/>
+                                <xsl:value-of select="concat(@id, ' / ', common:limit-str(m:titles/m:title[@xml:lang eq 'en'][text()][1]/text(), 100))"/>
                             </option>
                         </xsl:for-each>
                     </select>

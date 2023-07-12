@@ -15,15 +15,11 @@ declare variable $sponsors:texts := collection($common:translations-path);
 declare variable $sponsors:prefixes := '(Dr\.|Prof\.)';
 
 declare function sponsors:sponsor-uri($sponsor-id as xs:string) as xs:string* {
-    (: Switch to eft: prefix once data is migrated :)
-    (
-        lower-case(concat('eft:', $sponsor-id)),
-        lower-case(concat('sponsors.xml#', $sponsor-id))
-    )
+    lower-case(concat('eft:', $sponsor-id))
 };
 
 declare function sponsors:sponsor-id($sponsor-uri as xs:string) as xs:string {
-    lower-case(replace($sponsor-uri, '^(eft:|sponsors\.xml#)', '', 'i'))
+    lower-case(replace($sponsor-uri, '^eft:', '', 'i'))
 };
 
 declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
@@ -57,6 +53,7 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
             $sponsor/m:label,
             $sponsor/m:country,
             $sponsor/m:type,
+            $sponsor/m:instance,
             if($include-internal-names) then
                 $sponsor/m:internal-name
             else ()
@@ -70,16 +67,17 @@ declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as
 declare function sponsors:acknowledgements($uri as xs:string) as element()* {
     
     let $sponsor-id := sponsors:sponsor-id($uri)
+    let $sponsor := $sponsors:sponsors/id($sponsor-id)[self::m:sponsor]
     
-    for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref][ends-with(@ref, $sponsor-id)]]
+    for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@xml:id = $sponsor/m:instance/@id]]
     
-        let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@ref][ends-with(@ref, $sponsor-id)][1]
+        let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@xml:id = $sponsor/m:instance/@id][1]
         
         let $sponsor-name := 
             if($translation-sponsor/text() gt '') then
                 $translation-sponsor/text()
             else
-                $sponsors:sponsors/m:sponsors/m:sponsor[@xml:id eq $sponsor-id]/m:label/text()
+                $sponsor/m:label/text()
         
         let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
         
@@ -89,16 +87,16 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
         
         let $title := tei-content:title-any($tei)
         let $translation-id := tei-content:id($tei)
-        let $translation-status := tei-content:translation-status($tei)
-        let $translation-status-group := tei-content:translation-status-group($tei)
+        let $status := tei-content:publication-status($tei)
+        let $status-group := tei-content:publication-status-group($tei)
         
         for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
             let $toh := translation:toh($tei, $toh-key)
         return
             element { QName('http://read.84000.co/ns/1.0', 'acknowledgement') } {
                 attribute translation-id { $translation-id },
-                attribute translation-status {$translation-status},
-                attribute translation-status-group { $translation-status-group },
+                attribute status {$status},
+                attribute status-group { $status-group },
                 element m:title { text { $title } },
                 $toh,
                 element { QName('http://www.tei-c.org/ns/1.0', 'div') } {

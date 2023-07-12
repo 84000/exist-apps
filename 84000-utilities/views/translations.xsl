@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -183,7 +183,7 @@
                         
                     </xsl:when>
                     
-                    <xsl:when test="$page-filter eq '1' and $environment/m:store-conf[@type eq 'master'] and m:request/m:authenticated-user/m:group[@name eq 'git-push']">
+                    <xsl:when test="$page-filter = ('1', 'recent-updates') and $environment/m:store-conf[@type eq 'master'] and m:request/m:authenticated-user/m:group[@name eq 'git-push']">
                         
                         <form method="post" class="form-horizontal sml-margin bottom">
                             
@@ -250,7 +250,7 @@
                                     <xsl:variable name="text-master-first-text" select="key('master-texts', $text-id)[1]"/>
                                     <xsl:variable name="text-master-tei-version" select="$text-master-first-text/m:downloads[1]/@tei-version"/>
                                     <xsl:variable name="text-master-status-updates" select="$text-master-first-text/m:status-updates[1]"/>
-                                    <xsl:variable name="text-master-status-id" select="$text-master-first-text/@translation-status"/>
+                                    <xsl:variable name="text-master-status-id" select="($text-master-first-text/@translation-status, $text-master-first-text/@publication-status)[1]"/>
                                     <xsl:variable name="text-master-status-group" select="/m:response/m:text-statuses/m:status[@status-id eq $text-master-status-id]/@group"/>
                                     <xsl:variable name="text-marked-up" select="/m:response/m:text-statuses/m:status[@status-id eq $text-status-id][@marked-up eq 'true']"/>
                                     
@@ -270,7 +270,7 @@
                                         </xsl:element>
                                         
                                         <!-- Associated files -->
-                                        <xsl:for-each select="('pdf', 'epub', 'azw3', 'rdf', 'cache')">
+                                        <xsl:for-each select="('pdf', 'epub', 'rdf', 'cache')">
                                             
                                             <xsl:variable name="file-format" select="."/>
                                             
@@ -606,7 +606,7 @@
                                             <!-- files -->
                                             <div class="row">
                                                 
-                                                <xsl:variable name="file-formats" select="('pdf', 'epub', 'azw3', 'rdf', 'cache')"/>
+                                                <xsl:variable name="file-formats" select="('pdf', 'epub', 'rdf', 'cache')"/>
                                                 
                                                 <xsl:for-each select="$file-formats">
                                                     
@@ -899,7 +899,7 @@
             <xsl:choose>
                 
                 <xsl:when test="m:updated">
-                    <div id="page-alert" class="fixed-footer fix-height collapse in info" role="alert">
+                    <div id="page-alert" class="fixed-footer fix-height collapse in info text-left" role="alert">
                         
                         <xsl:choose>
                             <xsl:when test="m:updated//m:error">
@@ -917,14 +917,14 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <h2 class="sml-margin top bottom">
-                                        <xsl:value-of select="'File updated'"/>
+                                        <xsl:value-of select="'Files updated'"/>
                                     </h2>
                                 </xsl:otherwise>
                             </xsl:choose>
                             
                             <xsl:if test="m:updated//m:stored">
-                                <div>
-                                    <ul class="list-inline inline-dots">
+                                <div class="monospace small">
+                                    <ul class="list-unstyled">
                                         <xsl:for-each select="m:updated//m:stored">
                                             <li>
                                                 <xsl:value-of select="."/>
@@ -935,8 +935,8 @@
                             </xsl:if>
                             
                             <xsl:if test="m:updated//m:message">
-                                <div>
-                                    <ul class="list-inline inline-dots">
+                                <div class="monospace small">
+                                    <ul class="list-unstyled">
                                         <xsl:for-each select="m:updated//m:message">
                                             <li>
                                                 <xsl:value-of select="."/>
@@ -950,21 +950,23 @@
                     </div>
                 </xsl:when>
                 
-                <xsl:when test="m:result[@id eq 'deploy-pull']">
-                    <div id="page-alert" class="fixed-footer fix-height collapse in info" role="alert">
+                <xsl:when test="m:result[@id = ('deploy-pull', 'deploy-push')]">
+                    <div id="page-alert" class="fixed-footer fix-height collapse in info text-left" role="alert">
                         <xsl:choose>
                             
                             <xsl:when test="m:result[@id eq 'deploy-pull'][@admin-password-correct eq 'false']">
                                 
-                                <xsl:attribute name="class" select="'fixed-footer fix-height collapse in danger'"/>
+                                <xsl:attribute name="class" select="'fixed-footer fix-height collapse in danger text-left'"/>
                                 
                                 <div class="container">
                                     <h2 class="sml-margin top bottom">
                                         <xsl:value-of select="'Password incorrect'"/>
                                     </h2>
-                                    <p>
-                                        <xsl:value-of select="'The deploy password provided was incorrect'"/>
-                                    </p>
+                                    <div class="monospace small">
+                                        <p>
+                                            <xsl:value-of select="'The deploy password provided was incorrect'"/>
+                                        </p>
+                                    </div>
                                 </div>
                                 
                             </xsl:when>
@@ -975,14 +977,16 @@
                                     <h2 class="sml-margin top bottom">
                                         <xsl:value-of select="'Files updated'"/>
                                     </h2>
-                                    <xsl:for-each select="m:result//execution">
-                                        <p>
-                                            <xsl:for-each select="stdout/line">
-                                                <xsl:value-of select="text()"/>
-                                                <br/>
-                                            </xsl:for-each>
-                                        </p>
-                                    </xsl:for-each>
+                                    <div class="monospace small">
+                                        <xsl:for-each select="m:result//execution">
+                                            <p>
+                                                <xsl:for-each select="stdout/line">
+                                                    <xsl:value-of select="text()"/>
+                                                    <br/>
+                                                </xsl:for-each>
+                                            </p>
+                                        </xsl:for-each>
+                                    </div>
                                 </div>
                             </xsl:otherwise>
                             

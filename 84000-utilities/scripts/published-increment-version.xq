@@ -26,19 +26,18 @@ for $tei in $tei-content:translations-collection//tei:TEI
 let $id := tei-content:id($tei)
 let $version-number-str := tei-content:version-number-str($tei)
 
-let $version-note := 
-    for $note in $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@update eq 'text-version'][matches(@value, concat('(^v\s*)?', functx:escape-for-regex($version-number-str)))]
-    order by $note/@date-time ! xs:dateTime(.) descending
-    return $note
+let $version-change := 
+    for $change in $tei//tei:revisionDesc/tei:change[@type eq 'text-version'][matches(@status, concat('(^v\s*)?', functx:escape-for-regex($version-number-str)))]
+    order by $change/@when ! xs:dateTime(.) descending
+    return $change/tei:desc/text()
 
-let $lastUpdated-note := $tei/tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type eq 'lastUpdated']
-let $version-note-diff := $lastUpdated-note/@date-time ! xs:dateTime(.) - $version-note[1]/@date-time ! xs:dateTime(.)
+let $version-change-diff := tei-content:last-modified($tei) - $version-change[1]/@when ! xs:dateTime(.)
 
 order by $id
 
-where not($version-note) or functx:total-minutes-from-duration($version-note-diff) ge 5
+where not($version-change) or functx:total-minutes-from-duration($version-change-diff) ge 5
 return (
-    $id || ' ' || $version-number-str ||  ' ' || functx:total-hours-from-duration($version-note-diff)(:,
-    $version-note:),
-    update-tei:minor-version-increment($tei, 'script-increment-version-published')
+    $id || ' ' || $version-number-str ||  ' ' || functx:total-hours-from-duration($version-change-diff),
+    $version-change(:,
+    update-tei:minor-version-increment($tei, 'script-increment-version-published'):)
 )

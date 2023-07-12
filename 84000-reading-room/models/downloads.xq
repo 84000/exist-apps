@@ -20,7 +20,7 @@ let $resource-ids := request:get-parameter('resource-ids', '')
 let $resource-ids := 
     if(not($resource-ids gt '') and $source-ids gt '') then
         (: Convert source-ids to resource-ids :)
-        string-join(collection($common:translations-path)//tei:fileDesc/tei:sourceDesc/tei:bibl[tei:idno/@source-id[string() = tokenize($source-ids, ',')]]/@key/string(), ',')
+        string-join(collection($common:translations-path)//tei:fileDesc/tei:sourceDesc/tei:bibl[@key][tei:idno/@source-id[string() = tokenize($source-ids, ',')]]/@key/string(), ',')
     else 
         $resource-ids
 

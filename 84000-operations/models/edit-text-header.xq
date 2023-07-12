@@ -70,37 +70,36 @@ let $updated :=
         else ()
     }
 
-let $translation-status := tei-content:translation-status($tei)
-let $translation-status-group := tei-content:translation-status-group($tei)
+let $publication-status := tei-content:publication-status($tei)
+let $publication-status-group := tei-content:publication-status-group($tei)
 
 (: Generate new versions of associated files :)
 let $generate-files :=
-    if($form-action eq 'generate-files' and $text-id gt '' and $store:conf and $translation-status-group eq 'published')then
+    if($form-action eq 'generate-files' and $text-id gt '' and $store:conf and $publication-status-group eq 'published')then
         store:create(concat($text-id, '.all'))
     else ()
 
 let $entities :=
     element { QName('http://read.84000.co/ns/1.0', 'entities') } {
-        let $attribution-refs-text := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref ! replace(., '^eft:', '')
-        let $attribution-entities := $entities:entities/m:entity/id($attribution-refs-text)
-        let $attribution-refs := $tei-content:translations-collection//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl//@ref ! replace(., '^eft:', '')
+        (: Include all authors for the drop down list, and all their related articles :)
+        let $attribution-entities := $entities:entities/m:entity[m:instance[@type eq 'source-attribution']]
         return (
-            ($attribution-entities | $entities:entities/m:entity/id($attribution-refs)),
-            element related { entities:related($attribution-entities, true(), (), ()) }
+            $attribution-entities,
+            element related { entities:related($attribution-entities, false(), ('knowledgebase'), (), ()) }
         )
     }
-    
+
 let $text := 
     element { QName('http://read.84000.co/ns/1.0', 'text') } {
-            
+        
         attribute id { $text-id },
         attribute document-url { base-uri($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
-        attribute status { $translation-status },
-        attribute status-group { $translation-status-group },
+        attribute status { $publication-status },
+        attribute status-group { $publication-status-group },
         attribute tei-version { tei-content:version-str($tei) },
         
-        for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
+        for $bibl in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]
         return (
             translation:toh($tei, $bibl/@key),
             tei-content:source($tei, $bibl/@key),
@@ -114,9 +113,9 @@ let $text :=
         tei-content:status-updates($tei)
         
     }
-    
-let $text-statuses-selected := tei-content:text-statuses-selected($translation-status, 'translation')
-let $persons := contributors:persons(false(), false())
+
+let $text-statuses-selected := tei-content:text-statuses-selected($publication-status, 'translation')
+let $persons := contributors:persons(false())
 let $teams := contributors:teams(true(), false(), false())
 let $glossary-cache := glossary:glossary-cache($tei, (), false())
 let $submission-checklist := doc('../config/submission-checklist.xml')
@@ -144,7 +143,7 @@ let $xml-response :=
             $submission-checklist
         )
     )
-    
+
 return
 
     (: return html data :)

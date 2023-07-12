@@ -6,6 +6,7 @@ declare namespace json = "http://www.json.org";
 
 import module namespace common = "http://read.84000.co/common" at "../modules/common.xql";
 import module namespace search = "http://read.84000.co/search" at "../modules/search.xql";
+import module namespace entities="http://read.84000.co/entities" at "../modules/entities.xql";
 import module namespace eft-json = "http://read.84000.co/json" at "../views/json/eft-json.xql";
 import module namespace functx = "http://www.functx.com";
 
@@ -29,7 +30,7 @@ let $first-record :=
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
-        attribute model { 'glossary' },
+        attribute model { 'search' },
         attribute resource-id { $resource-id },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
@@ -52,13 +53,23 @@ let $results :=
         search:search($search, $request/@specified-text, $request/@first-record, $request/@max-records)
     else ()
 
+(: Get related entities data :)
+let $entities :=
+    element { QName('http://read.84000.co/ns/1.0', 'entities')} {
+        $results//m:header/m:entity,
+        element related {
+            entities:related($results//m:header/m:entity, false(), ('glossary','knowledgebase'), ('requires-attention'), ('excluded'))
+        }
+    }
+            
 let $xml-response :=
     common:response(
-        'search',
+        $request/@model,
         $common:app-id,
         (
             $request,
-            $results
+            $results,
+            $entities
         )
     )
 

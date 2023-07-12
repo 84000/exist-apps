@@ -55,7 +55,7 @@ let $similar-entities :=
 let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
         $knowledgebase-entity,
-        element related { entities:related($knowledgebase-entity | $similar-entities/m:entity, true(), (), ()) }
+        element related { entities:related($knowledgebase-entity | $similar-entities/m:entity, true(), ('glossary','knowledgebase'), (), ()) }
     }
 
 let $xml-response := 
@@ -93,7 +93,7 @@ let $xml-response :=
             $similar-entities,
             
             (: Translation statuses :)
-            tei-content:text-statuses-selected(tei-content:translation-status($tei), 'article'),
+            tei-content:text-statuses-selected(tei-content:publication-status($tei), 'article'),
             
             (: Title types :)
             $tei-content:title-types,
@@ -117,3 +117,4 @@ return
         util:declare-option("exist:serialize", "method=xml indent=no"),
         $xml-response
     )
+    

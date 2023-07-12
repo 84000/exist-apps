@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -256,7 +256,6 @@
                                                             
                                                             <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?letter=', @index), $internal-link-attrs, '', $root/m:response/@lang)"/>
                                                             <xsl:attribute name="title" select="concat('Filter by ', text())"/>
-                                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
                                                             
                                                             <div>
                                                                 <xsl:call-template name="class-attribute">
@@ -415,7 +414,7 @@
                                                     <!-- Entity title -->
                                                     <a class="entity-title block-link opener-link log-click">
                                                         
-                                                        <xsl:attribute name="href" select="common:internal-link(concat('/glossary/', $entity/@xml:id, '.html'), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter((),())), concat('#', $item-id, '-detail'), $root/m:response/@lang)"/>
+                                                        <xsl:attribute name="href" select="common:internal-link(concat('/glossary/', $item-id, '.html'), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter((),())), concat('#', $item-id, '-detail'), $root/m:response/@lang)"/>
                                                         <xsl:attribute name="data-ajax-target" select="concat('#', $item-id, '-detail')"/>
                                                         <xsl:attribute name="data-toggle-active" select="concat('#', $item-id)"/>
                                                         <xsl:attribute name="data-ajax-loading" select="'Loading detail...'"/>
@@ -519,7 +518,6 @@
                                                                 
                                                             </div>
                                                             
-                                                            
                                                             <div class="text-right-sm">
                                                                 
                                                                 <!-- Types -->
@@ -545,7 +543,6 @@
                                                             
                                                         </div>
                                                         
-                                                        
                                                     </a>
                                                     
                                                     <!-- Entity body -->
@@ -553,6 +550,7 @@
                                                         
                                                         <xsl:call-template name="editor-summary">
                                                             <xsl:with-param name="entity" select="$entity"/>
+                                                            <xsl:with-param name="page-url" select="$page-url"/>
                                                         </xsl:call-template>
                                                         
                                                         <!-- Ajax data here -->
@@ -589,7 +587,6 @@
                                                         <li>
                                                             <a class="underline">
                                                                 <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?search=', $search-text), (concat('term-lang=', @id), $selected-type ! concat('term-type[]=', @id), m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
-                                                                <xsl:attribute name="data-loading" select="'Loading...'"/>
                                                                 <xsl:value-of select="text()"/>
                                                             </a>
                                                         </li>
@@ -638,9 +635,7 @@
                 </div>
             </main>
             
-            <xsl:call-template name="attestation-types-footer"/>
-            
-            <xsl:call-template name="tei-editor-footer"/>
+            <xsl:call-template name="glossary-pop-up-footers"/>
             
         </xsl:variable>
         

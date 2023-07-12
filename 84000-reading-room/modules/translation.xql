@@ -83,6 +83,8 @@ declare variable $translation:stopwords := (
     'we','well','what','when','which','who','will','with','would',(:'year',:)'you','your'
 );
 
+declare variable $translation:linked-data := collection(concat($common:data-path, '/config/linked-data'));
+
 declare function translation:title($tei as element(tei:TEI), $source-key as xs:string?) as xs:string? {
     
     (: Validate the source-key :)
@@ -194,14 +196,14 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
     let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
     return
         element {QName('http://read.84000.co/ns/1.0', 'publication')} {
-        
-            $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1]/@ref[. gt ''] ! contributors:contributor-id(.) ! contributors:team(., false(), false()),
+            
+            $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1][@xml:id] ! contributors:contributor-id(.) ! contributors:team(., false(), false()),
             
             element contributors {
                 for $contributor in $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain']
                 return
                     element summary {
-                        $contributor/@ref,
+                        $contributor/@xml:id,
                         common:normalize-space($contributor/node())
                     }
                 ,
@@ -209,7 +211,7 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
                 return
                     element {local-name($contributor)} {
                         $contributor/@role,
-                        $contributor/@ref,
+                        $contributor/@xml:id,
                         normalize-space($contributor/text())
                     }
             },
@@ -217,7 +219,7 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
                 for $sponsor in $fileDesc/tei:titleStmt/tei:sponsor
                 return
                     element sponsor {
-                        $sponsor/@ref,
+                        $sponsor/@xml:id,
                         normalize-space($sponsor/text())
                     }
             },
@@ -238,6 +240,94 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
                 common:normalize-space($fileDesc/tei:publicationStmt/tei:availability/tei:p[@type eq 'tantricRestriction'])
             }
         }
+};
+
+declare function translation:publication-status($bibl as element(tei:bibl), $sponsorship-text-ids as xs:string*) as element(m:publication-status)* {
+
+    let $tei := $bibl/ancestor::tei:TEI
+    let $text-id := tei-content:id($tei)
+    let $sponsored := if($sponsorship-text-ids = $text-id) then true() else false()
+    let $bibl-first := if(not($bibl/preceding-sibling::tei:bibl)) then true() else false()
+    order by $text-id
+    return (
+        
+        (: Status per translation block :)
+        if($tei//tei:bibl[@type eq 'translation-blocks']/tei:citedRange[@status]) then (
+            
+            let $blocks-statuses := 
+                for $block at $block-index in $tei//tei:bibl[@type eq 'translation-blocks']/tei:citedRange[@status]
+                where $block[@status] and $translation:status-statuses[@status-id eq $block/@status]
+                return
+                    element { QName('http://read.84000.co/ns/1.0','publication-status') } {
+                        attribute text-id { $text-id },
+                        attribute toh-key { $bibl/@key },
+                        attribute block-index { $block-index },
+                        attribute block-id { $block/@xml:id },
+                        attribute status { $block/@status },
+                        attribute status-group { $translation:status-statuses[@status-id eq $block/@status]/@group ! string() },
+                        attribute count-pages { translation:chapter-block-pages($block) },
+                        if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
+                        if($sponsored) then attribute sponsored { $text-id } else ()
+                    }
+            
+            let $blocks-pages := sum($blocks-statuses/@count-pages ! xs:integer(.))
+            let $remainder-pages := $bibl/tei:location/@count-pages ! xs:integer(.) - $blocks-pages
+            
+            return (
+                
+                (: Return blocks :)
+                $blocks-statuses,
+                
+                (: Add any remainder as not-started :)
+                if($remainder-pages gt 0) then
+                    element { QName('http://read.84000.co/ns/1.0','publication-status') } {
+                        attribute text-id { $text-id },
+                        attribute toh-key { $bibl/@key },
+                        attribute block-index { count($blocks-statuses) + 1 },
+                        attribute block-id { 'remainder' },
+                        attribute status { 0 },
+                        attribute status-group { $translation:status-statuses[@status-id eq '0']/@group ! string() },
+                        attribute count-pages { $remainder-pages },
+                        if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
+                        if($sponsored) then attribute sponsored { $text-id } else ()
+                    }
+                else ()
+                
+            )
+        )
+        
+        (: Simple status per text :)
+        else
+            let $status := ($tei//tei:publicationStmt/tei:availability/@status[. gt ''], '0')[1]
+            return
+                element { QName('http://read.84000.co/ns/1.0','publication-status') } {
+                    attribute text-id { $text-id },
+                    attribute toh-key { $bibl/@key },
+                    attribute block-index { 1 },
+                    attribute block-id { $text-id },
+                    attribute status { $status },
+                    attribute status-group { $translation:status-statuses[@status-id eq $status]/@group ! string() },
+                    attribute count-pages { $bibl/tei:location/@count-pages ! xs:integer(.) - translation:unpublished-pages($tei) },
+                    if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
+                    if($sponsored) then attribute sponsored { $text-id } else ()
+                }
+            
+    )
+};
+
+declare function translation:chapter-block($chapter as element(tei:div)) as element(tei:citedRange)? {
+    let $chapter-decls := $chapter/@decls
+    where $chapter-decls
+    return
+        $chapter/ancestor::tei:TEI[1]/id($chapter-decls ! replace(., '^#', ''))[self::tei:citedRange]
+};
+
+declare function translation:chapter-block-pages($chapter-block as element(tei:citedRange)) as xs:integer? {
+    $chapter-block[@unit eq 'page'][@from][@to] ! (xs:integer(@to) - (xs:integer(@from) - 1))
+};
+
+declare function translation:unpublished-pages($tei as element(tei:TEI)) as xs:integer {
+    sum($tei//tei:bibl[@type eq 'translation-blocks']/tei:citedRange[@status][not(@status = $translation:published-status-ids)] ! translation:chapter-block-pages(.))
 };
 
 declare function translation:source-key($tei as element(tei:TEI), $source-key as xs:string) as xs:string {
@@ -263,41 +353,38 @@ declare function translation:toh($tei as element(tei:TEI), $source-key as xs:str
 
     (: Returns a toh meta-data for sorting grouping  :)
     let $bibl := tei-content:source-bibl($tei, $source-key)
-    let $bibls := $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl
     let $toh-str := translation:toh-str($bibl)
     let $full := translation:toh-full($bibl)
     
+    let $duplicates := 
+        for $sibling in $tei//tei:sourceDesc/tei:bibl[@key][not(@key eq $bibl/@key)]
+        return
+            element { QName('http://read.84000.co/ns/1.0', 'duplicate') } {
+                attribute key { $sibling/@key },
+                element base { translation:toh-str($sibling) },
+                element full { translation:toh-full($sibling) }
+            }
+    
+    let $linked-data-refs := $translation:linked-data//m:text[range:eq(@key, $bibl/@key)]/m:ref
+    
     return
-        element {QName('http://read.84000.co/ns/1.0', 'toh')} {
-            attribute key {$bibl/@key},
-            attribute number {replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$1')},
-            attribute letter {replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$2')},
-            attribute chapter-number {replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$3')},
-            attribute chapter-letter {replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$4')},
-            element base {$toh-str},
-            element full {$full},
+        element { QName('http://read.84000.co/ns/1.0', 'toh') } {
+            attribute key { $bibl/@key },
+            attribute number { replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$1') },
+            attribute letter { replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$2') },
+            attribute chapter-number { replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$3') },
+            attribute chapter-letter { replace($toh-str, '^(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$4') },
+            element base { $toh-str },
+            element full { $full },
             
-            let $count-bibls := count($bibls)
-                where $count-bibls gt 1
+            $linked-data-refs,
             
-            return
-                
-                let $duplicates :=
-                for $sibling in $bibls[@key ne $bibl/@key]
-                return
-                    element duplicate {
-                        attribute key {$sibling/@key},
-                        element base {translation:toh-str($sibling)},
-                        element full {translation:toh-full($sibling)}
-                    }
-                
-                return
-                    element duplicates {
-                        $duplicates,
-                        element full {
-                            concat('Toh ', string-join(($toh-str, $duplicates/m:base/text()), ' / '))
-                        }
-                    }
+            if($duplicates) then
+                element duplicates {
+                    $duplicates,
+                    element full { concat('Toh ', string-join(($toh-str, $duplicates/m:base/text()), ' / ')) }
+                }
+            else ()
         }
 };
 
@@ -362,7 +449,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             (: Only return download elements if $include defined :)
             let $types :=
                 if($include gt '')then
-                    ('html', 'pdf', 'epub', 'azw3', 'rdf', 'cache')
+                    ('html', 'pdf', 'epub', 'rdf', 'cache')
                 else ()
                 
             for $type in $types
@@ -405,7 +492,7 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
             $passage-id
     
     (: Get the status :)
-    let $status-id := tei-content:translation-status($tei)
+    let $status-id := tei-content:publication-status($tei)
     
     (: Evaluate if we are rendering this status :)
     let $status-render := $common:environment/m:render/m:status[@type eq 'translation'][@status-id = $status-id]
@@ -483,14 +570,14 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     
 };
 
-declare function translation:passage($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)* {
+declare function translation:passage($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) (:as element(m:part)*:) {
     
     let $passage := $tei//id($passage-id)
-    let $passage-int := replace($passage-id, '^node\-', '')
+    let $passage-num := replace($passage-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)
     
     let $passage := 
-        if(not($passage) and functx:is-a-number($passage-int)) then 
-            $tei//tei:*[@tid eq xs:integer($passage-int)]
+        if(not($passage) and $passage-num) then 
+            $tei//*[range:eq(@tid, $passage-num)]
         else 
             $passage
     
@@ -694,7 +781,8 @@ declare function translation:part($part as element(tei:div)?, $content-directive
 declare function local:part($part as element(tei:div)?, $content-directive as xs:string, $type as xs:string, $prefix as xs:string?, $label as node()*, $output-ids as xs:string*, $nesting as xs:integer, $section-index as xs:integer, $preview as node()*) as element(m:part) {
     
     (: Return a part :)
-    element {QName('http://read.84000.co/ns/1.0', 'part')} {
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+    
         attribute type { $type },
         attribute id { ($part/@xml:id, $type)[1] },
         attribute nesting { $nesting },
@@ -786,12 +874,12 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             (: evaluate if there's enough in this part for a preview :)
             (: evaluate all sections in the root, or the first section in sub-divs :)
             
-            let $output-ids-int := ($output-ids ! replace(., '^node\-', ''))[functx:is-a-number(.)]
+            let $output-nums := ($output-ids ! replace(., '^node\-', ''))[functx:is-a-number(.)] ! xs:integer(.)
             let $part-sections := $part/tei:div[@type = ('chapter', 'section')]
             
             let $preview := 
                 if($content-directive eq 'preview' and not($preview)) then
-                    local:preview-nodes($part//text(), 1, ())
+                    tei-content:preview-nodes($part//text(), 1, ())
                 else
                     $preview
             
@@ -815,14 +903,14 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                         if($content-directive eq 'passage') then
                             
                             if(
-                                $node/ancestor-or-self::tei:*[@xml:id = $output-ids]
-                                | $node/descendant::tei:*[@xml:id = $output-ids]
-                                | $node/descendant::tei:*[@tid = $output-ids-int]
+                                $node/ancestor-or-self::*[@xml:id = $output-ids]
+                                | $node/descendant::*[@xml:id = $output-ids]
+                                | $node/descendant::*[range:eq(@tid, $output-nums)]
                             ) then
                                 local:part($node, $content-directive, $node/@type, (), (), $output-ids, $nesting, $section-index, ())
                             else ()
                         
-                        else 
+                        else
                             local:part($node, $content-directive, $node/@type, (), (), $output-ids, $nesting, $section-index, $preview)
                     )
                 
@@ -845,11 +933,11 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                     else if($node[self::tei:milestone][@xml:id = $output-ids]) then (
                         $node,
                         (: And the trailing content :)
-                        $node/following-sibling::tei:*[not(self::tei:milestone)][preceding-sibling::tei:*[1][@xml:id = $output-ids]]
+                        $node/following-sibling::*[not(self::tei:milestone)][preceding-sibling::tei:*[1][@xml:id = $output-ids]]
                     )
                     
                     (: Test for @tid :)
-                    else if($node/descendant-or-self::tei:*[@tid = $output-ids-int]) then (
+                    else if($node/descendant-or-self::*[range:eq(@tid, $output-nums)]) then (
                         (: Return the preceding milestone :)
                         (:$passage/ancestor-or-self::*[preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id]][1]/preceding-sibling::tei:milestone[@unit eq 'chunk'][@xml:id][1],:)
                         (: Bizarre fix required here - milestone name not selecting :)
@@ -871,44 +959,24 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                     else ()
                     
                 )
-                (: 'none' or unspecified $content-directive :)
+                (: 'none', 'unpublished' or unspecified $content-directive :)
                 else ()
             
     }
 
 };
 
-declare function local:preview-nodes($content-nodes as node()*, $index as xs:integer, $preview as node()*)  {
-    
-    (: test what there is already :)
-    let $preview-length := string-length(string-join($preview, ''))
-    where $index le count($content-nodes) and $preview-length lt 500
-    return
-        (: If more needed return this node :)
-        let $content-node := $content-nodes[$index]
-        let $preview-text := 
-            if($content-node[normalize-space(.)][not(ancestor-or-self::tei:note | ancestor-or-self::tei:orig)]) then
-                $content-node
-            else ()
-        
-        return (
-            
-            (: Return this as preview text :)
-            $preview-text,
-            
-            (: Move to the next :)
-            local:preview-nodes($content-nodes, $index + 1, ($preview, $preview-text))
-            
-        )
-    
-};
-
 declare function local:passage-in-content($content as element()*, $passage-id as xs:string?, $exclude-notes as xs:boolean?) as element()? {
     
     if(starts-with($passage-id, 'node-')) then
-        $content//tei:*[@tid eq replace($passage-id, '^node\-', '')][1]
+        let $passage-num := replace($passage-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)
+        where $passage-num gt 0
+        return
+            $content//*[range:eq(@tid, $passage-num)][1]
+    
     else if($exclude-notes) then
         $content/id($passage-id)[1][not(self::tei:note)]
+        
     else 
         $content/id($passage-id)[1]
         
@@ -1010,7 +1078,6 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
     let $preface := $tei/tei:text/tei:front/tei:div[@type eq $type]
     where $preface
     
-    (:let $content-directive := local:content-directive($preface, ($type, 'front'), $passage-id, $view-mode, 'preview'):)
     let $content-directive := 
         if($passage-id = ('preface','front','all')) then
             'complete'
@@ -1038,7 +1105,6 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
     let $introduction := $tei/tei:text/tei:front/tei:div[@type eq $type]
     where $introduction
     
-    (:let $content-directive := local:content-directive($introduction, ($type, 'front'), $passage-id, $view-mode, 'preview'):)
     let $content-directive := 
         if($passage-id = ('introduction','front','all')) then
             'complete'
@@ -1091,24 +1157,28 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                     else ()
                 
                 let $part-prefix := translation:chapter-prefix($part)
+                let $chapter-block := translation:chapter-block($part)
                 
                 let $content-directive := 
-                    if($passage-id = ($part/@xml:id, 'body', 'all')) then
+                    if($view-mode[@parts eq 'outline']) then
+                        'empty'
+                    else if($chapter-block[@status] and not($common:environment/m:render/m:status[@type eq 'translation'][@status-id eq $chapter-block/@status])) then
+                        'unpublished'
+                    else if($passage-id = ($part/@xml:id, 'body', 'all')) then
                         'complete'
                     else if($view-mode[@parts = ('passage')]) then
                         if(local:passage-in-content($part, $passage-id, true())) then
                             'passage'
                         else
                             'empty'
-                    else if($view-mode[@parts eq 'outline']) then
-                        'empty'
                     else if($part/@type = ('colophon', 'homage')) then
                         'complete'
                     else
                         'preview'
                 
-            return
+            return 
                 local:part($part, $content-directive, $part/@type, $part-prefix, $part-title, $passage-id, 0, $section-index, ())
+
         }
 
 };
@@ -1121,7 +1191,6 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
     
     let $appendix := $tei/tei:text/tei:back/tei:div[@type eq 'appendix'][1]
     
-    (:let $content-directive := local:content-directive($appendix, ($type, 'back'), $passage-id, $view-mode, 'preview'):)
     let $content-directive := 
         if($passage-id = ('appendix', 'back', 'all')) then
             'complete'
@@ -1222,7 +1291,6 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
     
     where $end-notes[tei:note]
     
-    (:let $content-directive := local:content-directive($end-notes, ($type, 'back'), $passage-id, $view-mode, 'preview'):)
     let $content-directive := 
         if($passage-id = ('end-notes', 'back', 'all')) then
             'complete'
@@ -1267,7 +1335,6 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
     let $bibliography := $tei/tei:text/tei:back/tei:div[@type eq 'listBibl']
     where $bibliography//tei:bibl
     
-    (:let $content-directive := local:content-directive($bibliography, ($type, 'back'), $passage-id, $view-mode, 'complete'):)
     let $content-directive := 
         if($passage-id = ('bibliography', 'back', 'all')) then
             'complete'
@@ -1320,22 +1387,26 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     (: Don't call for outline as it leads to recursion :)
     let $glossary-cache := 
         if(not($view-mode[@id eq 'outline'])) then
-            glossary:glossary-cache($tei, (), false())
+            translation:outline-cached($tei)/m:pre-processed[@type eq 'glossary']/m:gloss
         else ()
     
     (: Get top 3 :)
     let $top-gloss := 
         if($content-directive eq 'preview') then
-            $glossary-cache/m:gloss[@index = ('1','2','3')]/@id
+            $glossary-cache[@index = ('1','2','3')]/@id
         else ()
     
     (: Get based on location-ids :)
     let $location-cache-gloss := 
         if($content-directive = ('preview', 'passage')) then
             let $location-id-chunks := common:ids-chunked($location-ids)
+            let $glossary-locations-cache := 
+                if(not($view-mode[@id eq 'outline'])) then
+                    glossary:glossary-cache($tei, (), false())
+                else ()
             for $key in map:keys($location-id-chunks)
             return
-                $glossary-cache/m:gloss[m:location/@id = map:get($location-id-chunks, $key)]/@id
+                $glossary-locations-cache/m:gloss[m:location/@id = map:get($location-id-chunks, $key)]/@id
         else ()
     
     where $glossary[tei:gloss]
@@ -1502,7 +1573,7 @@ declare function translation:folio-sort-index($tei as element(tei:TEI), $source-
     let $refs-sorted := translation:folio-refs-sorted($tei, $source-key)
     let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
     return
-        xs:integer($ref/@index-in-sort)
+        $ref/@index-in-sort ! xs:integer(.)
 
 };
 
@@ -1647,7 +1718,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
     
     let $translation-sponsors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor
     
-    let $sponsor-ids := $translation-sponsors ! sponsors:sponsor-id(@ref)
+    let $sponsor-ids := $sponsors:sponsors//m:instance[@id = $translation-sponsors/@xml:id]/parent::m:sponsor/@xml:id
     
     let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
     
@@ -1662,7 +1733,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                 let $sponsor-strings :=
                     for $translation-sponsor in $translation-sponsors
                         let $translation-sponsor-text := $translation-sponsor
-                        let $translation-sponsor-id := sponsors:sponsor-id($translation-sponsor/@ref)
+                        let $translation-sponsor-id := $sponsors:sponsors//m:instance[@id eq $translation-sponsor/@xml:id]/parent::m:sponsor/@xml:id
                         let $sponsor-label-text := $sponsors/m:sponsor[@xml:id eq $translation-sponsor-id]/m:label
                     return
                         if ($translation-sponsor-text gt '') then
@@ -1687,8 +1758,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                         if ($marked-paragraphs/exist:match) then
                             $marked-paragraphs[exist:match]
                         else
-                            if ($sponsor-strings) then
-                                (
+                            if ($sponsor-strings) then (
                                 attribute generated {true()},
                                 element tei:p {
                                     text {'Sponsored by '},
@@ -1706,7 +1776,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                                         }
                                         )
                                 }
-                                )
+                            )
                             else ()
                     }
             else ()
@@ -1718,9 +1788,7 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
     
     let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[local-name(.) = ('author','editor','consultant')](:[not(@role eq 'translatorMain')]:)
     
-    let $contributor-ids := $translation-contributors/@ref ! contributors:contributor-id(.)
-    
-    let $contributors := $contributors:contributors/m:contributors/id($contributor-ids)[self::m:person | self::m:team]
+    let $contributors := $contributors:contributors//m:instance[@id = $translation-contributors/@xml:id]/parent::*[self::m:person | self::m:team]
     
     let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
     
@@ -1738,9 +1806,7 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
                         if ($translation-contributor[text()]) then
                             $translation-contributor/text()
                         else 
-                            let $contributor-id := $translation-contributor/@ref[. gt ''] ! contributors:contributor-id(.)
-                            return
-                                $contributors[@xml:id eq $contributor-id]/m:label/text()
+                            $contributors[m:instance/@id = $translation-contributor/@xml:id]/m:label/text()
                 
                 let $marked-paragraphs :=
                     if ($acknowledgment/tei:p and $contributor-strings) then
@@ -1783,21 +1849,19 @@ declare function translation:replace-text($resource-id as xs:string) as element(
 
 declare function translation:entities($entity-ids as xs:string*, $instance-ids as xs:string*) as element(m:entities) {
     
-    (: Get entities for the glossaries that are included :)
-    element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-        
-        let $entities := $entities:entities/id(distinct-values($entity-ids))/self::m:entity
-        
-        let $instance-entities :=
-            for $instance-id in distinct-values($instance-ids)
-            let $instance := $entities:entities//m:instance[@id = $instance-id]
-            return
-                $instance[1]/parent::m:entity
-        
-        return 
-            $entities | $instance-entities
-            
-    }
+    let $instance-id-chunks := common:ids-chunked($instance-ids)
+    let $instance-entities :=
+        for $key in map:keys($instance-id-chunks)
+        return
+            $entities:entities//m:instance[@id = map:get($instance-id-chunks, $key)]/parent::m:entity
+    
+    let $entities := $entities:entities/id($entity-ids)/self::m:entity | $instance-entities
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'entities') }{
+            $entities,
+            element related { entities:related($entities, false(), 'knowledgebase', 'requires-attention', 'excluded') }
+        }
     
 };
 
@@ -1831,7 +1895,7 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
     let $quote-ref-target-ids := $quote-refs/@target ! replace(., '^#', '')
     
     (: Texts to cross-reference :)
-    let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+    let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
     
     for $source-tei in $published/id($quote-ref-target-ids)/ancestor::tei:TEI
     let $source-text-id := $source-tei ! tei-content:id(.)

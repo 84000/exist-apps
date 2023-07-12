@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -252,7 +252,7 @@
                         <div>
                             <a href="#add-sponsor" class="add-nodes">
                                 <span class="monospace">+</span>
-                                <xsl:value-of select="'add a sponsor'"/>
+                                <xsl:value-of select="' add a sponsor'"/>
                             </a>
                         </div>
                     </fieldset>
@@ -342,9 +342,13 @@
         <xsl:param name="all-sponsors" required="yes"/>
         <xsl:for-each select="$text-sponsors">
             
-            <xsl:variable name="sponsor-id" select="lower-case(replace(@ref, '^(eft:|sponsors\.xml#)', '', 'i'))"/>
+            <xsl:variable name="sponsorship-id" select="@xml:id"/>
+            <xsl:variable name="text-sponsor" select="$all-sponsors[m:instance/@id = $sponsorship-id]"/>
             
             <div class="form-group add-nodes-group">
+                
+                <input type="hidden" name="{ concat('sponsorship-id-', position()) }" value="{ $sponsorship-id }"/>
+                
                 <div class="col-sm-5">
                     <select class="form-control">
                         <xsl:attribute name="name" select="concat('sponsor-id-', position())"/>
@@ -354,7 +358,7 @@
                         <xsl:for-each select="$all-sponsors">
                             <option>
                                 <xsl:attribute name="value" select="@xml:id"/>
-                                <xsl:if test="@xml:id eq $sponsor-id">
+                                <xsl:if test="@xml:id eq $text-sponsor/@xml:id">
                                     <xsl:attribute name="selected" select="'selected'"/>
                                 </xsl:if>
                                 <xsl:choose>

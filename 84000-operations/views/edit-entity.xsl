@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -18,21 +18,9 @@
                 
                 <hr/>
                 
-                <!-- Forms -->
-                <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-horizontal">
-                    
-                    <xsl:attribute name="data-ajax-target-callbackurl" select="concat($reading-room-path, '/glossary/', m:entity/@xml:id, '.html?view-mode=editor', '#', m:entity/@xml:id, '-body')"/>
-                    
-                    <input type="hidden" name="form-action" value="update-entity"/>
-                    
-                    <xsl:call-template name="entity-form-input">
-                        <xsl:with-param name="entity" select="m:entity"/>
-                        <xsl:with-param name="entity-types" select="m:entity-types/m:type"/>
-                        <xsl:with-param name="context-id" select="'edit-entity-form'"/>
-                        <xsl:with-param name="default-entity-type" select="m:entity-types/m:type[1]/@id"/>
-                    </xsl:call-template>
-                    
-                </form>
+                <xsl:call-template name="form">
+                    <xsl:with-param name="entity" select="m:entity"/>
+                </xsl:call-template>
                 
             </div>
             
@@ -69,6 +57,25 @@
                 </main>
             </xsl:with-param>
         </xsl:call-template>
+        
+    </xsl:template>
+    
+    <xsl:template name="form">
+        
+        <xsl:param name="entity" as="element(m:entity)"/>
+        
+        <form action="/edit-entity.html" method="post" data-ajax-target="#ajax-source" class="form-horizontal">
+            
+            <input type="hidden" name="form-action" value="update-entity"/>
+            
+            <xsl:call-template name="entity-form-input">
+                <xsl:with-param name="entity" select="$entity"/>
+                <xsl:with-param name="entity-types" select="/m:response/m:entity-types/m:type"/>
+                <xsl:with-param name="context-id" select="'edit-entity-form'"/>
+                <xsl:with-param name="default-entity-type" select="/m:response/m:entity-types/m:type[1]/@id"/>
+            </xsl:call-template>
+            
+        </form>
         
     </xsl:template>
     

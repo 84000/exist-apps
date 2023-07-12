@@ -90,7 +90,7 @@ declare function local:contributor($author as element()) as element()* {
             return
                 element { QName('http://read.84000.co/ns/1.0', $contributor/@type) } {
                     $contributor/@xml:lang,
-                    $author/@ref,
+                    $author/@xml:id,
                     (:$author/@role,:)
                     $contributor/text()
                 }
@@ -109,7 +109,7 @@ declare function local:spreadsheet-data( $tengyur-data as element(m:tengyur-data
                 if(local-name($element) eq 'title') then
                     local:data-item($text/@text-id, $toh/@label, 'title', $element/@type, $element/@xml:lang, $element/text())
                 else if(local-name($element) = ('author','translator','reviser')) then
-                    local:data-item($text/@text-id, $toh/@label, local-name($element), $element/@ref, $element/@xml:lang, $element/text())
+                    local:data-item($text/@text-id, $toh/@label, local-name($element), $element/@xml:id, $element/@xml:lang, $element/text())
                 else 
                     ()
             ,

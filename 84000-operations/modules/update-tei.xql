@@ -24,12 +24,19 @@ declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 
 declare variable $update-tei:blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('cache-glossary-locations', 'auto-assign-entities')][not(scheduler:trigger/state/text() eq 'COMPLETE')];
 
-declare function update-tei:minor-version-increment($tei as element(tei:TEI), $form-action as xs:string) as node()* {
+declare function update-tei:minor-version-increment($tei as element(tei:TEI), $note as xs:string) {
+    update-tei:minor-version-increment($tei, $note, ())
+};
+
+declare function update-tei:minor-version-increment($tei as element(tei:TEI), $note as xs:string, $version-number-str as xs:string?) as node()* {
     
     (: Force a minor version increment:)
-    
-    let $version-number-str-increment := tei-content:version-number-str-increment($tei, 'revision')
-    let $version-date := tei-content:version-date($tei)
+    let $version-number-str-increment := 
+        if(not($version-number-str gt '')) then
+            tei-content:version-number-str-increment($tei, 'revision')
+        else
+            $version-number-str
+            
     let $text-id := tei-content:id($tei)
     
     let $new-editionStmt :=
@@ -37,23 +44,19 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $f
             element edition {
                 text {'v ' || $version-number-str-increment || ' '},
                 element date {
-                    text { $version-date }
+                    text { format-date(current-date(), '[Y]') }
                 }
             }
         }
-    
-    let $fileDesc := $tei//tei:fileDesc
-    
-    let $existing-editionStmt := $fileDesc/tei:editionStmt
     
     where not(tei-content:locked-by-user($tei) gt '')
     return (
     
         (: Do the update :)
-        common:update('text-version', $existing-editionStmt, $new-editionStmt, $fileDesc, $fileDesc/tei:titleStmt),
+        update replace $tei//tei:fileDesc/tei:editionStmt with $new-editionStmt,
         
-        (: Add a note :)
-        local:add-note($tei, 'text-version', $version-number-str-increment, concat('Auto (', $form-action, ')')),
+        (: Add a change :)
+        local:add-change($tei, 'text-version', $version-number-str-increment, $note),
         
         util:log('info', concat('update-tei-minor-version-increment:', $text-id))
         
@@ -68,8 +71,8 @@ declare function local:add-note($tei as element(tei:TEI), $update as xs:string, 
             attribute type {'updated'},
             attribute update {$update},
             attribute value {$value},
-            attribute date-time {current-dateTime()},
-            attribute user {common:user-name()},
+            attribute date-time { current-dateTime() },
+            attribute user { common:user-name() },
             text {
                 if ($note) then
                     $note
@@ -80,154 +83,134 @@ declare function local:add-note($tei as element(tei:TEI), $update as xs:string, 
         
     where not(tei-content:locked-by-user($tei) gt '')
     return 
-        common:update('add-note', (), $note, $tei//tei:fileDesc/tei:notesStmt, ())
+        if($tei//tei:fileDesc/tei:notesStmt[tei:note]) then
+            update insert (text { common:ws(4) }, $note) following $tei//tei:fileDesc/tei:notesStmt/tei:note[last()]
+        else
+            update insert (text { common:ws(4) }, $note, text { common:ws(3) }) into $tei//tei:fileDesc/tei:notesStmt
 
+};
+
+
+declare function local:add-change($tei as element(tei:TEI), $type as xs:string, $status as xs:string?, $note as xs:string?) as element()* {
+    
+    let $change :=
+        element {QName("http://www.tei-c.org/ns/1.0", "change")} {
+            attribute who { '#' || common:user-name() },
+            attribute when { current-dateTime() },
+            attribute type { $type },
+            attribute status { $status },
+            attribute xml:id { tei-content:next-xml-id($tei) },
+            element desc { ($note, $status)[1] }
+        }
+    
+    where not(tei-content:locked-by-user($tei) gt '')
+    return 
+        (: Add a change :)
+        if($tei//tei:fileDesc/tei:revisionDesc[tei:change]) then
+            update insert ( text { common:ws(4) }, $change ) following $tei//tei:fileDesc/tei:revisionDesc/tei:change[last()]
+        
+        else (
+            
+            (: Add a revisionDesc :)
+            if($tei//tei:fileDesc[not(tei:revisionDesc)]) then
+                update insert ( text { common:ws(3) }, element { QName('http://www.tei-c.org/ns/1.0', 'revisionDesc') } {}, text { common:ws(2) } ) into $tei//tei:fileDesc
+            else (),
+            
+            (: Add a change :)
+            update insert ( text { common:ws(4) }, $change, text { common:ws(3) } ) into $tei//tei:fileDesc/tei:revisionDesc
+            
+        )
+        
 };
 
 declare function update-tei:publication-status($tei as element(tei:TEI)) as element()* {
     
     let $request-parameter-names := request:get-parameter-names()
-
+    
+    let $text-id := tei-content:id($tei)
+    let $document-url := base-uri($tei)
+    
     where not(tei-content:locked-by-user($tei) gt '')
     return
         (: exist:batch-transaction should defer triggers until all updates are made :)
         (# exist:batch-transaction #) {
             
-            let $parent := $tei//tei:fileDesc
+            let $fileDesc := $tei//tei:fileDesc
             
-            (: publicationStmt :)
-            (: Do this first to establish if there were updates, then we can force a version increment if there were :)
-            let $do-publication-statement-update :=
-                if ($request-parameter-names = 'publication-date' and $request-parameter-names = 'translation-status') then
+            (: tei:publicationStmt/tei:availability/@status :)
+            let $do-publication-status-update :=
+                if ($request-parameter-names = 'translation-status') then
                     
-                    let $existing-value := $parent/tei:publicationStmt
-                    let $insert-following := $parent/tei:editionStmt
+                    let $availability := $fileDesc/tei:publicationStmt/tei:availability
+                    let $existing-status := $availability/@status
+                    (: Translation status :)
+                    let $request-status := request:get-parameter('translation-status', '')
+                    (: Force zero to '' :)
+                    let $request-status := if ($request-status eq '0') then '' else $request-status
+                    let $new-status := attribute status { $request-status }
+                    
+                    where $availability and ($request-status ne $existing-status/string())
+                    return
+                        common:update('publication-status', $existing-status, $new-status, $availability, ())
+                        
+                else ()
+             
+             (: tei:publicationStmt/tei:date :)
+             let $do-publication-date-update :=
+                if ($request-parameter-names = 'publication-date') then
+                    
+                    let $publicationStmt := $fileDesc/tei:publicationStmt
+                    let $existing-publication-date := $publicationStmt/tei:date
                     
                     (: Publication date :)
                     let $request-publication-date := request:get-parameter('publication-date', '')
                     
-                    (: Translation status :)
-                    let $request-status := request:get-parameter('translation-status', '')
-                    (: Force zero to '' :)
-                    let $request-status :=
-                    if ($request-status eq '0') then
-                        ''
-                    else
-                        $request-status
-                    
-                    let $new-value :=
-                        element {QName("http://www.tei-c.org/ns/1.0", "publicationStmt")} {
-                            
-                            (: Set the status :)
-                            attribute {'status'} { $request-status },
-                            
-                            (: Copy any other attributes :)
-                            $existing-value/@*[not(name(.) eq 'status')],
-                            
-                            (: Copy any other nodes :)
-                            $existing-value/*[not(self::tei:date)],
-                            
-                            (: Set the date :)
-                            element {QName("http://www.tei-c.org/ns/1.0", "date")} {
-                                text { $request-publication-date }
-                            }
-                            
+                    let $new-publication-date :=
+                        element {QName("http://www.tei-c.org/ns/1.0", "date")} {
+                            text { $request-publication-date }
                         }
                     
-                    let $existing-status := $existing-value/@status/string()
-                    let $existing-publication-date := $existing-value/tei:date/string()
-                        
-                    where $parent and ($request-status ne $existing-status or $request-publication-date ne $existing-publication-date)
+                    where $publicationStmt and ($request-publication-date ne $existing-publication-date/string())
                     return
-                        
-                        let $do-update := common:update('publication-statement', $existing-value, $new-value, $parent, $insert-following)
-                        
-                        return (
-                            
-                            $do-update,
-                            
-                            (: Add the note - if it's a status update :)
-                            if ($do-update[self::m:updated] and $request-status ne $existing-status) then
-                                local:add-note($tei, 'translation-status', $request-status, $request-status)
-                            else ()
-                            
-                        )
+                        common:update('publication-date', $existing-publication-date, $new-publication-date, $publicationStmt, $publicationStmt/tei:idno[last()])
                         
                 else ()
             
-            (: editionStmt :)
-            (: Do this second and force a version update if there was a change to the publicationStmt :)
-            let $existing-value := $parent/tei:editionStmt
-            let $insert-following := $parent/tei:titleStmt
-            
-            (: Get the version from the request :)
-            let $request-version := request:get-parameter('text-version', '')
-            (: Make a comparable string from the request :)
-            let $request-version-number-str := tei-content:strip-version-number($request-version)
             (: Get the current version number from the TEI :)
             let $existing-version-number-str := tei-content:version-number-str($tei)
+            (: Make a comparable string from the request :)
+            let $request-version-number-str := tei-content:strip-version-number(request:get-parameter('text-version', ''))
             (: Test if it's a new version :)
             let $request-is-current-version := tei-content:is-current-version($existing-version-number-str, $request-version-number-str)
             
-            (: If the request is the current version number (not incremented) but there was an update - then force an increment :)
-            let $version-number-str :=
-                if ($request-is-current-version and $do-publication-statement-update[self::m:updated]) then
-                    tei-content:version-number-str-increment($tei, 'revision')
-                else
-                    $request-version-number-str
-                
-            (: Get the date from the request :)
-            let $request-version-date := request:get-parameter('text-version-date', format-dateTime(current-dateTime(), '[Y]'))
-            
-            let $new-value :=
-                element {QName("http://www.tei-c.org/ns/1.0", "editionStmt")} {
-                    element edition {
-                        text {'v ' || $version-number-str || ' '},
-                        element date {
-                            text {$request-version-date}
-                        }
-                    }
-                }
-            
-            (: Test if it's a new version :)
-            let $new-is-current-version := tei-content:is-current-version($existing-version-number-str, $version-number-str)
-            
-            let $existing-version-date := $existing-value/tei:date/string()
-            
-            where $parent and (not($new-is-current-version) or $request-version-date ne $existing-version-date)
+            (: Force a version update if there was a change to the publicationStmt :)
+            where $do-publication-status-update[self::m:updated] or $do-publication-date-update[self::m:updated] or not($request-is-current-version)
             return
-                
-                let $text-id := tei-content:id($tei)
-                let $document-url := base-uri($tei)
-                
-                let $do-update := common:update('text-version', $existing-value, $new-value, $parent, $insert-following)
-                
-                let $update-notes := request:get-parameter('update-notes', '')
+            
+                let $update-notes := request:get-parameter('update-notes', 'no-note-defined')
                 let $update-notes :=
-                    if ($update-notes eq '') then
-                        if (not($version-number-str eq $request-version-number-str)) then
-                            (: It's a forced update :)
-                            'Auto (update-publication-status)'
-                        else
-                            (: It's a requested update :)
-                            $request-version-number-str
+                    (: It's a forced update :)
+                    if ($update-notes eq 'no-note-defined' and $request-is-current-version) then
+                        'Auto (update-publication-status)'
+                    (: It's a requested update :)
+                    else if($update-notes eq 'no-note-defined') then
+                        concat('User set version to ', $request-version-number-str)
+                    (: The user defined a note :)
                     else
-                        (: The user defined a note :)
                         $update-notes
+                
+                let $do-version-increment := update-tei:minor-version-increment($tei, $update-notes, $request-version-number-str)
+                
+                let $version-number-str := tei-content:version-number-str($tei)
                 
                 return (
                     
-                    $do-publication-statement-update,
-                    $do-update,
-                    
-                    (: Add the note :)
-                    if ($do-update[self::m:updated]) then 
-                        local:add-note($tei, 'text-version', $version-number-str, $update-notes)
-                    else ()
-                    ,
+                    $do-publication-status-update,
+                    $do-publication-date-update,
+                    $do-version-increment,
                     
                     (: Push to Github :)
-                    if($store:conf and not($new-is-current-version)) then 
+                    if($store:conf) then 
                         deploy:push('data-tei', (), concat($text-id, ' / ',  $version-number-str), $document-url)
                     else ()
                     
@@ -289,12 +272,13 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
     let $parent := $tei/tei:teiHeader/tei:fileDesc
     let $title-statement-existing := $parent/tei:titleStmt
     
-    let $container-ws := $title-statement-existing/preceding-sibling::text()[1]
-    let $node-ws := $title-statement-existing/tei:*[1]/preceding-sibling::text()
+    let $container-ws := text { common:ws(3) }
+    let $node-ws := text { common:ws(4) }
     
     let $form-action := request:get-parameter('form-action', 'update-titles', false())
     
     let $title-statement-new :=
+    
         (: titleStmt :)
         element { node-name($title-statement-existing) } {
             
@@ -317,113 +301,140 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
                 $title[1]
             ),
             
+            (: Add contributors :)
             if ($form-action eq 'update-contributors') then (
                 
-                (: Add all the contributors from the request :)
-                
-                (: Translator main :)
-                let $translator-team-id := request:get-parameter('translator-team-id', '') ! lower-case(.)
-                let $existing-translator-team := $title-statement-existing/tei:author[@role eq 'translatorMain']
-                
-                where $translator-team-id gt ''
-                return (
-                    $node-ws,
-                    element {QName("http://www.tei-c.org/ns/1.0", "author")} {
-                        
-                        attribute role {'translatorMain'},
-                        attribute ref { contributors:contributor-uri($translator-team-id)[1] },
-                        
-                        (: Carry over the text :)
-                        if ($existing-translator-team[@ref] and contributors:contributor-id($existing-translator-team/@ref) eq $translator-team-id) then
-                            $existing-translator-team/node()
-                        else ()
-                        
-                    }
+                for $contributor-id-param in ('contributor-id-team', common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'contributor-id-')], '-')[not(. eq 'contributor-id-team')])
                     
-                ),
-                
-                (: Add other contributors from the request :)
-                for $contributor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'contributor-id-')], '-')
-                
-                    let $contributor-id := request:get-parameter($contributor-id-param, '')
                     let $contributor-index := substring-after($contributor-id-param, 'contributor-id-')
-                    let $contributor-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
-                    let $contributor-type-tokenized := tokenize($contributor-type, '-')
-                    let $contributor-node-name := $contributor-type-tokenized[1]
-                    let $contributor-role :=
-                        if (count($contributor-type-tokenized) eq 2) then
-                            $contributor-type-tokenized[2]
-                        else
-                            ''
-                    let $contributor-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
-                    let $contributor-expression :=
-                        if ($contributor-expression gt '') then
-                            $contributor-expression
-                        else
-                            $contributors:contributors//m:person[@xml:id eq $contributor-id]/m:label/text()
+                    let $contributor-id := request:get-parameter(concat('contributor-id-', $contributor-index), '')
+                    let $contribution-id := request:get-parameter(concat('contribution-id-', $contributor-index), '')
+                    (: New xml:id for additions :)
+                    let $contribution-id :=
+                        if(not($contribution-id gt '')) then
+                            tei-content:next-xml-id($tei)
+                        else 
+                            $contribution-id
+                    
+                    return (
+                    
+                        (: Move the instance record from existing entity to, or create one in, the target :)
+                        (: This can happen independent of the update to the tei and doesn't require a new version of the text :)
+                        let $contribution-instance-existing := $contributors:contributors//m:instance[@id eq $contribution-id]
+                        let $contributors-target := $contributors:contributors/id($contributor-id)[self::m:person | self::m:team]
                         
-                where $contributor-id gt '' and $contributor-node-name and $contributor-role
-                return (
-                    $node-ws,
-                    element {QName("http://www.tei-c.org/ns/1.0", $contributor-node-name)} {
-                        attribute role {$contributor-role},
-                        attribute ref { contributors:contributor-uri($contributor-id)[1] },
-                        text {$contributor-expression}
-                    }
+                        return 
+                            update-entity:move-instance($contribution-id, 'translation-contribution', $contribution-instance-existing, $contributors-target)
+                        ,
+                        
+                        (: Add the contributors :)
+                        if(not($contributor-id-param eq 'contributor-id-team')) then
+                        
+                            let $contribution-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
+                            let $contribution-type-tokenized := tokenize($contribution-type, '-')
+                            let $contribution-node-name := $contribution-type-tokenized[1]
+                            let $contribution-role :=
+                                if (count($contribution-type-tokenized) eq 2) then
+                                    $contribution-type-tokenized[2]
+                                else
+                                    ''
+                            let $contribution-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
+                            let $contribution-expression :=
+                                if ($contribution-expression gt '') then
+                                    $contribution-expression
+                                else
+                                    $contributors:contributors//m:person[@xml:id eq $contributor-id]/m:label/text()
+                            
+                            where $contribution-node-name and $contribution-role
+                            return (
+                                $node-ws,
+                                element { QName("http://www.tei-c.org/ns/1.0", $contribution-node-name) } {
+                                    attribute role {$contribution-role},
+                                    attribute xml:id { $contribution-id },
+                                    text {$contribution-expression}
+                                }
+                            )
+                        
+                        (: Copy the team - only the entity assignment can change :)
+                        else (
+                            $node-ws,
+                            $tei/id($contribution-id)
+                        )
+                        
                 )
             )
-            
-        else
-            (: Just copy them :)
-            for $existing-node in $title-statement-existing/*[self::tei:author | self::tei:editor | self::tei:consultant]
-            return (
-                $node-ws,
-                $existing-node
-            )
-        ,
-        
-        if ($form-action eq 'update-sponsorship') then (
-            
-            (: Add all the sponsors from the request :)
-            for $sponsor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'sponsor-id-')], '-')
-            
-            let $sponsor-index := substring-after($sponsor-id-param, 'sponsor-id-')
-            let $sponsor-id := request:get-parameter($sponsor-id-param, '')
-            let $sponsor-expression := request:get-parameter(concat('sponsor-expression-', $sponsor-index), '')
-            let $sponsor-expression :=
-            if ($sponsor-expression gt '') then
-                $sponsor-expression
+            (: or just copy them :)
             else
-                $sponsors:sponsors//m:sponsor[@xml:id eq $sponsor-id]/m:label/text()
                 
-                where $sponsor-id gt ''
-            return (
-                $node-ws,
-                element {QName("http://www.tei-c.org/ns/1.0", "sponsor")} {
-                    attribute ref { sponsors:sponsor-uri($sponsor-id)[1] },
-                    text {$sponsor-expression}
-                }
+                for $existing-node in $title-statement-existing/*[self::tei:author | self::tei:editor | self::tei:consultant]
+                return (
+                    $node-ws,
+                    $existing-node
+                )
+            ,
+        
+            (: Add sponsors :)
+            if ($form-action eq 'update-sponsorship') then (
+                
+                (: Add all the sponsors from the request :)
+                for $sponsor-id-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'sponsor-id-')], '-')
+                
+                let $sponsor-index := substring-after($sponsor-id-param, 'sponsor-id-')
+                let $sponsor-id := request:get-parameter($sponsor-id-param, '')
+                let $sponsorship-id := request:get-parameter(concat('sponsorship-id-', $sponsor-index), '')
+                (: New xml:id for additions :)
+                let $sponsorship-id :=
+                    if(not($sponsorship-id gt '')) then
+                        tei-content:next-xml-id($tei)
+                    else 
+                        $sponsorship-id
+                
+                let $sponsorship-instance-existing := $sponsors:sponsors//m:instance[@id eq $sponsorship-id]
+                let $sponsor-target := $sponsors:sponsors/id($sponsor-id)[self::m:sponsor]
+                
+                let $sponsor-expression := request:get-parameter(concat('sponsor-expression-', $sponsor-index), '')
+                let $sponsor-expression :=
+                    if ($sponsor-expression gt '') then
+                        $sponsor-expression
+                    else
+                        $sponsor-target/m:label/text()
+                
+                return (
+                    
+                    (: Move or assign the instance :)
+                    update-entity:move-instance($sponsorship-id, 'translation-sponsor', $sponsorship-instance-existing, $sponsor-target),
+                    
+                    (: Add node to TEI :)
+                    if($sponsor-id gt '') then (
+                        $node-ws,
+                        element {QName("http://www.tei-c.org/ns/1.0", "sponsor")} {
+                            attribute xml:id { $sponsorship-id },
+                            text { $sponsor-expression }
+                        }
+                    )
+                    else ()
+                    
+                )
+                
             )
-        )
-        else
-            (: Just copy them :)
-            for $existing-node in $title-statement-existing/*[self::tei:sponsor]
+            (: or just copy them :)
+            else
+                for $existing-node in $title-statement-existing/*[self::tei:sponsor]
+                return (
+                    $node-ws,
+                    $existing-node
+                 )
+        ,
+        
+            (: Copy anything else in case there are comments or something :)
+            for $existing-node in $title-statement-existing/*[not(. instance of text())][not(self::tei:title | self::tei:author | self::tei:editor | self::tei:consultant | self::tei:sponsor)]
             return (
                 $node-ws,
                 $existing-node
-             )
-        ,
-        
-        
-        (: Copy anything else in case there are comments or something :)
-        for $existing-node in $title-statement-existing/*[not(. instance of text())][not(self::tei:title | self::tei:author | self::tei:editor | self::tei:consultant | self::tei:sponsor)]
-        return (
-            $node-ws,
-            $existing-node
-        ),
-        
-        $container-ws
-    }
+            ),
+            
+            $container-ws
+        }
     
     let $title-statement-change := not(deep-equal($title-statement-existing, $title-statement-new))
     
@@ -431,6 +442,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
     
     let $notes-statement-new := 
         element { QName("http://www.tei-c.org/ns/1.0", "notesStmt") } {
+        
             $notes-statement-existing/@*,
             
             for $note in $notes-statement-existing/*[not(local-name(.) eq 'note' and @type = ('title', 'title-internal'))]
@@ -453,9 +465,11 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
                     text {$titles-note}
                 }
             ),
+            
             $container-ws
+            
         }
-        
+    
     let $notes-statement-change := not(deep-equal($notes-statement-existing, $notes-statement-new))
     
     where not(tei-content:locked-by-user($tei) gt '')
@@ -464,35 +478,31 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
             
             (: Update titles :)
             if($title-statement-change) then
-                common:update($form-action, $title-statement-existing, $title-statement-new, $parent, ())
+                update replace $title-statement-existing with $title-statement-new
             else (),
             
             (: Update notes :)
             if ($notes-statement-change) then
-                common:update('titles-notes', $notes-statement-existing, $notes-statement-new, $parent, ())
+                update replace $notes-statement-existing with $notes-statement-new
             else ()
             ,
             
             (: Increment the version number - do first so it can evaluate the change :)
             if ($title-statement-change or $notes-statement-change) then
-                update-tei:minor-version-increment($tei, $form-action)
+                update-tei:minor-version-increment($tei, concat('Auto (', $form-action, ')'))
             else ()
             
-            (:(
-                element update-debug {
-                    element parent { $parent },
-                    element title-statement {
-                       element existing-value { $title-statement-existing }, 
-                       element new-value { $title-statement-new }, 
-                    },
-                    element notes-statement {
-                       element existing-value { $notes-statement-existing }, 
-                       element new-value { $notes-statement-new }, 
-                    }
-                }
-            ):)
-            
         }
+        (:element update-debug {
+            element title-statement {
+               element existing-value { $title-statement-existing }, 
+               element new-value { $title-statement-new }
+            },
+            element notes-statement {
+               element existing-value { $notes-statement-existing }, 
+               element new-value { $notes-statement-new }
+            }
+        }:)
 };
 
 declare function update-tei:source($tei as element(tei:TEI)) as element()* {
@@ -501,148 +511,169 @@ declare function update-tei:source($tei as element(tei:TEI)) as element()* {
     let $existing-value := $parent/tei:sourceDesc
     let $insert-following := $parent/tei:publicationStmt
     
-    let $bibl-ws := $existing-value/tei:bibl[1]/preceding-sibling::text()[1]
-    let $location-ws := $existing-value/tei:bibl[1]/tei:location[1]/preceding-sibling::text()[1]
-    let $volume-ws := $existing-value/tei:bibl[1]/tei:location[1]/tei:volume[1]/preceding-sibling::text()[1]
+    let $bibl-ws := text { common:ws(4) }
+    let $location-ws := text { common:ws(5) }
+    let $volume-ws := text { common:ws(6) }
     
     let $new-value :=
-    (: sourceDesc :)
-    element {node-name($existing-value)} {
-        
-        $existing-value/@*,
-        $existing-value/tei:bibl[1]/preceding-sibling::node(),
-        
-        for $bibl at $bibl-index in $existing-value/tei:bibl
-        
-        let $toh-key := $bibl/@key
-        let $volume-keys :=
-            for $parameter in request:get-parameter-names()
-            let $paramater-base := concat('volume-', $toh-key, '-')
-            where starts-with($parameter, $paramater-base)
-            return
-                substring-after($parameter, $paramater-base)
-        
-        return (
+        (: sourceDesc :)
+        element { node-name($existing-value) } {
             
-            (: add bibl whitespace :)
-            if ($bibl-index gt 1) then
-                $bibl-ws
-            else (),
+            $existing-value/@*,
+            $existing-value/tei:bibl[1]/preceding-sibling::node(),
             
-            (: bibl :)
-            element {node-name($bibl)} {
-                $bibl/@*,
+            for $bibl at $bibl-index in $existing-value/tei:bibl
+            
+            let $toh-key := $bibl/@key
+            let $volume-keys :=
+                for $parameter in request:get-parameter-names()
+                let $paramater-base := concat('volume-', $toh-key, '-')
+                where starts-with($parameter, $paramater-base)
+                return
+                    substring-after($parameter, $paramater-base)
+            
+            return (
                 
-                (: <ref/> :)
-                for $element in $bibl/tei:ref
-                return (
-                    $location-ws,
-                    $element
-                ),
+                (: add bibl whitespace :)
+                if ($bibl-index gt 1) then
+                    $bibl-ws
+                else (),
                 
-                (: <biblScope/> :)
-                for $element in $bibl/tei:biblScope
-                return (
-                    $location-ws,
-                    $element
-                ),
-                
-                (: <author/> <editor/> :)
-                let $attribution-parameter-type := concat('attribution-role-',$toh-key,'-')
-                for $attribution-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., $attribution-parameter-type)], '-')
-                let $attribution-index := substring-after($attribution-param, $attribution-parameter-type)
-                let $attribution-role := request:get-parameter(concat('attribution-role-',$toh-key,'-', $attribution-index), '')
-                let $attribution-entity := request:get-parameter(concat('attribution-entity-',$toh-key,'-', $attribution-index), '')
-                let $attribution-expression := request:get-parameter(concat('attribution-expression-',$toh-key,'-', $attribution-index), '')
-                let $attribution-lang := request:get-parameter(concat('attribution-lang-',$toh-key,'-', $attribution-index), '') ! common:valid-lang(.)
-                let $attribution-revision := request:get-parameter(concat('attribution-revision-',$toh-key,'-', $attribution-index), '')
-                let $attribution-key := request:get-parameter(concat('attribution-key-',$toh-key,'-', $attribution-index), '')
-                
-                let $attribution-entity :=
-                    if($attribution-entity eq 'create-entity-for-expression') then
-                        let $new-entity := update-entity:new-entity($attribution-lang, $attribution-expression, 'eft-person', '', '', '')
-                        let $save-entity := common:update('entity', (), $new-entity, $entities:entities, ())
-                        where $save-entity
-                        return
-                            $new-entity/@xml:id/string()
-                    else
-                        $attribution-entity
-                
-                where $attribution-role gt ''
-                return (
-                    $location-ws,
-                    element {QName("http://www.tei-c.org/ns/1.0", if($attribution-role eq 'reviser') then 'editor' else 'author')} {
-                        if($attribution-role = ('translator')) then
-                            attribute role {'translatorTib'}
-                        else if($attribution-role = ('reviser')) then
-                            attribute role {'reviser'}
-                        else ()
-                        ,
-                        if(not($attribution-entity eq '')) then
-                            attribute ref {concat('eft:', $attribution-entity)}
-                        else ()
-                        ,
-                        if(not($attribution-lang eq '')) then
-                            attribute xml:lang {$attribution-lang}
-                        else ()
-                        ,
-                        if(not($attribution-revision eq '')) then
-                            attribute revision {$attribution-revision}
-                        else ()
-                        ,if(not($attribution-key eq '')) then
-                            attribute key {$attribution-key}
-                        else ()
-                        ,
-                        text { $attribution-expression }
-                    }
-                ),
-                
-                (: <location/> :)
-                $location-ws,
-                element {QName("http://www.tei-c.org/ns/1.0", "location")} {
-                    attribute work {request:get-parameter(concat('work-', $toh-key), '0')},
-                    attribute count-pages {request:get-parameter(concat('count-pages-', $toh-key), '0')},
+                (: bibl :)
+                element {node-name($bibl)} {
+                    $bibl/@*,
                     
-                    for $volume-key at $volume-index in $volume-keys
-                    let $volume-number := request:get-parameter(concat('volume-', $toh-key, '-', $volume-key), '0')
-                        where $volume-number gt '0'
+                    (: <ref/> :)
+                    for $element in $bibl/tei:ref
                     return (
-                        (: add volume whitespace :)
-                        $volume-ws,
+                        $location-ws,
+                        $element
+                    ),
+                    
+                    (: <biblScope/> :)
+                    for $element in $bibl/tei:biblScope
+                    return (
+                        $location-ws,
+                        $element
+                    ),
+                    
+                    (: <author/> <editor/> :)
+                    let $attribution-parameter-role := concat('attribution-role-',$toh-key,'-')
+                    for $attribution-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., $attribution-parameter-role)], '-')
+                    
+                    let $attribution-index := substring-after($attribution-param, $attribution-parameter-role)
+                    let $attribution-id := request:get-parameter(concat('attribution-id-',$toh-key,'-', $attribution-index), '')
+                    let $attribution-role := request:get-parameter(concat('attribution-role-',$toh-key,'-', $attribution-index), '')
+                    let $attribution-entity-id := request:get-parameter(concat('attribution-entity-',$toh-key,'-', $attribution-index), '')
+                    let $attribution-expression := request:get-parameter(concat('attribution-expression-',$toh-key,'-', $attribution-index), '')
+                    let $attribution-lang := request:get-parameter(concat('attribution-lang-',$toh-key,'-', $attribution-index), '') ! common:valid-lang(.)
+                    let $attribution-revision := request:get-parameter(concat('attribution-revision-',$toh-key,'-', $attribution-index), '')
+                    let $attribution-key := request:get-parameter(concat('attribution-key-',$toh-key,'-', $attribution-index), '')
+                    
+                    let $attribution-entity := $entities:entities/id($attribution-entity-id)[self::m:entity]
+                    
+                    (: New xml:id for additions :)
+                    let $attribution-id :=
+                        if(not($attribution-id gt '')) then
+                            tei-content:next-xml-id($tei)
+                        else 
+                            $attribution-id
+                    
+                    return (
                         
-                        (: volume :)
-                        element {QName("http://www.tei-c.org/ns/1.0", "volume")} {
-                            attribute number {$volume-number},
-                            attribute start-page {request:get-parameter(concat('start-page-', $toh-key, '-', $volume-key), '0')},
-                            attribute end-page {request:get-parameter(concat('end-page-', $toh-key, '-', $volume-key), '0')}
-                        }
-                    )
-                    ,
-                    $location-ws
-                },
-                
-                (: <idno/> :)
-                for $element in $bibl/tei:idno
-                return (
+                        (: Create a new entity :)
+                        if($attribution-entity-id eq 'create-entity-for-expression') then
+                            let $new-entity := update-entity:new-entity($attribution-lang, $attribution-expression, 'eft-person', 'source-attribution', $attribution-id, '')
+                            return
+                                update insert $new-entity into $entities:entities
+                        
+                        (: Move attribution to an existing entity :)
+                        else
+                            let $attribution-instance-existing := $entities:entities//m:instance[@id eq $attribution-id]
+                            let $entity-target := $entities:entities/id($attribution-entity-id)[self::m:entity]
+                            
+                            return 
+                                update-entity:move-instance($attribution-id, 'source-attribution', $attribution-instance-existing, $entity-target)
+                        ,
+                        
+                        if($attribution-role gt '') then (
+                            $location-ws,
+                            element {QName("http://www.tei-c.org/ns/1.0", if($attribution-role eq 'reviser') then 'editor' else 'author')} {
+                                
+                                if($attribution-role = ('translator')) then
+                                    attribute role {'translatorTib'}
+                                else if($attribution-role = ('reviser')) then
+                                    attribute role {'reviser'}
+                                else (),
+                                
+                                attribute xml:id {$attribution-id},
+                                
+                                if(not($attribution-lang eq '')) then
+                                    attribute xml:lang {$attribution-lang}
+                                else (),
+                                
+                                if(not($attribution-revision eq '')) then
+                                    attribute revision {$attribution-revision}
+                                else (),
+                                
+                                if(not($attribution-key eq '')) then
+                                    attribute key {$attribution-key}
+                                else (),
+                                
+                                text { $attribution-expression }
+                                
+                            }
+                        )
+                        else ()
+                    ),
+                    
+                    (: <location/> :)
                     $location-ws,
-                    $element
-                ),
-                
-                (: Anything else :)
-                for $element in $bibl/*[not(local-name(.) = ('ref','biblScope','author','editor','location','idno'))]
-                return (
-                    $location-ws,
-                    $element
-                ),
-                
-                $bibl-ws
-            }
-        ),
-        
-        (: In case we add other nodes or comments :)
-        $existing-value/tei:bibl[last()]/following-sibling::node()
-        
-    }
+                    element {QName("http://www.tei-c.org/ns/1.0", "location")} {
+                        attribute work {request:get-parameter(concat('work-', $toh-key), '0')},
+                        attribute count-pages {request:get-parameter(concat('count-pages-', $toh-key), '0')},
+                        
+                        for $volume-key at $volume-index in $volume-keys
+                        let $volume-number := request:get-parameter(concat('volume-', $toh-key, '-', $volume-key), '0')
+                            where $volume-number gt '0'
+                        return (
+                            (: add volume whitespace :)
+                            $volume-ws,
+                            
+                            (: volume :)
+                            element {QName("http://www.tei-c.org/ns/1.0", "volume")} {
+                                attribute number {$volume-number},
+                                attribute start-page {request:get-parameter(concat('start-page-', $toh-key, '-', $volume-key), '0')},
+                                attribute end-page {request:get-parameter(concat('end-page-', $toh-key, '-', $volume-key), '0')}
+                            }
+                        )
+                        ,
+                        $location-ws
+                    },
+                    
+                    (: <idno/> :)
+                    for $element in $bibl/tei:idno
+                    return (
+                        $location-ws,
+                        $element
+                    ),
+                    
+                    (: Anything else :)
+                    for $element in $bibl/*[not(local-name(.) = ('ref','biblScope','author','editor','location','idno'))]
+                    return (
+                        $location-ws,
+                        $element
+                    ),
+                    
+                    $bibl-ws
+                    
+                }
+            ),
+            
+            (: In case we add other nodes or comments :)
+            $existing-value/tei:bibl[last()]/following-sibling::node()
+            
+        }
         
     where 
         not(tei-content:locked-by-user($tei) gt '')
@@ -652,25 +683,20 @@ declare function update-tei:source($tei as element(tei:TEI)) as element()* {
             
             (: Increment the version number - do first so it can evaluate the change :)
             if (not(deep-equal($existing-value, $new-value))) then
-                update-tei:minor-version-increment($tei, 'update-locations')
+                update-tei:minor-version-increment($tei, concat('Auto (', 'update-locations', ')'))
             else()
             ,
             
             (: Do the update :)
             common:update('update-tei-locations', $existing-value, $new-value, $parent, $insert-following)
-            
-            (:,
-            (
-                element update-debug {
-                    element existing-value { $existing-value }, 
-                    element new-value { $new-value }, 
-                    element parent { $parent }
-                }
-            )
-            :)
-            
         }
-
+        (:(
+            element update-debug {
+                element existing-value { $existing-value }, 
+                element new-value { $new-value }, 
+                element parent { $parent }
+            }
+        ):)
 };
 
 declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-id as xs:string) as element()* {
@@ -691,7 +717,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     let $glossary-type :=
         if (request:get-parameter('glossary-type', '') = $glossary:types) then
             request:get-parameter('glossary-type', 'term')
-        else if($existing-item/tei:gloss[@type]) then
+        else if($existing-item/tei:gloss[@type = $glossary:types]) then
             $existing-item/tei:gloss/@type/string()
         else
             'term'
@@ -699,7 +725,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     let $glossary-mode :=
         if (request:get-parameter('glossary-mode', 'match') = $glossary:modes) then
             request:get-parameter('glossary-mode', 'match')
-        else if($existing-item/tei:gloss[@mode]) then
+        else if($existing-item/tei:gloss[@mode = $glossary:modes]) then
             $existing-item/tei:gloss/@mode/string()
         else 
             'match'
@@ -725,75 +751,121 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     (: Main term :)
                     common:ws(7),
                     element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
-                        (:attribute type {'translationMain'},:)
+                        attribute type {'translationMain'},
                         text { $main-term }
                     },
                     
-                    (: Source terms and alternatives :)
-                    for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-text-')], '-')
-                    let $term-text := request:get-parameter($term-param, '')
-                    let $term-index := substring-after($term-param, 'term-text-')
-                    let $term-lang := request:get-parameter(concat('term-lang-', $term-index), '') ! common:valid-lang(.)
-                    let $term-type := request:get-parameter(concat('term-type-', $term-index), '')
-                    let $term-type := ($glossary:attestation-types//m:attestation-type[@id eq $term-type]/m:migrate/@id, $glossary:attestation-types//m:attestation-type[@id eq $term-type]/@id)[1]
-                    let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
-                    where $term-text gt ''
-                    return (
-                        common:ws(7),
-                        element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
+                    (: Get all the term-lang-n input :)
+                    let $lang-params := common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-lang-')], '-')
+                    (: Loop per lang :)
+                    for $lang in ('en','Sa-Ltn','Bo-Ltn','zh')
+                    return
+                        (: Get the input for this lang :)
+                        for $lang-param at $index in $lang-params[request:get-parameter(., '') ! common:valid-lang(.) eq $lang]
+                        (: Derive the row / input set :)
+                        let $term-index := substring-after($lang-param, 'term-lang-')
+                        (: Get the associated text / type / status :)
+                        let $term-text := request:get-parameter(concat('term-text-', $term-index), '')
+                        let $term-type := request:get-parameter(concat('term-type-', $term-index), '')
+                        let $term-status := request:get-parameter(concat('term-status-', $term-index), '')
+                        (: Validate / get default of the type :)
+                        let $attestation-type := ($glossary:attestation-types//m:attestation-type[@id eq $term-type] | $glossary:attestation-types//m:attestation-type[m:migrate/@id = $term-type] | $glossary:attestation-types//m:attestation-type[m:appliesToLang[@xml:lang eq $lang][@default]][1] | $glossary:attestation-types//m:attestation-type[@id eq 'sourceUnspecified'] )[1]
                         
-                            (: If more than one en term is passed then make it an alternative :)
-                            if($term-lang eq 'en') then
-                                attribute type {'alternative'}(:translationAlternative:)
+                        (: Filter out empty content :)
+                        where 
+                            $term-text gt ''
+                            and not($lang eq 'Sa-Ltn' and $term-text eq common:local-text('glossary.term-empty-sa-ltn', 'en'))
+                            and not($lang eq 'Bo-Ltn' and $term-text eq common:local-text('glossary.term-empty-bo-ltn', 'en'))
+                        
+                        return (
+                            common:ws(7),
+                            element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
                             
-                            else ( 
+                                if($lang eq 'en') then (
+                                    attribute type {'translationAlternative'},
+                                    text { $term-text ! normalize-space(.) }
+                                )
                                 
-                                (: Set lang :)
-                                attribute xml:lang { $term-lang },
+                                else if($lang eq 'Sa-Ltn') then (
+                                    attribute xml:lang { 'Sa-Ltn' },
+                                    if($attestation-type) then
+                                        attribute type { $attestation-type/@id }
+                                    else(),
+                                    if($term-status gt '') then 
+                                        attribute status  { $term-status } 
+                                    else (),
+                                    text { $term-text ! replace(., '\-', '­') ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
+                                )
                                 
-                                (: Set type :)
-                                if($term-type gt '') then 
-                                    attribute type { $term-type } 
-                                else (),
+                                else if($lang eq 'Bo-Ltn') then (
+                                    attribute xml:lang { 'Bo-Ltn' },
+                                    if($attestation-type) then
+                                        attribute type { $attestation-type/@id }
+                                    else(),
+                                    attribute n { $index },
+                                    if($term-status gt '') then 
+                                        attribute status  { $term-status } 
+                                    else (),
+                                    text { $term-text ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
+                                )
                                 
-                                (: Set status :)
-                                if($term-status gt '') then 
-                                    attribute status  { $term-status } 
-                                else ()
+                                else ( 
+                                    attribute xml:lang { $lang },
+                                    if($attestation-type) then
+                                        attribute type { $attestation-type/@id }
+                                    else(),
+                                    if($term-status gt '') then 
+                                        attribute status  { $term-status } 
+                                    else (),
+                                    text { $term-text ! normalize-unicode(.) ! normalize-space(.) }
+                                )
                                 
-                            ),
+                            },
                             
-                            (: Sanskrit - skip if text matches placeholder, parse hyphens and lower case :)
-                            if ($term-lang eq 'Sa-Ltn') then
-                                if(not($term-text eq common:local-text('glossary.term-empty-sa-ltn', 'en'))) then
-                                    text { $term-text ! replace(., '\-', '­') ! lower-case(.) }
-                                else ()
-                            
-                            (: Wylie - skip if text matches placeholder :)
-                            else if ($term-lang eq 'Bo-Ltn') then
-                                if(not($term-text eq common:local-text('glossary.term-empty-bo-ltn', 'en'))) then
-                                    text { $term-text }
-                                else ()
-                            
-                            else 
-                                text { $term-text }
-                            
-                        }
-                    ),
+                            (: If it's Bo-Ltn also add bo :)
+                            if($lang eq 'Bo-Ltn') then (
+                                common:ws(7),
+                                element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
+                                    attribute xml:lang { 'bo' },
+                                    if($attestation-type) then
+                                        attribute type { $attestation-type/@id }
+                                    else(),
+                                    attribute n { $index },
+                                    if($term-status gt '') then 
+                                        attribute status  { $term-status } 
+                                    else (),
+                                    text { $term-text ! normalize-unicode(.) ! normalize-space(.) ! common:bo-term(.)}
+                                }
+                            )
+                            else ()
+                        )
+                    ,
                     
                     (: Get the definitions from the request :)
-                    for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-definition-text-')], '-')
-                    let $term-text := request:get-parameter($term-param, '')
-                    let $term-text-markup := common:markup($term-text, 'http://www.tei-c.org/ns/1.0')
-                    where $term-text gt ''
-                    return (
-                        common:ws(7),
-                        element {QName('http://www.tei-c.org/ns/1.0', 'term')} {
-                            attribute type {'definition'},
+                    let $definitions-markup := 
+                        for $term-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-definition-text-')], '-')
+                        let $term-text := request:get-parameter($term-param, '')
+                        let $term-text-markup := common:markup($term-text, 'http://www.tei-c.org/ns/1.0')
+                        where $term-text gt ''
+                        return 
+                            (: If the xml conversion fails, nevertheless add the escaped text :)
                             if($term-text-markup) then
                                 $term-text-markup
                             else
                                 $term-text
+                    
+                    let $use-definition := request:get-parameter('use-definition', 'no-value-submitted')[. = ('', 'both', 'append', 'prepend', 'override', 'incompatible')]
+    
+                    where count($definitions-markup) gt 0
+                    return (
+                        common:ws(7),
+                        element {QName('http://www.tei-c.org/ns/1.0', 'note')} {
+                            attribute type { 'definition' },
+                            if(not($use-definition eq 'no-value-submitted')) then
+                                attribute rend { $use-definition }
+                            else ()
+                            ,
+                            $definitions-markup ! element p { . }
                         }
                     ),
                     
@@ -831,14 +903,12 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
         common:update('glossary-item', $existing-item, $new-value, $parent, ()),
         
         (: If we are removing the instance then also remove the entity instance and refresh the cache :)
-        if ($remove) then (
+        if($remove) then (
             (: Does the cache refresh get triggered anyway? :)
             (:update-tei:cache-glossary($tei, 'none'),:)
             update-entity:remove-instance($glossary-id)
         )
-        (: Update the entity instance :)
-        else 
-            update-entity:update-instance($glossary-id)
+        else ()
         
         (:element debug {
             attribute form-action { request:get-parameter('form-action', '') },
@@ -850,6 +920,30 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
             element insert-following { $insert-following }(\::\)
         }:)
     )
+};
+
+declare function update-tei:glossary-definition-use($tei as element(tei:TEI), $glossary-id as xs:string){
+    
+    let $entry := $tei/id($glossary-id)[self::tei:gloss]
+    let $definition := $entry/tei:note[@type eq 'definition']
+    let $request-value := request:get-parameter('use-definition', 'no-value-submitted')[. = ('', 'both', 'append', 'prepend', 'override', 'incompatible')]
+    
+    where $entry
+    return
+        (: No value sublitted :)
+        if($definition[@rend] and $request-value eq 'no-value-submitted') then
+            update delete $definition/@rend
+        
+        (: Update @rend :)
+        else if($definition[@rend]) then
+            update replace $definition/@rend with attribute rend { $request-value }
+        
+        (: Add @rend :)
+        else if($definition) then
+            update insert attribute rend { $request-value } into $definition
+        
+        else ()
+        
 };
 
 declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-id as xs:string*) as element()* {
@@ -977,7 +1071,7 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
         let $request-status := request:get-parameter('publication-status', '')
         (: Force zero to '' :)
         let $request-status := if ($request-status eq '0') then '' else $request-status
-        let $existing-status := $fileDesc/tei:publicationStmt/@status/string()
+        let $existing-status := $fileDesc/tei:publicationStmt/m:availability/@status/string()
         
         (: Get the version from the request :)
         let $request-version := request:get-parameter('text-version', '')
@@ -1041,26 +1135,38 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
                         
                         element { node-name($node) } {
                         
+                            (: Copy any attributes :)
+                            $node/@*,
+                            
+                            $node-ws,
+                            $node/m:publisher,
+                            
                             (: Set the status :)
-                            attribute {'status'} { $request-status },
+                            $node-ws,
+                            element { QName("http://www.tei-c.org/ns/1.0", "availability") } {
+                                attribute status { $request-status },
+                                $node/tei:availability/@*[not(local-name() = ('status'))],
+                                $node/tei:availability/node()
+                            },
                             
-                            (: Copy any other attributes :)
-                            $node/@*[not(name(.) eq 'status')],
-                            
-                            (: Copy any other nodes :)
-                            
-                            for $element in $node/*[not(self::tei:date)]
+                            for $idno in $node/tei:idno
                             return (
                                 $node-ws,
-                                $element
+                                $idno
                             ),
                             
                             (: Set the date :)
                             $node-ws,
                             element {QName("http://www.tei-c.org/ns/1.0", "date")} {
                                 text { $request-publication-date }
-                            }
+                            },
                             
+                            (: Copy any other nodes :)
+                            for $element in $node/*[not(local-name() = ('publisher','availability','idno','date'))]
+                            return (
+                                $node-ws,
+                                $element
+                            )
                         }
                     )
                     
@@ -1083,12 +1189,12 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
                 if ($update-header[self::m:updated]) then (
                     (: Note the status update :)
                     if ($request-status ne $existing-status) then
-                        local:add-note($tei, 'publication-status', $request-status, $request-status)
+                        local:add-change($tei, 'publication-status', $request-status, $request-status)
                     else ()
                     ,
                     (: Increment the version number if not already done :)
                     if($request-is-current-version) then
-                        update-tei:minor-version-increment($tei, 'knowledgebase-header')
+                        update-tei:minor-version-increment($tei, concat('Auto (', 'knowledgebase-header', ')'))
                     else ()
                 )
                 else ()
@@ -1098,6 +1204,87 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
     } (: close exist:batch-transaction :)
 };
 
+declare function update-tei:update-content($tei as element(tei:TEI), $content-escaped as xs:string*, $passage-id as xs:string, $content-hidden as xs:boolean, $add-milestone as xs:boolean) as element()? {
+    
+    let $passage-id-parsed := replace($passage-id, '^node\-', '')
+    let $current-tei := $tei//*[@xml:id eq $passage-id-parsed] | $tei//*[@tid eq $passage-id-parsed]
+    let $content-unescaped := common:markup($content-escaped, 'http://www.tei-c.org/ns/1.0')
+    
+    let $milestone :=
+        if(not($current-tei/preceding-sibling::*[1][self::tei:milestone]) and $add-milestone) then 
+            element { QName('http://www.tei-c.org/ns/1.0','milestone') } {
+                attribute unit { 'chunk' }
+            }
+        else ()
+    
+    (: Update with new content :)
+    let $new-tei := 
+        if($content-escaped gt '') then 
+            element { node-name($current-tei) } {
+            
+                (: Copy attributes :)
+                $current-tei/@*[not(name(.) eq 'rend' and string() eq 'default-text')],
+                
+                if($content-hidden) then
+                    attribute rend { 'default-text' }
+                else (),
+                
+                (: Check there's a result :)
+                if($content-unescaped[node()]) then
+                    $content-unescaped
+                
+                (: Nothing derived from markdown so copy to be safe :)
+                else
+                    $content-escaped
+                ,
+                
+                (: Copy comments :)
+                $current-tei/comment()
+                
+            }
+        (: Remove the element :)
+        else ()
+    
+    (: If it's a delete, in some cases we want to remove more than the node itself :)
+    let $current-tei :=
+    
+        (: There is no content and it has no siblings :)
+        if(not($new-tei) and not($current-tei/following-sibling::* | $current-tei/preceding-sibling::*)) then
+        
+            (: It's in a list :)
+            if($current-tei[parent::tei:item[parent::tei:list]])then
+            
+                (: remove the whole list if this is the only item :)
+                if(count($current-tei/parent::tei:item/parent::tei:list/tei:item) eq 1) then
+                    $current-tei/parent::tei:item/parent::tei:list
+                    
+                (: remove the whole item :)
+                else
+                    $current-tei/parent::tei:item
+            
+            (: It's the last element in a div, remove the div :)
+            else if($current-tei[parent::tei:div]) then
+                $current-tei/parent::tei:div
+            
+            else $current-tei
+            
+        else
+            $current-tei
+    
+    where $current-tei and not(tei-content:locked-by-user($tei) gt '')
+    return 
+        if($new-tei) then (
+            if($milestone) then
+                update insert ($milestone, text { common:ws(5) }) preceding $current-tei 
+            else (),
+            update replace $current-tei with $new-tei
+        )
+        else
+            update delete $current-tei
+
+};
+
+(: Unreliable
 declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:string*, $passage-id as xs:string, $newline-element as xs:string) as element()? {
     
     let $passage-id-parsed := replace($passage-id, '^node\-', '')
@@ -1121,50 +1308,50 @@ declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:str
     let $markup := transform:transform($markdown-element, doc('/db/apps/84000-operations/views/functions.xsl'), (), (), $serialization-options)
     
     let $new-tei := 
-        (: Update with new content :)
+        (\: Update with new content :\)
         if($markdown gt '') then
             element { node-name($current-tei) } {
             
-                (: Copy attributes :)
-                $current-tei/@*[not(local-name(.) eq 'rend' and string() eq 'default-text')],
+                (\: Copy attributes :\)
+                $current-tei/@*[not(name(.) eq 'rend' and string() eq 'default-text')],
                 
-                (: Copy elements derived from new lines :)
+                (\: Copy elements derived from new lines :\)
                 if($newline-element gt '' and $markup[node()]) then
                     $markup/node()
                 
-                (: No new lines so merge divs :)
+                (\: No new lines so merge divs :\)
                 else if($markup[tei:div/node()]) then
                     $markup/tei:div/node()
                 
-                (: Nothing derived from markdown so copy to be safe :)
+                (\: Nothing derived from markdown so copy to be safe :\)
                 else
                     $markdown
                 ,
                 
-                (: Copy comments :)
+                (\: Copy comments :\)
                 $current-tei/comment()
                 
             }
-        (: Remove the element :)
+        (\: Remove the element :\)
         else ()
     
-    (: If it's a delete, in some cases we want to remove more than the node itself :)
+    (\: If it's a delete, in some cases we want to remove more than the node itself :\)
     let $current-tei :=
     
-        (: There is no content and it has no siblings :)
+        (\: There is no content and it has no siblings :\)
         if(not($new-tei) and not($current-tei/following-sibling::* | $current-tei/preceding-sibling::*)) then
         
-            (: It's in a list :)
+            (\: It's in a list :\)
             if($current-tei[parent::tei:item[parent::tei:list]])then
             
-                (: remove the whole list if this is the only item :)
+                (\: remove the whole list if this is the only item :\)
                 if(count($current-tei/parent::tei:item/parent::tei:list/tei:item) eq 1) then
                     $current-tei/parent::tei:item/parent::tei:list
-                (: remove the whole item :)
+                (\: remove the whole item :\)
                 else
                     $current-tei/parent::tei:item
             
-            (: It's the last element in a div, remove the div :)
+            (\: It's the last element in a div, remove the div :\)
             else if($current-tei[parent::tei:div]) then
                 $current-tei/parent::tei:div
             
@@ -1177,7 +1364,7 @@ declare function update-tei:markup($tei as element(tei:TEI), $markdown as xs:str
     return 
         common:update('tei-markup', $current-tei, $new-tei, (), ())
 
-};
+};:)
 
 declare function update-tei:add-element($tei as element(tei:TEI), $passage-id as xs:string, $new-element-name as xs:string) as element()? {
     
@@ -1198,9 +1385,10 @@ declare function update-tei:add-element($tei as element(tei:TEI), $passage-id as
             or ($new-element-source eq 'para' and $passage[self::tei:p])
             or ($new-element-source eq 'bibl' and $passage[self::tei:bibl])
             or ($new-element-source = ('section', 'part') and $passage[self::tei:div])
+            or ($new-element-relation eq 'create' and $new-element-type eq 'part' and not($tei//tei:div[@type eq $new-element-source]))
         )
-        and $new-element-type[. = ('item', 'para', 'listLabel', 'listDots', 'listNumbers', 'listLetters', 'bibl', 'section', 'itemPara', 'itemListDots', 'itemListNumbers', 'itemListLetters')]
-        and $new-element-relation[. = ('before', 'after')]
+        and $new-element-type[. = ('item', 'para', 'listLabel', 'listDots', 'listNumbers', 'listLetters', 'bibl', 'section', 'itemPara', 'itemListDots', 'itemListNumbers', 'itemListLetters', 'part')]
+        and $new-element-relation[. = ('before', 'after', 'create')]
     return
     
     (: The element to add :)
@@ -1268,8 +1456,18 @@ declare function update-tei:add-element($tei as element(tei:TEI), $passage-id as
                 text { 'New biblographic reference...' }
             }
         
+        else if($new-element-type eq 'part') then
+            element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+                attribute type { $new-element-source },
+                element p {
+                    attribute rend { 'default-text' },
+                    text { 'A summary of the article...' }
+                }
+            }
+            
         else if($new-element-type = ('section')) then
             tei-content:new-section($passage/ancestor::tei:div[last()]/@type)
+        
         else ()
     
     (: What level in the tree to add it? :)
@@ -1295,14 +1493,23 @@ declare function update-tei:add-element($tei as element(tei:TEI), $passage-id as
     
     where 
         $new-element[node()]
-        and $sibling
+        and (
+            $new-element-relation eq 'create'
+            or ($new-element-relation[. = ('before', 'after')] and $sibling)
+        )
     return
         element { QName('http://read.84000.co/ns/1.0', 'updated') } {
         
             attribute node { 'add-tei-element' },   
             
+            (: Create a new section :)
+            if($new-element-relation eq 'create') then
+                if($new-element-source eq 'abstract') then
+                    update insert $new-element into $tei//tei:text/tei:front
+                else ()
+            
             (: Add before or after :)
-            if($new-element-relation eq 'before') then
+            else if($new-element-relation eq 'before') then
                 update insert $new-element preceding $sibling
             else 
                 update insert $new-element following $sibling

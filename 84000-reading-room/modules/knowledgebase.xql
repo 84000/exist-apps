@@ -12,24 +12,36 @@ import module namespace entities="http://read.84000.co/entities" at "entities.xq
 import module namespace translations="http://read.84000.co/translations" at "translations.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $knowledgebase:tei := collection($common:knowledgebase-path)//tei:TEI;
+declare variable $knowledgebase:tei := (
+    collection($common:knowledgebase-path)//tei:TEI
+    | collection($common:sections-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt[not(tei:idno/@xml:id = ('LOBBY','ALL-TRANSLATED'))]]
+);
+
 declare variable $knowledgebase:tei-render := 
     $knowledgebase:tei
-        [tei:teiHeader/tei:fileDesc/tei:publicationStmt
+        [tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability
             [@status = $common:environment/m:render/m:status[@type eq 'article']/@status-id]
         ];
+
 declare variable $knowledgebase:title-prefixes := '(The|A)';
 
 declare variable $knowledgebase:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default"          client="browser"  layout="full"  glossary="use-cache"  parts="all"/>
-        <view-mode id="editor"           client="browser"  layout="full"  glossary="no-cache"   parts="all"/>
-        <view-mode id="glossary-editor"  client="browser"  layout="full"  glossary="use-cache"  parts="all"/>
-        <view-mode id="glossary-check"   client="browser"  layout="flat"  glossary="no-cache"   parts="all"/>
+        <view-mode id="default"          client="browser"  cache="use-cache"  layout="full"  glossary="use-cache"  parts="all"/>
+        <view-mode id="editor"           client="browser"  cache="suppress"   layout="full"  glossary="no-cache"   parts="all"/>
+        <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"  glossary="use-cache"  parts="all"/>
+        <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"  glossary="no-cache"   parts="all"/>
     </view-modes>;
 
+declare variable $knowledgebase:article-types := 
+    <article-types xmlns="http://read.84000.co/ns/1.0">
+        <type id="articles">Articles</type>
+        <type id="authors">Authors</type>
+        <type id="sections">Sections</type>
+    </article-types>;
+
 declare function knowledgebase:kb-id($tei as element(tei:TEI)) as xs:string? {
-    $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@m:kb-id][1]/@m:kb-id
+    $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'eft-kb-id'][1]/text() ! normalize-space(.)
 };
 
 declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string? {
@@ -37,12 +49,13 @@ declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string?
     let $titles := tei-content:titles-all($tei)
     
     let $sort-title := (
-        $titles/m:title[@type eq 'mainTitle'][not(@xml:lang eq 'bo')],
+        $titles/m:title[@type eq 'articleTitle'],
+        $titles/m:title[@type eq 'mainTitle'][not(@xml:lang eq 'bo')][normalize-space(text())],
         $titles/m:title[not(@xml:lang eq 'bo')]
     )[1]
     
     return
-        replace($sort-title/data(), concat($knowledgebase:title-prefixes, '\s+'), '')
+        replace($sort-title/data(), concat('^', $knowledgebase:title-prefixes, '\s+'), '', 'i')
         ! normalize-space(.)
         ! lower-case(.)
         ! common:normalized-chars(.)
@@ -53,8 +66,8 @@ declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:tit
     
     let $tei-titles := tei-content:titles-all($tei)
     let $titles :=
-        for $title at $index in $tei-titles/m:title
-        order by if($title/@type eq 'mainTitle') then 0 else 1 ascending
+        for $title at $index in $tei-titles/m:title[text()]
+        order by if($title/@type eq 'articleTitle') then 0 else if($title/@type eq 'mainTitle') then 1 else 2 ascending
         return $title
     return
         element { node-name($tei-titles) }{
@@ -71,51 +84,102 @@ declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:tit
     
 };
 
-declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page) {
+declare function knowledgebase:page($tei as element(tei:TEI)) as element(m:page)? {
     
+    let $text-id := tei-content:id($tei)
     let $kb-id := knowledgebase:kb-id($tei)
     let $sort-name := knowledgebase:sort-name($tei)
+    let $entity := $entities:entities//m:instance[range:eq(@id, $text-id)]/parent::m:entity[1]
     
+    where $kb-id
     return
         element { QName('http://read.84000.co/ns/1.0', 'page') }{
-            attribute xml:id { tei-content:id($tei) },
+            attribute xml:id { $text-id },
             attribute kb-id { $kb-id },
             attribute document-url { base-uri($tei) },
             attribute locked-by-user { tei-content:locked-by-user($tei) },
-            attribute last-updated { max(tei-content:last-updated($tei/tei:teiHeader/tei:fileDesc)) },
-            attribute version-number { tei-content:version-number(tei-content:version-number-str($tei)) },
-            attribute status { tei-content:translation-status($tei) },
-            attribute status-group { tei-content:translation-status-group($tei) },
+            attribute last-updated { tei-content:last-modified($tei) },
+            attribute tei-version { tei-content:version-number-str($tei) },
+            attribute status { tei-content:publication-status($tei) },
+            attribute status-group { tei-content:publication-status-group($tei) },
             attribute page-url { concat($common:environment/m:url[@id eq 'reading-room'], '/knowledgebase/', $kb-id, '.html') },
+            attribute type { 
+                if($tei/tei:teiHeader/tei:fileDesc[@type = ('section','grouping','pseudo-section')]) then 
+                    'section'
+                else if($entity/m:instance[@type eq 'source-attribution']) then
+                    'author'
+                else 
+                    'article'
+            },
             attribute start-letter { upper-case(substring($sort-name, 1, 1)) },
+            
             element sort-name { $sort-name },
-            knowledgebase:titles($tei)
+            
+            knowledgebase:titles($tei),
+            
+            (:$entities:entities//m:instance[range:eq(@id, $text-id)]/parent::m:entity:)
+            
+            $tei/tei:teiHeader/tei:fileDesc[@type = ('section','grouping','pseudo-section')] ! element section { attribute id { $text-id } },
+            
+            element summary { 
+                if($tei//tei:front/tei:div[@type eq 'abstract']) then 
+                    $tei//tei:front/tei:div[@type eq 'abstract']/node()
+                (:else if($tei//tei:body/tei:div[@type eq 'article']) then
+                    tei-content:preview($tei//tei:body/tei:div[@type eq 'article']):)
+                else ()
+            }
+            
         }
 };
 
 declare function knowledgebase:pages() as element(m:knowledgebase) {
     element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') }{
-        knowledgebase:pages('all', false())
+        knowledgebase:pages('all', false(), ())
     }
 };
 
-declare function knowledgebase:pages($ids as xs:string*, $published-only as xs:boolean) as element(m:page)* {
+declare function knowledgebase:pages($ids as xs:string*, $published-only as xs:boolean, $sort as xs:string?) as element(m:page)* {
     
-    for $tei in 
+    let $teis := 
         if($published-only) then
-            if($ids = 'all') then
-                $knowledgebase:tei-render
-            else
-                $knowledgebase:tei-render/id($ids)/ancestor::tei:TEI
+            $knowledgebase:tei-render
         else
-            if($ids = 'all') then
-                $knowledgebase:tei
-            else
-                $knowledgebase:tei/id($ids)/ancestor::tei:TEI
-                
-    return 
-        knowledgebase:page($tei)
+            $knowledgebase:tei
+    
+    let $sections-tei := $teis[tei:teiHeader/tei:fileDesc/@type = ('section','grouping','pseudo-section')]
+    
+    let $author-entities := $entities:entities//m:instance[@type eq 'source-attribution']/parent::m:entity
+    let $author-kb-ids := $author-entities/m:instance[@type eq 'knowledgebase-article']/@id
+    let $authors-tei := $teis/id($author-kb-ids)/ancestor::tei:TEI
+    
+    let $teis := (
+    
+        if($ids = ('sections','all')) then
+            $sections-tei
+        else (),
         
+        if($ids = ('authors','all')) then
+            $authors-tei
+        else (),
+        
+        (: Everything other than authors and sections :)
+        if($ids = ('articles','all')) then
+            $teis except ($sections-tei | $authors-tei) 
+        else (),
+        
+        $teis/id($ids)/ancestor::tei:TEI
+        
+    )
+    
+    for $tei in $teis
+    let $kb-page := knowledgebase:page($tei)
+    order by
+        if($sort eq 'latest') then $kb-page/@last-updated ! xs:dateTime(.) else true() descending,
+        if($sort eq 'status') then ($kb-page/@status[.gt ''], '4')[1] else true() ascending,
+        $kb-page/m:sort-name
+    return 
+        $kb-page
+
 };
 
 declare function knowledgebase:publication($tei as element(tei:TEI)) as element(m:publication) {
@@ -127,7 +191,7 @@ declare function knowledgebase:publication($tei as element(tei:TEI)) as element(
                 return 
                     element { local-name($contributor) } {
                         $contributor/@role,
-                        $contributor/@ref,
+                        $contributor/@xml:id,
                         normalize-space($contributor/text())
                     }
             },
@@ -149,6 +213,19 @@ declare function knowledgebase:publication($tei as element(tei:TEI)) as element(
         }
 };
 
+declare function knowledgebase:abstract($tei as element(tei:TEI)) as element(m:part)? {
+
+    $tei/tei:text/tei:front/tei:div[@type eq 'abstract'] ! 
+    element { QName('http://read.84000.co/ns/1.0', 'part') } {
+        attribute type { 'abstract' },
+        attribute id { 'abstract' },
+        attribute nesting { 0 },
+        attribute prefix { 'ab' },
+        attribute content-status { 'complete' },
+        *
+    }
+};
+
 declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:part) {
 
     element { QName('http://read.84000.co/ns/1.0', 'part') } {
@@ -157,6 +234,7 @@ declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:pa
         attribute id { 'article' },
         attribute nesting { 0 },
         attribute prefix { 'a' },
+        attribute content-status { 'complete' },
         
         for $section at $index in $tei/tei:text/tei:body/tei:div[@type eq 'article']/tei:div
         return
@@ -232,7 +310,6 @@ declare function knowledgebase:related-texts($tei as element(tei:TEI)) as elemen
         
         let $knowledgebase-id := tei-content:id($tei)
         let $knowledgebase-entity := $entities:entities//m:instance[@id eq $knowledgebase-id]/parent::m:entity
-        let $author-refs := ($knowledgebase-entity/@xml:id | $entities:entities//m:relation[@id eq $knowledgebase-entity/@xml:id][@predicate eq 'sameAs']/parent::m:entity/@xml:id) ! concat('eft:', .)
         let $knowledgebase-title := knowledgebase:titles($tei)//m:title[@type eq 'mainTitle']
         
         return (
@@ -246,7 +323,7 @@ declare function knowledgebase:related-texts($tei as element(tei:TEI)) as elemen
                 }
             },
             
-            for $attribution in $tei-content:translations-collection//tei:sourceDesc/tei:bibl//*[@ref = $author-refs]
+            for $attribution in $tei-content:translations-collection//tei:sourceDesc/tei:bibl//*[@xml:id = $knowledgebase-entity/m:instance/@id]
             return
                 translations:filtered-text($attribution/ancestor::tei:TEI, $attribution/ancestor::tei:bibl/@key, false(), 'none', false())
                 
@@ -324,18 +401,20 @@ document {
             <editionStmt>
                 <edition>v 0.1.0 <date>{ format-date(current-date(), '[Y]') }</date></edition>
             </editionStmt>
-            <publicationStmt status="3">
+            <publicationStmt>
                 <publisher>
                     <name>84000: Translating the Words of the Buddha</name>
                 </publisher>
+                <availability status="3"/>
                 <idno xml:id="EFT-KB-{ upper-case($id) }"/>
-                <idno eft:kb-id="{ lower-case($id) }"/>
+                <idno type="eft-kb-id">{ lower-case($id) }</idno>
                 <date>{ format-date(current-date(), '[Y0001]-[M01]-[D01]') }</date>
             </publicationStmt>
             <sourceDesc>
                 <p>Created by 84000: Translating the Words of the Buddha</p>
             </sourceDesc>
             <notesStmt/>
+            <revisionDesc/>
         </fileDesc>
     </teiHeader>
     <text>
@@ -361,7 +440,6 @@ document {
 declare function knowledgebase:outline($tei as element(tei:TEI)) as element(m:text-outline)* {
     
     let $text-id := tei-content:id($tei)
-    let $tei-timestamp := tei-content:last-modified($tei)
     let $app-version := replace($common:app-version, '\.', '-')
     
     return

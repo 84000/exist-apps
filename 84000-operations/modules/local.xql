@@ -86,8 +86,8 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
         element { QName('http://read.84000.co/ns/1.0', 'translation') } {
             
             attribute id { tei-content:id($tei) },
-            attribute status { tei-content:translation-status($tei) },
-            attribute status-group { tei-content:translation-status-group($tei) },
+            attribute status { tei-content:publication-status($tei) },
+            attribute status-group { tei-content:publication-status-group($tei) },
             attribute relative-html { translation:relative-html($source/@key, ()) },
             attribute canonical-html { translation:canonical-html($source/@key, ()) },
             

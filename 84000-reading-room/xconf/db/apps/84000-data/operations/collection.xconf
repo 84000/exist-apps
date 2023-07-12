@@ -5,6 +5,10 @@
     
     <index xmlns:m="http://read.84000.co/ns/1.0">
         
+        <lucene diacritics="no">
+            <text qname="m:content"/>
+        </lucene>
+        
         <!-- Range indexes -->
         <range>
             

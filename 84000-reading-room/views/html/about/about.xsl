@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     
@@ -435,13 +435,13 @@
             <hr/>
             <xsl:variable name="sponsor-strings" as="xs:string*">
                 <xsl:for-each select="$sponsor-expressions/m:sponsor">
-                    <xsl:variable name="sponsor-id" select="replace(@ref, '^(eft:|sponsors\.xml#)', '', 'i')"/>
+                    <xsl:variable name="sponsor-id" select="@xml:id"/>
                     <xsl:choose>
                         <xsl:when test="normalize-space(text())">
                             <xsl:value-of select="normalize-space(text())"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="normalize-space($sponsors/m:sponsor[@xml:id eq lower-case($sponsor-id)]/m:label)"/>
+                            <xsl:value-of select="normalize-space($sponsors/m:sponsor[m:instance/@id eq $sponsor-id]/m:label)"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>

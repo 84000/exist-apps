@@ -21,7 +21,6 @@ declare option exist:serialize "method=xml indent=no";
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $resource-id := request:get-parameter('resource-id', '')
 let $part-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes|end\-note\-[a-zA-Z0-9\-]+)$', 'end-notes')
-let $part-id-int := replace($part-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)
 let $commentary-key := request:get-parameter('commentary', '')[. gt ''][1]
 let $view-mode := request:get-parameter('view-mode', 'default')
 let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,40}$')]
@@ -48,7 +47,6 @@ let $commentary-source := $commentary-tei[1] ! tei-content:source(., '')
 let $part := 
     $tei//id($part-id)/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
     | $tei//tei:div[@type eq $part-id]
-    | $tei//tei:*[@tid eq $part-id-int]/ancestor-or-self::tei:div[@type][not(@type eq 'translation')][last()]
 
 
 (: Set the view-mode which controls variations in the display :)
@@ -82,9 +80,16 @@ let $request :=
 let $cache-key := 
     if($view-mode-validated[@cache eq 'use-cache'] and $request[not(@archive-path gt '')]) then
         let $tei-timestamp := tei-content:last-modified($tei)
-        where $tei-timestamp instance of xs:dateTime
+        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
         return 
-            lower-case(format-dateTime($tei-timestamp, "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]") || '-' || replace($common:app-version, '\.', '-'))
+            lower-case(
+                string-join((
+                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $common:app-version ! replace(., '\.', '-')
+                ),'-')
+            )
     else ()
 
 let $cached := common:cache-get($request, $cache-key)
@@ -109,10 +114,7 @@ return
             $request/@archive-path[. gt ''] ! concat('id=', .), 
             
             (: Keep part parameter in annotation views to maintain legacy annotations :)
-            if($view-mode-validated[@id eq 'annotation']) then
-                concat('part=', $request/@part)
-            else
-                $request/@part[. gt ''] ! concat('part=', .)
+            if($view-mode-validated[@id eq 'annotation']) then concat('part=', $request/@part) else $request/@part[. gt ''] ! concat('part=', .)
                 
         )
         
@@ -127,8 +129,8 @@ return
             element { QName('http://read.84000.co/ns/1.0', 'translation')} {
             
                 attribute id { $text-id },
-                attribute status { tei-content:translation-status($tei) },
-                attribute status-group { tei-content:translation-status-group($tei) },
+                attribute status { tei-content:publication-status($tei) },
+                attribute status-group { tei-content:publication-status-group($tei) },
                 attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
                 attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
                 
@@ -143,7 +145,7 @@ return
                 
             }
         
-        let $entities := translation:entities($source/m:attribution/@ref ! contributors:contributor-id(.), $parts[@id eq 'glossary']//tei:gloss/@xml:id)
+        let $entities-data := translation:entities((), ($source/m:attribution/@xml:id, $parts[@id eq 'glossary']//tei:gloss/@xml:id))
         
         (: Get the cached outline of the text :)
         let $outline := translation:outline-cached($tei)
@@ -162,7 +164,7 @@ return
                 (
                     $request,
                     $translation-data,
-                    $entities,
+                    $entities-data,
                     $outline,
                     $outlines-related,
                     $glossary-cache,

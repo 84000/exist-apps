@@ -1,4 +1,4 @@
-xquery version "3.0" encoding "UTF-8";
+xquery version "3.1" encoding "UTF-8";
 (:
     Accepts the search parameter
     Returns search items xml
@@ -17,6 +17,7 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "knowledgebase.xql";
+import module namespace entities="http://read.84000.co/entities" at "entities.xql";
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 import module namespace functx="http://www.functx.com";
 
@@ -26,17 +27,54 @@ declare function search:search($request as xs:string, $first-record as xs:double
     
 };
 
-declare function search:search($request as xs:string, $resource-id as xs:string, $first-record as xs:double, $max-records as xs:double) as element(m:search) {
+declare function search:search($request as xs:string, $resource-id as xs:string, $first-record as xs:double, $max-records as xs:double) as element(m:tei-search) {
     
-    let $all := 
+    (: Search translations, sections, knowledgebase and shared definitions :)
+    let $translations-tei := collection($common:translations-path)//tei:TEI
+    let $knowledgebase-tei := collection($common:knowledgebase-path)//tei:TEI
+    let $sections-tei := collection($common:sections-path)//tei:TEI
+    
+    let $translation-render-status := $common:environment/m:render/m:status[@type eq 'translation']/@status-id
+    let $article-render-status := $common:environment/m:render/m:status[@type eq 'article']/@status-id
+    
+    let $single-tei :=
         if($resource-id gt '') then
             tei-content:tei($resource-id, 'translation')
+        else ()
+        
+    let $single-tei-type := 
+        if($single-tei) then
+            tei-content:type($single-tei)
+        else ()
+    
+    let $single-render-status :=
+        if($single-tei-type eq 'knowledgebase') then 
+            $article-render-status
+        else 
+            $translation-render-status
+    
+    let $all := 
+        if($single-tei) then
+            $single-tei
         else (
-            collection($common:translations-path)//tei:TEI
-            (:| $knowledgebase:tei-render:)
+            $translations-tei
+            | $knowledgebase-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+            | $sections-tei
         )
     
-    let $published := $all[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]
+    let $published := 
+        if($single-tei) then
+            $single-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $single-render-status]
+        else (
+            $translations-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $translation-render-status]
+            | $knowledgebase-tei
+            | $sections-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+        )
+   
+    let $entities-definitions :=
+        if(not($single-tei)) then
+            $entities:entities//m:entity/m:content[@type eq 'glossary-definition']
+        else ()
     
     let $options :=
         <options>
@@ -46,7 +84,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
             <filter-rewrite>yes</filter-rewrite>
         </options>
     
-    (: Interogate the request to see if it's a phrase :)
+    (: Check the request to see if it's a phrase :)
     let $request-is-phrase := matches($request, '^\s*["“].+["”]\s*$')
     let $request-no-quotes := replace($request, '("|“|”)', '')
     
@@ -55,119 +93,194 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
     let $results := 
         (: Header content :)
         $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
-        | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[ft:query(., $query, $options)]
+        | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
         | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
-        (: @tid content :)
-        | $published/tei:text//tei:p[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:label[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:table[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:head[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:lg[ft:query(., $query, $options)][@tid]
+        (: Text content :)
+        | $published/tei:text//tei:p[not(parent::tei:gloss)][ft:query(., $query, $options)]
+        | $published/tei:text//tei:label[ft:query(., $query, $options)]
+        | $published/tei:text//tei:table[ft:query(., $query, $options)]
+        | $published/tei:text//tei:head[ft:query(., $query, $options)]
+        | $published/tei:text//tei:lg[ft:query(., $query, $options)]
         (: For now force tei:item/tei:p :)
-        (:| $published/tei:text//tei:item[ft:query(., $query, $options)][@tid]:)
-        | $published/tei:text//tei:ab[ft:query(., $query, $options)][@tid]
-        | $published/tei:text//tei:trailer[ft:query(., $query, $options)][@tid]
-        (: @xml:id content :)
-        | $published/tei:text/tei:back//tei:bibl[ft:query(., $query, $options)][@xml:id]
-        | $published/tei:text/tei:back//tei:gloss[ft:query(tei:term, $query, $options)][@xml:id][not(@mode eq 'surfeit')]
+        (:| $published/tei:text//tei:item[ft:query(., $query, $options)]:)
+        | $published/tei:text//tei:ab[ft:query(., $query, $options)]
+        | $published/tei:text//tei:trailer[ft:query(., $query, $options)]
+        (: Back content :)
+        | $published/tei:text/tei:back//tei:bibl[@key][ft:query(., $query, $options)][@xml:id]
+        | $published/tei:text/tei:back//tei:gloss[ft:query(node(), $query, $options)][@xml:id][not(@mode eq 'surfeit')][ancestor::tei:div[@type eq 'glossary'][not(@status eq 'excluded')]]
+        | $entities-definitions[ft:query(., $query, $options)]
     
-    let $result-groups := 
-        for $result in $results
-            let $score := ft:score($result)
-            let $text-id := tei-content:id($result/ancestor::tei:TEI)
-            group by $text-id
-            let $sum-scores := sum($score)
-            order by $sum-scores descending
+    let $results-groups := (
+    
+        (: Group text results together :)
+        for $result in $results[not(ancestor-or-self::*[@rend eq 'default-text'])]
+        let $tei := $result/ancestor::tei:TEI[1]
+        let $group-id := $tei ! tei-content:id(.)
+        where $group-id
+        group by $group-id
         return
-            element { QName('http://read.84000.co/ns/1.0', 'result-group') } { 
+            element { QName('http://read.84000.co/ns/1.0', 'results-group') } { 
                 
-                attribute text-id { $text-id },
-                attribute document-uri { base-uri($result[1]) },
-                attribute score { $sum-scores },
+                attribute id { $group-id },
+                attribute type { tei-content:type($tei[1]) },
+                attribute document-uri { base-uri($tei[1]) },
                 
-                for $single in $result
+                for $single at $index in $result
+                
+                (: Get nearest id - required :)
+                let $nearest-id :=
+                    if($single/ancestor::tei:fileDesc) then
+                        if($single[self::tei:title] and $single[not(@type eq 'mainTitle')]) then 'other-titles'
+                        else if($single[self::tei:title]) then 'titles'
+                        else if($single[self::tei:author][@role]) then 'other-authors'
+                        else 'authors'
+                    else
+                        $single/ancestor-or-self::*[not(@xml:id)][preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id
+                
+                let $nearest-id := if(not($nearest-id)) then ($single/ancestor-or-self::*[@xml:id][1]/@xml:id, $single/ancestor-or-self::tei:div[@type][1]/@type)[1] else $nearest-id
+                
+                (: Get score :)
+                let $score := ft:score($single)[. gt 0]
+                
+                where $nearest-id
+                group by $nearest-id
+                
+                (: Set a score for the group :)
+                let $score-calc := max($score)
                 return
                     element result {
-                        attribute score { ft:score($single) },
+                        attribute score { $score-calc },
+                        attribute nearest-id { $nearest-id },
                         $single
                     }
                 
             }
+        ,
+        
+        (: Group glossaries together :)
+        if(not($single-tei)) then
+            for $result in $results[self::tei:gloss or parent::m:entity][not(ancestor-or-self::*[@rend eq 'default-text'])]
+            
+            let $entity :=
+                (: Glossary entry in a text :)
+                if($result[self::tei:gloss]) then 
+                    $entities:entities//m:instance[@id eq $result/@xml:id]/parent::m:entity[1]
+                (: Entity definition :)
+                else
+                    $result/parent::m:entity[1]
+            
+            let $group-id := $entity/@xml:id
+            
+            where $group-id
+            group by $group-id
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'results-group') } { 
+                    
+                    attribute id { $group-id },
+                    attribute type { 'entity' },
+                    
+                    for $single at $index in $result
+                    
+                    (: Get nearest id - required :)
+                    let $nearest-id := $single/ancestor-or-self::*[@xml:id][1]/@xml:id
+                    
+                    (: Get score, boost glossary a bit :)
+                    let $score := ft:score($single)[. gt 0] * 1.5
+                    
+                    where $nearest-id
+                    group by $nearest-id
+                    
+                    (: Set a score for the group :)
+                    let $score-calc := max($score)
+                    return
+                        element result {
+                            attribute score { $score-calc },
+                            attribute nearest-id { $nearest-id },
+                            $single
+                        }
+                    
+                }
+        else ()
+    )
+    
+    let $results-groups :=
+        for $results-group in $results-groups
+        order by max($results-group/m:result/@score ! xs:float(.)) descending
+        return
+            $results-group
     
     return 
-        (:if(true()) then <search xmlns="http://read.84000.co/ns/1.0">{$result-groups}</search> else:)
+        (:if(true()) then element { QName('http://read.84000.co/ns/1.0', 'tei-search') } { $results-groups } else:)
+        
         element { QName('http://read.84000.co/ns/1.0', 'tei-search') } { 
         
             element request { 
-            
-                if($resource-id gt '') then (
-                    
-                    let $tei := tei-content:tei($resource-id, 'translation')
-                    return
-                        local:tei-header($tei)
-                        
-                )
-                else ()
-                ,
-                
+                $single-tei ! local:result-header(.),
                 $request
-                
             },
 
             element results {
             
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
-                attribute count-records { count($result-groups) },
+                attribute count-records { count($results-groups) },
                 
-                for $result-group in subsequence($result-groups, $first-record, $max-records)
-                    
-                    (: Get TEI :)
-                    let $tei := tei-content:tei($result-group/@text-id, 'translation')
-                    let $tei-header := local:tei-header($tei)
-                    let $outline := translation:outline-cached($tei)
-                    
-                    (: Sort matches :)
-                    let $results := 
-                        for $result in $result-group/m:result
-                            order by xs:float($result/@score) descending
-                        return $result
-                    
-                    (: Max results :)
-                    let $max-results := if($resource-id gt '') then 1000 else 10
+                (: Pagination :)
+                for $results-group in subsequence($results-groups, $first-record, $max-records)
                 
+                let $container := 
+                    if($results-group[@type = ('knowledgebase','translation','section')]) then
+                        tei-content:tei($results-group/@id, $results-group/@type)
+                    else
+                        $entities:entities/id($results-group/@id)[self::m:entity]
+                
+                let $header := local:result-header($container)
+                
+                (: Sort matches :)
+                let $results := 
+                    for $result in $results-group/m:result
+                    order by $result/@score ! xs:float(.) descending
+                    return
+                        $result
+                
+                (: Max results :)
+                let $max-results := if($single-tei) then 1000 else 10
+                
+                where $header
                 return
-                    element item {
-                    
-                        attribute score { $result-group/@score },
-                        attribute count-records { count($results) },
-                            
+                    element result {
+                        
+                        attribute type { $results-group/@type },
+                        attribute score { max($results/@score) },
+                        attribute count-matches { count($results) },
+                        
                         (: Include header info :)
-                        $tei-header,
+                        $header,
                         
                         (: Take the top x matches :)
-                        for $result in subsequence($results, 1, $max-results)
-                        let $marked := common:mark-nodes($result/node(), $request-no-quotes, 'words')
+                        for $match in subsequence($results, 1, $max-results)
+                        let $marked := common:mark-nodes($match/node(), $request-no-quotes, 'words')
                         return
-                        
                             element match {
-                                attribute score { $result/@score },
-                                attribute node-name { local-name($result/node()) },
-                                attribute node-type { $result/node()/@type },
-                                attribute node-lang { $result/node()/@xml:lang },
-                                attribute link { local:match-link($marked, $tei-header) },
+                                $match/@*,
+                                attribute link { local:match-link($match, $header) },
                                 $marked
                             }
                         ,
                         
                         (: Notes cache :)
                         if($results//tei:note[@place eq 'end'][@xml:id]) then
-                            $outline/m:pre-processed[@type eq 'end-notes']
+                            if($results-group[@type eq 'knowledgebase']) then
+                                knowledgebase:outline($container)/m:pre-processed[@type eq 'end-notes']
+                            else if($results-group[@type eq 'translation']) then
+                                translation:outline-cached($container)/m:pre-processed[@type eq 'end-notes']
+                            else ()
                         else ()
                         
                     }
                 
             }
+        
         }
         
 };
@@ -206,7 +319,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                 if($search-lang eq 'bo') then
                     $tei//tei:back//tei:gloss[ft:query(tei:term[@xml:lang eq 'bo'], $search)]
                 else
-                    $tei//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type = ('definition','alternative'))], $search)]
+                    $tei//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'](:[not(@type eq 'translationAlternative')]:), $search)]
             else ()
         )
         
@@ -250,7 +363,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                             attribute score { $score },
                             
                             (: TEI source :)
-                            local:tei-header($tei),
+                            local:result-header($tei),
                             
                             (: Data :)
                             if(local-name($result) eq 'tu') then
@@ -320,7 +433,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                         attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) }
                                     else (),
                                     
-                                    let $result-bo := $result/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "bo"]
+                                    let $result-bo := $result/tei:term[@xml:lang eq "bo"]
                                     return
                                     element tibetan {
                                         if($search-lang eq 'bo') then
@@ -330,7 +443,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                             $result-bo/node()
                                     }, 
                                     
-                                    let $result-en := $result/tei:term[not(@type = ('definition','alternative'))][not(@xml:lang) or @xml:lang eq "en"]
+                                    let $result-en := $result/tei:term[not(@type eq 'translationAlternative')][not(@xml:lang) or @xml:lang eq "en"]
                                     return
                                     element translation { 
                                         if($search-lang eq 'en') then
@@ -341,10 +454,10 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                     },
                                     
                                     element wylie { 
-                                        $result/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Bo-Ltn"]/node()
+                                        $result/tei:term[@xml:lang eq "Bo-Ltn"]/node()
                                     },
                                     element sanskrit { 
-                                        $result/tei:term[not(@type = ('definition','alternative'))][@xml:lang eq "Sa-Ltn"]/node()
+                                        $result/tei:term[@xml:lang eq "Sa-Ltn"]/node()
                                     }
                                 
                                 }
@@ -396,126 +509,118 @@ declare function local:search-query($request as xs:string, $search-as-phrase as 
         </query>
 };
 
-declare function local:tei-header($tei as element(tei:TEI)) as element() {
-
-    let $tei-type := tei-content:type($tei)
+declare function local:result-header($content as element()) as element() {
     
-    let $resource-id := tei-content:id($tei)
+    let $type := 
+        if(lower-case(local-name($content)) eq 'tei') then
+            tei-content:type($content)
+        else if(local-name($content) eq 'entity') then
+            'entity'
+        else ()
     
-    let $trandlation-status := tei-content:translation-status($tei)
-    
-    let $trandlation-status-group := tei-content:translation-status-group($tei)
-    
-    let $link := 
+    (: What sort of link? :)
+    let $render-type := 
+        (: Article published :)
+        if($type = ('knowledgebase', 'section') and $content[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $common:environment/m:render/m:status[@type eq 'article']/@status-id]) then
+            'knowledgebase'
         
-        (: Knowledgebase :)
-        if($tei-type eq 'knowledgebase') then
-            concat('/knowledgebase/', $resource-id, '.html')
-
-        (: Translation :)
-        else
-            (: Published :)
-            if($trandlation-status-group eq 'published') then
-                concat('/translation/', $resource-id, '.html')
+        (: Translation published :)
+        else if($type eq 'translation' and $content[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]) then
+            'translation'
+        
+        (: Default to section :)
+        else if($type = ('translation', 'section')) then
+            'section'
             
-            (: Un-published :)
-            else
-                let $first-bibl := $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[1]
-                return
-                    concat('/section/', $first-bibl/tei:idno/@parent-id, '.html', '#', $first-bibl/@key)
+        else if($type eq 'entity') then 
+            'glossary'
+            
+        else ()
     
+    let $resource-id := 
+        if(lower-case(local-name($content)) eq 'tei') then
+            tei-content:id($content)
+        else if(local-name($content) eq 'entity') then
+            $content/@xml:id
+        else ()
+    
+    let $target-resource-id :=
+        if($type eq 'translation' and $render-type eq 'section') then
+            $content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id][1]/@parent-id
+        else 
+            $resource-id
+    
+    let $fragment-id := 
+        if($type eq 'translation' and $render-type eq 'section') then
+            $content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][1]/@key
+        else ()
+        
+    let $page-link := concat('/', $render-type, '/', $target-resource-id, '.html', $fragment-id ! concat('#', .))
+    
+    where $type
     return
-        element { QName('http://read.84000.co/ns/1.0', 'tei') }{
+        element { QName('http://read.84000.co/ns/1.0', 'header') }{
         
-            attribute type { $tei-type },
+            attribute type { $type },
             attribute resource-id { $resource-id },
-            attribute link { $link },
-            attribute translation-status { $trandlation-status },
-            attribute translation-status-group { $trandlation-status-group },
+            attribute link { $page-link },
+            attribute render { $render-type },
             
-            tei-content:title-set($tei, 'mainTitle') ,
+            if(lower-case(local-name($content)) eq 'tei') then (
             
-            if($tei-type eq 'knowledgebase') then (
-                knowledgebase:page($tei)
-            )
-            else (:if($tei-type eq 'translation') then :) (
-            
-                (: Add header :)
-                translation:publication($tei),
+                attribute status { tei-content:publication-status($content) },
+                attribute status-group { tei-content:publication-status-group($content) },
                 
-                (: Add Toh :)
-                for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-                return
-                    (: Must group these in m:bibl to keep track of @key group :)
+                (: Titles :)
+                tei-content:title-set($content, 'mainTitle'),
+                
+                (: Add Toh keys :)
+                (: Must group these in m:bibl to keep track of @key group :)
+                for $toh-key in $content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                return 
                     element bibl {
-                        translation:toh($tei, $toh-key),
-                        tei-content:ancestors($tei, $toh-key, 1)
+                        translation:toh($content, $toh-key),
+                        tei-content:ancestors($content, $toh-key, 1)
                     }
+                ,
+                
+                if($render-type eq 'knowledgebase') then 
+                    knowledgebase:page($content)
+                
+                else if($render-type eq 'translation') then 
+                    translation:publication($content)
+                 
+                else ()
+                
             )
+            else 
+                $content
+                
         }
 };
 
-declare function local:match-link($result as element()?, $tei-header as element(m:tei)?) as xs:string {
+declare function local:match-link($result as element(m:result)*, $header as element(m:header)?) as xs:string? {
     
-    (: Translation / Knowledge Base :)
-    if($tei-header[@type = ('translation', 'knowledgebase')][@translation-status-group eq 'published']) then
-        
-        (: the match is in a note (the same match may have multiple matching notes) :)
-        if($result[descendant::exist:match/ancestor::tei:note[@place eq 'end'][@xml:id]]) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'), '#', ($result/descendant::exist:match/ancestor::tei:note[@place eq 'end']/@xml:id)[1])
-            
-        (:Has an xml:id:)
-        else if($result[@xml:id]) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'), '#', $result/@xml:id)
-            
-        (: Has an id :)
-        else if($result[@tid]) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'), '#node-', $result/@tid)
-        
-        (: Toh / Scope :)
-        else if(local-name($result) = ('ref', 'biblScope')) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'),'#toh')
-        
-        (: Author :)
-        else if(local-name($result) = ('author', 'sponsor')) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'),'#acknowledgements')
-        
-        (: Default to the beginning of the page :)
-        else
-            $tei-header/@link
-        
-    (: Un-published :)
-    else if ($tei-header[@type = ('translation')]) then
-            
-        (: Has an id that must be elaborated to work in the section/texts list :)
-        if($result[@tid]) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'), '#', $tei-header/m:bibl[1]/@toh-key,'-node-', $result/@tid)
-        
-        (: Has a collapsed title in the section/texts list :)
-        else if($result[local-name($result) eq 'title' and $result/@type eq 'otherTitle']) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'), '#', $tei-header/m:bibl[1]/@toh-key, '-title-variants')
-        
-        (: Default to the beginning of the page :)
-        else
-            $tei-header/@link
+    (: Handle some exceptions :)
     
-    (: Section :)
-    else if($tei-header[@type eq 'section']) then
-        
-        (: Has an xml:id :)
-        if($result[@xml:id]) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'),'#', $result/@xml:id)
-        
-        (: Has an id :)
-        else if($result[@tid]) then
-            concat(functx:substring-before-if-contains($tei-header/@link, '#'),'#node-', $result/@tid)
-        
-        (: Default to the beginning of the page :)
-        else
-            $tei-header/@link
+    if($header[@render eq 'glossary']) then
+        () (: Just use the link in the header :)
     
-    (: Default to the beginning of the page :)
+    else if($header[@render eq 'section'][@type eq 'translation'] and $result[@nearest-id = ('other-titles')]) then
+        concat(functx:substring-before-if-contains($header/@link, '#'), '#title-variants-', $header/@resource-id)
+    
+    else if($header[@render eq 'section'][@type eq 'translation'] and $result[@nearest-id = ('other-authors')]) then
+        concat(functx:substring-before-if-contains($header/@link, '#'), '#supplementary-roles-', $header/@resource-id)
+    
+    else if($header[@render eq 'translation'] and $result[@nearest-id = ('authors', 'other-titles', 'other-authors')]) then
+        concat(functx:substring-before-if-contains($header/@link, '#'), '#titles')
+    
+    (: The match is in a note, so link to the note so it pops up (the same match may have multiple matching notes) :)
+    else if($header[@render = ('translation', 'knowledgebase')] and $result[descendant::exist:match/ancestor::tei:note[@place eq 'end'][@xml:id]]) then
+        concat(functx:substring-before-if-contains($header/@link, '#'), '#', ($result/descendant::exist:match/ancestor::tei:note[@place eq 'end']/@xml:id)[1])
+    
+    (: Default to link + nearest-id :)
     else
-        $tei-header/@link
-};
-
+        concat(functx:substring-before-if-contains($header/@link, '#'), $result/@nearest-id ! concat('#',.))
+        
+    };

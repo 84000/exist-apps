@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
+    
+    <xsl:key name="entity-instance" match="m:entities/m:entity/m:instance" use="@id"/>
+    <xsl:key name="related-entries" match="m:entities/m:related/m:text/m:entry" use="@id"/>
+    <xsl:key name="related-pages" match="m:entities/m:related/m:page" use="@xml:id"/>
+    <xsl:key name="related-entities" match="m:entities/m:related/m:entity" use="@xml:id"/>
     
     <xsl:function name="common:lang-class" as="xs:string">
         <!-- Standardise wayward lang ids -->
@@ -226,23 +231,23 @@
             
             <xsl:choose>
                 <xsl:when test="$link-text eq 'fa-next'">
-                    <xsl:attribute name="data-loading" select="'Loading next page...'"/>
+                    <!--<xsl:attribute name="data-loading" select="'Loading next page...'"/>-->
                     <i class="fa fa-chevron-right"/>
                 </xsl:when>
                 <xsl:when test="$link-text eq 'fa-previous'">
-                    <xsl:attribute name="data-loading" select="'Loading previous page...'"/>
+                    <!--<xsl:attribute name="data-loading" select="'Loading previous page...'"/>-->
                     <i class="fa fa-chevron-left"/>
                 </xsl:when>
                 <xsl:when test="$link-text eq 'fa-first'">
-                    <xsl:attribute name="data-loading" select="'Loading first page...'"/>
+                    <!--<xsl:attribute name="data-loading" select="'Loading first page...'"/>-->
                     <i class="fa fa-step-backward"/>
                 </xsl:when>
                 <xsl:when test="$link-text eq 'fa-last'">
-                    <xsl:attribute name="data-loading" select="'Loading last page...'"/>
+                    <!--<xsl:attribute name="data-loading" select="'Loading last page...'"/>-->
                     <i class="fa fa-step-forward"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:attribute name="data-loading" select="concat('Loading ', $link-text, '...')"/>
+                    <!--<xsl:attribute name="data-loading" select="concat('Loading ', $link-text, '...')"/>-->
                     <xsl:value-of select="$link-text"/>
                 </xsl:otherwise>
             </xsl:choose>
@@ -343,7 +348,7 @@
                             <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), $attributes, '', /m:response/@lang)"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                    <xsl:attribute name="data-loading" select="'Loading page...'"/>
+                    <!--<xsl:attribute name="data-loading" select="'Loading page...'"/>-->
                     <xsl:apply-templates select="m:titles/m:title[@xml:lang='en']/text()"/>
                 </a>
             </li>
@@ -475,7 +480,6 @@
             </input>
         </xsl:if>
     </xsl:function>
-    
     
     <xsl:function name="common:normalize-data" as="xs:string?">
         
@@ -638,7 +642,7 @@
     <!-- History -->
     <xsl:template match="m:status-updates">
         
-        <xsl:if test="m:status-update[@date-time]">
+        <xsl:if test="m:status-update[@when]">
             
             <div xmlns="http://www.w3.org/1999/xhtml">
                 
@@ -649,49 +653,192 @@
                 <hr class="sml-margin"/>
                 
                 <ul class="small list-unstyled">
-                    <xsl:for-each select="m:status-update[@date-time]">
+                    <xsl:for-each select="m:status-update[@when]">
                         
-                        <xsl:sort select="xs:dateTime(@date-time)" order="descending"/>
+                        <xsl:sort select="xs:dateTime(@when)" order="descending"/>
                         
                         <li>
                             
-                            <div class="text-bold">
-                                <xsl:choose>
-                                    <xsl:when test="local-name(.) eq 'status-update'">
-                                        <xsl:choose>
-                                            <xsl:when test="@update eq 'text-version'">
-                                                <xsl:value-of select="'Version update: ' || @value"/>
-                                            </xsl:when>
-                                            <xsl:when test="@update = ('translation-status', 'publication-status')">
-                                                <xsl:value-of select="'Status update: ' || @value"/>
-                                            </xsl:when>
-                                        </xsl:choose>
-                                        <xsl:if test="text() and not(text() eq @value)">
-                                            <xsl:value-of select="concat(' / ', text())"/>
-                                        </xsl:if>
-                                    </xsl:when>
-                                    <xsl:otherwise>
+                            <xsl:choose>
+                                <xsl:when test="local-name(.) eq 'status-update'">
+                                    <xsl:choose>
+                                        <xsl:when test="@type eq 'text-version'">
+                                            <span class="text-bold text-primary">
+                                                <xsl:value-of select="'Version update: ' || @status"/>
+                                            </span>
+                                            <xsl:if test="text() and not(text() eq @status)">
+                                                <br/>
+                                                <span>
+                                                    <xsl:value-of select="text()"/>
+                                                </span>
+                                            </xsl:if>
+                                        </xsl:when>
+                                        <xsl:when test="@type = ('translation-status', 'publication-status')">
+                                            <span class="text-bold text-danger">
+                                                <xsl:value-of select="'Status update: ' || @status"/>
+                                            </span>
+                                            <xsl:if test="text() and not(text() eq @status)">
+                                                <br/>
+                                                <span>
+                                                    <xsl:value-of select="text()"/>
+                                                </span>
+                                            </xsl:if>
+                                        </xsl:when>
+                                    </xsl:choose>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <span class="text-bold">
                                         <xsl:value-of select="text()"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </div>
+                                    </span>
+                                </xsl:otherwise>
+                            </xsl:choose>
                             
-                            <div class="text-muted italic">
-                                <xsl:choose>
-                                    <xsl:when test="local-name(.) eq 'status-update'">
-                                        <xsl:value-of select="common:date-user-string('- Set ', @date-time, @user)"/>
-                                    </xsl:when>
-                                    <xsl:when test="local-name(.) eq 'task'">
+                            <xsl:choose>
+                                <xsl:when test="local-name(.) eq 'status-update'">
+                                    <br/>
+                                    <span class="text-muted italic">
+                                        <xsl:value-of select="common:date-user-string('- Set ', @when, @who)"/>
+                                    </span>
+                                </xsl:when>
+                                <xsl:when test="local-name(.) eq 'task'">
+                                    <br/>
+                                    <span class="text-muted italic">
                                         <xsl:value-of select="common:date-user-string('- Set ', @checked-off, @checked-off-by)"/>
-                                    </xsl:when>
-                                </xsl:choose>
-                            </div>
+                                    </span>
+                                </xsl:when>
+                            </xsl:choose>
                             
                         </li>
                         
                     </xsl:for-each>
                 </ul>
             </div>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <!-- Entities derived metadata -->
+    <xsl:template name="entity-data">
+        
+        <xsl:param name="entity" as="element(m:entity)?"/>
+        
+        <xsl:if test="$entity">
+            
+            <xsl:variable name="related-entries" select="key('related-entries', $entity/m:instance/@id, $root)" as="element(m:entry)*"/>
+            
+            <xsl:if test="$related-entries">
+                
+                <xsl:element name="entity-data" namespace="http://read.84000.co/ns/1.0">
+                    
+                    <xsl:attribute name="ref" select="$entity/@xml:id"/>
+                    
+                    <xsl:attribute name="related-entries" select="count($related-entries)"/>
+                    
+                    <xsl:variable name="term-empty-bo">
+                        <xsl:call-template name="text">
+                            <xsl:with-param name="global-key" select="'glossary.term-empty-bo'"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="term-empty-sa-ltn">
+                        <xsl:call-template name="text">
+                            <xsl:with-param name="global-key" select="'glossary.term-empty-sa-ltn'"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="terms-bo" select="$related-entries/m:term[@xml:lang eq 'bo'][text()][not(text() ! normalize-space(.) = ('', $term-empty-bo))]"/>
+                    <xsl:variable name="terms-sa" select="$related-entries/m:term[@xml:lang eq 'Sa-Ltn'][text()][not(text() ! normalize-space(.) = ('', $term-empty-sa-ltn))]"/>
+                    <xsl:variable name="terms-wy" select="$related-entries/m:term[@xml:lang eq 'Bo-Ltn'][text()]"/>
+                    <xsl:variable name="terms-en" select="$related-entries/m:term[@xml:lang eq 'en'][text()]"/>
+                    
+                    <xsl:variable name="primary-terms" as="element(m:term)*">
+                        <xsl:choose>
+                            <xsl:when test="$terms-bo">
+                                <xsl:sequence select="$terms-bo"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:sequence select="$terms-sa"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="sorted-terms" as="element(m:term)*">
+                        <xsl:perform-sort select="$primary-terms">
+                            <!--<xsl:sort select="string-length(lower-case(data()))" order="descending"/>-->
+                            <xsl:sort select="count($related-entries/m:term/data() ! lower-case(.) = data() ! lower-case(.))" order="descending"/>
+                        </xsl:perform-sort>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="primary-term" select="if($sorted-terms) then $sorted-terms[1] else ($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label[@xml:lang eq 'Bo-Ltn'])[1]"/>
+                    <xsl:variable name="primary-term-entry" select="$primary-term/parent::m:entry"/>
+                    
+                    <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                        <xsl:attribute name="type" select="'primary'"/>
+                        <xsl:attribute name="xml:lang" select="$primary-term/@xml:lang"/>
+                        <xsl:value-of select="$primary-term"/>
+                    </xsl:element>
+                    
+                    <xsl:if test="$primary-term[@xml:lang eq 'bo']">
+                        
+                        <xsl:variable name="sorted-wylie-terms" as="element(m:term)*">
+                            <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Bo-Ltn']">
+                                <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                            </xsl:perform-sort>
+                        </xsl:variable>
+                        
+                        <xsl:variable name="wylie-term" select="$sorted-wylie-terms[1]"/>
+                        
+                        <xsl:if test="$wylie-term">
+                            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                                <xsl:attribute name="type" select="'secondary'"/>
+                                <xsl:attribute name="xml:lang" select="$wylie-term/@xml:lang"/>
+                                <xsl:value-of select="$wylie-term"/>
+                            </xsl:element>
+                        </xsl:if>
+                        
+                        <xsl:variable name="sorted-sanskrit-terms" as="element(m:term)*">
+                            <xsl:perform-sort select="$primary-term-entry/m:term[@xml:lang eq 'Sa-Ltn']">
+                                <xsl:sort select="string-length(lower-case(data()))" order="descending"/>
+                            </xsl:perform-sort>
+                        </xsl:variable>
+                        
+                        <xsl:variable name="sanskrit-term" select="$sorted-sanskrit-terms[1]"/>
+                        
+                        <xsl:if test="$sanskrit-term">
+                            <xsl:element name="label" namespace="http://read.84000.co/ns/1.0">
+                                <xsl:attribute name="type" select="'secondary'"/>
+                                <xsl:attribute name="xml:lang" select="$sanskrit-term/@xml:lang"/>
+                                <xsl:value-of select="$sanskrit-term"/>
+                            </xsl:element>
+                        </xsl:if>
+                        
+                    </xsl:if>
+                    
+                    <xsl:for-each-group select="$terms-bo | $terms-sa | $terms-wy | $terms-en" group-by="string-join((@xml:lang, tokenize(data(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')">
+                        
+                        <xsl:variable name="term-group" select="."/>
+                        <xsl:variable name="normalized-string" select="string-join((tokenize($term-group[1]/text(), '\s+') ! lower-case(.) ! replace(., '­','')(: strip soft-hyphens :)), ' ')"/>
+                        
+                        <xsl:element name="term" namespace="http://read.84000.co/ns/1.0">
+                            <xsl:variable name="term-entry-id" select="parent::m:entry/@id[1]"/>
+                            <xsl:attribute name="xml:lang" select="@xml:lang"/>
+                            <xsl:attribute name="normalized-string" select="$normalized-string"/>
+                            <xsl:attribute name="word-count" select="count(tokenize($normalized-string, '\s+'))"/>
+                            <xsl:attribute name="letter-count" select="string-length($normalized-string)"/>
+                            <xsl:attribute name="type" select="@type"/>
+                            <xsl:attribute name="glossary-type" select="parent::m:entry/@type[1]"/>
+                            <xsl:if test="$entity/m:instance[@id eq $term-entry-id][m:flag]">
+                                <xsl:attribute name="flagged" select="true()"/>
+                            </xsl:if>
+                            <xsl:value-of select="$term-group[1]/text()"/>
+                        </xsl:element>
+                        
+                    </xsl:for-each-group>
+                    
+                </xsl:element>
+                
+            </xsl:if>
+            
         </xsl:if>
         
     </xsl:template>

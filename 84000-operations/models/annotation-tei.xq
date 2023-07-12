@@ -23,7 +23,7 @@ let $tei := tei-content:tei($request/@text-id, 'translation')
 (: Files list for the dropdown :)
 let $translation-files := 
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
-        for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt[@status = $translation:marked-up-status-ids]/ancestor::tei:TEI
+        for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt/tei:availability[@status = $translation:marked-up-status-ids]/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)
         return
             element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -31,7 +31,7 @@ let $translation-files :=
                 if($text-id eq $request/@text-id) then
                     attribute selected { true() }
                 else (),
-                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:ref, ' / '), ' - ', tei-content:title-any($tei))
+                concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]/tei:ref, ' / '), ' - ', tei-content:title-any($tei))
             }
     }
 

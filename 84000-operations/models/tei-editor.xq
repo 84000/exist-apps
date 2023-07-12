@@ -14,7 +14,10 @@ let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $resource-type := request:get-parameter('resource-type', '')
 let $passage-id := request:get-parameter('passage-id', '')
 let $form-action := request:get-parameter('form-action', '')
-let $markdown := request:get-parameter('markdown', '')
+(:let $markdown := request:get-parameter('markdown', ''):)
+let $content-escaped := request:get-parameter('content-escaped', '')
+let $content-hidden := request:get-parameter('content-hidden', '')
+let $add-milestone := request:get-parameter('add-milestone', '')
 let $new-element-name := request:get-parameter('new-element-name', '')
 let $comment := request:get-parameter('comment', '')
 let $callback-url := request:get-parameter('callback-url', '')
@@ -23,15 +26,19 @@ let $tei := tei-content:tei($resource-id, $resource-type)
 
 let $update-tei :=
     if($resource-type = ('knowledgebase') and $tei and $form-action eq 'update-tei') then 
-        update-tei:markup($tei, $markdown, $passage-id, '')
+        update-tei:update-content($tei, $content-escaped, $passage-id, ($content-hidden gt ''), ($add-milestone gt ''))
+        
     else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'add-element') then 
         update-tei:add-element($tei, $passage-id, $new-element-name)
+        
     else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
         update-tei:comment($tei, $passage-id, $comment)
+        
     (:else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'lock-tei') then 
         xmldb:lock-document()
     else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'unlock-tei') then 
         xmldb:clear-lock():)
+        
     else ()
 
 let $schema := 

@@ -58,7 +58,7 @@ return
       'utilities',
       (
           utilities:request(),
-          section:child-sections(tei-content:tei('lobby', 'section'), true(), 'none'),
+          section:publication-status('LOBBY',()),
           tests:structure(),
           <resolve-issues count-structure-source-ids="{ count($structure-source-ids) }">
           {

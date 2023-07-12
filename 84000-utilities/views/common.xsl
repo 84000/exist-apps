@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
@@ -79,7 +79,7 @@
         <xsl:param name="content"/>
         <xsl:param name="page-alert"/>
         
-        <xsl:copy-of select="$page-alert"/>
+        <xsl:sequence select="$page-alert"/>
         
         <div class="title-band">
             <div class="container">
@@ -170,6 +170,24 @@
         
         <!-- Pop-up footer  -->
         <div id="popup-footer-text" class="fixed-footer collapse persist hidden-print">
+            <div class="fix-height">
+                <div class="container">
+                    <div class="data-container">
+                        <!-- Ajax data here -->
+                    </div>
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Pop-up for tei-editor -->
+        <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
             <div class="fix-height">
                 <div class="container">
                     <div class="data-container">

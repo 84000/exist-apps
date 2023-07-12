@@ -176,7 +176,9 @@
                     </div>
                     
                 </xsl:with-param>
+            
             </xsl:call-template>
+        
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">
