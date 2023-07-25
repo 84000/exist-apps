@@ -25,15 +25,14 @@ let $schema-path :=
 let $schema := 
     if($schema-path gt '') then
         doc($schema-path)
-    else
-        ()
+    else ()
 
 let $work-tei := translations:work-tei($work)
 let $files := 
     if($type eq 'placeholders') then
-        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids)]
+        $work-tei[not(tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $translation:published-status-ids)]
     else if($type eq 'translations') then
-        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]
+        $work-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $translation:published-status-ids]
     else
         collection($common:sections-path)//tei:TEI
 

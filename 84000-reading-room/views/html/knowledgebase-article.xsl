@@ -134,15 +134,21 @@
                                     </xsl:when>
                                     <xsl:when test="$tei-editor">
                                         <section id="abstract" class="tei-parser rw-no-gtr">
-                                            <form action="/tei-editor.html" method="post" data-ajax-target="#ajax-source" class="bottom-margin">
+                                            <form action="/tei-editor.html" method="post" class="bottom-margin">
+                                                
+                                                <xsl:attribute name="data-ajax-target" select="'#ajax-source'"/>
                                                 <xsl:attribute name="data-ajax-target-callbackurl" select="concat($reading-room-path, '/knowledgebase/', $article/m:page/@kb-id, '.html?view-mode=editor#parts')"/>
+                                                
                                                 <input type="hidden" name="form-action" value="add-element"/>
                                                 <input type="hidden" name="resource-id" value="{ $article-id }"/>
                                                 <input type="hidden" name="resource-type" value="knowledgebase"/>
                                                 <input type="hidden" name="new-element-name" value="abstract-part-create"/>
+                                                <input type="hidden" name="return" value="none"/>
+                                                
                                                 <button type="submit" class="btn-link editor" data-loading="Adding section...">
                                                     <xsl:value-of select="'Add an abstract'"/>
                                                 </button>
+                                                
                                             </form>
                                         </section>
                                     </xsl:when>
@@ -160,7 +166,7 @@
                                 
                                 <xsl:if test="$attributed-texts">
                                     
-                                    <xsl:if test="not($article/m:page[@status = $render-status]) or not($parts-with-content[@type eq 'section'])">
+                                    <xsl:if test="not($tei-editor) and (not($article/m:page[@status = $render-status]) or not($parts-with-content[@type eq 'section']))">
                                         <section id="disclaimer" class="tei-parser">
                                             <p class="italic text-muted">This knowledge base page is incomplete; biographical, historical, and other details have yet to be added. In the meantime, it is provided to allow readers to see a list of all the works attributed to this author.</p>
                                         </section>
@@ -216,7 +222,7 @@
                                                         <div role="navigation" title="The location of this section" class="text-muted small">
                                                             <xsl:value-of select="'In '"/>
                                                             <ul class="breadcrumb">
-                                                                <xsl:sequence select="common:breadcrumb-items(m:parent[1]/descendant::m:parent, /m:response/@lang)"/>
+                                                                <xsl:sequence select="common:breadcrumb-items(m:parent[1]/descendant::m:parent[not(@id eq 'LOBBY')], /m:response/@lang)"/>
                                                             </ul>
                                                         </div>
                                                         
@@ -427,7 +433,18 @@
                                 <div class="well">
                                     
                                     <h3 class="no-top-margin">
-                                        <xsl:value-of select="'Editor options'"/>
+                                        <xsl:value-of select="'Editor options '"/>
+                                        <span>
+                                            <xsl:choose>
+                                                <xsl:when test="$article/m:page[@status eq '1']">
+                                                    <xsl:attribute name="class" select="'label label-success'"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:attribute name="class" select="'label label-warning'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            <xsl:value-of select="$article/m:page/@status"/>
+                                        </span>
                                     </h3>
                                     
                                     <xsl:if test="$article-id gt ''">

@@ -81,24 +81,47 @@
                         </div>
                     </div>
                     
+                    <hr/>
+                    
                     <!-- Latest activity -->
                     <xsl:variable name="recent-updated-texts" select="m:recent-updates/m:text"/>
                     <xsl:for-each select="('new-publication', 'new-version')">
                         
                         <xsl:variable name="recent-update-type" select="."/>
                         
-                        <hr/>
-                        
-                        <h4 class="no-top-margin">
-                            <xsl:choose>
-                                <xsl:when test="$recent-update-type eq 'new-publication'">
-                                    <xsl:value-of select="'New Publications'"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="'New Versions'"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </h4>
+                        <div class="center-vertical full-width bottom-margin">
+                            
+                            <div>
+                                <h4 class="no-top-margin no-bottom-margin">
+                                    
+                                    <xsl:choose>
+                                        <xsl:when test="$recent-update-type eq 'new-publication'">
+                                            <xsl:value-of select="'New Publications'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="'New Versions'"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                    
+                                    <xsl:value-of select="' '"/>
+                                    <span class="label label-default">
+                                        <xsl:value-of select="count($recent-updated-texts[@recent-update eq $recent-update-type])"/>
+                                    </span>
+                                    
+                                </h4>
+                            </div>
+                            
+                            <xsl:if test="position() eq 1">
+                                <div>
+                                    <a class="btn btn-primary pull-right">
+                                        <xsl:attribute name="href" select="'recent-updates.xlsx'"/>
+                                        <xsl:attribute name="title" select="'Download as spreadsheet'"/>
+                                        <xsl:value-of select="'Download spreadsheet'"/>
+                                    </a>
+                                </div>
+                            </xsl:if>
+                            
+                        </div>
                         
                         <xsl:choose>
                             <xsl:when test="$recent-updated-texts[@recent-update eq $recent-update-type]">
@@ -140,18 +163,18 @@
                                                 <div class="small">
                                                     <xsl:choose>
                                                         <xsl:when test="$recent-update-type eq 'new-publication'">
-                                                            <xsl:for-each select="tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]">
-                                                                <xsl:sort select="@date-time"/>
+                                                            <xsl:for-each select="tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]">
+                                                                <xsl:sort select="@when"/>
                                                                 <span class="text-muted">
-                                                                    <xsl:value-of select="common:date-user-string('Published', @date-time, @user)"/>
+                                                                    <xsl:value-of select="common:date-user-string(concat('Status ', @status, ' set'), @when, @who)"/>
                                                                 </span>
                                                             </xsl:for-each>
                                                         </xsl:when>
                                                         <xsl:otherwise>
-                                                            <xsl:for-each select="tei:note">
-                                                                <xsl:sort select="@date-time"/>
+                                                            <xsl:for-each select="tei:change">
+                                                                <xsl:sort select="@when"/>
                                                                 <span class="text-muted">
-                                                                    <xsl:value-of select="common:date-user-string(concat('Version ', @value, ' created'), @date-time, @user)"/>
+                                                                    <xsl:value-of select="common:date-user-string(concat('Version ', @status, ' created'), @when, @who)"/>
                                                                 </span>
                                                                 <br/>
                                                                 <span class="text-danger">

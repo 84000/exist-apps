@@ -68,7 +68,8 @@ declare function translation-status:target-date-texts($date-start-str as xs:stri
 declare function translation-status:text($text as element(m:text), $include-submissions as xs:boolean) as element(m:text)? {
     
     (: Get the translation status :)
-    let $tei := tei-content:tei($text/@text-id, 'translation')
+    let $text-id := $text/@text-id
+    let $tei := tei-content:tei($text-id, 'translation')
     let $translation-status := tei-content:publication-status($tei)
     let $translation-status-index := $translation-status:text-statuses-sorted/m:status[@type eq 'translation'][@status-id eq $translation-status]/@index ! xs:integer(.)
     

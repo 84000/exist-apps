@@ -39,11 +39,11 @@ let $recent-notes :=
 return (
     'New publications:',
     '-----------------',
-    for $text in $recent-notes[tei:change[@type eq 'translation-status'][@status = ('1', '1.a')]]
+    for $text in $recent-notes[tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]]
     return (
         '',
         'Toh ' || $text/@toh-str || ' (' || $text/@text-id || ')' ,
-        for $change in $text/tei:change[@type eq 'translation-status'][@status = ('1', '1.a')]
+        for $change in $text/tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]
         order by $change/@when ! xs:dateTime(.) ascending
         return
             '- ' || 'Status ' || $change/@status || ' set by ' || $change/@who || ' on ' || $change/@when ! format-dateTime(., '[Y0001]-[M01]-[D01]')

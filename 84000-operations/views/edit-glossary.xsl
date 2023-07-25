@@ -1105,7 +1105,7 @@
                                                                         <xsl:call-template name="expand-item">
                                                                             
                                                                             <xsl:with-param name="accordion-selector" select="concat('#accordion-glossary-', $loop-glossary-id, '-relations')"/>
-                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation-entity/@xml:id)"/>
+                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation/@id)"/>
                                                                             <xsl:with-param name="persist" select="true()"/>
                                                                             
                                                                             <xsl:with-param name="title">
@@ -1525,7 +1525,7 @@
                     <xsl:with-param name="input-name" select="'term'"/>
                     <xsl:with-param name="label" select="''"/>
                     <xsl:with-param name="term-text" select="text()"/>
-                    <xsl:with-param name="lang" select="'en-alt'"/>
+                    <xsl:with-param name="lang" select="'en'"/>
                     <xsl:with-param name="language-options" select="('en-alt', 'Bo-Ltn', 'Sa-Ltn', 'zh')"/>
                 </xsl:call-template>
                 

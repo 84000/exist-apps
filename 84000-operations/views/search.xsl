@@ -874,10 +874,10 @@
                                                     <xsl:variable name="status-updates-in-range" as="element(m:status-update)*">
                                                         <xsl:choose>
                                                             <xsl:when test="$request/@target-date-type eq 'status-date' and ($status-date-start gt '' or $status-date-end gt '')">
-                                                                <xsl:sequence select="$text/m:status-updates/m:status-update[@type eq 'translation-status'][if($status-date-start gt '') then @when ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()][if($status-date-end gt '') then @when ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]"/>
+                                                                <xsl:sequence select="$text/m:status-updates/m:status-update[@type = ('translation-status', 'publication-status')][if($status-date-start gt '') then @when ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start)) else true()][if($status-date-end gt '') then @when ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end)) else true()]"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
-                                                                <xsl:sequence select="$text/m:status-updates/m:status-update[@current-status eq 'true']"/>
+                                                                <xsl:sequence select="$text/m:status-updates/m:status-update[@type = ('translation-status', 'publication-status')][@current-status eq 'true']"/>
                                                             </xsl:otherwise>
                                                         </xsl:choose>
                                                     </xsl:variable>

@@ -56,7 +56,6 @@ let $cache-key :=
             )
     else ()
 
-
 let $cached := common:cache-get($request, $cache-key)
 
 return 

@@ -178,7 +178,7 @@
     </xsl:template>
     
     <!-- Ignore any nodes with a different key - except those that are indexed -->
-    <xsl:template match="tei:*[@key][not(@key eq $toh-key)][not(self::tei:note | self::tei:milestone | tei:gloss)]">
+    <xsl:template match="tei:*[@key][not(@key eq $toh-key)][not(self::tei:note[@place = 'end'] | self::tei:milestone | tei:gloss)]">
         <!-- Ignore these -->
     </xsl:template>
     
@@ -917,7 +917,7 @@
                         </div>
                     </xsl:if>
                     
-                    <xsl:if test="tei:note">
+                    <xsl:if test="tei:note[@place = 'end']">
                         <div class="table-notes">
                             <xsl:apply-templates select="tei:note"/>
                         </div>
@@ -963,7 +963,7 @@
             
         </h5>
     </xsl:template>
-    <xsl:template match="tei:note[parent::tei:table]">
+    <xsl:template match="tei:note[@place = 'end'][parent::tei:table]">
         <p class="table-note">
             <xsl:apply-templates select="node()"/>
         </p>
@@ -1513,7 +1513,7 @@
                         <!-- Entity -->
                         <xsl:variable name="entity" select="key('entity-instance', $glossary-item/@xml:id, $root)[1]/parent::m:entity"/>
                         <xsl:variable name="entity-instance" select="$entity/m:instance[@id eq $glossary-item/@xml:id]"/>
-                        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][node()]"/>
+                        <xsl:variable name="entity-definition" select="$entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]]"/>
                         
                         <!-- Definitions -->
                         <xsl:if test="$entry-definition or $entity-definition">
@@ -1521,7 +1521,7 @@
                             <div class="footer">
                                 
                                 <!-- Entry definition as prologue -->
-                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entry-definition[not(@use-definition = ('override','both','prepend'))])">
+                                <xsl:if test="($entry-definition and not($entity-definition)) or ($entry-definition and $entry-definition[not(@rend = ('override','both','prepend'))])">
                                     <xsl:for-each select="$entry-definition/tei:p">
                                         <p>
                                             <xsl:call-template name="class-attribute">
@@ -1533,7 +1533,7 @@
                                 </xsl:if>
                                 
                                 <!-- Entity definition -->
-                                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entry-definition[@use-definition = ('both','append','prepend','override')])">
+                                <xsl:if test="($entity-definition and not($entry-definition)) or ($entity-definition and $entry-definition[@rend = ('both','append','prepend','override')])">
                                     <h4 class="heading">
                                         <xsl:value-of select="'Definition from the 84000 Glossary of Terms:'"/>
                                     </h4>
@@ -1548,7 +1548,7 @@
                                 </xsl:if>
                                 
                                 <!-- Entry definition as epilogue -->
-                                <xsl:if test="($entry-definition and $entity-definition and $entry-definition[@use-definition = ('both','prepend')])">
+                                <xsl:if test="($entry-definition and $entity-definition and $entry-definition[@rend = ('both','prepend')])">
                                     <h4 class="heading">
                                         <xsl:value-of select="'In this text:'"/>
                                     </h4>
@@ -2309,7 +2309,7 @@
                     </xsl:when>
                     
                     <!-- notes -->
-                    <xsl:when test="ancestor::tei:note">
+                    <xsl:when test="ancestor::tei:note[@place = 'end']">
                         <img class="img-responsive pull-right">
                             <xsl:attribute name="src">
                                 <xsl:choose>
@@ -2372,7 +2372,7 @@
                 </xsl:when>
                 
                 <!-- notes -->
-                <xsl:when test="ancestor::tei:note">
+                <xsl:when test="ancestor::tei:note[@place = 'end']">
                     <div class="row sml-margin top bottom">
                         <div class="col-sm-8 col-xs-6">
                             <xsl:apply-templates select="$caption"/>
@@ -3681,8 +3681,8 @@
         <xsl:choose>
             
             <!-- Get the xml:id from containing note -->
-            <xsl:when test="$node[ancestor-or-self::tei:note[@xml:id]]">
-                <xsl:value-of select="$node/ancestor-or-self::tei:note[@xml:id][1]/@xml:id"/>
+            <xsl:when test="$node[ancestor-or-self::tei:note[@xml:id][@place = 'end']]">
+                <xsl:value-of select="$node/ancestor-or-self::tei:note[@xml:id][@place = 'end'][1]/@xml:id"/>
             </xsl:when>
             
             <!-- Get the xml:id/eft:id from containing glossary entry -->

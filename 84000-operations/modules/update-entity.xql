@@ -313,6 +313,7 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
         
             $target-entity/@*,
             
+            (: TO DO: this can allow duplicate sameAs relations if labels are different :)
             for $entity-element in functx:distinct-deep(($entity/* | $target-entity/*))[not(./@predicate eq 'sameAs' and ./@id eq $target-entity-id)]
             let $element-name := local-name($entity-element)
             order by 
@@ -391,7 +392,7 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
         if($existing-instance) then
             update replace $existing-instance with $new-instance
         else 
-            update insert (text{ $common:chr-tab } , $new-instance, text{ common:ws(1) }) into $entity
+            update insert (text{ $common:chr-tab } , $new-instance, common:ws(1) ) into $entity
             
 };
 
@@ -417,7 +418,7 @@ declare function update-entity:move-instance($instance-id as xs:string, $instanc
         
         (: Insert new instance :)
         if($target-element) then
-            update insert (text{ $common:chr-tab }, $instance-new, text{ common:ws(1) }) into $target-element
+            update insert (text{ $common:chr-tab }, $instance-new, common:ws(1) ) into $target-element
         else (),
         
         (: Delete existing :)

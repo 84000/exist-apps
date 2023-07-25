@@ -95,7 +95,6 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
             $source,
             translation:toh($tei, $source/@key),
             tei-content:ancestors($tei, $source/@key, 1),
-            
             $parts
             
         }
@@ -139,6 +138,7 @@ declare function local:root-html($resource-id as xs:string, $part-id as xs:strin
             $html//xhtml:*[@id eq $part-id]
         }
     )
+    
 };
 
 (: Fix mime type / necessary in eXist 5 :)

@@ -17,21 +17,23 @@ let $request :=
         attribute instance-id { request:get-parameter('instance-id', '') }
     }
 
-let $update-entity := 
-    if(request:get-parameter('form-action', '') eq 'update-entity') then
-        update-entity:headers($request/@entity-id)
-    else if(request:get-parameter('form-action', '') eq 'instance-set-flag') then
-        update-entity:set-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
-    else if(request:get-parameter('form-action', '') eq 'instance-clear-flag') then
-        update-entity:clear-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
-    (:else if(request:get-parameter('form-action', '') eq 'instance-definition-use') then
-        update-entity:update-instance($request/@instance-id):)
-    else ()
+let $updates := 
+    element { QName('http://read.84000.co/ns/1.0', 'updates') } {
+        if(request:get-parameter('form-action', '') eq 'update-entity') then
+            update-entity:headers($request/@entity-id)
+        else if(request:get-parameter('form-action', '') eq 'instance-set-flag') then
+            update-entity:set-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
+        else if(request:get-parameter('form-action', '') eq 'instance-clear-flag') then
+            update-entity:clear-flag($request/@instance-id, request:get-parameter('entity-flag', ''))
+        (:else if(request:get-parameter('form-action', '') eq 'instance-definition-use') then
+            update-entity:update-instance($request/@instance-id):)
+        else ()
+    }
 
 return 
-    if(request:get-parameter('ajax-target', '') gt '') then (
+    if(request:get-parameter('return', '') eq 'none') then (
         util:declare-option("exist:serialize", "method=xml indent=no"),
-        $update-entity
+        $updates
     )
     
     else
@@ -44,9 +46,11 @@ return
                 'operations', 
                 (
                     $request,
+                    $updates,
                     $entity,
                     $entities:types,
-                    $entities:flags
+                    $entities:flags,
+                    $updates
                 )
             )
         

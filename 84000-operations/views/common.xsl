@@ -184,9 +184,7 @@
             </li>
             <xsl:if test="$active-tab eq 'operations/glossary'">
                 <li role="presentation">
-                    <xsl:if test="$active-tab eq 'operations/glossary'">
-                        <xsl:attribute name="class" select="'active'"/>
-                    </xsl:if>
+                    <xsl:attribute name="class" select="'active'"/>
                     <a>
                         <xsl:choose>
                             <xsl:when test="/m:response/m:request/@resource-id gt ''">
@@ -203,9 +201,7 @@
             </xsl:if>
             <xsl:if test="$active-tab eq 'operations/quotes'">
                 <li role="presentation">
-                    <xsl:if test="$active-tab eq 'operations/quotes'">
-                        <xsl:attribute name="class" select="'active'"/>
-                    </xsl:if>
+                    <xsl:attribute name="class" select="'active'"/>
                     <a>
                         <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', /m:response/m:request/@resource-id, '&amp;part=', /m:response/m:request/@part)"/>
                         <xsl:attribute name="data-loading" select="'Loading quotes...'"/>

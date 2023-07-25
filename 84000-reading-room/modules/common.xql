@@ -249,8 +249,8 @@ declare function common:normalize-space($nodes as node()*) as node()*{
 declare 
     %test:args(3)
     %test:assertEquals('&#10;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;')
-function common:ws($indent as xs:integer) as xs:string {
-    concat($common:chr-nl, functx:repeat-string($common:chr-tab, $indent))
+function common:ws($indent as xs:integer) as text() {
+    text { concat($common:chr-nl, functx:repeat-string($common:chr-tab, $indent)) }
 };
 
 (: Markup string :)

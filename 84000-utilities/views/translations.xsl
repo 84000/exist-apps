@@ -13,9 +13,10 @@
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         <xsl:variable name="reading-room-no-cache-path" select="$environment/m:url[@id eq 'reading-room-no-cache']/text()"/>
         <xsl:variable name="operations-path" select="$environment/m:url[@id eq 'operations']/text()"/>
-        <xsl:variable name="page-filter" select="m:request/m:parameter[@name eq 'page-filter']/text()"/>
-        <xsl:variable name="toh-min" select="m:request/m:parameter[@name eq 'toh-min']/text()"/>
-        <xsl:variable name="toh-max" select="m:request/m:parameter[@name eq 'toh-max']/text()"/>
+        <xsl:variable name="request" select="m:request"/>
+        <xsl:variable name="page-filter" select="$request/m:parameter[@name eq 'page-filter']/text()"/>
+        <xsl:variable name="toh-min" select="$request/m:parameter[@name eq 'toh-min']/text()"/>
+        <xsl:variable name="toh-max" select="$request/m:parameter[@name eq 'toh-max']/text()"/>
         
         <xsl:variable name="content">
             
@@ -129,10 +130,10 @@
                             <div class="form-group">
                                 <label for="toh-min">Tohoku:</label>
                                 <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
-                                    <xsl:attribute name="value" select="/m:response/m:request/m:parameter[@name eq 'toh-min']/text()"/>
+                                    <xsl:attribute name="value" select="$request/m:parameter[@name eq 'toh-min']/text()"/>
                                 </input>
                                 <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
-                                    <xsl:attribute name="value" select="/m:response/m:request/m:parameter[@name eq 'toh-max']/text()"/>
+                                    <xsl:attribute name="value" select="$request/m:parameter[@name eq 'toh-max']/text()"/>
                                 </input>
                                 <button type="submit" class="btn btn-primary">Search</button>
                             </div>
@@ -150,7 +151,7 @@
                         </form>
                     </xsl:when>
                     
-                    <xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client'] and m:request/m:authenticated-user/m:group[@name eq 'git-push']">
+                    <xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
                         
                         <form method="post" class="form-horizontal sml-margin bottom">
                             
@@ -183,7 +184,7 @@
                         
                     </xsl:when>
                     
-                    <xsl:when test="$page-filter = ('1', 'recent-updates') and $environment/m:store-conf[@type eq 'master'] and m:request/m:authenticated-user/m:group[@name eq 'git-push']">
+                    <xsl:when test="$page-filter = ('1', 'recent-updates') and $environment/m:store-conf[@type eq 'master'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
                         
                         <form method="post" class="form-horizontal sml-margin bottom">
                             
@@ -247,6 +248,7 @@
                                     <xsl:variable name="text-toh" select="m:toh[1]"/>
                                     <xsl:variable name="text-titles" select="m:titles[1]"/>
                                     <xsl:variable name="text-tei-version" select="m:downloads[1]/@tei-version"/>
+                                    <xsl:variable name="text-status-updates" select="m:status-updates[1]"/>
                                     <xsl:variable name="text-master-first-text" select="key('master-texts', $text-id)[1]"/>
                                     <xsl:variable name="text-master-tei-version" select="$text-master-first-text/m:downloads[1]/@tei-version"/>
                                     <xsl:variable name="text-master-status-updates" select="$text-master-first-text/m:status-updates[1]"/>
@@ -361,7 +363,7 @@
                                                 
                                                 <span class="small">
                                                     <xsl:value-of select="' / '"/>
-                                                    <xsl:value-of select="concat(format-number(m:location[1]/@count-pages, '#,###'), ' pages')"/>
+                                                    <xsl:value-of select="concat(format-number(m:source/m:location[1]/@count-pages, '#,###'), ' pages')"/>
                                                 </span>
                                                 
                                                 <span class="small">
@@ -580,16 +582,27 @@
                                             <!-- Version update message -->
                                             <xsl:variable name="version-update-message" as="xs:string?">
                                                 <xsl:choose>
-                                                    <xsl:when test="$environment/m:store-conf[@type eq 'client'] and $text-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
-                                                        <xsl:value-of select="concat('Version note (master): ', $text-master-status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                    <xsl:when test="$environment/m:store-conf[@type eq 'client'] and $text-master-status-updates/m:status-update[(@update, @type) = 'text-version'][@current-version eq 'true'][descendant::text()[normalize-space()]]">
+                                                        <xsl:value-of select="string-join($text-master-status-updates/m:status-update[(@update, @type) = 'text-version'][@current-version eq 'true']/descendant::text() ! normalize-space(), '; ')"/>
                                                     </xsl:when>
-                                                    <xsl:when test="$environment/m:store-conf[@type eq 'master'] and m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][text()]">
-                                                        <xsl:value-of select="concat('Version note: ', m:status-updates/m:status-update[@update eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                    <xsl:when test="$environment/m:store-conf[@type eq 'master'] and $text-status-updates/m:status-update[@type eq 'text-version'][@current-version eq 'true'][descendant::text()[normalize-space()]]">
+                                                        <xsl:value-of select="string-join($text-status-updates/m:status-update[@type eq 'text-version'][@current-version eq 'true']/descendant::text() ! normalize-space(), '; ')"/>
                                                     </xsl:when>
                                                 </xsl:choose>
                                             </xsl:variable>
+                                            
                                             <xsl:if test="$version-update-message">
                                                 <div class="small sml-margin bottom">
+                                                    <span class="text-muted">
+                                                        <xsl:choose>
+                                                            <xsl:when test="$environment/m:store-conf[@type eq 'client']">
+                                                                <xsl:value-of select="'Version note (master): '"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <xsl:value-of select="'Version note: '"/>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </span>
                                                     <span class="italic text-danger">
                                                         <xsl:value-of select="$version-update-message"/>
                                                     </span>
@@ -799,7 +812,9 @@
                         
                         <xsl:variable name="recent-updated-texts" select="m:recent-updates/m:text"/>
                         <xsl:for-each select="('new-publication', 'new-version')">
+                            
                             <xsl:variable name="recent-update-type" select="."/>
+                            
                             <h3 class="no-top-margin">
                                 <xsl:choose>
                                     <xsl:when test="$recent-update-type eq 'new-publication'">
@@ -810,15 +825,22 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </h3>
+                            
                             <xsl:choose>
+                                
                                 <xsl:when test="$recent-updated-texts[@recent-update eq $recent-update-type]">
+                                    
                                     <table class="table no-border width-auto">
+                                        
                                         <xsl:for-each select="$recent-updated-texts[@recent-update eq $recent-update-type]">
+                                            
                                             <xsl:sort select="number(m:toh[1]/@number)"/>
                                             <xsl:sort select="m:toh[1]/@letter"/>
                                             <xsl:sort select="number(m:toh[1]/@chapter-number)"/>
                                             <xsl:sort select="m:toh[1]/@chapter-letter"/>
+                                            
                                             <xsl:variable name="toh-key" select="(m:toh/@key)[1]"/>
+                                            
                                             <tr class="vertical-top">
                                                 <td>
                                                     <span>
@@ -847,18 +869,18 @@
                                                     <div class="small">
                                                         <xsl:choose>
                                                             <xsl:when test="$recent-update-type eq 'new-publication'">
-                                                                <xsl:for-each select="tei:note[@update eq 'translation-status'][@value = ('1', '1.a')]">
-                                                                    <xsl:sort select="@date-time"/>
+                                                                <xsl:for-each select="tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]">
+                                                                    <xsl:sort select="@when"/>
                                                                     <span class="text-muted">
-                                                                        <xsl:value-of select="common:date-user-string('Published', @date-time, @user)"/>
+                                                                        <xsl:value-of select="common:date-user-string(concat('Status ', @status, ' set'), @when, @who)"/>
                                                                     </span>
                                                                 </xsl:for-each>
                                                             </xsl:when>
                                                             <xsl:otherwise>
-                                                                <xsl:for-each select="tei:note">
-                                                                    <xsl:sort select="@date-time"/>
+                                                                <xsl:for-each select="tei:change">
+                                                                    <xsl:sort select="@when"/>
                                                                     <span class="text-muted">
-                                                                        <xsl:value-of select="common:date-user-string(concat('Version ', @value, ' created'), @date-time, @user)"/>
+                                                                        <xsl:value-of select="common:date-user-string(concat('Version ', @status, ' created'), @when, @who)"/>
                                                                     </span>
                                                                     <br/>
                                                                     <span class="text-danger">
@@ -870,15 +892,20 @@
                                                     </div>
                                                 </td>
                                             </tr>
+                                        
                                         </xsl:for-each>
                                     </table>
+                                
                                 </xsl:when>
+                                
                                 <xsl:otherwise>
                                     <p class="text-muted italic">
                                         <xsl:value-of select="'No matching texts'"/>
                                     </p>
                                 </xsl:otherwise>
+                                
                             </xsl:choose>
+                        
                         </xsl:for-each>
                         
                     </xsl:when>

@@ -333,7 +333,7 @@ declare function local:create-revisionDesc($tei as element(tei:TEI)) {
                         attribute who { '#' || $update/@user },
                         attribute when { $update/@date-time },
                         attribute type { $update/@update },
-                        if($update[@update = ('text-version','translation-status')]) then
+                        if($update[@update = ('text-version','translation-status','publication-status')]) then
                             attribute status { $update/@value }
                         else ()
                         ,

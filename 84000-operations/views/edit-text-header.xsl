@@ -937,7 +937,7 @@
                                 
                                 <!-- Target dates -->
                                 <xsl:variable name="target-dates" select="$translation-status/m:text/m:target-date"/>
-                                <xsl:variable name="actual-dates" select="$text/m:status-updates/m:status-update[@type eq 'translation-status']"/>
+                                <xsl:variable name="actual-dates" select="$text/m:status-updates/m:status-update[@type = ('translation-status', 'publication-status')]"/>
                                 <div class="form-group">
                                     <label class="control-label col-sm-3 top-margin" for="text-note">
                                         <xsl:value-of select="'Target dates:'"/>
@@ -1404,7 +1404,7 @@
                                     <a>
                                         <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', $related-page/@kb-id, '.html')"/>
                                         <xsl:attribute name="target" select="$related-page/@xml:id"/>
-                                        <xsl:value-of select="'Knowledge base'"/>
+                                        <xsl:value-of select="'Knowledge base article'"/>
                                     </a>
                                     <xsl:value-of select="' '"/>
                                     <span>
@@ -1423,9 +1423,12 @@
                                     </span>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <a href="/knowledgebase.html#new-article-form">
-                                        <xsl:value-of select="'Add to knowledge base'"/>
-                                    </a>
+                                    <!--<a href="/knowledgebase.html" target="_blank">
+                                        <xsl:value-of select="'No knowledge base article'"/>
+                                    </a>-->
+                                    <span class="text-muted">
+                                        <xsl:value-of select="'No knowledge base article'"/>
+                                    </span>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </li>

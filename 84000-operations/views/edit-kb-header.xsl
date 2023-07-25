@@ -192,49 +192,47 @@
                                                             <xsl:value-of select="'Version:'"/>
                                                         </label>
                                                         <div class="col-sm-2">
-                                                            <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0">
+                                                            <input type="text" name="text-version" id="text-version" class="form-control" placeholder="e.g. v 1.0.1">
                                                                 <!-- Force the addition of a version number if the form is used -->
                                                                 <xsl:attribute name="value">
                                                                     <xsl:choose>
-                                                                        <xsl:when test="m:knowledgebase/m:publication/m:edition/text()[1]/normalize-space()">
-                                                                            <xsl:value-of select="m:knowledgebase/m:publication/m:edition/text()[1]/normalize-space()"/>
+                                                                        <xsl:when test="m:knowledgebase/m:publication/m:edition[normalize-space(text())][1] ! normalize-space()">
+                                                                            <xsl:value-of select="m:knowledgebase/m:publication/m:edition[normalize-space(text())][1]/text() ! normalize-space()"/>
                                                                         </xsl:when>
                                                                         <xsl:otherwise>
                                                                             <xsl:value-of select="'0.0.1'"/>
                                                                         </xsl:otherwise>
                                                                     </xsl:choose>
                                                                 </xsl:attribute>
-                                                                <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
+                                                                <xsl:if test="m:text-statuses/m:status[@selected eq 'selected'][@value eq '1']">
                                                                     <xsl:attribute name="required" select="'required'"/>
                                                                 </xsl:if>
                                                             </input>
                                                         </div>
+                                                        
                                                         <div class="col-sm-2">
-                                                            <input type="text" name="text-version-date" id="text-version-date" class="form-control" placeholder="e.g. 2019">
+                                                            <input type="text" class="form-control" disabled="disabled">
                                                                 <xsl:attribute name="value">
                                                                     <xsl:choose>
-                                                                        <xsl:when test="m:knowledgebase/m:publication/m:edition/tei:date/text()/normalize-space()">
-                                                                            <xsl:value-of select="m:knowledgebase/m:publication/m:edition/tei:date/text()/normalize-space()"/>
+                                                                        <xsl:when test="m:knowledgebase/m:publication/m:edition/tei:date[normalize-space(text())]">
+                                                                            <xsl:value-of select="m:knowledgebase/m:publication/m:edition/tei:date/text() ! normalize-space()"/>
                                                                         </xsl:when>
                                                                         <xsl:otherwise>
                                                                             <xsl:value-of select="format-dateTime(current-dateTime(), '[Y]')"/>
                                                                         </xsl:otherwise>
                                                                     </xsl:choose>
                                                                 </xsl:attribute>
-                                                                <xsl:if test="m:text-statuses/m:status[@selected eq 'selected']/@value eq '1'">
-                                                                    <xsl:attribute name="required" select="'required'"/>
-                                                                </xsl:if>
                                                             </input>
                                                         </div>
                                                     </div>
                                                     
                                                     <!-- Version note -->
                                                     <div class="form-group">
-                                                        <label class="control-label col-sm-3" for="text-version">
+                                                        <label class="control-label col-sm-3" for="version-note">
                                                             <xsl:value-of select="'Version note:'"/>
                                                         </label>
                                                         <div class="col-sm-9">
-                                                            <input type="text" name="update-notes" id="update-notes" class="form-control"/>
+                                                            <input type="text" name="version-note" id="version-note" class="form-control"/>
                                                         </div>
                                                     </div>
                                                     
@@ -389,7 +387,7 @@
                                 <xsl:with-param name="persist" select="true()"/>
                                 
                                 <xsl:with-param name="title">
-                                    <xsl:variable name="count-entity-instances" select="count($entity/m:instance)"/>
+                                    <xsl:variable name="count-entity-instances" select="count($entity/m:instance[not(@id eq $tei-id)])"/>
                                     <span>
                                         <xsl:value-of select="' ↳ '"/>
                                     </span>
@@ -438,7 +436,7 @@
                                 
                                 <xsl:with-param name="title">
                                     
-                                    <xsl:variable name="count-relations" select="count($entity/m:relation)"/>
+                                    <xsl:variable name="count-relations" select="count(distinct-values($entity/m:relation/@id))"/>
                                     <span>
                                         <xsl:value-of select="' ↳ '"/>
                                     </span>
@@ -465,11 +463,11 @@
                                                 
                                                 <xsl:attribute name="id" select="'accordion-relations'"/>
                                                 
-                                                <xsl:for-each select="$entity/m:relation">
+                                                <xsl:for-each-group select="$entity/m:relation" group-by="@id">
                                                     
                                                     <xsl:sort select="if(@predicate = 'isUnrelated') then 1 else 0"/>
                                                     
-                                                    <xsl:variable name="relation" select="."/>
+                                                    <xsl:variable name="relation" select="current-group()[1]"/>
                                                     <xsl:variable name="relation-entity" select="key('related-entities', $relation/@id, $root)[1]"/>
                                                     
                                                     <xsl:call-template name="expand-item">
@@ -577,7 +575,7 @@
                                                         
                                                     </xsl:call-template>
                                                     
-                                                </xsl:for-each>
+                                                </xsl:for-each-group>
                                                 
                                             </div>
                                             

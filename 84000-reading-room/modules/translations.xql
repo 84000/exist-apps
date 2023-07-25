@@ -32,7 +32,7 @@ declare function translations:files($publication-statuses as xs:string*) as elem
 
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
     
-        for $tei-availability in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt/tei:availability[@status = $publication-statuses]/ancestor::tei:TEI
+        for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt/tei:availability[@status = $publication-statuses]/ancestor::tei:TEI
             let $base-uri := base-uri($tei)
             let $file-name := util:unescape-uri(replace($base-uri, ".+/(.+)$", "$1"), 'UTF-8')
             order by $file-name
@@ -160,7 +160,7 @@ declare function translations:filtered-texts(
                     let $tei-selected-valid-status := $selected-statuses[@selected eq 'selected'][@index ! xs:integer(.) ge $tei-selected-status/@index ! xs:integer(.)]
                 where 
                     $tei//tei:revisionDesc/tei:change
-                        [@type eq 'translation-status']
+                        [@type = ('translation-status', 'publication-status')]
                         [if($status-date-start gt '') then (@when ! xs:dateTime(.) ge xs:dateTime(xs:date($status-date-start))) else true()]
                         [if($status-date-end gt '') then (@when ! xs:dateTime(.) le xs:dateTime(xs:date($status-date-end))) else true()]
                         [if($selected-statuses[@selected eq 'selected']) then (@status = $tei-selected-valid-status/@status-id) else true()]
@@ -508,14 +508,13 @@ declare function translations:recent-updates() as element(m:recent-updates) {
             let $changes-in-span := $changes[xs:dateTime(@when) ge $start-time][xs:dateTime(@when) le $end-time]
             
             let $recent-update-type :=
-                if($publication-status = ('1', '1.a') and $changes-in-span[@type eq 'translation-status'][@status = ('1', '1.a')]) then 
+                if($publication-status = ('1', '1.a') and $changes-in-span[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]) then 
                     'new-publication'
                 else if($publication-status = ('1', '1.a') and $changes-in-span[@type eq 'text-version']) then 
                     'new-version'
                 else ()
-                
-            where $recent-update-type = ('new-publication', 'new-version')
             
+            where $recent-update-type = ('new-publication', 'new-version')
             return 
                 element { QName('http://read.84000.co/ns/1.0', 'text') }{
                     attribute id { tei-content:id($tei) }, 
@@ -533,7 +532,7 @@ declare function translations:recent-updates() as element(m:recent-updates) {
                     
                     let $changes-in-span-display := (
                         if($recent-update-type eq 'new-publication') then
-                            $changes-in-span[@type eq 'translation-status'][@status = ('1', '1.a')]
+                            $changes-in-span[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]
                         else if($recent-update-type eq 'new-version') then
                             $changes-in-span[@type eq 'text-version']
                         else()
@@ -543,7 +542,6 @@ declare function translations:recent-updates() as element(m:recent-updates) {
                         for $change in $changes-in-span-display
                         order by $change/@date-time ! xs:dateTime(.)
                         return $change
-                    
                     return
                         $changes-in-span-sorted[last()]
                         
@@ -571,7 +569,7 @@ declare function translations:texts-spreadsheet($response as element(m:response)
         let $next-target := $response/m:translation-status/m:text[@text-id eq $text/@id]/m:target-date[@next eq 'true']
         
         let $text-status-index := $text-statuses[@status-id eq $text/@status]/@index ! xs:integer(.)
-        let $status-updates := $text/m:status-updates/m:status-update[@type eq 'translation-status'][empty($status-date-start) or @when ! xs:dateTime(.) ge $status-date-start][empty($status-date-end) or @when ! xs:dateTime(.) le $status-date-end][empty($selected-statuses) or @status = $selected-statuses[@index ! xs:integer(.) ge $text-status-index]/@status-id]
+        let $status-updates := $text/m:status-updates/m:status-update[@type = ('translation-status', 'publication-status')][empty($status-date-start) or @when ! xs:dateTime(.) ge $status-date-start][empty($status-date-end) or @when ! xs:dateTime(.) le $status-date-end][empty($selected-statuses) or @status = $selected-statuses[@index ! xs:integer(.) ge $text-status-index]/@status-id]
         let $status-updates-block-ids := $status-updates/@target ! replace(., '^#', '')
         
         let $text-pages := $text/m:source/m:location/@count-pages ! xs:integer(.)
@@ -674,10 +672,10 @@ declare function translations:recent-updates-spreadsheet($recent-updates as elem
                     $text/m:titles/m:title[1]/text() 
                 },
                 element Updated { $text/@last-modified ! format-dateTime(., '[D01]-[M01]-[Y0001]') },
-                element Version { string-join($text/tei:note[@update="text-version"]/@value, ' ') },
+                element Version { string-join($text/tei:change[@type eq "text-version"]/@status, '; ') },
                 element Note {
                     attribute width { '80' }, 
-                    string-join($text/tei:note[@update="text-version"]/descendant::text(), ' ') 
+                    string-join($text/tei:change[@type eq "text-version"]/descendant::text()[normalize-space()] ! normalize-space(), ' ') 
                 }
             }
         ,

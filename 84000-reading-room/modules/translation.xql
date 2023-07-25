@@ -714,9 +714,8 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
     
         (: Published TEI :)
         $tei-content:translations-collection//tei:TEI
-            [tei:teiHeader/tei:fileDesc/tei:publicationStmt
+            [tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability
                 [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
-                /tei:idno[not(@xml:id eq $text-id)]
             ]
         ,
         

@@ -85,7 +85,7 @@ let $entities :=
         let $attribution-entities := $entities:entities/m:entity[m:instance[@type eq 'source-attribution']]
         return (
             $attribution-entities,
-            element related { entities:related($attribution-entities, false(), ('knowledgebase'), (), ()) }
+            element related { entities:related($attribution-entities[m:instance/@id = ($tei//tei:sourceDesc/tei:bibl/tei:author/@xml:id | $tei//tei:sourceDesc/tei:bibl/tei:editor/@xml:id)], false(), ('knowledgebase'), (), ()) }
         )
     }
 

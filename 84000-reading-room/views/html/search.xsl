@@ -573,19 +573,30 @@
                                             <div class="row">
                                                 
                                                 <div class="col-sm-12">
-                                                    
-                                                    <xsl:if test="not($specified-text)">
+                                                    <p>
                                                         
-                                                        <p>
-                                                            <xsl:value-of select="concat('These are the first ', count($matches), ' matches. ')"/>
-                                                            <a target="_self">
-                                                                <xsl:attribute name="href" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search), concat('specified-text=', $header/@resource-id)), (), /m:response/@lang)"/>
-                                                                <xsl:value-of select="concat('View all ', format-number($count-matches, '#,###'))"/>
-                                                            </a>
-                                                        </p>
+                                                        <xsl:value-of select="concat('These are the first ', count($matches), ' matches. ')"/>
                                                         
-                                                    </xsl:if>
-                                                    
+                                                        <xsl:choose>
+                                                            <xsl:when test="$header[@type eq 'translation'] and not($specified-text)">
+                                                                
+                                                                <a target="_self">
+                                                                    <xsl:attribute name="href" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search), concat('specified-text=', $header/@resource-id)), (), /m:response/@lang)"/>
+                                                                    <xsl:value-of select="concat('View all ', format-number($count-matches, '#,###'))"/>
+                                                                </a>
+                                                                
+                                                            </xsl:when>
+                                                            <xsl:when test="$header[@type eq 'entity']">
+                                                                
+                                                                <a>
+                                                                    <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
+                                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $header/@link), (), '', /m:response/@lang)"/>
+                                                                    <xsl:value-of select="'View the glossary entry.'"/>
+                                                                </a>
+                                                                
+                                                            </xsl:when>
+                                                        </xsl:choose>
+                                                    </p>
                                                 </div>
                                             </div>
                                             

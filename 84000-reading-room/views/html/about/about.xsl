@@ -441,7 +441,7 @@
                             <xsl:value-of select="normalize-space(text())"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:value-of select="normalize-space($sponsors/m:sponsor[m:instance/@id eq $sponsor-id]/m:label)"/>
+                            <xsl:value-of select="normalize-space($sponsors//m:instance[@id eq $sponsor-id]/parent::m:sponsor/m:label[1])"/>
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:for-each>

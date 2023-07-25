@@ -452,7 +452,7 @@
                                                                                 
                                                                                 <xsl:choose>
                                                                                     <xsl:when test="position() eq 1">
-                                                                                        <h2 class="no-bottom-margin">
+                                                                                        <h2 class="no-bottom-margin inline-block">
                                                                                             <xsl:call-template name="glossary-term">
                                                                                                 <xsl:with-param name="term-text" select="text()"/>
                                                                                                 <xsl:with-param name="term-lang" select="@xml:lang"/>

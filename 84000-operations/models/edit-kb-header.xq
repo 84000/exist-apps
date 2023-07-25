@@ -66,7 +66,7 @@ let $xml-response :=
             (: Include request parameters :)
             element { QName('http://read.84000.co/ns/1.0', 'request') } {
                 attribute id { $knowledgebase-id },
-                attribute show-tab { request:get-parameter('show-tab', '') },
+                attribute show-tab { request:get-parameter('show-tab', 'kb-form') },
                 element similar-search { request:get-parameter('similar-search', '') }
             },
             

@@ -657,6 +657,8 @@
                         
                         <xsl:sort select="xs:dateTime(@when)" order="descending"/>
                         
+                        <xsl:variable name="text-content" select="normalize-space(text())" as="xs:string?"/>
+                        
                         <li>
                             
                             <xsl:choose>
@@ -666,10 +668,10 @@
                                             <span class="text-bold text-primary">
                                                 <xsl:value-of select="'Version update: ' || @status"/>
                                             </span>
-                                            <xsl:if test="text() and not(text() eq @status)">
+                                            <xsl:if test="$text-content and not($text-content eq @status/string())">
                                                 <br/>
                                                 <span>
-                                                    <xsl:value-of select="text()"/>
+                                                    <xsl:value-of select="$text-content"/>
                                                 </span>
                                             </xsl:if>
                                         </xsl:when>
@@ -677,10 +679,10 @@
                                             <span class="text-bold text-danger">
                                                 <xsl:value-of select="'Status update: ' || @status"/>
                                             </span>
-                                            <xsl:if test="text() and not(text() eq @status)">
+                                            <xsl:if test="$text-content and not($text-content eq @status/string())">
                                                 <br/>
                                                 <span>
-                                                    <xsl:value-of select="text()"/>
+                                                    <xsl:value-of select="$text-content"/>
                                                 </span>
                                             </xsl:if>
                                         </xsl:when>
@@ -688,7 +690,7 @@
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <span class="text-bold">
-                                        <xsl:value-of select="text()"/>
+                                        <xsl:value-of select="$text-content"/>
                                     </span>
                                 </xsl:otherwise>
                             </xsl:choose>

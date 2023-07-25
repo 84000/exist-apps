@@ -24,82 +24,92 @@ let $callback-url := request:get-parameter('callback-url', '')
 
 let $tei := tei-content:tei($resource-id, $resource-type)
 
-let $update-tei :=
-    if($resource-type = ('knowledgebase') and $tei and $form-action eq 'update-tei') then 
-        update-tei:update-content($tei, $content-escaped, $passage-id, ($content-hidden gt ''), ($add-milestone gt ''))
-        
-    else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'add-element') then 
-        update-tei:add-element($tei, $passage-id, $new-element-name)
-        
-    else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
-        update-tei:comment($tei, $passage-id, $comment)
-        
-    (:else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'lock-tei') then 
-        xmldb:lock-document()
-    else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'unlock-tei') then 
-        xmldb:clear-lock():)
-        
-    else ()
+let $request :=
+    element { QName('http://read.84000.co/ns/1.0', 'request') } {
+        attribute resource-type { $resource-type },
+        attribute resource-id { $resource-id },
+        attribute passage-id { $passage-id }
+    }
 
-let $schema := 
-    if($resource-type eq 'knowledgebase') then
-        doc(concat($common:tei-path, '/schema/current/knowledgebase.rng'))
-    else
-        doc(concat($common:tei-path, '/schema/current/translation.rng'))
-
-let $validation-report := validation:jing-report($tei, $schema)
-
-let $response-data :=
-    (: Restrict to knowledgebase only for now :)
-    if($tei and $resource-type eq 'knowledgebase') then 
-        
-        element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
-            
-            knowledgebase:page($tei),
-            knowledgebase:article($tei),
-            knowledgebase:bibliography($tei)
-            
-        }
-    else ()
-
-let $xml-response :=
-    common:response(
-        'operations/tei-editor',
-        'operations', 
-        (
-            (: Include request parameters :)
-            element { QName('http://read.84000.co/ns/1.0', 'request') } {
-                attribute resource-type { $resource-type },
-                attribute resource-id { $resource-id },
-                attribute passage-id { $passage-id }
-            },
-            
-            (: Feedback updates :)
-            element { QName('http://read.84000.co/ns/1.0', 'updates') } {
-                $update-tei
-            },
-            
-            (: Schema validation :)
-            element { QName('http://read.84000.co/ns/1.0', 'validation') } {
-                $validation-report
-            },
-            
-            (: Data :)
-            $response-data
-            
-        )
-    )
-
-return
-
-    (: return html data :)
-    if($resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/tei-editor.xsl'))
-    )
+let $updates :=
+    element { QName('http://read.84000.co/ns/1.0', 'updates') } {
     
-    (: return xml data :)
-    else (
+        if($resource-type = ('knowledgebase') and $tei and $form-action eq 'update-tei') then 
+            update-tei:update-content($tei, $content-escaped, $passage-id, ($content-hidden gt ''), ($add-milestone gt ''))
+            
+        else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'add-element') then 
+            update-tei:add-element($tei, $passage-id, $new-element-name)
+            
+        else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'comment-tei') then 
+            update-tei:comment($tei, $passage-id, $comment)
+            
+        (:else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'lock-tei') then 
+            xmldb:lock-document()
+        else if($resource-type = ('knowledgebase') and $tei and $form-action eq 'unlock-tei') then 
+            xmldb:clear-lock():)
+            
+        else ()
+        
+    }
+return
+    if(request:get-parameter('return', '') eq 'none') then (
         util:declare-option("exist:serialize", "method=xml indent=no"),
-        $xml-response
+        $updates
     )
+
+    else 
+        let $validation-report := 
+            element { QName('http://read.84000.co/ns/1.0', 'validation') } {
+            
+                let $schema := 
+                    if($resource-type eq 'knowledgebase') then
+                        doc(concat($common:tei-path, '/schema/current/knowledgebase.rng'))
+                    else
+                        doc(concat($common:tei-path, '/schema/current/translation.rng'))
+                
+                return
+                    validation:jing-report($tei, $schema)
+                    
+            }
+        
+        let $response-data :=
+            (: Restrict to knowledgebase only for now :)
+            if($tei and $resource-type eq 'knowledgebase') then 
+                element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+                    
+                    knowledgebase:page($tei),
+                    knowledgebase:article($tei),
+                    knowledgebase:bibliography($tei)
+                    
+                }
+            else ()
+        
+        let $xml-response :=
+            common:response(
+                'operations/tei-editor',
+                'operations', 
+                (
+                    (: Include request parameters :)
+                    $request,
+                    (: Feedback updates :)
+                    $updates,
+                    (: Schema validation :)
+                    $validation-report,
+                    (: Data :)
+                    $response-data
+                )
+            )
+        
+        return
+        
+            (: return html data :)
+            if($resource-suffix eq 'html') then (
+                common:html($xml-response, concat(local:app-path(), '/views/tei-editor.xsl'))
+            )
+            
+            (: return xml data :)
+            else (
+                util:declare-option("exist:serialize", "method=xml indent=no"),
+                $xml-response
+            )
     

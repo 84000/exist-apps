@@ -39,7 +39,6 @@ let $remove-instance := request:get-parameter('remove-instance', '')
 let $unlink-glossary := request:get-parameter('unlink-glossary', '')
 let $remove-flag := request:get-parameter('remove-flag', '')
 let $set-flag := request:get-parameter('set-flag', '')
-let $ajax-target := request:get-parameter('ajax-target', '')
 
 let $resource-id := 
     if($resource-id eq '' and $resource-type eq 'translation') then
@@ -132,7 +131,7 @@ let $updates :=
     }
 
 return 
-    if($ajax-target gt '') then (
+    if(request:get-parameter('return', '') eq 'none') then (
         util:declare-option("exist:serialize", "method=xml indent=no"),
         $updates
     )

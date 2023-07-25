@@ -851,21 +851,20 @@
                         <div id="toh">
                             
                             <h4>
-                                
                                 <xsl:apply-templates select="m:translation/m:source/m:toh"/>
-                                
-                                <xsl:if test="m:translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
-                                    <br/>
-                                    <span class="label label-info">
-                                        <xsl:value-of select="'This is a partial publication only including completed chapters'"/>
-                                    </span>
-                                </xsl:if>
-                                
                             </h4>
                             
                             <xsl:if test="m:translation/m:source[m:scope//text()]">
                                 <p id="location">
                                     <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
+                                </p>
+                            </xsl:if>
+                            
+                            <xsl:if test="m:translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
+                                <p>
+                                    <span class="label label-info">
+                                        <xsl:value-of select="'This is a partial publication only including completed chapters'"/>
+                                    </span>
                                 </p>
                             </xsl:if>
                             

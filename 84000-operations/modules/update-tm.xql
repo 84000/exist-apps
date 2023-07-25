@@ -156,7 +156,7 @@ declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:st
         }
     
     (: Add whitespace for readability :)
-    let $padding := text { common:ws(2) }
+    let $padding := common:ws(2)
     
     return (
     
@@ -460,7 +460,7 @@ declare function local:apply-revisions($tm-units as element(tmx:tu)*, $start-uni
                             update replace $tu-unmatched-prop with $tu-unmatched-prop-new
                         
                         else
-                            update insert ($tu-unmatched-prop-new, text { common:ws(3) } ) preceding $tu/tmx:tuv[1]
+                            update insert ($tu-unmatched-prop-new, common:ws(3) ) preceding $tu/tmx:tuv[1]
             
                 else if($tu-unmatched-prop) then
                     update delete $tu-unmatched-prop
@@ -475,7 +475,7 @@ declare function local:apply-revisions($tm-units as element(tmx:tu)*, $start-uni
                 update replace $tu-location-id with $tu-location-id-new
             
             else if($tm-unit-aligned[@new-location]) then
-                update insert ($tu-location-id-new, text { common:ws(3) } ) preceding $tu/tmx:tuv[1]
+                update insert ($tu-location-id-new, common:ws(3) ) preceding $tu/tmx:tuv[1]
             
             else ()
             ,
@@ -485,7 +485,7 @@ declare function local:apply-revisions($tm-units as element(tmx:tu)*, $start-uni
                 if($tu-revision-prop) then
                     update replace $tu-revision-prop with $tu-revision-prop-new
                 else
-                    update insert ($tu-revision-prop-new, text { common:ws(3) } ) preceding $tu/tmx:tuv[1]
+                    update insert ($tu-revision-prop-new, common:ws(3) ) preceding $tu/tmx:tuv[1]
             else ()
             
         )

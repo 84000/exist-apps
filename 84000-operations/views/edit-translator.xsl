@@ -44,10 +44,10 @@
                                 </xsl:choose>
                             </legend>
                             
-                            <xsl:copy-of select="ops:text-input('Name','name', m:person/m:label, 9, 'required')"/>
+                            <xsl:sequence select="ops:text-input('Name','name', m:person/m:label, 9, 'required')"/>
                             
                             <div class="form-group">
-                                <div class="col-sm-offset-3 col-sm-4">
+                                <div class="col-sm-offset-3 col-sm-2">
                                     <div class="checkbox">
                                         <label>
                                             <input type="checkbox" name="affiliation[]" value="academic">
@@ -59,7 +59,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="col-sm-4">
+                                <div class="col-sm-2">
                                     <div class="checkbox">
                                         <label>
                                             <input type="checkbox" name="affiliation[]" value="practitioner">

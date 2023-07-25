@@ -3,7 +3,6 @@ xquery version "3.0";
 module namespace trigger="http://exist-db.org/xquery/trigger";
 
 declare namespace xmldb="http://exist-db.org/xquery/xmldb";
-
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m="http://read.84000.co/ns/1.0";
 
@@ -12,71 +11,6 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "modul
 import module namespace translation="http://read.84000.co/translation" at "modules/translation.xql";
 import module namespace glossary="http://read.84000.co/glossary" at "modules/glossary.xql";
 import module namespace functx = "http://www.functx.com";
-
-(: Log other events too :)
-declare function trigger:before-create-collection($uri as xs:anyURI) {
-    local:log-event("before", "create", "collection", $uri)
-};
-
-declare function trigger:after-create-collection($uri as xs:anyURI) {
-    local:log-event("after", "create", "collection", $uri)
-};
-
-declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
-    local:log-event("before", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
-    local:log-event("after", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
-    local:log-event("before", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
-    local:log-event("after", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:before-delete-collection($uri as xs:anyURI) {
-    local:log-event("before", "delete", "collection", $uri)
-};
-
-declare function trigger:after-delete-collection($uri as xs:anyURI) {
-    local:log-event("after", "delete", "collection", $uri)
-};
-
-declare function trigger:before-create-document($uri as xs:anyURI) {
-    local:log-event("before", "create", "document", $uri)
-};
-
-declare function trigger:before-update-document($uri as xs:anyURI) {
-    local:log-event("before", "update", "document", $uri)
-};
-
-declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
-    local:log-event("before", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
-    local:log-event("after", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
-    local:log-event("before", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
-    local:log-event("after", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
-};
-
-declare function trigger:before-delete-document($uri as xs:anyURI) {
-    local:log-event("before", "delete", "document", $uri)
-};
-
-declare function trigger:after-delete-document($uri as xs:anyURI) {
-    local:log-event("after", "delete", "document", $uri)
-};
 
 (: Process document after update or create :)
 declare function trigger:after-update-document($uri as xs:anyURI) {
@@ -127,7 +61,7 @@ declare function local:permanent-ids($doc) {
     
         let $elements := (
             $tei//tei:text//tei:milestone
-            | $tei//tei:text//tei:note
+            | $tei//tei:text//tei:note[@place eq 'end']
             | $tei//tei:text//tei:ref[@type = ('folio', 'volume')]
             | $tei//tei:text//tei:ptr[@type eq 'quote-ref'][@target][ancestor::tei:q]
             | $tei//tei:div[@type eq 'notes']//tei:item
@@ -143,13 +77,13 @@ declare function local:permanent-ids($doc) {
             (:| $tei//tei:sourceDesc/tei:bibl/tei:citedRange - add these manually:)
         )
         
-        (: Add any missing @xml:ids :)
-        let $elements-missing-id := $elements[not(@xml:id) or @xml:id eq '']
+        (: Add any missing, empty or duplicate @xml:ids :)
+        let $elements-missing-id := $elements[not(@xml:id) or @xml:id eq '' (:or not(position() eq min(index-of($elements/@xml:id/string(), @xml:id/string()))):)]
         
         where $elements-missing-id
-            let $max-id := max($tei//@xml:id ! substring-after(., concat($text-id, '-')) ! tokenize(., '-')[1][functx:is-a-number(.)] ! common:integer(.))
+            let $max-id := tei-content:max-xml-id-int($tei)
             for $element at $index in $elements-missing-id
-                let $new-id := concat($text-id, '-', xs:string(sum(($max-id, $index))))
+                let $new-id := tei-content:next-xml-id($text-id, sum(($max-id, $index)))
             return
                 update insert attribute xml:id { $new-id } into $element
         ,
@@ -329,7 +263,7 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
     return
         (: Insert log :)
         update insert (
-            common:ws(1),
+            text { common:ws(1) },
             <trigger xmlns="http://read.84000.co/ns/1.0" 
                 event="{ string-join(($type, $event, $object-type), "-") }" 
                 uri="{ $uri }" 
@@ -339,3 +273,68 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
         into $log
 };
 
+
+(: Log other events too :)
+(:declare function trigger:before-create-collection($uri as xs:anyURI) {
+    local:log-event("before", "create", "collection", $uri)
+};:)
+
+declare function trigger:after-create-collection($uri as xs:anyURI) {
+    local:log-event("after", "create", "collection", $uri)
+};
+
+(:declare function trigger:before-copy-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};:)
+
+declare function trigger:after-copy-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "copy", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+(:declare function trigger:before-move-collection($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};:)
+
+declare function trigger:after-move-collection($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "move", "collection", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+(:declare function trigger:before-delete-collection($uri as xs:anyURI) {
+    local:log-event("before", "delete", "collection", $uri)
+};:)
+
+declare function trigger:after-delete-collection($uri as xs:anyURI) {
+    local:log-event("after", "delete", "collection", $uri)
+};
+
+(:declare function trigger:before-create-document($uri as xs:anyURI) {
+    local:log-event("before", "create", "document", $uri)
+};:)
+
+(:declare function trigger:before-update-document($uri as xs:anyURI) {
+    local:log-event("before", "update", "document", $uri)
+};:)
+
+(:declare function trigger:before-copy-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
+};:)
+
+declare function trigger:after-copy-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "copy", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+(:declare function trigger:before-move-document($uri as xs:anyURI, $new-uri as xs:anyURI) {
+    local:log-event("before", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
+};:)
+
+declare function trigger:after-move-document($new-uri as xs:anyURI, $uri as xs:anyURI) {
+    local:log-event("after", "move", "document", concat("from: ", $uri, " to: ", $new-uri))
+};
+
+(:declare function trigger:before-delete-document($uri as xs:anyURI) {
+    local:log-event("before", "delete", "document", $uri)
+};:)
+
+declare function trigger:after-delete-document($uri as xs:anyURI) {
+    local:log-event("after", "delete", "document", $uri)
+};

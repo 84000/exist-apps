@@ -17,7 +17,6 @@
                     <th>#</th>
                     <th>Toh.</th>
                     <th>Title</th>
-                    <th>Pages</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -28,10 +27,10 @@
                     <xsl:sort select="number(m:toh/@chapter-number)"/>
                     <xsl:sort select="m:toh/@chapter-letter"/>
                     <tr>
-                        <td rowspan="2" class="text-muted">
+                        <td class="text-muted">
                             <xsl:value-of select="position()"/>.
                         </td>
-                        <td class="nowrap" rowspan="2">
+                        <td class="nowrap">
                             <xsl:value-of select="m:toh/m:base"/>
                         </td>
                         <td>
@@ -52,30 +51,39 @@
                             </xsl:choose>
                             
                             <span class="text-muted small">
-                                <xsl:value-of select="' \ '"/>
+                                <xsl:value-of select="' / '"/>
                                 <xsl:value-of select="@id"/>
                             </span>
                             
+                            <br/>
+                            
+                            <div class="small text-muted">
+                                <xsl:value-of select="'File: '"/>
+                                <a class="break text-muted">
+                                    <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', @resource-id, '.tei')"/>
+                                    <xsl:attribute name="target" select="concat(@resource-id, '.tei')"/>
+                                    <xsl:value-of select="@document-url"/>
+                                </a>
+                            </div>
+                            
                         </td>
-                        <td class="nowrap">
-                            <span class="small">
-                                <xsl:value-of select="concat(fn:format-number(xs:integer(m:source/m:location/@count-pages),'#,##0'), ' pages')"/>
-                            </span>
-                        </td>
-                        <td class="nowrap">
-                            <span class="text-right">
-                                <xsl:copy-of select="common:translation-status(@status-group)"/>
-                            </span>
-                        </td>
-                    </tr>
-                    <tr class="sub">
-                        <td class="small text-muted" colspan="3">
-                            <xsl:value-of select="'File: '"/>
-                            <a class="break">
-                                <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', @resource-id, '.tei')"/>
-                                <xsl:attribute name="target" select="concat(@resource-id, '.tei')"/>
-                                <xsl:value-of select="@document-url"/>
-                            </a>
+                        <td>
+                            
+                            <table class="table no-border full-width table-transparent">
+                                <tbody>
+                                    <xsl:for-each select="m:publication-status">
+                                        <tr>
+                                            <td class="small nowrap">
+                                                <xsl:value-of select="concat(fn:format-number(xs:integer(@count-pages),'#,##0'), ' pages ')"/>
+                                            </td>
+                                            <td class="nowrap text-right">
+                                                <xsl:sequence select="common:translation-status(@status-group)"/>
+                                            </td>
+                                        </tr>
+                                    </xsl:for-each>
+                                </tbody>
+                            </table>
+                            
                         </td>
                     </tr>
                 </xsl:for-each>

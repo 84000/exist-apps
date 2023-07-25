@@ -57,7 +57,7 @@ declare function tei-content:type($tei as element(tei:TEI)) as xs:string {
     if($tei/tei:teiHeader/tei:fileDesc[@type = ('section','grouping','pseudo-section')]) then 
         'section'
     
-    else if($tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']) then
+    else if($tei//tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']) then
         'knowledgebase'
     
     else
@@ -94,22 +94,20 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
         else 
             $tei-content:translations-collection
     
+    (: Fallback to UT number :)
+    let $resource-id-uppercase := upper-case($resource-id)
+    let $tei := $collection/id($resource-id-uppercase)[self::tei:idno][1]/ancestor::tei:TEI
+    
     (: Lookup key :)
     let $resource-id-lowercase := lower-case($resource-id)
     let $tei := 
-        if($resource-type eq 'translation') then
+        if(not($tei) and $resource-type eq 'translation') then
             $collection//tei:sourceDesc/tei:bibl[@key = $resource-id-lowercase][1]/ancestor::tei:TEI
-        else if($resource-type = ('knowledgebase', 'section')) then
-            $collection//tei:publicationStmt/tei:idno[@type eq 'eft-kb-id'][text() eq $resource-id-lowercase][1]/ancestor::tei:TEI
-        else ()
+        else if(not($tei) and $resource-type = ('knowledgebase', 'section')) then
+            $collection//tei:publicationStmt/tei:idno[range:eq(., $resource-id-lowercase)][@type eq 'eft-kb-id'][1]/ancestor::tei:TEI
+        else 
+            $tei
     
-    (: Fallback to UT number :)
-    let $resource-id-uppercase := upper-case($resource-id)
-    let $tei := 
-        if(not($tei)) then
-            $collection//tei:publicationStmt/tei:idno/id($resource-id-uppercase)/ancestor::tei:TEI
-        else $tei
-        
     return $tei
     
 };
@@ -392,6 +390,7 @@ declare function tei-content:last-modified($tei as element(tei:TEI)) as xs:dateT
     xmldb:last-modified(util:collection-name($tei), util:document-name($tei))
 };
 
+
 declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as xs:string) as xs:boolean {
 
     let $translation-id := tei-content:id($tei)
@@ -404,13 +403,24 @@ declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as x
     
 };
 
+declare function tei-content:max-xml-id-int($tei) as xs:integer? {
+    let $text-id := tei-content:id($tei)
+    return
+        max($tei//@xml:id ! substring-after(., concat($text-id, '-')) ! tokenize(., '-')[1][functx:is-a-number(.)] ! common:integer(.))
+};
+
+declare function tei-content:next-xml-id($text-id as xs:string, $next-int as xs:integer) as xs:string {
+    string-join(($text-id, $next-int ! xs:string(.)), '-')
+};
+
 declare function tei-content:next-xml-id($tei as element(tei:TEI)) as xs:string {
 
-    let $translation-id := tei-content:id($tei)
-    let $max-id := max($tei//@xml:id ! substring-after(., concat($translation-id, '-')) ! tokenize(., '-')[1][functx:is-a-number(.)] ! common:integer(.))
-    let $next-id := sum(($max-id, 1))
+    let $text-id := tei-content:id($tei)
+    let $max-int := tei-content:max-xml-id-int($tei)
+    let $next-int := sum(($max-int, 1))
+    where $text-id gt '' and $next-int gt 0
     return
-        string-join(($translation-id, $next-id ! xs:string(.)), '-')
+        tei-content:next-xml-id($text-id, $next-int)
     
 };
 
@@ -641,12 +651,12 @@ declare function tei-content:status-updates($tei as element()) as element(m:stat
                 else ()
                 ,
                 
-                if ($change[@type eq 'text-version'] and $change[@status ! replace(., '[^0-9\.]', '') eq $translation-status]) then
+                if ($change[@type eq 'text-version'] and $change[@status ! replace(., '[^0-9\.]', '') eq $tei-version-number-str ]) then
                     attribute current-version { true() }
                 else ()
                 ,
                 
-                $change/tei:desc/text()
+                $change/descendant::text()
                 
             }
     }
