@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -378,7 +378,6 @@
                                     
                                     <xsl:if test="$parts-with-content[@type eq 'bibliography']">
                                         <section id="bibliography" class="tei-parser">
-                                            <!--<hr class="hidden-print"/>-->
                                             <xsl:apply-templates select="$article/m:part[@type eq 'bibliography']/*"/>
                                         </section>
                                     </xsl:if>
@@ -386,7 +385,7 @@
                                     <xsl:if test="$notes-with-content">
                                         <section id="end-notes" class="tei-parser">
                                             <!--<hr class="hidden-print"/>-->
-                                            <xsl:call-template name="end-notes">
+                                           <xsl:call-template name="end-notes">
                                                 <xsl:with-param name="end-notes" select="$notes-with-content"/>
                                             </xsl:call-template>
                                         </section>
@@ -394,7 +393,6 @@
                                     
                                     <xsl:if test="$parts-with-content[@type eq 'section'] and $article/m:part[@type eq 'glossary']/tei:gloss">
                                         <section id="glossary" class="tei-parser">
-                                            <!--<hr class="hidden-print"/>-->
                                             <xsl:call-template name="glossary"/>
                                         </section>
                                     </xsl:if>

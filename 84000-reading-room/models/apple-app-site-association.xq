@@ -35,6 +35,7 @@ declare option exist:serialize "method=json media-type=text/javascript";
             <appIDs>L8R7M2F4B8.co.84000.reader</appIDs>
             {
                 for $bibl in $tei-content:translations-collection//tei:fileDesc[tei:publicationStmt/tei:availability/@status = '1']/tei:sourceDesc/tei:bibl[@key]
+                order by $bibl/@key ! replace(., '^toh([0-9]+).*', '$1') ! xs:integer(.), $bibl/@key
                 return
                     <paths>/translation/{ $bibl/@key/string() }.html</paths>
             }

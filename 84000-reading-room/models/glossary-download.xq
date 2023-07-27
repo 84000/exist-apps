@@ -29,6 +29,7 @@ let $cache-key := common:cache-key-latest($request)
 
 where $cache-key
 return
+    
     if($request/@resource-suffix = ('xlsx')) then
         
         let $spreadsheet := common:cache-get($request, $cache-key) 
@@ -41,7 +42,7 @@ return
         
         let $txt := common:cache-get($request, $cache-key) 
         return (
-            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '-', $request/@key,'.txt')),
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '-', $request/@key, '.txt')),
             response:stream-binary($txt, 'text/plain')
         )
     
@@ -49,7 +50,7 @@ return
         
         let $dict := common:cache-get($request, $cache-key) 
         return (
-            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '-', $request/@key,'.dict.zip')),
+            response:set-header("Content-Disposition", "attachment; filename=" || concat($cache-key, '-', $request/@key, '.dict.zip')),
             response:stream-binary($dict, 'application/zip')
         )
     

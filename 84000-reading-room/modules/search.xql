@@ -21,13 +21,20 @@ import module namespace entities="http://read.84000.co/entities" at "entities.xq
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 import module namespace functx="http://www.functx.com";
 
+declare variable $search:data-types := 
+    <search-data xmlns="http://read.84000.co/ns/1.0">
+        <type id="translations">Translations</type>
+        <type id="knowledgebase">Knowledge Base</type>
+        <type id="glossary">Glossary</type>
+    </search-data>;
+
 declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
 
-    search:search($request, '', $first-record, $max-records)
+    search:search($request, $search:data-types/m:type, '', $first-record, $max-records)
     
 };
 
-declare function search:search($request as xs:string, $resource-id as xs:string, $first-record as xs:double, $max-records as xs:double) as element(m:tei-search) {
+declare function search:search($request as xs:string, $data-types as element(m:type)*, $resource-id as xs:string, $first-record as xs:double, $max-records as xs:double) as element(m:tei-search) {
     
     (: Search translations, sections, knowledgebase and shared definitions :)
     let $translations-tei := collection($common:translations-path)//tei:TEI
@@ -57,18 +64,30 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
         if($single-tei) then
             $single-tei
         else (
-            $translations-tei
-            | $knowledgebase-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
-            | $sections-tei
+            if($data-types[@id = ('translations','glossary')]) then
+                $translations-tei
+            else ()
+            ,
+            if($data-types[@id eq 'knowledgebase']) then (
+                $knowledgebase-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+                | $sections-tei
+            )
+            else ()
         )
     
     let $published := 
         if($single-tei) then
             $single-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $single-render-status]
         else (
-            $translations-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $translation-render-status]
-            | $knowledgebase-tei
-            | $sections-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+            if($data-types[@id = ('translations','glossary')]) then
+                $translations-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $translation-render-status]
+            else ()
+            ,
+            if($data-types[@id eq 'knowledgebase']) then (
+                $knowledgebase-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+                | $sections-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+            )
+            else ()
         )
    
     let $entities-definitions :=
@@ -90,75 +109,92 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
     
     let $query := local:search-query($request-no-quotes, $request-is-phrase)
     
-    let $results := 
+    let $results := (
         (: Header content :)
-        $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
-        | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
-        | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
-        (: Text content :)
-        | $published/tei:text//tei:p[not(parent::tei:gloss)][ft:query(., $query, $options)]
-        | $published/tei:text//tei:label[ft:query(., $query, $options)]
-        | $published/tei:text//tei:table[ft:query(., $query, $options)]
-        | $published/tei:text//tei:head[ft:query(., $query, $options)]
-        | $published/tei:text//tei:lg[ft:query(., $query, $options)]
-        (: For now force tei:item/tei:p :)
-        (:| $published/tei:text//tei:item[ft:query(., $query, $options)]:)
-        | $published/tei:text//tei:ab[ft:query(., $query, $options)]
-        | $published/tei:text//tei:trailer[ft:query(., $query, $options)]
-        (: Back content :)
-        | $published/tei:text/tei:back//tei:bibl[@key][ft:query(., $query, $options)][@xml:id]
-        | $published/tei:text/tei:back//tei:gloss[ft:query(node(), $query, $options)][@xml:id][not(@mode eq 'surfeit')][ancestor::tei:div[@type eq 'glossary'][not(@status eq 'excluded')]]
-        | $entities-definitions[ft:query(., $query, $options)]
+        if($data-types[@id = ('translations','knowledgebase')]) then (
+            $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
+            | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
+            | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
+            (: Text content :)
+            | $published/tei:text//tei:p[not(parent::tei:gloss)][ft:query(., $query, $options)]
+            | $published/tei:text//tei:label[ft:query(., $query, $options)]
+            | $published/tei:text//tei:table[ft:query(., $query, $options)]
+            | $published/tei:text//tei:head[ft:query(., $query, $options)]
+            | $published/tei:text//tei:lg[ft:query(., $query, $options)]
+            (: For now force tei:item/tei:p :)
+            (:| $published/tei:text//tei:item[ft:query(., $query, $options)]:)
+            | $published/tei:text//tei:ab[ft:query(., $query, $options)]
+            | $published/tei:text//tei:trailer[ft:query(., $query, $options)]
+            (: Back content :)
+            | $published/tei:text/tei:back//tei:bibl[@key][ft:query(., $query, $options)][@xml:id]
+        )
+        else ()
+        ,
+        if($data-types[@id = ('translations','glossary')]) then
+            $published/tei:text/tei:back//tei:gloss[ft:query(node(), $query, $options)][@xml:id][not(@mode eq 'surfeit')][ancestor::tei:div[@type eq 'glossary'][not(@status eq 'excluded')]]
+        else ()
+        ,
+        if($data-types[@id  eq 'glossary']) then
+            $entities-definitions[ft:query(., $query, $options)]
+        else ()
+    )
     
     let $results-groups := (
     
         (: Group text results together :)
-        for $result in $results[not(ancestor-or-self::*[@rend eq 'default-text'])]
-        let $tei := $result/ancestor::tei:TEI[1]
-        let $group-id := $tei ! tei-content:id(.)
-        where $group-id
-        group by $group-id
-        return
-            element { QName('http://read.84000.co/ns/1.0', 'results-group') } { 
+        if($data-types[@id = ('translations','knowledgebase')]) then
+        
+            for $result in $results[not(ancestor-or-self::*[@rend eq 'default-text'])]
+            
+            let $tei := $result/ancestor::tei:TEI[1]
+            let $group-id := $tei ! tei-content:id(.)
+            
+            where $group-id
+            group by $group-id
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'results-group') } { 
+                    
+                    attribute id { $group-id },
+                    attribute type { tei-content:type($tei[1]) },
+                    attribute document-uri { base-uri($tei[1]) },
+                    
+                    for $single at $index in $result
+                    
+                    (: Get nearest id - required :)
+                    let $nearest-id :=
+                        if($single/ancestor::tei:fileDesc) then
+                            if($single[self::tei:title] and $single[not(@type eq 'mainTitle')]) then 'other-titles'
+                            else if($single[self::tei:title]) then 'titles'
+                            else if($single[self::tei:author][@role]) then 'other-authors'
+                            else 'authors'
+                        else
+                            $single/ancestor-or-self::*[not(@xml:id)][preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id
+                    
+                    let $nearest-id := if(not($nearest-id)) then ($single/ancestor-or-self::*[@xml:id][1]/@xml:id, $single/ancestor-or-self::tei:div[@type][1]/@type)[1] else $nearest-id
+                    
+                    (: Get score :)
+                    let $score := ft:score($single)[. gt 0]
+                    
+                    where $nearest-id
+                    group by $nearest-id
+                    
+                    (: Set a score for the group :)
+                    let $score-calc := max($score)
+                    return
+                        element result {
+                            attribute score { $score-calc },
+                            attribute nearest-id { $nearest-id },
+                            $single
+                        }
+                    
+                }
                 
-                attribute id { $group-id },
-                attribute type { tei-content:type($tei[1]) },
-                attribute document-uri { base-uri($tei[1]) },
-                
-                for $single at $index in $result
-                
-                (: Get nearest id - required :)
-                let $nearest-id :=
-                    if($single/ancestor::tei:fileDesc) then
-                        if($single[self::tei:title] and $single[not(@type eq 'mainTitle')]) then 'other-titles'
-                        else if($single[self::tei:title]) then 'titles'
-                        else if($single[self::tei:author][@role]) then 'other-authors'
-                        else 'authors'
-                    else
-                        $single/ancestor-or-self::*[not(@xml:id)][preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id
-                
-                let $nearest-id := if(not($nearest-id)) then ($single/ancestor-or-self::*[@xml:id][1]/@xml:id, $single/ancestor-or-self::tei:div[@type][1]/@type)[1] else $nearest-id
-                
-                (: Get score :)
-                let $score := ft:score($single)[. gt 0]
-                
-                where $nearest-id
-                group by $nearest-id
-                
-                (: Set a score for the group :)
-                let $score-calc := max($score)
-                return
-                    element result {
-                        attribute score { $score-calc },
-                        attribute nearest-id { $nearest-id },
-                        $single
-                    }
-                
-            }
+        else ()
         ,
         
         (: Group glossaries together :)
-        if(not($single-tei)) then
+        if(not($single-tei) and $data-types[@id  eq 'glossary']) then
+            
             for $result in $results[self::tei:gloss or parent::m:entity][not(ancestor-or-self::*[@rend eq 'default-text'])]
             
             let $entity :=
@@ -200,6 +236,7 @@ declare function search:search($request as xs:string, $resource-id as xs:string,
                         }
                     
                 }
+                
         else ()
     )
     

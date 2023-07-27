@@ -383,16 +383,16 @@ function common:bo-term($bo-ltn as xs:string) as xs:string {
     
     (: correct the spacing and spacing around underscores :)
     let $bo-ltn-underscores:= 
-        if ($bo-ltn) then
+        if ($bo-ltn gt '') then
             replace(replace(normalize-space($bo-ltn), ' __,__', '__,__'), '__,__', ' __,__')
         else
-            ""
+            ''
     
     (: add a shad :)
     let $bo-ltn-length := string-length($bo-ltn-underscores)
     let $bo-ltn-shad :=
         (: check there isn't already a shad :)
-        if(not(matches($bo-ltn-underscores, '/$'))) then
+        if($bo-ltn-length gt 0 and not(matches($bo-ltn-underscores, '/$'))) then
         
             (: these cases add a tshek and a shad :)
             if(substring($bo-ltn-underscores, ($bo-ltn-length - 2), 3) = ('ang','eng','ing','ong','ung')) then
@@ -418,10 +418,10 @@ function common:bo-term($bo-ltn as xs:string) as xs:string {
     
     (: convert to Tibetan unicode :)
     let $bo :=
-        if ($bo-ltn-shad ne "") then
+        if ($bo-ltn-shad gt '') then
             ewts:toUnicode($bo-ltn-shad)
         else
-            ""
+            ''
     
     return 
         xs:string($bo)
@@ -984,7 +984,7 @@ declare function common:cache-get($request as element(m:request), $cache-key as 
             else
                 util:binary-doc(concat($cache-collection, '/', $cache-filename))
         
-        where $cached
+        (: where $cached - can't test binary result :)
         return (
         
             if(response:exists() and $headers) then response:set-header('X-EFT-Cache', 'from-cache') else (),

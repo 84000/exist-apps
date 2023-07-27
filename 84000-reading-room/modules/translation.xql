@@ -172,7 +172,7 @@ declare function translation:title-variants($tei as element(tei:TEI), $source-ke
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'title-variants')} {
-            for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title except $mainTitles
+            for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type eq 'shortcode')] except $mainTitles
             where $title[normalize-space(text())]
             return
                 element {QName('http://read.84000.co/ns/1.0', 'title')} {

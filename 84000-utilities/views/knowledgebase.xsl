@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -15,95 +15,99 @@
         
         <xsl:variable name="content">
             
-            <form action="/knowledgebase.html" method="get" role="search" class="form-inline" data-loading="Searching...">
+            <div id="articles-list">
                 
-                <!-- Type checkboxes -->
-                <div class="center-vertical full-width">
+                <form action="/knowledgebase.html" method="get" role="search" class="form-inline" data-loading="Searching...">
                     
-                    <div>
-                        <div class="form-group">
+                    <!-- Type checkboxes -->
+                    <div class="center-vertical full-width">
+                        
+                        <div>
+                            <div class="form-group">
+                                
+                                <xsl:for-each select="m:request/m:article-types/m:type">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="article-type[]">
+                                                <xsl:attribute name="value" select="@id"/>
+                                                <xsl:if test="@selected eq 'selected'">
+                                                    <xsl:attribute name="checked" select="'checked'"/>
+                                                </xsl:if>
+                                            </input>
+                                            <xsl:value-of select="' ' || text()"/>
+                                        </label>
+                                    </div>
+                                </xsl:for-each>
+                                
+                                <select name="sort" class="form-control">
+                                    <option value="latest">
+                                        <xsl:if test="$request[@sort eq 'latest']">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Most recently updated'"/>
+                                    </option>
+                                    <option value="name">
+                                        <xsl:if test="$request[@sort eq 'name']">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Sort A-Z'"/>
+                                    </option>
+                                    <option value="status">
+                                        <xsl:if test="$request[@sort eq 'status']">
+                                            <xsl:attribute name="selected" select="'selected'"/>
+                                        </xsl:if>
+                                        <xsl:value-of select="'Sort by status'"/>
+                                    </option>
+                                </select>
+                                
+                                <button type="submit" class="btn btn-primary btn-sm" title="Search">
+                                    <i class="fa fa-refresh"/>
+                                    <xsl:value-of select="' Reload'"/>
+                                </button>
+                                
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <a target="84000-operations" class="btn btn-danger">
+                                <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
+                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
+                                <xsl:value-of select="'Add a new article'"/>
+                            </a>
+                        </div>
+                        
+                        <div>
                             
-                            <xsl:for-each select="m:request/m:article-types/m:type">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" name="article-type[]">
-                                            <xsl:attribute name="value" select="@id"/>
-                                            <xsl:if test="@selected eq 'selected'">
-                                                <xsl:attribute name="checked" select="'checked'"/>
-                                            </xsl:if>
-                                        </input>
-                                        <xsl:value-of select="' ' || text()"/>
-                                    </label>
-                                </div>
-                            </xsl:for-each>
-                            
-                            <select name="sort" class="form-control">
-                                <option value="latest">
-                                    <xsl:if test="$request[@sort eq 'latest']">
-                                        <xsl:attribute name="selected" select="'selected'"/>
-                                    </xsl:if>
-                                    <xsl:value-of select="'Most recently updated'"/>
-                                </option>
-                                <option value="name">
-                                    <xsl:if test="$request[@sort eq 'name']">
-                                        <xsl:attribute name="selected" select="'selected'"/>
-                                    </xsl:if>
-                                    <xsl:value-of select="'Sort A-Z'"/>
-                                </option>
-                                <option value="status">
-                                    <xsl:if test="$request[@sort eq 'status']">
-                                        <xsl:attribute name="selected" select="'selected'"/>
-                                    </xsl:if>
-                                    <xsl:value-of select="'Sort by status'"/>
-                                </option>
-                            </select>
-                            
-                            <button type="submit" class="btn btn-primary btn-sm" title="Search">
-                                <i class="fa fa-refresh"/>
-                                <xsl:value-of select="' Reload'"/>
-                            </button>
+                            <!-- Pagination -->
+                            <xsl:sequence select="common:pagination($request/@first-record, $request/@records-per-page, m:knowledgebase/@count-pages, $page-url)"/>
                             
                         </div>
-                    </div>
-                    
-                    <div>
-                        <a target="84000-operations" class="btn btn-danger">
-                            <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
-                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                            <xsl:attribute name="data-editor-callbackurl" select="common:internal-link($page-url, (), '#articles-list', $root/m:response/@lang)"/>
-                            <xsl:value-of select="'Add a new article'"/>
-                        </a>
-                    </div>
-                    
-                    <div>
-                        
-                        <!-- Pagination -->
-                        <xsl:sequence select="common:pagination($request/@first-record, $request/@records-per-page, m:knowledgebase/@count-pages, $page-url)"/>
                         
                     </div>
                     
-                </div>
+                </form>
                 
-            </form>
-            
-            <hr class="sml-margin"/>
-            
-            <xsl:choose>
-                <xsl:when test="m:knowledgebase/m:page">
-                    <div id="articles-list" class="div-list no-border-top">
-                        <xsl:for-each select="m:knowledgebase/m:page">
-                            <xsl:apply-templates select="."/>
-                        </xsl:for-each>
-                    </div>
-                </xsl:when>
-                <xsl:otherwise>
-                    <div id="articles-list" class="text-center text-muted">
-                        <p class="italic">
-                            <xsl:value-of select="'~ No matches for this query ~'"/>
-                        </p>
-                    </div>
-                </xsl:otherwise>
-            </xsl:choose>
+                <hr class="sml-margin"/>
+                
+                <xsl:choose>
+                    <xsl:when test="m:knowledgebase/m:page">
+                        <div class="div-list no-border-top">
+                            <xsl:for-each select="m:knowledgebase/m:page">
+                                <xsl:apply-templates select="."/>
+                            </xsl:for-each>
+                        </div>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <div class="text-center text-muted">
+                            <p class="italic">
+                                <xsl:value-of select="'~ No matches for this query ~'"/>
+                            </p>
+                        </div>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+            </div>
             
             <hr class="sml-margin"/>
             
@@ -133,7 +137,7 @@
             <div class="center-vertical full-width sml-margin bottom">
                 
                 <div>
-                    <span class="text-bold">
+                    <span class="h3">
                         <xsl:value-of select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
                     </span>
                     <small>

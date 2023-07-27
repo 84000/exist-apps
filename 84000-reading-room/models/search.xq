@@ -14,14 +14,16 @@ import module namespace functx = "http://www.functx.com";
 let $search := request:get-parameter('search', request:get-parameter('s', ''))
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-
+    
 let $search-langs := 
     <search-langs xmlns="http://read.84000.co/ns/1.0">
         <lang id="en" short-code="Eng">English</lang>
         <lang id="bo" short-code="Tib">Tibetan</lang>
     </search-langs>
-    
+
 let $search-langs := common:add-selected-children($search-langs, request:get-parameter('search-lang', 'en'))
+
+let $search-data := common:add-selected-children($search:data-types, request:get-parameter('search-data[]', ''))
 
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then
@@ -43,6 +45,7 @@ let $request :=
         attribute max-records { 15 },
         attribute specified-text { request:get-parameter('specified-text', '') },
         $search-langs,
+        $search-data,
         element search { $search }
     }
 
@@ -50,7 +53,7 @@ let $results :=
     if($request/@search-type eq 'tm' and compare($search, '') gt 0) then
         search:tm-search($search, $request/@search-lang, $request/@first-record, $request/@max-records, if($request/@search-glossary) then true() else false())
     else if(compare($search, '') gt 0) then 
-        search:search($search, $request/@specified-text, $request/@first-record, $request/@max-records)
+        search:search($search, $search-data/m:type[@selected eq 'selected'], $request/@specified-text, $request/@first-record, $request/@max-records)
     else ()
 
 (: Get related entities data :)

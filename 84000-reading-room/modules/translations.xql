@@ -370,12 +370,10 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute status { tei-content:publication-status($tei) },
             attribute status-group { tei-content:publication-status-group($tei) },
             $toh,
+            tei-content:source($tei, $toh-key),
+            tei-content:ancestors($tei, $toh-key, 0),
             translation:titles($tei, $toh/@key),
             translation:title-variants($tei, $toh/@key),
-            (:tei-content:source-bibl($tei, $toh-key),:)
-            tei-content:source($tei, $toh-key),
-            (:translation:location($tei, $toh-key),:)
-            tei-content:ancestors($tei, $toh-key, 0),
             translation:publication($tei),
             translation:publication-status($tei//tei:sourceDesc/tei:bibl[@key eq $toh/@key], ()),
             translation:contributors($tei, false()),

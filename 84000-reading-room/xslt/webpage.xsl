@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -66,16 +66,16 @@
             <xsl:when test="upper-case(/m:response/m:section/@id) eq 'ALL-TRANSLATED'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/section/all-translated.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="upper-case(/m:response/m:section/@id) eq 'LOBBY'">
+            <xsl:when test="/m:response/@model eq 'section'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/section/lobby.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'search'">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/search.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model eq 'glossary'">
+            <xsl:when test="/m:response/@model = ('glossary', 'glossary-entry')">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/glossary/search.html', (), '', $lang)"/>
             </xsl:when>
-            <xsl:when test="/m:response/@model eq 'knowledgebase'">
+            <xsl:when test="/m:response/@model = ('knowledgebase', 'knowledgebase-article')">
                 <xsl:value-of select="common:internal-link('https://read.84000.co/knowledgebase.html', (), '', $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/sponsors'">

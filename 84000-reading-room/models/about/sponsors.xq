@@ -26,12 +26,12 @@ let $sponsor-ids := $sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('found
 let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
 let $sponsored-texts := translations:sponsored-texts()
 
-(:let $entities := 
+let $entities := 
     element { QName('http://read.84000.co/ns/1.0', 'entities') }{
         let $attribution-ids := $sponsored-texts//m:attribution/@xml:id
         return 
-            $entities:entities/m:instance[@id = $attribution-ids]/parent::m:entity
-    }:)
+            $entities:entities//m:instance[@id = $attribution-ids]/parent::m:entity
+    }
 
 let $xml-response :=
     common:response(
@@ -45,8 +45,8 @@ let $xml-response :=
                 <value key="#feSiteUrl">{ $common:environment/m:url[@id eq 'front-end'][1]/text() }</value>
             </replace-text>,
             $sponsors,
-            $sponsored-texts(:,
-            $entities:)
+            $sponsored-texts,
+            $entities
         )
     )
 

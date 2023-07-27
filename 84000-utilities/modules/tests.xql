@@ -29,7 +29,7 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
         else if ($translation-id eq 'in-markup') then 
             $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:marked-up-status-ids[not(. = $translation:published-status-ids)]]
         else
-            tei-content:tei(lower-case($translation-id), 'translation')
+            tei-content:tei($translation-id, 'translation')
     
     let $test-config := $common:environment//m:test-conf
     let $credentials := $test-config/m:credentials/data() ! tokenize(., ':')
@@ -91,44 +91,44 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                             tests:part(
                                 $tei//tei:front//tei:div[@type eq 'summary'][not(@xml:lang) or @xml:lang eq 'en'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-summary')], 
-                                'summary', 1),
+                                $toh-key, 'summary', 1),
                             tests:part(
                                 $tei//tei:front//tei:div[@type eq 'acknowledgment'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-acknowledgment')],
-                                'acknowledgment', 1),
+                                $toh-key, 'acknowledgment', 1),
                             tests:part(
                                 $tei//tei:front//tei:div[@type eq 'preface'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-preface')], 
-                                'preface', 0),
+                                $toh-key, 'preface', 0),
                             tests:part(
                                 $tei//tei:front//tei:div[@type eq 'introduction'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-introduction')], 
-                                'introduction', 1),
+                                $toh-key, 'introduction', 1),
                             tests:part(
                                 $tei//tei:body//tei:div[@type eq 'prologue'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-prologue')], 
-                                'prologue', 0),
+                                $toh-key, 'prologue', 0),
                             tests:part(
                                 $tei//tei:body//tei:div[@type eq 'homage'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-homage')], 
-                                'homage', 0),
+                                $toh-key, 'homage', 0),
                             tests:part(
                                 element tei:div {
-                                    $tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
+                                    $tei//tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')][not(@decls = $tei//tei:bibl[@type eq 'translation-blocks']/tei:citedRange[not(@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id)]/@xml:id ! concat('#',.))]
                                 },
                                 element xhtml:div {
                                     $toh-html//xhtml:section[common:contains-class(@class, ('part-type-chapter', 'part-type-section'))]
                                 }, 
-                                'body', 1),
+                                $toh-key, 'body', 1),
                             tests:part(
                                 $tei//tei:body//tei:div[@type eq 'colophon'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-colophon')], 
-                                'colophon', 0),
+                                $toh-key, 'colophon', 0),
                             tests:part(
                                 $tei//tei:back//tei:div[@type eq 'appendix'], 
                                 $toh-html//xhtml:section[common:contains-class(@class, 'part-type-appendix')], 
-                                'appendix', 0),
-                            tests:notes($tei, $toh-html),
+                                $toh-key, 'appendix', 0),
+                            tests:notes($tei, $toh-html, $toh-key),
                             tests:abbreviations($tei, $toh-html),
                             tests:bibliography($tei, $toh-html),
                             tests:glossary($tei, $toh-html),
@@ -193,8 +193,8 @@ declare function tests:sections($section-id as xs:string) as element(m:results) 
                         tests:duplicate-ids($tei),
                         tests:scoped-ids($tei),
                         tests:outline-context($tei, $resource-id),
-                        tests:part($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'abstract'], 'abstract', 0),
-                        tests:part($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'about'], 'about', 0),
+                        tests:part($tei//tei:front//tei:div[@type eq 'abstract'], $html//*[@id eq 'abstract'], '', 'abstract', 0),
+                        tests:part($tei//tei:body//tei:div[@type eq 'about'], $html//*[@id eq 'about'], '', 'about', 0),
                         tests:section-tantra-warning($tei, $html)
                     }
                     </tests>
@@ -386,37 +386,37 @@ declare function tests:complete-source($toh-html as document-node()) as element(
         </test>
 };
 
-declare function tests:part($section-tei as element()*, $section-html as element()*, $section-name as xs:string, $required-paragraphs as xs:integer) as element(m:test) {
+declare function tests:part($section-tei as element()*, $section-html as element()*, $toh-key as xs:string, $section-name as xs:string, $required-paragraphs as xs:integer) as element(m:test) {
     
     let $section-tei-type := $section-tei/ancestor::tei:TEI/tei:teiHeader/tei:fileDesc/@type
     
     let $section-tei-p := 
-        $section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl][not(ancestor::tei:note)]
+        $section-tei//*[self::tei:p | self::tei:ab | self::tei:trailer | self::tei:bibl][not(ancestor::tei:note)][not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])]
     let $section-html-p := 
         $section-html//xhtml:p[not(common:contains-class(@class, ('ref-prologue', 'table-as-list-row', 'table-note')))]
         
     let $section-tei-line := 
-        $section-tei//tei:l[not(ancestor::tei:note)]
+        $section-tei//tei:l[not(ancestor::tei:note)][not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])]
     let $section-html-line := 
         $section-html//xhtml:div[common:contains-class(@class, 'line')]
     
     let $section-tei-note := 
-        $section-tei//tei:note[@place eq 'end'][@xml:id]
+        $section-tei//tei:note[@place eq 'end'][@xml:id][not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])]
     let $section-html-note := 
         $section-html//xhtml:a[common:contains-class(@class, 'footnote-link')]
         
     let $section-tei-q := 
-        $section-tei//tei:q[not(ancestor::tei:note)]
+        $section-tei//tei:q[not(ancestor::tei:note)][not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])]
     let $section-html-q := 
         $section-html//xhtml:blockquote | $section-html//xhtml:span[common:contains-class(@class, ('quote'))]
     
     let $section-tei-id := 
-        $section-tei//*[@tid][not(ancestor::tei:note)]/@tid/string() ! concat('node-',.)
+        $section-tei//*[@tid][not(ancestor::tei:note)][not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])]/@tid/string() ! concat('node-',.)
     let $section-html-id := 
         $section-html//*[matches(@id, '^node\-')]/@id/string()
     
     let $section-tei-list-item := 
-        $section-tei//tei:list[not(ancestor::tei:note)]/tei:item
+        $section-tei//tei:list[not(ancestor::tei:note)]/tei:item[not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])]
     let $section-html-list-item := 
         $section-html//xhtml:div[common:contains-class(@class, 'list-item')]
     
@@ -427,7 +427,7 @@ declare function tests:part($section-tei as element()*, $section-html as element
     :)
     
     let $section-tei-milestones := 
-        if(not($section-tei-type eq 'section')) then $section-tei//tei:milestone else ()
+        if(not($section-tei-type eq 'section')) then $section-tei//tei:milestone[not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])] else ()
     let $section-html-milestones := 
         $section-html//xhtml:a[common:contains-class(@class, 'milestone from-tei')]
     
@@ -499,9 +499,9 @@ declare function tests:part($section-tei as element()*, $section-html as element
         </test>
 };
 
-declare function tests:notes($tei as element(tei:TEI)*, $html as document-node()*) as element(m:test) {
+declare function tests:notes($tei as element(tei:TEI)*, $html as document-node()*, $toh-key as xs:string) as element(m:test) {
     
-    let $notes-count-tei := count($tei//tei:text//tei:note[@place eq 'end'][@xml:id])
+    let $notes-count-tei := count($tei//tei:text//tei:note[@place eq 'end'][@xml:id][not($toh-key gt '') or not(ancestor-or-self::tei:*[@key][not(@key eq $toh-key)])])
     let $notes-count-html := count($html//xhtml:section[@id eq 'end-notes']/*[common:contains-class(@class, 'footnote')])
     
     return

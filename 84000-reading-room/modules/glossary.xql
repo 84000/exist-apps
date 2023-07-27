@@ -481,10 +481,13 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                             
                             (: Authors :)
                             for $author in $tei[1]//tei:titleStmt/tei:author[@role eq "translatorEng"]
+                            let $author-entity := $contributors:contributors//m:instance[range:eq(@id, $author/@xml:id)][1]/parent::*[@xml:id]
                             return (
                                 text{ common:ws(3) }, 
-                                element translator { attribute uri { concat('http://purl.84000.co/resource/core/eft:', $contributors:contributors//m:instance[@id eq $author/@xml:id][1]/parent::*/@xml:id) },
-                                normalize-space(text()) } 
+                                element translator { 
+                                    attribute uri { $author-entity ! concat('http://purl.84000.co/resource/core/eft:', @xml:id) }, 
+                                    normalize-space($author/text()) 
+                                } 
                             ),
                             
                             (: Definition :)

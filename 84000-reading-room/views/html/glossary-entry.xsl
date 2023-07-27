@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -877,6 +877,7 @@
                                     
                                     <input type="hidden" name="form-action" value="glossary-definition-use"/>
                                     <input type="hidden" name="use-definition" value=""/>
+                                    <input type="hidden" name="resource-id" value="{ $text/@id }"/>
                                     <input type="hidden" name="glossary-id" value="{ $entry/@id }"/>
                                     <input type="hidden" name="return" value="none"/>
                                     
@@ -899,6 +900,7 @@
                                     
                                     <input type="hidden" name="form-action" value="glossary-definition-use"/>
                                     <input type="hidden" name="use-definition" value="override"/>
+                                    <input type="hidden" name="resource-id" value="{ $text/@id }"/>
                                     <input type="hidden" name="glossary-id" value="{ $entry/@id }"/>
                                     <input type="hidden" name="return" value="none"/>
                                     
@@ -922,6 +924,7 @@
                                     
                                     <input type="hidden" name="form-action" value="glossary-definition-use"/>
                                     <input type="hidden" name="use-definition" value="incompatible"/>
+                                    <input type="hidden" name="resource-id" value="{ $text/@id }"/>
                                     <input type="hidden" name="glossary-id" value="{ $entry/@id }"/>
                                     <input type="hidden" name="return" value="none"/>
                                     

@@ -133,6 +133,15 @@
                                     <xsl:value-of select="'Check robots.txt definition for directing robots.'"/>
                                 </p>
                             </li>
+                            <li>
+                                <a target="apple-app-site-association">
+                                    <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'reading-room']/text(), '/.well-known/apple-app-site-association')"/>
+                                    <xsl:value-of select="'apple-app-site-association'"/>
+                                </a>
+                                <p class="text-muted small">
+                                    <xsl:value-of select="'Check apple-app-site-association file for texts included in the apps.'"/>
+                                </p>
+                            </li>
                         </ul>
                     </div>
                 </div>

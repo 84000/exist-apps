@@ -952,12 +952,12 @@ declare function update-tei:glossary-definition-use($tei as element(tei:TEI), $g
     
     let $entry := $tei/id($glossary-id)[self::tei:gloss]
     let $definition := $entry/tei:note[@type eq 'definition']
-    let $request-value := request:get-parameter('use-definition', 'no-value-submitted')[. = ('', 'both', 'append', 'prepend', 'override', 'incompatible')]
+    let $request-value := request:get-parameter('use-definition', '')[. = ('', 'both', 'append', 'prepend', 'override', 'incompatible')]
     
     where $entry
     return
-        (: No value sublitted :)
-        if($definition[@rend] and $request-value eq 'no-value-submitted') then
+        (: No value submitted :)
+        if($definition[@rend] and $request-value eq '') then
             update delete $definition/@rend
         
         (: Update @rend :)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -72,12 +72,35 @@
                             <table class="table no-border full-width table-transparent">
                                 <tbody>
                                     <xsl:for-each select="m:publication-status">
-                                        <tr>
+                                        <tr class="vertical-middle">
                                             <td class="small nowrap">
                                                 <xsl:value-of select="concat(fn:format-number(xs:integer(@count-pages),'#,##0'), ' pages ')"/>
                                             </td>
                                             <td class="nowrap text-right">
-                                                <xsl:sequence select="common:translation-status(@status-group)"/>
+                                                <span>
+                                                    <xsl:choose>
+                                                        <xsl:when test="@status-group eq 'published'">
+                                                            <xsl:attribute name="class" select="'label label-success'"/>
+                                                            <xsl:value-of select="concat(@status, ' / ', 'Published')"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="@status-group eq 'translated'">
+                                                            <xsl:attribute name="class" select="'label label-warning'"/>
+                                                            <xsl:value-of select="concat(@status, ' / ', 'Translated')"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="@status-group eq 'in-translation'">
+                                                            <xsl:attribute name="class" select="'label label-warning'"/>
+                                                            <xsl:value-of select="concat(@status, ' / ', 'In-translation')"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="@status-group eq 'in-application'">
+                                                            <xsl:attribute name="class" select="'label label-danger'"/>
+                                                            <xsl:value-of select="concat(@status, ' / ', 'Application pending')"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="class" select="'label label-default'"/>
+                                                            <xsl:value-of select="concat(@status, ' / ', 'Not published')"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </span>
                                             </td>
                                         </tr>
                                     </xsl:for-each>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
 
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -76,7 +76,7 @@
                             <p>
                                 <xsl:value-of select="'This is a provisional page for browsing the articles. '"/>
                                 <xsl:value-of select="'To search for articles please use the '"/>
-                                <a href="/search.html">
+                                <a href="/search.html?search-type=tei&amp;search-data[]=knowledgebase">
                                     <xsl:value-of select="'publications search'"/>
                                 </a>
                                 <xsl:value-of select="'.'"/>
@@ -100,7 +100,7 @@
                                         <p class="small">Otherwise just search the Google Drive and add your content there. The owner of the document will automatically be notified of your changes. Once an article has enough content it can be passed onto the digital editors to publish the article.</p>
                                         <ul class="list-inline inline-dots">
                                             <li>
-                                                <a href="/search.html" target="_self" class="editor">
+                                                <a href="/search.html?search-type=tei&amp;search-data[]=knowledgebase" target="_self" class="editor">
                                                     <xsl:value-of select="'Search for articles'"/>
                                                 </a>
                                             </li>
@@ -113,7 +113,7 @@
                                                 <a target="84000-operations" class="editor">
                                                     <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
                                                     <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-link($page-url, m:view-mode-parameter('editor'), '#articles-list', $root/m:response/@lang)"/>
+                                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($reading-room-path, '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest', 'view-mode=editor'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
                                                     <xsl:value-of select="'Start a new article'"/>
                                                 </a>
                                             </li>
@@ -132,7 +132,7 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div id="articles-list" class="row">
                         <div class="col-sm-offset-1 col-sm-10">
 
                             <form action="/knowledgebase.html" method="get" role="search" class="form-inline form-filter" data-loading="Searching...">
@@ -211,7 +211,7 @@
                                 <xsl:when test="m:knowledgebase/m:page">
 
                                     <!-- Articles list -->
-                                    <div id="articles-list" class="list-group accordion">
+                                    <div class="list-group accordion">
 
                                         <xsl:for-each select="m:knowledgebase/m:page">
 
@@ -357,7 +357,7 @@
 
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <div id="articles-list" class="text-center text-muted">
+                                    <div class="text-center text-muted">
                                         <p class="italic">
                                             <xsl:value-of select="'~ No matches for this query ~'"/>
                                         </p>

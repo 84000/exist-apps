@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -104,7 +104,7 @@
                             
                             <!-- TEI search tab -->
                             <li role="presentation">
-                                <xsl:if test="not(m:request/@search-type eq 'tm')">
+                                <xsl:if test="not($request/@search-type eq 'tm')">
                                     <xsl:attribute name="class" select="'active'"/>
                                 </xsl:if>
                                 <a>
@@ -116,7 +116,7 @@
                             
                             <!-- TM search tab -->
                             <li role="presentation" class="icon">
-                                <xsl:if test="m:request/@search-type eq 'tm'">
+                                <xsl:if test="$request/@search-type eq 'tm'">
                                     <xsl:attribute name="class" select="'active'"/>
                                 </xsl:if>
                                 <a>
@@ -133,7 +133,7 @@
                     <xsl:choose>
                         
                         <!-- TM search -->
-                        <xsl:when test="m:request/@search-type eq 'tm'">
+                        <xsl:when test="$request/@search-type eq 'tm'">
                             
                             <p class="text-center text-muted small">
                                 <xsl:value-of select="'Search our Translation Memory files to find translations aligned with the Tibetan source.'"/>
@@ -201,6 +201,24 @@
                     <input type="hidden" name="lang" value="{ $request/@lang }"/>
                     <input type="hidden" name="search-type" value="tei"/>
                     
+                    <xsl:if test="not($specified-text)">
+                        <div class="form-group align-center bottom-margin">
+                            <xsl:for-each select="$request/m:search-data/m:type">
+                                <div class="checkbox-inline">
+                                    <label>
+                                        <input type="checkbox" name="search-data[]">
+                                            <xsl:attribute name="value" select="@id"/>
+                                            <xsl:if test="@selected eq 'selected' or not($request/m:search-data/m:type[@selected eq 'selected'])">
+                                                <xsl:attribute name="checked" select="'checked'"/>
+                                            </xsl:if>
+                                        </input>
+                                        <xsl:value-of select="' ' || text()"/>
+                                    </label>
+                                </div>
+                            </xsl:for-each>
+                        </div>
+                    </xsl:if>
+                    
                     <div class="input-group">
                         <input type="search" name="search" id="search" class="form-control" aria-label="Search text" placeholder="Search" required="required">
                             <xsl:attribute name="value" select="$request/m:search"/>
@@ -212,18 +230,20 @@
                         </span>
                     </div>
                     
-                    <xsl:if test="$specified-text">
-                        <input type="hidden" name="specified-text" value="{ $specified-text/@resource-id }"/>
-                        <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
-                            <xsl:value-of select="concat('in ', $specified-text/m:titles/m:title[@xml:lang eq 'en'][1] , ' / ', $specified-text/m:bibl/m:toh/m:full[1])"/>
-                            <span class="pull-right">
-                                <a class="inline-block alert-link">
-                                    <xsl:attribute name="href" select="$base-url"/>
-                                    <xsl:value-of select="'remove filter'"/>
-                                </a>
-                            </span>
-                        </div>
-                    </xsl:if>
+                    <xsl:choose>
+                        <xsl:when test="$specified-text">
+                            <input type="hidden" name="specified-text" value="{ $specified-text/@resource-id }"/>
+                            <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
+                                <xsl:value-of select="concat('in ', $specified-text/m:titles/m:title[@xml:lang eq 'en'][1] , ' / ', $specified-text/m:bibl/m:toh/m:full[1])"/>
+                                <span class="pull-right">
+                                    <a class="inline-block alert-link">
+                                        <xsl:attribute name="href" select="$base-url"/>
+                                        <xsl:value-of select="'remove filter'"/>
+                                    </a>
+                                </span>
+                            </div>
+                        </xsl:when>
+                    </xsl:choose>
                     
                 </form>
             </div>

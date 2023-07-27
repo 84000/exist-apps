@@ -128,8 +128,7 @@ let $cache-key :=
 let $cached := common:cache-get($request, $cache-key)
 
 return 
-    if($cached) then 
-        $cached 
+    if($cached) then $cached 
     
     else
         

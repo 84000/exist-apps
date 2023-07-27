@@ -77,7 +77,7 @@ declare function local:permanent-ids($doc) {
             (:| $tei//tei:sourceDesc/tei:bibl/tei:citedRange - add these manually:)
         )
         
-        (: Add any missing, empty or duplicate @xml:ids :)
+        (: Add any missing, empty or duplicate @xml:ids (duplicate tests too slow for production) :)
         let $elements-missing-id := $elements[not(@xml:id) or @xml:id eq '' (:or not(position() eq min(index-of($elements/@xml:id/string(), @xml:id/string()))):)]
         
         where $elements-missing-id
