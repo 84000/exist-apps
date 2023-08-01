@@ -52,7 +52,7 @@ let $content :=
         $etext-page,
         search:tm-search($search, $lang, $first-record, 10, true()),
         source:etext-volumes($work, xs:integer($volume)),
-        contributors:persons(false(), false())
+        contributors:persons(false())
     )
     else if($tab eq 'translations') then 
         translations:texts($translation:published-status-ids, (), '', '', '', false())

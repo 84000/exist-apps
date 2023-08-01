@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -494,7 +494,8 @@
         
         <xsl:param name="strings" as="xs:string*"/>
         <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
-        <xsl:value-of select="concat('(^|[^\w­])(', $strings-combined, ')(s|es|''s|s'')?([^\w­]|$)')"/>
+        <!-- The word bounded by non-word characters, start or end -->
+        <xsl:value-of select="concat('(^|[^\w­])(', $strings-combined, ')(s|es|''s)?([^\w­]|$)')"/>
         
     </xsl:function>
     
@@ -502,7 +503,8 @@
         
         <xsl:param name="strings" as="xs:string*"/>
         <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
-        <xsl:value-of select="concat('^\s*(', $strings-combined, ')(s|es|''s|s'')?\s*$')"/>
+        <!-- The word bounded by spaces, start or end -->
+        <xsl:value-of select="concat('^\s*(', $strings-combined, ')(s|es|''s|s''|es'')?\s*$')"/>
         
     </xsl:function>
     

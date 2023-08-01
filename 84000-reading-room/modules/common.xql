@@ -1033,8 +1033,8 @@ declare function common:cache-put($request as element(m:request), $data, $cache-
                     (:string-join(($parent, $dir), '/'),:)
                     xmldb:create-collection($parent, $dir),
                     sm:chgrp(xs:anyURI(string-join(($parent, $dir), '/')), 'guest'),
-                    sm:chmod(xs:anyURI(string-join(($parent, $dir), '/')), 'rwxrwxrwx'),
-                    util:log('info', concat('Cache created: ', $cache-collection, '/', $cache-filename))
+                    sm:chmod(xs:anyURI(string-join(($parent, $dir), '/')), 'rwxrwxrwx')(:,
+                    util:log('info', concat('Cache folder created: ', string-join(($parent, $dir), '/'))):)
                 )
                 
             )
@@ -1063,6 +1063,10 @@ declare function common:cache-put($request as element(m:request), $data, $cache-
                 sm:chmod(xs:anyURI(string-join(($cache-collection, $cache-filename), '/')), 'rwxrwxrwx')
             )
             else ()
+            ,
+            
+            util:log('info', concat('Cache created: ', $cache-collection, '/', $cache-filename))
+            
     )
     
 };

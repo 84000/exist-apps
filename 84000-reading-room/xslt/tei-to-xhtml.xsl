@@ -691,6 +691,11 @@
                             
                             <xsl:value-of select="'pointer'"/>
                             
+                            <!-- If note use pop-up -->
+                            <xsl:if test="$target[self::m:end-note]/ancestor::m:pre-processed[@text-id eq $text-id]">
+                                <xsl:value-of select="'pop-up'"/>
+                            </xsl:if>
+                            
                             <!-- If id don't expand for printing -->
                             <xsl:if test="$target-type eq 'id'">
                                 <xsl:value-of select="'printable'"/>
@@ -1489,22 +1494,24 @@
                         <!-- Alternatives -->
                         <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type eq 'translationAlternative'][normalize-space(data())]"/>
                         <xsl:if test="($tei-editor or $view-mode[@id = ('annotation','tests')]) and $alternative-terms">
-                            <ul class="list-inline inline-dots hidden-print">
-                                <xsl:for-each select="$alternative-terms">
-                                    <li>
-                                        <span>
-                                            <xsl:call-template name="class-attribute">
-                                                <xsl:with-param name="base-classes" as="xs:string*">
-                                                    <xsl:value-of select="'term'"/>
-                                                    <xsl:value-of select="'alternative'"/>
-                                                </xsl:with-param>
-                                                <xsl:with-param name="lang" select="@xml:lang"/>
-                                            </xsl:call-template>
-                                            <xsl:apply-templates select="string-join(text()) ! normalize-space(.)"/>
-                                        </span>
-                                    </li>
-                                </xsl:for-each>
-                            </ul>
+                            <div>
+                                <ul class="list-inline inline-dots hidden-print">
+                                    <xsl:for-each select="$alternative-terms">
+                                        <li>
+                                            <span>
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="base-classes" as="xs:string*">
+                                                        <xsl:value-of select="'term'"/>
+                                                        <xsl:value-of select="'alternative'"/>
+                                                    </xsl:with-param>
+                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                </xsl:call-template>
+                                                <xsl:apply-templates select="string-join(text()) ! normalize-space(.)"/>
+                                            </span>
+                                        </li>
+                                    </xsl:for-each>
+                                </ul>
+                            </div>
                         </xsl:if>
                         
                         <!-- Definition -->
@@ -3865,7 +3872,7 @@
                 
                 <!-- Find the first glossary that matches the string -->
                 <xsl:variable name="matching-glossary" as="element(tei:gloss)?">
-                    <xsl:copy-of select="$match-glossary-items[matches($text-normalized, common:matches-regex-exact(m:glossary-terms-to-match(.)), 'i')][1]"/>
+                    <xsl:sequence select="$match-glossary-items[matches($text-normalized, common:matches-regex-exact(m:glossary-terms-to-match(.)), 'i')][1]"/>
                 </xsl:variable>
                 
                 <xsl:choose>

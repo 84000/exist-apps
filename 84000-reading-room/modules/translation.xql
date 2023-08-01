@@ -682,7 +682,7 @@ declare function translation:outline-cached($tei as element(tei:TEI)) as element
                 if(not($tei-archived)) then
                     common:cache-put($request, $outline, $cache-key)
                 else ()
-                
+            
             return (
                 (:util:log('info',concat('outline-cache-put:',$text-id, '/', $cache-key)),:)
                 $outline
