@@ -135,12 +135,12 @@
                 <xsl:choose>
                     <xsl:when test="m:request/@resource-type eq 'knowledgebase' and m:knowledgebase[m:page]">
                         
-                        <xsl:value-of select="m:knowledgebase/m:page/m:titles/m:title[@resource-type eq 'mainTitle'][@xml:lang eq 'en']"/>
+                        <xsl:value-of select="'84000 Knowledge Base / '"/>
                         
-                        <small>
+                        <xsl:value-of select="m:knowledgebase/m:page/m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                         
-                            <xsl:value-of select="' (84000 Knowledge Base)'"/>
-                            
+                        <small class="text-muted">
+                        
                             <xsl:if test="$passage-id gt ''">
                                     
                                 <xsl:value-of select="' / '"/>

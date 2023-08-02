@@ -5,7 +5,7 @@
     <xsl:import href="common.xsl"/>
     
     <xsl:variable name="tei-id" select="/m:response/m:knowledgebase/m:page/@xml:id" as="xs:string"/>
-    <xsl:variable name="title" select="/m:response/m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][1]" as="element(m:title)?"/>
+    <xsl:variable name="title" select="/m:response/m:knowledgebase/m:page/m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]" as="element(m:title)?"/>
     <xsl:variable name="entity" select="/m:response/m:entities/m:entity[m:instance/@id = $tei-id][1]" as="element(m:entity)?"/>
     <xsl:variable name="entity-label" select="($entity/m:label[@xml:lang eq 'en'], $entity/m:label[@xml:lang eq 'Sa-Ltn'], $entity/m:label)[1]" as="element(m:label)?"/>
     <xsl:variable name="request-show-tab" select="/m:response/m:request/@show-tab" as="xs:string?"/>
@@ -92,15 +92,14 @@
                                                     
                                                     <div class="add-nodes-container">
                                                         
-                                                        <xsl:variable name="main-title" select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'mainTitle'][1]"/>
-                                                        <xsl:variable name="main-title-lang" select="$main-title/@xml:lang"/>
-                                                        <xsl:variable name="other-titles" select="m:knowledgebase/m:page/m:titles/m:title[count((. | $main-title)) ne 1]"/>
+                                                        <xsl:variable name="main-title" select="m:knowledgebase/m:page/m:titles/m:title[@type eq 'articleTitle'][1]"/>
+                                                        <xsl:variable name="other-titles" select="m:knowledgebase/m:page/m:titles/m:title except $main-title"/>
                                                         <xsl:variable name="title-types" select="m:title-types/m:title-type"/>
                                                         
                                                         <xsl:call-template name="title-controls">
                                                             <xsl:with-param name="title" select="$main-title"/>
                                                             <xsl:with-param name="title-index" select="1"/>
-                                                            <xsl:with-param name="title-types" select="$title-types[@id eq 'mainTitle']"/>
+                                                            <xsl:with-param name="title-types" select="$title-types[@id eq 'articleTitle']"/>
                                                         </xsl:call-template>
                                                         
                                                         <xsl:choose>
@@ -109,14 +108,14 @@
                                                                     <xsl:call-template name="title-controls">
                                                                         <xsl:with-param name="title" select="."/>
                                                                         <xsl:with-param name="title-index" select="position() + 1"/>
-                                                                        <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
+                                                                        <xsl:with-param name="title-types" select="$title-types[@id = ('mainTitle', 'otherTitle')]"/>
                                                                     </xsl:call-template>
                                                                 </xsl:for-each>
                                                             </xsl:when>
                                                             <xsl:otherwise>
                                                                 <xsl:call-template name="title-controls">
                                                                     <xsl:with-param name="title-index" select="2"/>
-                                                                    <xsl:with-param name="title-types" select="$title-types[@id eq 'otherTitle']"/>
+                                                                    <xsl:with-param name="title-types" select="$title-types[@id = ('mainTitle', 'otherTitle')]"/>
                                                                 </xsl:call-template>
                                                             </xsl:otherwise>
                                                         </xsl:choose>

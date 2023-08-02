@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -9,7 +9,7 @@
     <xsl:variable name="render-status" select="$environment/m:render/m:status[@type eq 'article']/@status-id"/>
     
     <xsl:variable name="article-id" select="$article/m:page/@xml:id"/>
-    <xsl:variable name="article-title" select="$article/m:page/m:titles/m:title[@type = 'mainTitle'][1]"/>
+    <xsl:variable name="article-title" select="($article/m:page/m:titles/m:title[@type eq 'articleTitle'], $article/m:page/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], $article/m:page/m:titles/m:title[@type eq 'mainTitle'])[1]"/>
     <xsl:variable name="article-entity" select="$entities[m:instance[@id eq $article-id]][1]"/>
 
     <xsl:template match="/m:response">
@@ -106,7 +106,7 @@
                                 <xsl:value-of select="$article-title"/>
                             </h1>
                             
-                            <xsl:variable name="otherTitles" select="$article/m:page/m:titles/m:title[count((. | $article-title)) ne 1]"/>
+                            <xsl:variable name="otherTitles" select="$article/m:page/m:titles/m:title[not(@xml:lang eq 'en')] except $article-title"/>
                             
                             <xsl:if test="$otherTitles">
                                 <ul class="small">
@@ -605,7 +605,7 @@
                                                 <xsl:for-each select="$related-entity-pages">
                                                     <li>
                                                         <a>
-                                                            <xsl:variable name="main-title" select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                                                            <xsl:variable name="main-title" select="m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                                                             
                                                             <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
                                                             <xsl:call-template name="class-attribute">

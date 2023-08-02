@@ -291,7 +291,7 @@
                                     <xsl:call-template name="title-controls">
                                         <xsl:with-param name="title" select="."/>
                                         <xsl:with-param name="title-index" select="position()"/>
-                                        <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
+                                        <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type[not(@id eq 'articleTitle')]"/>
                                         <xsl:with-param name="source-keys" select="$text/m:source/@key/string()"/>
                                     </xsl:call-template>
                                 </xsl:for-each>
@@ -300,7 +300,7 @@
                                 <xsl:call-template name="title-controls">
                                     <xsl:with-param name="title" select="()"/>
                                     <xsl:with-param name="title-index" select="1"/>
-                                    <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type"/>
+                                    <xsl:with-param name="title-types" select="/m:response/m:title-types/m:title-type[not(@id eq 'articleTitle')]"/>
                                     <xsl:with-param name="source-keys" select="$text/m:source/@key/string()"/>
                                 </xsl:call-template>
                             </xsl:otherwise>

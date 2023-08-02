@@ -83,7 +83,7 @@
                                                     <a>
                                                         <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
                                                         <xsl:attribute name="target" select="concat(@xml:id, '.html')"/>
-                                                        <xsl:value-of select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                                                        <xsl:value-of select="m:titles !(m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                                                     </a>
                                                 </span>
                                                 <span class="text-right">
@@ -155,7 +155,7 @@
                         
                         <!-- Alphabetical navigation -->
                         <div class="col-nav affix-container">
-                            <xsl:copy-of select="common:marker-nav(m:knowledgebase/m:page)"/>
+                            <xsl:sequence select="common:marker-nav(m:knowledgebase/m:page)"/>
                         </div>
                         
                     </div>

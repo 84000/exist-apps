@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -28,7 +28,7 @@
     <xsl:key name="milestones-pre-processed" match="m:pre-processed[@type eq 'milestones']/m:milestone" use="@id"/>
     <xsl:key name="glossary-pre-processed" match="m:pre-processed[@type eq 'glossary']/m:gloss" use="@id"/>
     <xsl:key name="quotes-outbound" match="m:pre-processed[@type eq 'quotes'][@text-id eq $text-id]/m:quote" use="@id"/>
-    <xsl:key name="quotes-inbound" match="m:pre-processed[@type eq 'quotes'][@text-id ne $text-id]/m:quote" use="m:source/@location-id"/>
+    <xsl:key name="quotes-inbound" match="m:pre-processed[@type eq 'quotes'][not(@text-id eq $text-id)]/m:quote" use="m:source/@location-id"/>
 
     <xsl:variable name="count-milestones" select="count(/m:response/m:text-outline[@text-id eq $text-id]/m:pre-processed[@type eq 'milestones']/m:milestone)" as="xs:integer"/>
     
@@ -2501,7 +2501,7 @@
                      If this is the anchor of the first milestone in the section then it's the first element in the section -->
                     <xsl:variable name="quotes-location-id" select="($milestone/@xml:id, $milestone/ancestor::m:part[1][not(tei:head/@type = @type)][count(descendant::tei:milestone[1] | $milestone) eq 1]/@id)[1]" as="xs:string?"/>
                     <xsl:call-template name="quotes-inbound">
-                        <xsl:with-param name="quotes" select="key('quotes-inbound', $quotes-location-id, $root)"/>
+                        <xsl:with-param name="location-id" select="$quotes-location-id"/>
                     </xsl:call-template>
                     
                 </xsl:when>
@@ -2573,7 +2573,7 @@
             </xsl:if>
             
             <xsl:call-template name="quotes-inbound">
-                <xsl:with-param name="quotes" select="key('quotes-inbound', $part/@id, $root)"/>
+                <xsl:with-param name="location-id" select="$part/@id"/>
             </xsl:call-template>
             
             <!-- .rw-heading container -->
@@ -2744,9 +2744,11 @@
     
     </xsl:template>
     
+    <!-- Inbound quotes -->
     <xsl:template name="quotes-inbound">
         
-        <xsl:param name="quotes" as="element(m:quote)*"/>
+        <xsl:param name="location-id" as="xs:string?"/>
+        <xsl:variable name="quotes" select="$location-id ! key('quotes-inbound', ., $root)" as="element(m:quote)*"/>
         
         <xsl:if test="$quotes">
             <div class="quotes-inbound">
@@ -2777,7 +2779,7 @@
         </xsl:if>
         
     </xsl:template>
-    
+
     <!-- Add link to TEI Editor -->
     <xsl:template name="tei-editor">
         
@@ -3540,7 +3542,7 @@
                     <xsl:attribute name="data-bookmark" select="string-join((($translation/m:titles/m:title[@xml:lang eq 'en'])[1], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
                 </xsl:when>
                 <xsl:when test="$article">
-                    <xsl:attribute name="data-bookmark" select="string-join((($article/m:page/m:titles/m:title[@xml:lang eq 'en'])[1], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
+                    <xsl:attribute name="data-bookmark" select="string-join(($article/m:page/m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1][1], if($bookmark-title gt '') then $bookmark-title else $bookmark-label), ' / ')"/>
                 </xsl:when>
             </xsl:choose>
             

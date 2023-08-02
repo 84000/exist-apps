@@ -53,7 +53,8 @@ declare variable $translation:type-prefixes := map {
         'abbreviations':  'ab',
         'end-notes':      'n',
         'bibliography':   'b',
-        'glossary':       'g'
+        'glossary':       'g',
+        'citation-index': 'ci'
 };
 declare variable $translation:type-labels := map {
         'summary':        'Summary',
@@ -68,7 +69,8 @@ declare variable $translation:type-labels := map {
         'abbreviations':  'Abbreviations',
         'end-notes':      'Notes',
         'bibliography':   'Bibliography',
-        'glossary':       'Glossary'
+        'glossary':       'Glossary',
+        'citation-index': 'Citation Index'
 };
 
 (: Exclude any very common words from being single tokens :)
@@ -553,6 +555,11 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
             return
                 translation:glossary($tei, $passage-id, $view-mode, $glossary-ids)
         else ()
+        
+    let $citation-index :=
+        if($status-render) then 
+            translation:citation-index($passage-id, $view-mode)
+        else ()
     
     (: Parts are displayed in the order returned here :)
     return (
@@ -565,7 +572,8 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
         $abbreviations,
         $end-notes,
         $bibliography,
-        $glossary
+        $glossary,
+        $citation-index
     )
     
 };
@@ -587,6 +595,7 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
     
     where $chapter-part
     return (
+    
         if($chapter-part/@type eq 'summary') then
             translation:summary($tei, $passage-id, $view-mode, '')
         else if($chapter-part/@type eq 'acknowledgment') then
@@ -623,6 +632,9 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
                 translation:glossary($tei, $passage-id, $view-mode, $passage//@xml:id)
             else ()
         else ()
+        ,
+        
+        translation:citation-index($passage-id, $view-mode)
         
     )
 
@@ -733,8 +745,6 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
         for $key in map:keys($outgoing-id-chunks)
         for $outgoing-location in $published-tei/id(map:get($outgoing-id-chunks, $key))
         let $outgoing-tei := $outgoing-location/ancestor::tei:TEI
-        (:let $outgoing-tei-id :=  tei-content:id($outgoing-tei)
-        group by $outgoing-tei-id:)
         return
             $outgoing-tei
     
@@ -746,8 +756,6 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
         for $key in map:keys($incoming-id-targets-chunks)
         for $incoming-location in $published-tei/tei:text//tei:ptr[@target = map:get($incoming-id-targets-chunks, $key)]
         let $incoming-tei := $incoming-location/ancestor::tei:TEI
-        (:let $incoming-tei-id :=  tei-content:id($incoming-tei)
-        group by $incoming-tei-id:)
         return
             $incoming-tei
     
@@ -1303,15 +1311,11 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         else
             'preview'
     
-    let $notes-cache :=
-        (: Don't call for outline as it leads to recursion :)
-        if(not($view-mode[@id eq 'outline'])) then
-            translation:outline-cached($tei)/m:pre-processed[@type eq 'end-notes']/m:end-note
-        else ()
-    
+    (: Get first 8 for preview :)
     let $top-note-ids := 
-        if($content-directive eq 'preview') then
-            $notes-cache[@index = ('1','2','3','4','5','6','7','8')]/@id
+        (: Ensure we don't call for outline-cached for view-mode=outline as it leads to recursion :)
+        if($content-directive eq 'preview' and not($view-mode[@id eq 'outline'])) then
+            translation:outline-cached($tei)/m:pre-processed[@type eq 'end-notes']/m:end-note[@index = ('1','2','3','4','5','6','7','8')]/@id
         else ()
     
     let $preview-note-ids :=
@@ -1383,16 +1387,11 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
         else
             'preview'
     
-    (: Don't call for outline as it leads to recursion :)
-    let $glossary-cache := 
-        if(not($view-mode[@id eq 'outline'])) then
-            translation:outline-cached($tei)/m:pre-processed[@type eq 'glossary']/m:gloss
-        else ()
-    
-    (: Get top 3 :)
+    (: Get first 3 for preview :)
     let $top-gloss := 
-        if($content-directive eq 'preview') then
-            $glossary-cache[@index = ('1','2','3')]/@id
+        (: Ensure we don't call for outline-cached for view-mode=outline as it leads to recursion :)
+        if($content-directive eq 'preview' and not($view-mode[@id eq 'outline'])) then
+            translation:outline-cached($tei)/m:pre-processed[@type eq 'glossary']/m:gloss[@index = ('1','2','3')]/@id
         else ()
     
     (: Get based on location-ids :)
@@ -1411,6 +1410,29 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     where $glossary[tei:gloss]
     return 
         translation:part($glossary, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
+        
+};
+
+declare function translation:citation-index($passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
+    ()
+    (:let $type := 'citation-index'
+    let $citation-index := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+            attribute type { $type }
+        }
+    
+    let $content-directive := 
+        if($passage-id = ('citation-index', 'back', 'all')) then
+            'complete'
+        else if($view-mode[@parts = ('passage')]) then
+            'passage'
+        else if($view-mode[@parts eq 'outline']) then
+            'empty'
+        else
+            'preview'
+    
+    return
+        translation:part($citation-index, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ()):)
         
 };
 

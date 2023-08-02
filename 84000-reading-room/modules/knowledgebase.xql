@@ -65,20 +65,17 @@ declare function knowledgebase:sort-name($tei as element(tei:TEI)) as xs:string?
 declare function knowledgebase:titles($tei as element(tei:TEI)) as element(m:titles) {
     
     let $tei-titles := tei-content:titles-all($tei)
-    let $titles :=
-        for $title at $index in $tei-titles/m:title[text()]
-        order by if($title/@type eq 'articleTitle') then 0 else if($title/@type eq 'mainTitle') then 1 else 2 ascending
-        return $title
+    
     return
         element { node-name($tei-titles) }{
-            for $title at $index in $titles
+            for $title in $tei-titles/m:title[text()]
+            order by 
+                if($title/@type eq 'articleTitle') then 0 else if($title/@type eq 'mainTitle') then 1 else 2 ascending,
+                if($title/@xml:lang eq 'en') then 0 else if($title/@xml:lang eq 'Sa-Ltn') then 1 else 2 ascending
             return
                 element { node-name($title) }{
-                    attribute type {
-                        if($index eq 1) then 'mainTitle' else 'otherTitle'
-                    },
-                    $title/@xml:lang,
-                    $title/data()
+                    $title/@*,
+                    $title/node()
                 }
         }
     
@@ -310,7 +307,7 @@ declare function knowledgebase:related-texts($tei as element(tei:TEI)) as elemen
         
         let $knowledgebase-id := tei-content:id($tei)
         let $knowledgebase-entity := $entities:entities//m:instance[@id eq $knowledgebase-id]/parent::m:entity
-        let $knowledgebase-title := knowledgebase:titles($tei)//m:title[@type eq 'mainTitle']
+        let $knowledgebase-title := knowledgebase:titles($tei)//m:title[@type eq 'mainTitle'][1]
         
         return (
             

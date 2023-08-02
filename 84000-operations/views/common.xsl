@@ -1572,7 +1572,7 @@
                             
                             <!-- Main term -->
                             <span class="text-danger">
-                                <xsl:value-of select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                                <xsl:value-of select="m:titles !(m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                             </span>
                             
                             <!-- Link to Reading Room -->

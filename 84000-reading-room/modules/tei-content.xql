@@ -45,6 +45,7 @@ declare variable $tei-content:title-types :=
         <title-type id="longTitle">Long</title-type>
         <title-type id="otherTitle">Other</title-type>
         <title-type id="shortcode">Shortcode</title-type>
+        <title-type id="articleTitle">Article</title-type>
     </title-types>;
 
 declare function tei-content:id($tei as element(tei:TEI)) as xs:string {

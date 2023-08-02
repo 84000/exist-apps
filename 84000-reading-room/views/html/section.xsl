@@ -770,7 +770,7 @@
                         <xsl:value-of select="'Read the knowledge base article '"/>
                         <a class="underline">
                             <xsl:attribute name="href" select="concat('/knowledgebase/', $section/m:page/@kb-id, '.html')"/>
-                            <xsl:value-of select="$section/m:page/m:titles/m:title[@type eq 'mainTitle']"/>
+                            <xsl:value-of select="$section/m:page/m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                         </a>
                     </div>
                 </xsl:if>
