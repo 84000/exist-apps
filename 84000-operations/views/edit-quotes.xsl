@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -283,13 +283,6 @@
                         
                         <!-- Tabs -->
                         <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active">
-                                <a role="tab" data-toggle="tab">
-                                    <xsl:attribute name="href" select="concat('#quote-configuration-', $quote/@id, '-regex')"/>
-                                    <xsl:attribute name="aria-controls" select="concat('quote-configuration-', $quote/@id, '-regex')"/>
-                                    <xsl:value-of select="'REGEX'"/>
-                                </a>
-                            </li>
                             <li role="presentation">
                                 <a role="tab" data-toggle="tab">
                                     <xsl:attribute name="href" select="concat('#quote-configuration-', $quote/@id, '-tei')"/>
@@ -297,9 +290,32 @@
                                     <xsl:value-of select="'TEI'"/>
                                 </a>
                             </li>
+                            <li role="presentation" class="active">
+                                <a role="tab" data-toggle="tab">
+                                    <xsl:attribute name="href" select="concat('#quote-configuration-', $quote/@id, '-regex')"/>
+                                    <xsl:attribute name="aria-controls" select="concat('quote-configuration-', $quote/@id, '-regex')"/>
+                                    <xsl:value-of select="'REGEX'"/>
+                                </a>
+                            </li>
                         </ul>
                         
                         <div class="tab-content">
+                            
+                            <!-- TEI tab -->
+                            <div role="tabpanel" class="tab-pane">
+                                
+                                <xsl:attribute name="id" select="concat('quote-configuration-', $quote/@id, '-tei')"/>
+                                
+                                <xsl:variable name="quote-tei">
+                                    <unescaped xmlns="http://read.84000.co/ns/1.0">
+                                        <xsl:sequence select="$quote/tei:q"/>
+                                    </unescaped>
+                                </xsl:variable>
+                                <code>
+                                    <xsl:apply-templates select="$quote-tei/node()"/>
+                                </code>
+                                
+                            </div>
                             
                             <!-- Regex tab -->
                             <div role="tabpanel" class="tab-pane active">
@@ -366,22 +382,6 @@
                                 
                             </div>
                             
-                            <!-- TEI tab -->
-                            <div role="tabpanel" class="tab-pane">
-                                
-                                <xsl:attribute name="id" select="concat('quote-configuration-', $quote/@id, '-tei')"/>
-                                
-                                <xsl:variable name="quote-tei">
-                                    <unescaped xmlns="http://read.84000.co/ns/1.0">
-                                        <xsl:sequence select="$quote/tei:q"/>
-                                    </unescaped>
-                                </xsl:variable>
-                                <code>
-                                    <xsl:apply-templates select="$quote-tei/node()"/>
-                                </code>
-                                
-                            </div>
-                            
                         </div>
                         
                     </div>
@@ -408,7 +408,7 @@
                         
                         <div>
                             <span class="italic">
-                                <xsl:value-of select="$quote/m:label"/>
+                                <xsl:value-of select="concat('This quote references ', $quote/m:source/m:text-title)"/>
                             </span>
                         </div>
                         
@@ -434,13 +434,6 @@
                         
                         <!-- Tabs -->
                         <ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active">
-                                <a role="tab" data-toggle="tab">
-                                    <xsl:attribute name="href" select="concat('#quote-highlight-', $quote/@id, '-html')"/>
-                                    <xsl:attribute name="aria-controls" select="concat('quote-highlight-', $quote/@id, '-html')"/>
-                                    <xsl:value-of select="'HTML'"/>
-                                </a>
-                            </li>
                             <li role="presentation">
                                 <a role="tab" data-toggle="tab">
                                     <xsl:attribute name="href" select="concat('#quote-highlight-', $quote/@id, '-tei')"/>
@@ -448,18 +441,16 @@
                                     <xsl:value-of select="'TEI'"/>
                                 </a>
                             </li>
+                            <li role="presentation" class="active">
+                                <a role="tab" data-toggle="tab">
+                                    <xsl:attribute name="href" select="concat('#quote-highlight-', $quote/@id, '-html')"/>
+                                    <xsl:attribute name="aria-controls" select="concat('quote-highlight-', $quote/@id, '-html')"/>
+                                    <xsl:value-of select="'HTML'"/>
+                                </a>
+                            </li>
                         </ul>
                         
                         <div class="tab-content">
-                            
-                            <!-- HTML tab -->
-                            <div role="tabpanel" class="tab-pane active">
-                                
-                                <xsl:attribute name="id" select="concat('quote-highlight-', $quote/@id, '-html')"/>
-                                
-                                <xsl:apply-templates select="$quote/m:source-html"/>
-                                
-                            </div>
                             
                             <!-- TEI tab -->
                             <div role="tabpanel" class="tab-pane">
@@ -475,6 +466,15 @@
                                 <code>
                                     <xsl:apply-templates select="$source-tei/node()"/>
                                 </code>
+                                
+                            </div>
+                            
+                            <!-- HTML tab -->
+                            <div role="tabpanel" class="tab-pane active">
+                                
+                                <xsl:attribute name="id" select="concat('quote-highlight-', $quote/@id, '-html')"/>
+                                
+                                <xsl:apply-templates select="$quote/m:source-html"/>
                                 
                             </div>
                             

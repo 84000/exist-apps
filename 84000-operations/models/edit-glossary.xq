@@ -184,6 +184,7 @@ return
                 attribute show-tab { request:get-parameter('show-tab', '') },
                 element similar-search { request:get-parameter('similar-search', '') },
                 element search { $search },
+                request:get-parameter('default-term-bo', '')[. gt ''] ! (element default-term { attribute xml:lang {'bo'},  . }, element default-term {attribute xml:lang {'Bo-Ltn'}, common:wylie-from-bo(.) }),
                 $translation:view-modes/m:view-mode[@id eq 'glossary-editor']
             }
         
@@ -268,11 +269,13 @@ return
         let $entities := 
             element { QName('http://read.84000.co/ns/1.0', 'entities') }{
                 
-                let $entities := 
+                let $entities := (
                     for $gloss-id in distinct-values($gloss-filtered-subsequence/@xml:id)
                     let $instance := $entities:entities//m:instance[@id = $gloss-id]
                     return 
                         $instance[1]/parent::m:entity
+                        
+                ) | $entities:entities/id($request/@entity-id)[self::m:entity]
                 
                 return (
                     $entities,

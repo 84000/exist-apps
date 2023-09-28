@@ -58,7 +58,8 @@ let $request :=
 (: Suppress cache if there's user input, or a view-mode :)
 let $cache-key := 
     if($view-mode eq 'default' and $request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
-        let $tei-timestamp := max(($tei ! tei-content:last-modified(.), $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $resource-id]] ! tei-content:last-modified(.)))
+        let $section-tei := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $request/@resource-id]]
+        let $tei-timestamp := max(($tei ! tei-content:last-modified(.), $section-tei ! tei-content:last-modified(.)))
         let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
         where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
         return 
@@ -66,6 +67,8 @@ let $cache-key :=
                 string-join((
                     $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
                     $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    (: If there are no child TEI files (e.g. all-translated) then invalidate daily :)
+                    if(not($section-tei)) then current-dateTime() ! format-dateTime(., "[Y0001]-[M01]-[D01]") else (), 
                     $common:app-version ! replace(., '\.', '-')
                 ),'-')
             )
@@ -121,17 +124,19 @@ return
             else
                 section:section-tree($tei, true(), $include-texts)
         
+        (:let $attribution-entities := $entities:entities/idref($sections-data//m:attribution/@xml:id)/parent::m:entity:)
+        let $attribution-id-chunks := common:ids-chunked($sections-data//m:attribution/@xml:id)
+        let $attribution-entities := 
+            for $key in map:keys($attribution-id-chunks)
+            let $attribution-ids-key := map:get($attribution-id-chunks, $key)
+            return 
+                $entities:entities//m:instance[@id = $attribution-ids-key]/parent::m:entity
+        let $attribution-entities := functx:distinct-nodes($attribution-entities)
+        
         let $entities := 
             element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-                
-                let $attribution-ids := $sections-data//m:attribution/@xml:id
-                let $entity-list := $entities:entities//m:instance[@id = $attribution-ids]/parent::m:entity
-                let $related := entities:related($entity-list, false(), 'knowledgebase', 'requires-attention', 'excluded')
-                return (
-                    $entity-list,
-                    element related { $related }
-                )
-                
+                $attribution-entities,
+                element related { entities:related($attribution-entities, false(), 'knowledgebase', 'requires-attention', 'excluded') }
             }
         
         let $xml-response := 

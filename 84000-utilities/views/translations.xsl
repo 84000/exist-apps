@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -130,10 +130,10 @@
                             <div class="form-group">
                                 <label for="toh-min">Tohoku:</label>
                                 <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
-                                    <xsl:attribute name="value" select="$request/m:parameter[@name eq 'toh-min']/text()"/>
+                                    <xsl:attribute name="value" select="$toh-min"/>
                                 </input>
                                 <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
-                                    <xsl:attribute name="value" select="$request/m:parameter[@name eq 'toh-max']/text()"/>
+                                    <xsl:attribute name="value" select="$toh-max"/>
                                 </input>
                                 <button type="submit" class="btn btn-primary">Search</button>
                             </div>
@@ -470,6 +470,15 @@
                                                             </a>
                                                         </li>
                                                     </xsl:for-each>
+                                                    <xsl:for-each select="$text-group">
+                                                        <li>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '-en-plain.txt')"/>
+                                                                <xsl:attribute name="title" select="'Download translation as a text file without annotations'"/>
+                                                                <xsl:value-of select="concat(m:toh/@key, '-en-plain.txt')"/>
+                                                            </a>
+                                                        </li>
+                                                    </xsl:for-each>
                                                     
                                                     <!-- Tibetan txt -->
                                                     <xsl:for-each select="$text-group">
@@ -478,6 +487,15 @@
                                                                 <xsl:attribute name="href" select="concat($reading-room-path, '/source/', m:toh/@key, '-bo.txt')"/>
                                                                 <xsl:attribute name="title" select="'Download the source as a text file'"/>
                                                                 <xsl:value-of select="concat(m:toh/@key, '-bo.txt')"/>
+                                                            </a>
+                                                        </li>
+                                                    </xsl:for-each>
+                                                    <xsl:for-each select="$text-group">
+                                                        <li>
+                                                            <a>
+                                                                <xsl:attribute name="href" select="concat($reading-room-path, '/source/', m:toh/@key, '-bo-plain.txt')"/>
+                                                                <xsl:attribute name="title" select="'Download the source as a text file without annotations'"/>
+                                                                <xsl:value-of select="concat(m:toh/@key, '-bo-plain.txt')"/>
                                                             </a>
                                                         </li>
                                                     </xsl:for-each>
@@ -769,6 +787,11 @@
                                                         </xsl:choose>
                                                         
                                                         <input type="hidden" name="store[]" value="{ concat($text-id, '.all') }"/>
+                                                        
+                                                        <xsl:if test="$page-filter eq 'search'">
+                                                            <input type="hidden" name="toh-min" value="{ $toh-min }"/>
+                                                            <input type="hidden" name="toh-max" value="{ $toh-max }"/>
+                                                        </xsl:if>
                                                         
                                                         <div class="form-group">
                                                             

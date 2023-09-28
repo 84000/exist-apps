@@ -117,7 +117,7 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
             $similar-entity
     
     return 
-        subsequence($similar-entities, 1, 100)
+        subsequence($similar-entities, 1, 50)
 };
 
 declare function entities:related($entities as element(m:entity)*, $include-unrelated as xs:boolean, $include-related-content as xs:string*, $exclude-flagged as xs:string*, $exclude-status as xs:string*) as element()* {
@@ -126,12 +126,12 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
     
     let $entities-id-relations :=
         for $key in map:keys($entities-id-chunks)
-        let $entities-ids-key := map:get($entities-id-chunks, $key)
+        let $entities-ids-chunk := map:get($entities-id-chunks, $key)
         return
             if($include-unrelated) then 
-                $entities:entities//m:entity[m:relation[@id = $entities-ids-key]]
+                $entities:entities//m:entity[m:relation[@id = $entities-ids-chunk]]
             else 
-                $entities:entities//m:entity[m:relation[not(@predicate = ('isUnrelated'))][@id = $entities-ids-key]]
+                $entities:entities//m:entity[m:relation[not(@predicate = ('isUnrelated'))][@id = $entities-ids-chunk]]
     
     let $entities-relation-chunks := 
         if($include-unrelated) then 
@@ -141,9 +141,9 @@ declare function entities:related($entities as element(m:entity)*, $include-unre
     
     let $entities-relation-entities := 
         for $key in map:keys($entities-relation-chunks)
-        let $entities-relation-key := map:get($entities-relation-chunks, $key)
+        let $entities-relation-chunk := map:get($entities-relation-chunks, $key)
         return
-            $entities:entities//m:entity/id($entities-relation-key)
+            $entities:entities//m:entity/id($entities-relation-chunk)
     
     let $related-entities := ($entities-id-relations | $entities-relation-entities) except $entities
     
@@ -184,26 +184,28 @@ declare function local:entities-content($entities as element(m:entity)*, $conten
         
         (: Related glossary entries :)
         if($content-types = 'glossary') then
+        
             let $glossary-id-chunks := common:ids-chunked($lookup-instances[@type eq 'glossary-item']/@id)
             
             let $glosses := 
                 for $key in map:keys($glossary-id-chunks)
-                let $glossary-ids-key := map:get($glossary-id-chunks, $key)
+                let $glossary-ids-chunk := map:get($glossary-id-chunks, $key)
                 return
-                    $glossary:tei/id($glossary-ids-key)/self::tei:gloss[not(@mode eq 'surfeit')]
+                    $glossary:tei/id($glossary-ids-chunk)/self::tei:gloss[not(@mode eq 'surfeit')]
             
             (: Related glossaries - grouped by text :)
             for $gloss in $glosses
             
             let $tei := $gloss/ancestor::tei:TEI
             let $text-id := tei-content:id($tei)
-            let $text-type := tei-content:type($tei)
-            
-            where $text-type eq 'translation'
             group by $text-id
-            let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
             
+            let $text-type := tei-content:type($tei[1])
+            where $text-type eq 'translation'
+            
+            let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
             where not($glossary-status = $exclude-status)
+            
             let $text-type := tei-content:type($tei[1])
             let $glossary-cache := glossary:glossary-cache($tei[1], (), false())
             

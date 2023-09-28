@@ -21,8 +21,7 @@ let $first-record :=
         request:get-parameter('first-record', 1)
     else 1
 
-let $view-mode := request:get-parameter('view-mode', 'default')
-let $view-mode-validated := $knowledgebase:view-modes/m:view-mode[@id eq $view-mode]
+let $view-mode := ($knowledgebase:view-modes/m:view-mode[@id eq request:get-parameter('view-mode', '')], $knowledgebase:view-modes/m:view-mode[@id eq 'default'])[1]
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -31,15 +30,12 @@ let $request :=
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
         attribute sort { request:get-parameter('sort', 'latest') },
-        attribute view-mode { $view-mode-validated/@id },
+        attribute view-mode { $view-mode/@id },
         attribute article-type { string-join($article-types, ',') },
         attribute first-record { $first-record },
         attribute records-per-page { 20 },
-        
         common:add-selected-children($knowledgebase:article-types, $article-types),
-        
-        $view-mode-validated
-        
+        $view-mode
     }
 
 let $cache-key := 

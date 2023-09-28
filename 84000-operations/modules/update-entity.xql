@@ -392,7 +392,7 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
         if($existing-instance) then
             update replace $existing-instance with $new-instance
         else 
-            update insert (text{ $common:chr-tab } , $new-instance, common:ws(1) ) into $entity
+            update insert ( text{ $common:chr-tab } , $new-instance, common:ws(1) ) into $entity
             
 };
 

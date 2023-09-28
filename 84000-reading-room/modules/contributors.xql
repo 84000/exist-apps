@@ -300,6 +300,8 @@ declare function contributors:next-person-id() as xs:integer {
 
 declare function contributors:update-person($person as element(m:person)?) as xs:string {
     
+    let $parent := $contributors:contributors/m:contributors
+    
     let $person-id :=
         if($person[@xml:id]) then
             $person/@xml:id
@@ -316,32 +318,43 @@ declare function contributors:update-person($person as element(m:person)?) as xs
             $common:line-ws,
             
             element label {  
-                request:get-parameter('name', '') 
+                text { request:get-parameter('name', '') }
             },
             
             for $request-parameter-name in $request-parameter-names
             return
                 if(starts-with($request-parameter-name, 'institution-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
                     $common:line-ws,
-                    <institution id="{ request:get-parameter($request-parameter-name, '') }"/>
+                    element institution { 
+                        attribute id { request:get-parameter($request-parameter-name, '') } 
+                    }
                 )
                 else if(starts-with($request-parameter-name, 'team-id-') and request:get-parameter($request-parameter-name, '') gt '') then (
                     $common:line-ws,
-                    <team id="{ request:get-parameter($request-parameter-name, '') }"/>
+                    element team { 
+                        attribute id { request:get-parameter($request-parameter-name, '') } 
+                    }
                 )
                 else if($request-parameter-name eq 'affiliation[]') then
                     for $affiliation in request:get-parameter('affiliation[]', '')
                     return (
                         $common:line-ws,
-                        <affiliation type="{ $affiliation }"/>
+                        element affiliation { 
+                            attribute type { $affiliation } 
+                        }
                     )
-                else
-                    ()
+                else ()
              ,
+             
+             for $element in $person/*[not(self::m:label | self::m:institution | self::m:team | self::m:affiliation)]
+             return (
+                $common:line-ws,
+                $element
+             ),
+             
              $common:node-ws
+             
         }
-    
-    let $parent := $contributors:contributors/m:contributors
     
     let $update := common:update('contributor-person', $person, $new-value, $parent, ())
     
@@ -370,15 +383,24 @@ declare function contributors:update-team($team as element(m:team)?) as xs:strin
     
     let $new-value := 
         element { QName('http://read.84000.co/ns/1.0', 'team') } {
+        
             attribute xml:id { $team-id },
             if(request:get-parameter('hidden', '') eq '1') then
                 attribute rend { 'hidden' }
-            else
-                ()
+            else ()
             ,
+            
+            $common:line-ws,
             element { QName('http://read.84000.co/ns/1.0', 'label') } {
                 text { request:get-parameter('name', '') }
-            }
+            },
+            
+            for $element in $team/*[not(self::m:label)]
+            return (
+                $common:line-ws,
+                $element
+            )
+            
         }
     
     let $parent := $contributors:contributors/m:contributors
@@ -402,17 +424,22 @@ declare function contributors:update-institution($institution as element(m:insti
             concat('institution-', xs:string(local:next-institution-id()))
     
     let $new-value := 
-        <institution 
-            xmlns="http://read.84000.co/ns/1.0" 
-            xml:id="{ $institution-id }" 
-            institution-type-id="{ request:get-parameter('institution-type-id', '') }" 
-            region-id="{ request:get-parameter('region-id', '') }">
-            <label>
-            {
-                request:get-parameter('name', '')
-            }
-            </label>
-        </institution>
+        element { QName('http://read.84000.co/ns/1.0','institution') } {
+        
+            attribute xml:id { $institution-id },
+            attribute institution-type-id { request:get-parameter('institution-type-id', '') },
+            attribute region-id { request:get-parameter('region-id', '') },
+            
+            element label {
+                text { request:get-parameter('name', '') }
+            },
+            
+            for $element in $institution/*[not(self::m:label)]
+            return (
+                $common:line-ws,
+                $element
+            )
+        }
     
     let $parent := $contributors:contributors/m:contributors
     

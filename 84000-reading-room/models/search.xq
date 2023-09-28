@@ -14,7 +14,7 @@ import module namespace functx = "http://www.functx.com";
 let $search := request:get-parameter('search', request:get-parameter('s', ''))
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-    
+
 let $search-langs := 
     <search-langs xmlns="http://read.84000.co/ns/1.0">
         <lang id="en" short-code="Eng">English</lang>
@@ -23,7 +23,7 @@ let $search-langs :=
 
 let $search-langs := common:add-selected-children($search-langs, request:get-parameter('search-lang', 'en'))
 
-let $search-data := common:add-selected-children($search:data-types, request:get-parameter('search-data[]', ''))
+let $search-data := common:add-selected-children($search:data-types, request:get-parameter('search-data[]', ('translations','knowledgebase','glossary')))
 
 let $first-record := 
     if(functx:is-a-number(request:get-parameter('first-record', 1))) then

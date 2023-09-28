@@ -230,6 +230,8 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="json"/>
+                        <set-header name="Content-Type" value="application/pdf"/>
+                        <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
                 )
             (: xml model -> pdf view :)
@@ -252,8 +254,8 @@ return
             else if ($resource-suffix eq 'txt') then
                 local:dispatch("/models/translation.xq", "/views/txt/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-en$', '') }"/>
-                        <add-parameter name="resource-suffix" value="txt"/>
+                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-en(\-plain)?$', '') }"/>
+                        <add-parameter name="resource-suffix" value="{ if(matches($resource-id, '\-en\-plain$')) then 'plain.txt' else 'txt' }"/>
                         <set-header name="Content-Type" value="text/plain"/>
                         <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
@@ -351,14 +353,16 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="json"/>
+                        <set-header name="Content-Type" value="application/pdf"/>
+                        <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
                 )
             (: xml model -> txt view :)
             else if ($resource-suffix eq'txt') then
                 local:dispatch("/models/source.xq", "/views/txt/source.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-bo$', '') }"/>
-                        <add-parameter name="resource-suffix" value="txt"/>
+                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-bo(\-plain)?$', '') }"/>
+                        <add-parameter name="resource-suffix" value="{ if(matches($resource-id, '\-bo\-plain$')) then 'plain.txt' else 'txt' }"/>
                         <set-header name="Content-Type" value="text/plain"/>
                         <set-header name="Content-Disposition" value="attachment"/>
                     </parameters>
@@ -488,7 +492,7 @@ return
         
         (: Editor :)
         (: Module located in operations app :)
-        else if ($resource-id = ("tei-editor", "edit-entity", "edit-glossary", "create-article") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
+        else if ($resource-id = ("tei-editor", "edit-entity", "edit-glossary", "create-article", "source-utils") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="/84000-operations/models/{ $resource-id }.xq">
                     <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>

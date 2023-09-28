@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
 
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -366,7 +366,7 @@
                             </xsl:choose>
 
                             <!-- Pagination -->
-                            <xsl:sequence select="common:pagination(m:request/@first-record, m:request/@records-per-page, m:knowledgebase/@count-pages, $page-url)"/>
+                            <xsl:sequence select="common:pagination(m:request/@first-record, m:request/@records-per-page, m:knowledgebase/@count-pages, common:internal-link($page-url, (m:view-mode-parameter((),())),(), /m:response/@lang))"/>
 
                         </div>
                     </div>

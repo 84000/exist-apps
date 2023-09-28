@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -341,12 +341,7 @@
             
             <body id="top">
                 
-                <xsl:attribute name="class">
-                    <xsl:value-of select="$page-class"/>
-                    <xsl:if test="$view-mode[@id]">
-                        <xsl:value-of select="concat(' ', $view-mode/@id, '-mode')"/>
-                    </xsl:if>
-                </xsl:attribute>
+                <xsl:attribute name="class" select="string-join(($page-class, $view-mode/@id ! concat(.,'-mode')), ' ')"/>
                 
                 <!-- Environment alert -->
                 <xsl:if test="$environment/m:label/text()">
@@ -415,7 +410,7 @@
     <xsl:template name="tei-editor-footer">
         
         <xsl:if test="$tei-editor">
-            <div id="popup-footer-editor" class="fixed-footer collapse hidden-print">
+            <div id="popup-footer-editor" class="fixed-footer collapse persist hidden-print">
                 <div class="fix-height">
                     <div class="container">
                         <div class="data-container">
@@ -424,11 +419,24 @@
                     </div>
                 </div>
                 <div class="fixed-btn-container close-btn-container">
-                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                        <span aria-hidden="true">
-                            <i class="fa fa-times"/>
-                        </span>
-                    </button>
+                    <div class="center-vertical">
+                        <div>
+                            <!-- Set footer height -->
+                            <button type="button" class="btn-round orange" data-drag-height="#popup-footer-editor .fix-height" aria-label="Set the height of the footer" title="Set the height of the footer">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-sort"/>
+                                </span>
+                            </button>
+                        </div>
+                        <div>
+                            <!-- Close -->
+                            <button type="button" class="btn-round orange close close-collapse" title="Close" aria-label="Close">
+                                <span aria-hidden="true">
+                                    <i class="fa fa-times"/>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </xsl:if>

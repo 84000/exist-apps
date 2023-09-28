@@ -7,9 +7,14 @@ module namespace source="http://read.84000.co/source";
 
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
+declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+declare namespace bdo="http://purl.bdrc.io/ontology/core/";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
+import module namespace glossary="http://read.84000.co/glossary" at "glossary.xql";
+import module namespace search="http://read.84000.co/search" at "search.xql";
+import module namespace machine-translation="http://read.84000.co/machine-translation" at "machine-translation.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $source:source-data-path := '/db/apps/tibetan-source/data';
@@ -21,6 +26,12 @@ declare variable $source:ekangyur-volume-offset := 126;
 declare variable $source:tengyur-work := 'UT23703';
 declare variable $source:etengyur-path := string-join(($source:source-data-path, $source:tengyur-work), '/');
 declare variable $source:etengyur-volume-offset := 316;
+
+declare variable $source:view-modes := 
+    <view-modes xmlns="http://read.84000.co/ns/1.0">
+        <view-mode id="default"  client="browser"  cache="use-cache"  layout="full"  glossary="bo-cache"   parts="passage"/>
+        <view-mode id="editor"   client="browser"  cache="suppress"   layout="full"  glossary="no-cache"   parts="glossary"/>
+    </view-modes>;
 
 declare function source:etext-path($work as xs:string) as xs:string {
     if($work eq $source:kangyur-work) then
@@ -98,12 +109,12 @@ declare function source:etext-full($location as element(m:location)) as element(
             for $volume in $location/m:volume
                 for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
                 return 
-                    source:etext-page($work, xs:integer($volume/@number), $page-in-volume, false(), ())
+                    source:etext-page($work, xs:integer($volume/@number), $page-in-volume, $page-index, false())
         }
     
 };
 
-declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean, $highlight as xs:string*) as element(m:source)? {
+declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean) as element(m:source)? {
     
     let $work := $location/@work
     let $page-volume := 
@@ -132,11 +143,11 @@ declare function source:etext-page($location as element(m:location), $page-numbe
         element { QName('http://read.84000.co/ns/1.0', 'source') } {
             attribute work { $work },
             attribute page-url { concat('https://read.84000.co/source/', $location/@key, '.html?page=', $page-volume/@page-number) },
-            source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $add-context, $highlight)
+            source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $page-number, $add-context)
         }
 };
 
-declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $add-context as xs:boolean, $highlight as xs:string*) as element()? {
+declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $page-index as xs:integer, $add-context as xs:boolean) as element(m:page) {
     
     let $etext-volume-number := source:etext-volume-number($work, $volume-number)
     let $etext-id := source:etext-id($work, $etext-volume-number)
@@ -148,36 +159,6 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
     let $preceding-milestone-n := count($preceding-page/tei:milestone[@unit eq 'line']) - ($preceding-lines - 1)
     let $trailing-lines := 3
     let $trailing-milestone-n := ($trailing-lines + 1)
-    
-    let $options :=
-        <options>
-            <default-operator>or</default-operator>
-            <phrase-slop>10</phrase-slop>
-            <leading-wildcard>no</leading-wildcard>
-            <filter-rewrite>yes</filter-rewrite>
-        </options>
-    
-    let $query := 
-        <query>
-            <bool>
-            {
-                for $phrase in $highlight ! normalize-space(.)
-                where not($phrase = ('།'))
-                return
-                    <phrase>{ $phrase }</phrase>
-            }
-            </bool>
-        </query>
-    
-    let $page-highlighted := $page[ft:query(., $query, $options)]
-    
-    let $page-expanded := util:expand($page-highlighted, "expand-xincludes=no")
-    
-    let $page-expanded :=
-        if(not($page-expanded//exist:match)) then
-            common:mark-nodes($page, $highlight, 'tibetan')
-        else
-            $page-expanded
     
     (: Context around the page, in case page break comes in the middle of a passage :)
     let $preceding-paragraph := 
@@ -198,20 +179,19 @@ declare function source:etext-page($work as xs:string, $volume-number as xs:inte
             attribute page-in-volume { $page-number },
             attribute folio-in-volume { source:page-to-folio($page-number) },
             attribute folio-in-etext { $page/@data-orig-n },
+            attribute page-in-text { $page-index },
             attribute etext-id { $etext-id },
             element language {
                 attribute xml:lang {'bo'},
                 if($preceding-paragraph) then element { QName('http://www.tei-c.org/ns/1.0', 'p') } { $preceding-paragraph } else (),
-                element { QName('http://www.tei-c.org/ns/1.0', 'p') } { attribute class {'selected'}, $page-expanded/node() },
+                element { QName('http://www.tei-c.org/ns/1.0', 'p') } { attribute class {'selected'}, $page/node() },
                 if($trailing-paragraph) then element { QName('http://www.tei-c.org/ns/1.0', 'p') } { $trailing-paragraph } else ()
-            }(:,
-            element lucene-keys {
-                util:index-keys(($preceding-paragraph | $page | $trailing-paragraph), (), function($key, $count) { <index-key name="{$key}"/>}, -1, "lucene-index")
-            }:)
+            }
         }
+        
 };
 
-declare function source:etext-volumes($work as xs:string, $pages-for-volume as xs:integer?) as element() {
+declare function source:etext-volumes($work as xs:string, $pages-for-volume as xs:integer?) as element(m:volumes) {
 
     element { QName('http://read.84000.co/ns/1.0','volumes') }  {
         let $volumes := collection(source:etext-path($work))
@@ -230,8 +210,46 @@ declare function source:etext-volumes($work as xs:string, $pages-for-volume as x
                             attribute number { $p/@n },
                             attribute folio { $p/@data-orig-n }
                         }
-                else
-                    ()
+                else ()
             }
     }
+};
+
+declare function source:bdrc-rdf($toh as element(m:toh)) as element(rdf:RDF)* {
+    
+    if($toh/m:ref[@type eq 'bdrc-tibetan-id'][@value]) then
+        
+        try {
+        
+            let $send-request-work := hc:send-request(<hc:request href="{ concat($toh/m:ref[@type eq 'bdrc-work-id']/@value/string(),'.rdf') }" method="GET"/>)
+            let $work-rdf := $send-request-work[2]/rdf:RDF
+            
+            let $send-request-bo := hc:send-request(<hc:request href="{ concat($toh/m:ref[@type eq 'bdrc-tibetan-id']/@value/string(),'.rdf') }" method="GET"/>)
+            let $bo-rdf := $send-request-bo[2]/rdf:RDF
+            
+            return (
+                
+                $work-rdf,
+                
+                (:for $resource-id in $work-rdf/bdo:Work/bdo:workHasInstance/@rdf:resource
+                let $send-request := hc:send-request(<hc:request href="{ concat($resource-id,'.rdf') }" method="GET"/>)
+                return
+                    $send-request[2]/rdf:RDF:)
+                    
+                $bo-rdf
+                
+                (:for $resource-id in $bdrc-rdf/bdo:Work/bdo:workHasParallelsIn/@rdf:resource
+                let $send-request := hc:send-request(<hc:request href="{ concat($resource-id,'.rdf') }" method="GET"/>)
+                return
+                    $send-request[2]/rdf:RDF:)
+                
+            )
+            
+        }
+        catch * {
+            element rdf:RDF  { element debug { 'Error (' || $err:code || '): ' || $err:description } }
+        }
+        
+    else ()
+    
 };

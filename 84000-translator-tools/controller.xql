@@ -17,7 +17,7 @@ import module namespace common="http://read.84000.co/common" at "../84000-readin
 (: Log the request :)
 import module namespace log = "http://read.84000.co/log" at "../84000-reading-room/modules/log.xql";
 
-log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix),
+(:log:log-request(concat($exist:controller, $exist:path), $controller-root, $collection-path, $resource-id, $resource-suffix),:)
 
 (: Accept the client error without 404. It is logged above. :)
 if (lower-case($exist:resource) eq "log-error.html") then

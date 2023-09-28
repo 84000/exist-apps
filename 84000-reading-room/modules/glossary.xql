@@ -43,8 +43,8 @@ declare variable $glossary:tei := (
 
 declare variable $glossary:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default" client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache"/>
-        <view-mode id="editor"  client="browser" layout="full" glossary="no-cache" parts="all" cache="no-cache"/>
+        <view-mode id="default"  client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache"/>
+        <view-mode id="editor"   client="browser" layout="full" glossary="no-cache" parts="all" cache="no-cache"/>
     </view-modes>;
     
 declare variable $glossary:attestation-types :=
@@ -634,7 +634,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
         if($resource-type eq 'knowledgebase') then
                 
             (: Knowledgebase data for a glossary query :)
-            element { QName('http://read.84000.co/ns/1.0', 'knowledgebase') } {
+            element { QName('http://read.84000.co/ns/1.0', 'article') } {
                 knowledgebase:page($tei),
                 knowledgebase:publication($tei),
                 knowledgebase:taxonomy($tei),
@@ -827,8 +827,12 @@ declare function glossary:locations($tei as element(tei:TEI), $resource-id as xs
     let $html := 
         transform:transform(
             glossary:xml-response($tei, $resource-id, $resource-type, $glossary-ids),
-            doc(concat($common:app-path, "/views/html/", $resource-type, ".xsl")), 
-            <parameters/>
+            doc(concat($common:app-path, "/views/html/", if($resource-type eq 'knowledgebase') then 'knowledgebase-article' else $resource-type, ".xsl")), 
+            <parameters/>(:,
+            <attributes>
+               <attr name="http://saxon.sf.net/feature/defaultRegexEngine" value="J"/>
+            </attributes>,
+            ():)
         )
     
     return
@@ -1109,107 +1113,3 @@ declare function glossary:downloads() as element(m:downloads) {
     }
 
 };
-
-declare function glossary:mark-source($source as element(m:source), $toh-number as xs:integer) as element(m:source) {
-    
-    element { node-name($source) } {
-        $source/@*,
-        
-        for $page in $source/m:page
-        return
-            element { node-name($page) } {
-                $page/@*,
-            
-                let $request := 
-                    element { QName('http://read.84000.co/ns/1.0', 'request')} {
-                        attribute model { "operations/mark-source" }, 
-                        attribute resource-suffix { "xml" },
-                        attribute work { $source/@work },
-                        attribute volume { $page/@volume },
-                        attribute page { $page/@page-in-volume }
-                    }
-                
-                (: Parse source text for glossary terms :)
-                let $cache-key := $common:app-version ! replace(., '\.', '-')
-                let $source-page-cached := common:cache-get($request, $cache-key)
-                let $source-page-cached :=
-                    if(not($source-page-cached)) then
-                    
-                        let $content-new := 
-                            element { node-name($page/m:language[@xml:lang eq 'bo']) } {
-                                $page/m:language/@*,
-                                    
-                                let $page-content := $page/m:language/tei:p[@class eq 'selected']
-                                let $count-text-nodes := count($page-content/text())
-                                let $preceding-word := tokenize($page-content/preceding-sibling::tei:p/text()[last()], '\s+')[last()]
-                                let $following-word := tokenize($page-content/following-sibling::tei:p/text()[1], '\s+')[1]
-                                
-                                let $page-content-appended :=
-                                    for $text-node at $index in $page-content/text()
-                                    where 
-                                        not($text-node/following-sibling::tei:milestone[@unit eq 'text'][@toh ! xs:integer(.) eq $toh-number])
-                                        and not($text-node/preceding-sibling::tei:milestone[@unit eq 'text'][1][@toh ! xs:integer(.) ne $toh-number])
-                                    return(
-                                        if($index eq 1 and not(ends-with($preceding-word, '།'))) then
-                                            $preceding-word
-                                        else (),
-                                        $text-node,
-                                        if($index eq $count-text-nodes and not(ends-with($text-node, '།'))) then
-                                            $following-word
-                                        else ()
-                                    )
-                                    
-                                (:let $bo-terms :=
-                                    for $bo-term in $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = 'excluded')]//tei:gloss/tei:term[@xml:lang eq 'bo']
-                                    let $bo-term-normalized := common:normalize-bo($bo-term/text())
-                                    where $bo-term-normalized[not(. = ('','།'))]
-                                    group by $bo-term-normalized
-                                    order by string-length($bo-term-normalized[1]) descending
-                                    return
-                                        element search { 
-                                            $bo-term/parent::tei:gloss ! element ref { attribute id { @xml:id } },
-                                            $bo-term-normalized[1]
-                                        }:)
-                                
-                                return element { QName('http://www.tei-c.org/ns/1.0','p') } {
-                                    attribute class { 'selected' },
-                                    common:normalize-bo(string-join($page-content-appended))
-                                }
-                            }
-                        
-                        let $cache-put := common:cache-put($request, $content-new, $cache-key)
-                        (:let $cache-reindex := xmldb:reindex(common:cache-collection($request), common:cache-filename($request, $cache-key)):)
-                        
-                        return
-                            common:cache-get($request,$cache-key)
-                    
-                    else 
-                        $source-page-cached
-                
-                (: Get index keys for this page :)
-                (:let $source-index-keys := distinct-values(util:index-keys($source-page-cached//tei:p, (), function($key, $count) { $key }, -1, "lucene-index")) ! element index-key { . }:)
-                
-                (: Get index keys for the glossary terms :)
-                (:let $bo-terms := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = 'excluded')]//tei:gloss/tei:term[@xml:lang eq 'bo']:)
-                (:let $bo-terms-with-index := util:index-keys($bo-terms, (), function($key, $count) { if($key = $source-index-keys) then $key else () }, -1, "lucene-index"):)
-                    (:for $bo-term in subsequence($bo-terms,1,100)
-                    let $index-keys := util:index-keys($bo-term, (), function($key, $count) { if($source-index-keys[. eq $key]) then $key else () }, -1, "lucene-index")
-                    where count($index-keys) gt 0
-                    return
-                        $bo-term:)
-                
-                return (
-                    $source-page-cached/*(:,
-                    element index-keys { attribute count-keys { count($source-index-keys) }, $source-index-keys },:)
-                    (:$bo-terms-with-index ! element search { . }:)
-                    (:for $index-key in $source-index-keys
-                    return
-                        $bo-terms[ft:query(., $index-key/text())]:)
-                )
-                        
-            }
-            
-    }
-};
-
-

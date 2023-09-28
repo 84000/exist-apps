@@ -82,7 +82,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
             collection(concat($common:archive-path, '/', $archive-path))
         
         (: Section :)
-        else if($resource-type = ('section', 'pseudo-section')) then
+        else if($resource-type = ('section','grouping','pseudo-section')) then
             $tei-content:sections-collection
         
         (: Knowledge base :)
@@ -390,7 +390,6 @@ declare function tei-content:locked-by-user($tei as element(tei:TEI)) as xs:stri
 declare function tei-content:last-modified($tei as element(tei:TEI)) as xs:dateTime {
     xmldb:last-modified(util:collection-name($tei), util:document-name($tei))
 };
-
 
 declare function tei-content:valid-xml-id($tei as element(tei:TEI), $xml-id as xs:string) as xs:boolean {
 

@@ -31,15 +31,14 @@ declare function eft-json:parent-sections($parent as element()?) as element()? {
     else ()
 };
 
-declare function eft-json:tei-to-escaped-xhtml($tei as element()*, $xsl as document-node()) as xs:string {
+declare function eft-json:tei-to-escaped-xhtml($tei as element()*, $xsl as document-node()) as xs:string? {
     let $tei-primed := common:strip-ids($tei)
+    where $tei-primed
     return
         serialize(
-            <div xmlns="http://www.w3.org/1999/xhtml">
-            { 
+            element {QName('http://www.w3.org/1999/xhtml','div')} { 
                 transform:transform($tei-primed, $xsl, <parameters/>)
             }
-            </div>
         )
 };
 

@@ -322,7 +322,7 @@ declare function search:search($request as xs:string, $data-types as element(m:t
         
 };
 
-declare function search:tm-search($search as xs:string, $search-lang as xs:string, $first-record as xs:double, $max-records as xs:double, $include-glossary as xs:boolean)  as element() {
+declare function search:tm-search($search as xs:string, $search-lang as xs:string, $first-record as xs:double, $max-records as xs:double, $include-glossary as xs:boolean)  as element(m:tm-search) {
     
     let $lang-map := map { 'bo':'bo', 'en':'en' }
     

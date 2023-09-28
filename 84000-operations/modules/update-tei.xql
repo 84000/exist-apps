@@ -55,7 +55,7 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $n
     return (
     
         (: Do the update :)
-        update replace $tei//tei:fileDesc/tei:editionStmt with $editionStmt-new,
+        common:update('text-version', $tei//tei:fileDesc/tei:editionStmt, $editionStmt-new, (), $tei//tei:fileDesc/tei:titleStmt),
         
         (: Add a change :)
         local:add-change($tei, 'text-version', $version-number-str-increment, $note),
@@ -209,7 +209,7 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
                     (: No increment was requested, but doing one anyway :)
                     if($request-is-current-version) then
                         update-tei:minor-version-increment($tei, $update-notes, ())
-                        
+                    
                     (: Increment was requested :)
                     else
                         update-tei:minor-version-increment($tei, $update-notes, $request-version-number-str)
@@ -321,61 +321,68 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
                 for $contributor-id-param at $param-index in ('contributor-id-team', common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'contributor-id-')], '-')[not(. eq 'contributor-id-team')])
                     
                     let $contributor-index := substring-after($contributor-id-param, 'contributor-id-')
+                    
                     let $contributor-id := request:get-parameter(concat('contributor-id-', $contributor-index), '')
+                    let $contributor-target := $contributors:contributors/id($contributor-id)[self::m:person | self::m:team]
+                    
                     let $contribution-id := request:get-parameter(concat('contribution-id-', $contributor-index), '')
-                    (: New xml:id for additions :)
+                    let $contribution-existing := $title-statement-existing/id($contribution-id)[self::tei:author | self::tei:editor | self::tei:consultant]
+                    let $contribution-instance-existing := $contributors:contributors//m:instance[@id eq $contribution-id]
                     let $contribution-id :=
-                        if(not($contribution-id gt '')) then
+                        if(not($contribution-existing)) then
                             tei-content:next-xml-id($text-id, sum(($max-xml-id-int, $param-index)))
                         else 
                             $contribution-id
                     
-                    return (
+                    (: Derive element name and role from type :)
+                    let $contribution-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
+                    let $contribution-type-tokenized := tokenize($contribution-type, '-')
+                    let $contribution-node-name := 
+                        if($contributor-id-param eq 'contributor-id-team') then
+                            'author'
+                        else 
+                            $contribution-type-tokenized[1]
                     
-                        (: Move the instance record from existing entity to, or create one in, the target :)
-                        (: This can happen independent of the update to the tei and doesn't require a new version of the text :)
-                        let $contribution-instance-existing := $contributors:contributors//m:instance[@id eq $contribution-id]
-                        let $contributors-target := $contributors:contributors/id($contributor-id)[self::m:person | self::m:team]
-                        
-                        return 
-                            update-entity:move-instance($contribution-id, 'translation-contribution', $contribution-instance-existing, $contributors-target)
-                        ,
-                        
-                        (: Add the contributors :)
-                        if(not($contributor-id-param eq 'contributor-id-team')) then
-                        
-                            let $contribution-type := request:get-parameter(concat('contributor-type-', $contributor-index), '')
-                            let $contribution-type-tokenized := tokenize($contribution-type, '-')
-                            let $contribution-node-name := $contribution-type-tokenized[1]
-                            let $contribution-role :=
-                                if (count($contribution-type-tokenized) eq 2) then
-                                    $contribution-type-tokenized[2]
-                                else
-                                    ''
-                            let $contribution-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
-                            let $contribution-expression :=
+                    let $contribution-role :=
+                        if($contributor-id-param eq 'contributor-id-team') then
+                            'translatorMain'
+                        else if (count($contribution-type-tokenized) eq 2) then
+                            $contribution-type-tokenized[2]
+                        else
+                            ''
+                    
+                    let $contribution-expression := request:get-parameter(concat('contributor-expression-', $contributor-index), '')
+                    
+                    let $is-contribution := if($contribution-node-name gt '' and $contribution-role gt '' and $contributor-target) then true() else false()
+                    
+                    (: Move the instance record from existing entity to, or create one in, the target :)
+                    (: This can happen independent of the update to the tei and doesn't require a new version of the text :)
+                    let $update-instance :=
+                        (: update-entity:move-instance performs move, or add :)
+                        if($is-contribution) then
+                            update-entity:move-instance($contribution-id, 'translation-contribution', $contribution-instance-existing, $contributor-target)
+                        (: update-entity:move-instance removes instance if no target :)
+                        else
+                            update-entity:move-instance($contribution-id, 'translation-contribution', $contribution-instance-existing, ())
+                    
+                    return 
+                        (: Record the contribution :)
+                        if($is-contribution) then (
+                            $node-ws,
+                            element { QName("http://www.tei-c.org/ns/1.0", $contribution-node-name) } {
+                                attribute role {$contribution-role},
+                                attribute xml:id { $contribution-id },
+                                
                                 if ($contribution-expression gt '') then
                                     $contribution-expression
+                                else if($contribution-existing[node()] and $contributor-target) then
+                                    $contribution-existing/node()
                                 else
-                                    $contributors:contributors//m:person[@xml:id eq $contributor-id]/m:label/text()
-                            
-                            where $contribution-node-name and $contribution-role
-                            return (
-                                $node-ws,
-                                element { QName("http://www.tei-c.org/ns/1.0", $contribution-node-name) } {
-                                    attribute role {$contribution-role},
-                                    attribute xml:id { $contribution-id },
-                                    text {$contribution-expression}
+                                    $contributor-target/m:label/text()
                                 }
-                            )
-                        
-                        (: Copy the team - only the entity assignment can change :)
-                        else (
-                            $node-ws,
-                            $tei/id($contribution-id)
                         )
-                        
-                )
+                        else ()
+                
             )
             (: or just copy them :)
             else
@@ -499,6 +506,7 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
             ,
             
             (: Increment the version number - do first so it can evaluate the change :)
+            (: Don't increment if this request included a change to the version!! :)
             if ($title-statement-change or $notes-statement-change) then
                 update-tei:minor-version-increment($tei, concat('Auto (', $form-action, ')'))
             else ()
@@ -721,13 +729,46 @@ declare function update-tei:source($tei as element(tei:TEI)) as element()* {
 declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-id as xs:string) as element()* {
 
     (: To create a new item pass a $glossary-id that is unused :)
-    let $parent := $tei//tei:back//tei:list[@type eq 'glossary']
+    let $parent := $tei/tei:text/tei:back/tei:div[@type eq 'glossary']/tei:list[@type eq 'glossary']
+    
+    (: If there's no parent list create one :)
+    let $parent :=
+        if(not($parent)) then
+            
+            let $check-back :=
+                if(not($tei/tei:text/tei:back)) then
+                    update insert ( common:ws(2), element { QName('http://www.tei-c.org/ns/1.0', 'back') } {} ) into $tei/tei:text
+                else ()
+            
+            let $check-div :=
+                if(not($tei/tei:text/tei:back/tei:div[@type eq 'glossary'])) then
+                    update insert ( common:ws(3), element { QName('http://www.tei-c.org/ns/1.0', 'div') } { attribute type { 'glossary' } } ) into $tei/tei:text/tei:back
+                else ()
+            
+            let $check-list :=
+                if(not($tei/tei:text/tei:back/tei:div[@type eq 'glossary']/tei:list[@type eq 'glossary'])) then
+                    update insert ( common:ws(4), element { QName('http://www.tei-c.org/ns/1.0', 'list') } { attribute type { 'glossary' } } ) into $tei/tei:text/tei:back/tei:div[@type eq 'glossary']
+                else ()
+            
+            return
+                $tei/tei:text/tei:back/tei:div[@type eq 'glossary']/tei:list[@type eq 'glossary']
+        
+        else
+            $parent
     
     (: Look for an existing item :)
     let $existing-item := $parent/tei:item[tei:gloss[@xml:id eq $glossary-id]]
     
+    (: Look up entity :)
+    let $entity := $entities:entities//m:entity[m:instance/@id = $glossary-id]
+    let $entity :=
+        if(not($entity) and request:get-parameter('entity-id', '') gt '') then
+            $entities:entities/id(request:get-parameter('entity-id', ''))[self::m:entity]
+        else
+            $entity
+    
     (: If it's an update and the main term is '' then don't construct the new value e.g. remove existing :)
-    let $remove := (request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('main-term', '') eq '')
+    let $remove-entry := (request:get-parameter('form-action', '') eq 'update-glossary' and request:get-parameter('main-term', '') eq '')
     
     let $tei-version := tei-content:version-str($tei)
     
@@ -751,7 +792,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
     
     (: Only construct the new value if it's existing or it's a valid id :)
     let $new-value :=
-        if (($existing-item or tei-content:valid-xml-id($tei, $glossary-id)) and not($remove)) then
+        if (($existing-item or tei-content:valid-xml-id($tei, $glossary-id)) and not($remove-entry)) then
             element {QName('http://www.tei-c.org/ns/1.0', 'item')} {
                 $existing-item/@*,
                 common:ws(6),
@@ -875,8 +916,11 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                                     $definition-text
                             }
                     
-                    let $use-definition := request:get-parameter('use-definition', '')[. = ('both', 'append', 'prepend', 'override', 'incompatible')]
-    
+                    let $use-definition := 
+                        if($definitions-markup and $entity/m:content[@type eq 'glossary-definition'][node()]) then
+                            request:get-parameter('use-definition', '')[. = ('both', 'append', 'prepend', 'override', 'incompatible')]
+                        else ()
+                    
                     where $definitions-markup
                     return (
                         common:ws(7),
@@ -929,11 +973,16 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
         common:update('glossary-item', $existing-item, $new-value, $parent, ()),
         
         (: If we are removing the instance then also remove the entity instance and refresh the cache :)
-        if($remove) then (
+        if($remove-entry and $entity) then (
             (: Does the cache refresh get triggered anyway? :)
             (:update-tei:cache-glossary($tei, 'none'),:)
             update-entity:remove-instance($glossary-id)
         )
+        
+        (: If we are creating a new entry and an entity is defined then make the association :)
+        else if(not($existing-item) and $entity) then
+            update-entity:match-instance($entity/@xml:id, $glossary-id, 'glossary-item', ())
+            
         else ()
         
         (:element debug {

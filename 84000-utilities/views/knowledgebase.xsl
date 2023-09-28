@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -68,14 +68,16 @@
                             </div>
                         </div>
                         
-                        <div>
-                            <a target="84000-operations" class="btn btn-danger">
-                                <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
-                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
-                                <xsl:value-of select="'Add a new article'"/>
-                            </a>
-                        </div>
+                        <xsl:if test="$environment/m:url[@id eq 'operations']">
+                            <div>
+                                <a target="84000-operations" class="btn btn-danger">
+                                    <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
+                                    <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
+                                    <xsl:value-of select="'Add a new article'"/>
+                                </a>
+                            </div>
+                        </xsl:if>
                         
                         <div>
                             
@@ -138,7 +140,7 @@
                 
                 <div>
                     <span class="h3">
-                        <xsl:value-of select="m:titles/m:title[@type eq 'mainTitle'][1]"/>
+                        <xsl:value-of select="m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                     </span>
                     <small>
                         <xsl:value-of select="concat(' / ', @kb-id)"/>

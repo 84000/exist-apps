@@ -53,7 +53,7 @@ let $part :=
 let $view-mode-validated :=
     if($resource-suffix eq 'epub') then
         $translation:view-modes/m:view-mode[@id eq 'ebook']
-    else if($resource-suffix eq 'txt') then
+    else if($resource-suffix = ('txt', 'plain.txt', 'json')) then
         $translation:view-modes/m:view-mode[@id eq 'txt']
     else if($translation:view-modes/m:view-mode[@id eq $view-mode]) then
         $translation:view-modes/m:view-mode[@id eq $view-mode]
@@ -67,8 +67,8 @@ let $request :=
         attribute resource-id { $source/@key },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
-        attribute doc-type { request:get-parameter('resource-suffix', 'html') },
-        attribute part { ($part/@xml:id, $part/@type, $part-id[. = ('end-notes')])[1] },
+        attribute doc-type { if($resource-suffix = ('txt', 'plain.txt')) then 'txt' else $resource-suffix },
+        attribute part { ($part/@xml:id, $part/@type, $part-id[. = ('end-notes','citation-index')])[1] },
         attribute commentary { $commentary-source/@key },
         attribute view-mode { $view-mode-validated/@id },
         attribute archive-path { $archive-path },
@@ -99,10 +99,10 @@ return
     if($cached) then  $cached 
     
     (: tei :)
-    else if($resource-suffix = ('tei')) then $tei
+    else if($request[@resource-suffix eq 'tei']) then $tei
     
     (: cache :)
-    else if($resource-suffix = ('cache')) then glossary:cache($tei, false())
+    else if($request[@resource-suffix eq 'cache']) then glossary:cache($tei, false())
     
     (: Compile response :)
     else
@@ -119,7 +119,7 @@ return
         )
         
         let $parts := 
-            if($resource-suffix = ('rdf', 'json')) then 
+            if($request[@resource-suffix eq 'rdf']) then 
                 translation:summary($tei)
             else 
                 translation:parts($tei, $request/@part, $view-mode-validated, ())

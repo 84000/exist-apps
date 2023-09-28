@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -112,7 +112,7 @@
             - Add a zero-length break after a beginning shad
             - Add a she to the end
         -->
-        <xsl:value-of select="replace(replace(replace($bo-string, '\s+', ' '), '(།)(\S)', '$1​$2'), '་\s+$', '་')"/>                  
+        <xsl:value-of select="replace(replace(replace(normalize-unicode($bo-string), '\s+', ' '), '(།)(\S)', '$1​$2'), '་\s+$', '་')"/>                  
     </xsl:function>
     
     <xsl:function name="common:alphanumeric" as="xs:string">
@@ -165,55 +165,75 @@
         <xsl:value-of select="concat($action-str, $date-str, $user-str)"/>
     </xsl:function>
     
-    <xsl:function name="common:pagination">
+    <xsl:function name="common:pagination" as="element(xhtml:nav)">
         
         <xsl:param name="first-record" as="xs:integer"/>
         <xsl:param name="max-records" as="xs:integer"/>
         <xsl:param name="count-records" as="xs:integer"/>
         <xsl:param name="base-url" as="xs:string"/>
         
+        <xsl:sequence select="common:pagination($first-record, $max-records, $count-records, $base-url, ())"/>
+        
+    </xsl:function>
+    <xsl:function name="common:pagination" as="element(xhtml:nav)">
+        
+        <xsl:param name="first-record" as="xs:integer"/>
+        <xsl:param name="max-records" as="xs:integer"/>
+        <xsl:param name="count-records" as="xs:integer"/>
+        <xsl:param name="base-url" as="xs:string"/>
+        <xsl:param name="ajax-target" as="xs:string?"/>
+        
         <xsl:variable name="count-blocks" select="xs:integer(ceiling($count-records div $max-records))" as="xs:integer"/>
         <xsl:variable name="this-block" select="xs:integer(floor((($first-record -1) + $max-records) div $max-records))" as="xs:integer"/>
         
         <nav xmlns="http://www.w3.org/1999/xhtml" aria-label="Page navigation" class="pagination-nav pull-right">
             <ul class="pagination">
-                <li class="disabled">
-                    <span>
-                        <xsl:value-of select="concat(format-number($count-records, '#,###'), if($count-records gt 1) then ' records' else ' record')"/>
-                    </span>
-                </li>
-                <xsl:if test="$this-block gt  1">
-                    <li>
-                        <xsl:copy-of select="common:pagination-link(1, $max-records, $base-url, 'fa-first', 'Page 1')"/>
-                    </li>
-                    <li>
-                        <xsl:copy-of select="common:pagination-link((((($this-block - 1) - 1) * $max-records) + 1), $max-records, $base-url, 'fa-previous', concat('Page ', format-number(($this-block - 1), '#,###')))"/>
+                
+                <xsl:if test="$max-records gt 1">
+                    <li class="disabled">
+                        <span>
+                            <xsl:value-of select="concat(format-number($count-records, '#,###'), if($count-records gt 1) then ' records' else ' record')"/>
+                        </span>
                     </li>
                 </xsl:if>
+                
+                <xsl:if test="$this-block gt  1">
+                    <li>
+                        <xsl:sequence select="common:pagination-link(1, $max-records, $base-url, 'fa-first', 'Page 1', $ajax-target)"/>
+                    </li>
+                    <li>
+                        <xsl:sequence select="common:pagination-link((((($this-block - 1) - 1) * $max-records) + 1), $max-records, $base-url, 'fa-previous', concat('Page ', format-number(($this-block - 1), '#,###')), $ajax-target)"/>
+                    </li>
+                </xsl:if>
+                
                 <li class="active">
                     <span>
                         <xsl:value-of select="concat('page ', $this-block, ' of ', format-number($count-blocks, '#,###'))"/>
                     </span>
                 </li>
+                
                 <xsl:if test="$this-block lt $count-blocks">
                     <li>
-                        <xsl:copy-of select="common:pagination-link((((($this-block + 1) - 1) * $max-records) + 1), $max-records, $base-url, 'fa-next', concat('Page ', format-number(($this-block + 1), '#,###')))"/>
+                        <xsl:sequence select="common:pagination-link((((($this-block + 1) - 1) * $max-records) + 1), $max-records, $base-url, 'fa-next', concat('Page ', format-number(($this-block + 1), '#,###')), $ajax-target)"/>
                     </li>
                     <li>
-                        <xsl:copy-of select="common:pagination-link(((($count-blocks - 1) * $max-records) + 1), $max-records, $base-url, 'fa-last', concat('Page ', format-number($count-blocks, '#,###')))"/>
+                        <xsl:sequence select="common:pagination-link(((($count-blocks - 1) * $max-records) + 1), $max-records, $base-url, 'fa-last', concat('Page ', format-number($count-blocks, '#,###')), $ajax-target)"/>
                     </li>
                 </xsl:if>
+                
             </ul>
         </nav>
         
     </xsl:function>
-    
-    <xsl:function name="common:pagination-link">
+    <xsl:function name="common:pagination-link" as="element(xhtml:a)">
+        
         <xsl:param name="first-record" as="xs:integer"/>
         <xsl:param name="max-records" as="xs:integer"/>
         <xsl:param name="base-url" as="xs:string"/>
         <xsl:param name="link-text" as="xs:string"/>
         <xsl:param name="link-title" as="xs:string"/>
+        <xsl:param name="ajax-target" as="xs:string?"/>
+        
         <a xmlns="http://www.w3.org/1999/xhtml">
             
             <xsl:variable name="base-url-page" select="tokenize($base-url, '\?')[1]"/>
@@ -227,6 +247,9 @@
             <xsl:variable name="new-url-hash" select="if($base-url-hash gt '') then concat('#', $base-url-hash) else ''"/>
             
             <xsl:attribute name="href" select="concat($new-url-page, string-join($new-url-parameters,'&amp;'), $new-url-hash)"/>
+            <xsl:if test="$ajax-target">
+                <xsl:attribute name="data-ajax-target" select="$ajax-target"/>
+            </xsl:if>
             <xsl:attribute name="title" select="$link-title"/>
             
             <xsl:choose>
@@ -253,6 +276,7 @@
             </xsl:choose>
             
         </a>
+        
     </xsl:function>
     
     <xsl:function name="common:marker">
@@ -493,9 +517,26 @@
     <xsl:function name="common:matches-regex" as="xs:string">
         
         <xsl:param name="strings" as="xs:string*"/>
+        
+        <xsl:value-of select="common:matches-regex($strings, 'en')"/>
+        
+    </xsl:function>
+    <xsl:function name="common:matches-regex" as="xs:string">
+        
+        <xsl:param name="strings" as="xs:string*"/>
+        <xsl:param name="lang" as="xs:string?"/>
+        
         <xsl:variable name="strings-combined" select="string-join($strings ! normalize-space(.) ! common:escape-for-regex(.), '|')"/>
-        <!-- The word bounded by non-word characters, start or end -->
-        <xsl:value-of select="concat('(^|[^\w­])(', $strings-combined, ')(s|es|''s)?([^\w­]|$)')"/>
+        
+        <xsl:choose>
+            <xsl:when test="$lang eq 'bo'">
+                <xsl:value-of select="concat('(^|[^\p{L}­])(', $strings-combined, ')(ར|ས|འི)?([^\p{L}­]|$)')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <!-- The word bounded by non-word characters, start or end -->
+                <xsl:value-of select="concat('(^|[^\p{L}­])(', $strings-combined, ')(s|es|''s)?([^\p{L}­]|$)')"/>
+            </xsl:otherwise>
+        </xsl:choose>
         
     </xsl:function>
     

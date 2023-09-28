@@ -11,6 +11,7 @@ import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "knowledgebase.xql";
+import module namespace sponsorship="http://read.84000.co/sponsorship" at "sponsorship.xql";
 
 declare variable $section:sections := collection($common:sections-path);
 declare variable $section:texts := collection($common:translations-path);
@@ -55,7 +56,7 @@ declare function section:filters($tei as element(tei:TEI)) as element() {
     
 };
 
-declare function section:text($tei as element(tei:TEI), $resource-id as xs:string, $include-ancestors as xs:boolean){
+declare function section:text($tei as element(tei:TEI), $resource-id as xs:string){
     element { QName('http://read.84000.co/ns/1.0', 'text') }{
         attribute id { tei-content:id($tei) },
         attribute resource-id { $resource-id },
@@ -75,7 +76,6 @@ declare function section:text($tei as element(tei:TEI), $resource-id as xs:strin
         translation:summary($tei)
     }
 };
-
 
 declare function section:publication-status($section-id as xs:string, $sponsorship-text-ids as xs:string*) as element(m:translation-summary) {
     
@@ -153,29 +153,29 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
 
 declare function section:child-sections($tei as element(tei:TEI), $include-texts as xs:string, $nest as xs:integer) as element(m:section) {
     
-    let $id := tei-content:id($tei) ! upper-case(.)
+    let $section-id := tei-content:id($tei) ! upper-case(.)
     
     let $type := $tei/tei:teiHeader/tei:fileDesc/@type
     
     (: Get child-sections recursively so we end up with whole tree :)
     let $child-sections :=
-        for $child-section in $section:sections//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
+        for $child-section in $section:sections//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
             order by $child-section/tei:teiHeader//tei:sourceDesc/@sort-index ! xs:integer(.) ascending
         return
             section:child-sections($child-section, $include-texts, $nest + 1)
     
     (: Child texts for stats :)
-    let $child-texts := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $id]]
+    let $child-texts := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
     let $child-texts-fileDesc-published := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:published-status-ids]]
     let $child-texts-fileDesc-translated := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:translated-status-ids]]
     let $child-texts-fileDesc-in-translation := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:in-translation-status-ids]]
     let $child-texts-fileDesc-in-progress := $child-texts/tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:in-progress-status-ids]]
     
-    let $child-texts-bibls := $child-texts/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    let $child-texts-bibls-published := $child-texts-fileDesc-published/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    let $child-texts-bibls-translated := $child-texts-fileDesc-translated/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    let $child-texts-bibls-in-translation := $child-texts-fileDesc-in-translation/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
-    let $child-texts-bibls-in-progress := $child-texts-fileDesc-in-progress/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $id]
+    let $child-texts-bibls := $child-texts/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $section-id]
+    let $child-texts-bibls-published := $child-texts-fileDesc-published/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $section-id]
+    let $child-texts-bibls-translated := $child-texts-fileDesc-translated/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $section-id]
+    let $child-texts-bibls-in-translation := $child-texts-fileDesc-in-translation/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $section-id]
+    let $child-texts-bibls-in-progress := $child-texts-fileDesc-in-progress/tei:sourceDesc/tei:bibl[tei:idno/@parent-id eq $section-id]
     
     (: Child texts to list :)
     let $child-texts-output := 
@@ -189,11 +189,10 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
                 else
                     $child-texts
             
+            return
                 (: Get the correct Toh for this parent :)
-                for $resource-id in $text-tei//tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno[@parent-id = $id]]/@key
-                return
-                    section:text($text-tei, $resource-id, false())
-                    
+                $text-tei//tei:sourceDesc/tei:bibl[tei:idno/@parent-id = $section-id] ! section:text($text-tei, @key)
+        
         else ()
     
     (: Derive last updated from tree :)
@@ -211,7 +210,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
     
     return 
         element { QName('http://read.84000.co/ns/1.0', 'section') }{
-            attribute id { $id },
+            attribute id { $section-id },
             attribute type { $type },
             attribute nesting { $nest },
             attribute document-url { base-uri($tei) },
@@ -234,6 +233,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
             
             element { QName('http://read.84000.co/ns/1.0', 'texts') }{
                 attribute published-only { if($include-texts = ('children-published', 'descendants-published')) then '1' else '0' },
+                attribute child-texts-count { count($child-texts) },
                 $child-texts-output
             },
             
@@ -243,12 +243,14 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
         
 };
 
-declare function section:section-tree($tei as element(tei:TEI), $include-text-stats as xs:boolean, $include-texts as xs:string) as element(m:section) {
+declare function section:section-tree($tei as element(tei:TEI), $include-text-stats as xs:boolean, $include-texts as xs:string) as element(m:section)? {
     
     (: Includes ancestors and descendant sections, and about content :)
     
-    let $section := $tei[tei:teiHeader/tei:fileDesc[@type eq 'section']] ! section:child-sections(., $include-texts)
+    let $section := $tei[tei:teiHeader/tei:fileDesc[@type = ('section','grouping','pseudo-section')]] ! section:child-sections(., $include-texts)
+    let $sponsorship-text-ids := sponsorship:text-ids('sponsored')
     
+    where $section
     return
         element { node-name($section) }{
             $section/@*,
@@ -256,7 +258,7 @@ declare function section:section-tree($tei as element(tei:TEI), $include-text-st
             tei-content:ancestors($tei, '', 1),
             section:filters($tei),
             if($include-text-stats) then
-                section:publication-status(tei-content:id($tei), ())
+                section:publication-status(tei-content:id($tei), $sponsorship-text-ids)
             else ()
         }
         
@@ -289,10 +291,8 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
                 let $texts := 
                     for $tei in $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:published-status-ids]]]
                     return
-                        for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-                        return 
-                            section:text($tei, $toh-key, true())
-                            
+                        $tei//tei:sourceDesc/tei:bibl ! section:text($tei, @key)
+                
                 for $text in $texts
                 where (
                     (not($apply-filters[@text-id]) or $apply-filters[@text-id][@text-id = $text/@id])
@@ -305,20 +305,23 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
                 )
                 
             }
+            
         }
 };
 
 declare function section:texts($section-id as xs:string, $published-only as xs:boolean, $include-descendants as xs:boolean) as element() {
-    let $tei := tei-content:tei($section-id, 'section')
+
+    let $section-tei := tei-content:tei($section-id, 'section')
+    
     return
         if($include-descendants)then
             if($published-only)then
-                section:child-sections($tei, 'descendants-published')
+                section:child-sections($section-tei, 'descendants-published')
             else
-                section:child-sections($tei, 'descendants')
+                section:child-sections($section-tei, 'descendants')
         else
             if($include-descendants)then
-                section:child-sections($tei, 'children-published')
+                section:child-sections($section-tei, 'children-published')
             else
-                section:child-sections($tei, 'children')
+                section:child-sections($section-tei, 'children')
 };

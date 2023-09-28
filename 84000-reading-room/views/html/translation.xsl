@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -132,6 +132,14 @@
                                 <xsl:with-param name="part" select="m:translation/m:part[@type eq 'glossary']"/>
                                 <xsl:with-param name="css-classes" select="'page'"/>
                             </xsl:call-template>
+                            
+                            <!-- Citation Index -->
+                            <xsl:if test="$quotes-inbound">
+                                <xsl:call-template name="part">
+                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'citation-index']"/>
+                                    <xsl:with-param name="css-classes" select="'page'"/>
+                                </xsl:call-template>
+                            </xsl:if>
                             
                         </xsl:if>
                         
@@ -616,6 +624,10 @@
                             
                             <xsl:when test="$part[@type eq 'glossary']">
                                 <xsl:call-template name="glossary"/>
+                            </xsl:when>
+                            
+                            <xsl:when test="$part[@type eq 'citation-index']">
+                                <xsl:call-template name="citation-index"/>
                             </xsl:when>
                             
                             <xsl:otherwise>

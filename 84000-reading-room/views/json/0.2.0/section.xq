@@ -14,7 +14,11 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $xhtml-xsl := doc(concat($common:app-path, "/xslt/tei-to-xhtml.xsl"));
+declare variable $local:response := request:get-data()/m:response;
+declare variable $local:request := $local:response/m:request;
+declare variable $local:section := $local:response/m:section;
+declare variable $local:api-version := '0.2.0';
+declare variable $local:xhtml-xsl := doc(concat($common:app-path, "/xslt/tei-to-xhtml.xsl"));
 
 declare function local:section($section as element(m:section)) as element(mjson:section) {
     element { QName('http://json.84000.co/ns/1.0', 'section') } {
@@ -26,29 +30,67 @@ declare function local:section($section as element(m:section)) as element(mjson:
         
         if($section/m:abstract[*])then
             element abstract { 
-                eft-json:tei-to-escaped-xhtml($section/m:abstract/*, $xhtml-xsl) 
+                eft-json:tei-to-escaped-xhtml($section/m:abstract/*, $local:xhtml-xsl) 
             }
         else (),
         
         if($section/m:warning[*])then
             element warning { 
-                eft-json:tei-to-escaped-xhtml($section/m:warning/*, $xhtml-xsl) 
+                eft-json:tei-to-escaped-xhtml($section/m:warning/*, $local:xhtml-xsl) 
             }
         else (),
         
         if($section/m:about[*])then
             element about { 
-                eft-json:tei-to-escaped-xhtml($section/m:about/*, $xhtml-xsl)
+                eft-json:tei-to-escaped-xhtml($section/m:about/*, $local:xhtml-xsl)
             }
         else (),
         
         local:filters($section),
-        eft-json:copy-nodes($section/m:text-stats/m:stat),
+        local:stats($local:section//m:translation-summary[@section-id eq $section/@id]/m:publications-summary),
         eft-json:parent-sections($section/m:parent),
         local:child-texts($section/m:texts/m:text),
         local:child-sections($section/m:section)
         
     }
+};
+
+declare function local:stats($publications-summary as element(m:publications-summary)*) {
+    
+    for $type-element in ($publications-summary/m:texts, $publications-summary/m:pages)
+    let $type := if(local-name($type-element) eq 'texts') then 'count' else 'sum-pages'
+    
+    for $grouping in ((:'text', :)'toh')
+    for $grouping-element in $type-element[parent::*/@grouping eq $grouping]
+    for $scope in ('children', 'descendant')
+    for $scope-element in $grouping-element[parent::*/@scope eq $scope]
+    
+    let $scope-str := if($scope eq 'descendant') then 'descendants' else $scope
+    
+    for $stat in $scope-element/@*
+    let $stat-name := local-name($stat)
+    let $status := if($stat-name eq 'total') then 'text' else $stat-name
+      
+    where not($stat-name = ('sponsored', 'not-started'))
+    return (
+        element stat {
+            element type { string-join(($type, $status, $scope-str), '-') },
+            element value { 
+                attribute json:literal {'true'},
+                $stat/number()
+            }
+        },
+        if($status eq 'in-translation') then
+            element stat {
+                element type { string-join(($type, 'in-progress', $scope-str), '-') },
+                element value { 
+                    attribute json:literal {'true'},
+                    sum(($scope-element/@translated/number(), $scope-element/@in-translation/number()))
+                }
+            }
+        else ()
+    )
+    
 };
 
 declare function local:child-sections($children as element(m:section)*) as element(mjson:section)* {
@@ -88,27 +130,12 @@ declare function local:child-texts($texts as element(m:text)*) as element(mjson:
             
             if($text/m:part[@type eq 'summary'][tei:p])then
                 element summary { 
-                    eft-json:tei-to-escaped-xhtml($text/m:part[@type eq 'summary']/tei:p, $xhtml-xsl) 
+                    eft-json:tei-to-escaped-xhtml($text/m:part[@type eq 'summary']/tei:p, $local:xhtml-xsl) 
                 }
             else ()
             
         }
 };
-
-declare function local:simple-paragraphs($paragraphs as element()*) as element()* {
-    for $paragraph in $paragraphs/*
-    return
-        if($paragraph[text()[normalize-space()]]) then
-            element {
-                if(local-name($paragraph) = ('head')) then
-                    local-name($paragraph)
-                else
-                    'paragraph'
-            } { $paragraph/data() }
-        else
-            local:simple-paragraphs($paragraph)
-};
-
 
 declare function local:filters($section as element(m:section)) as element(mjson:filters)* {
     for $group in $section/m:filters/tei:div[@type eq "filter"][@xml:id][m:display]
@@ -119,31 +146,21 @@ declare function local:filters($section as element(m:section)) as element(mjson:
                 $group/tei:head/data()
             },
             element description {
-                eft-json:tei-to-escaped-xhtml($group/tei:p, $xhtml-xsl) 
+                eft-json:tei-to-escaped-xhtml($group/tei:p, $local:xhtml-xsl) 
             },
             eft-json:copy-nodes($group/m:filter)
         }
 };
 
-let $response := request:get-data()/m:response
-let $request := $response/m:request
-let $section := $response/m:section
-let $api-version := '0.2.0'
-
-return 
-    element { QName('http://json.84000.co/ns/1.0', 'section-json') } {
-        attribute api-version { $api-version },
-        attribute url { 
-            concat(
-                '/section/', $section/@id, '.json',
-                '?published-only=', xs:boolean($request/@published-only),
-                '&amp;child-texts-only=', xs:boolean($request/@child-texts-only),
-                '&amp;api-version=', $api-version
-            ) 
-        },
-        local:section($section)
-    }
-
-    
-   
-    
+element { QName('http://json.84000.co/ns/1.0', 'section-json') } {
+    attribute api-version { $local:api-version },
+    attribute url { 
+        concat(
+            '/section/', $local:section/@id, '.json',
+            '?published-only=', xs:boolean($local:request/@published-only),
+            '&amp;child-texts-only=', xs:boolean($local:request/@child-texts-only),
+            '&amp;api-version=', $local:api-version
+        ) 
+    },
+    local:section($local:section)
+}

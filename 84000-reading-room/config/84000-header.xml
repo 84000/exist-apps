@@ -91,7 +91,7 @@
                 <label key="label-glossary">Glossary of Terms</label>
             </item>
             <item url="https://read.84000.co/knowledgebase.html">
-                <label key="label-glossary">Knowledge Base</label>
+                <label key="label-knowledgebase">Knowledge Base</label>
             </item>
             <item url="https://read.84000.co/search.html">
                 <label key="label-search">Search</label>
@@ -231,7 +231,7 @@
                 <label key="label-glossary">術語表</label>
             </item>
             <item url="https://read.84000.co/knowledgebase.html?lang=zh">
-                <label key="label-glossary">Knowledge Base</label>
+                <label key="label-knowledgebase">Knowledge Base</label>
             </item>
             <item url="https://read.84000.co/search.html?lang=zh">
                 <label key="label-search">雲端藏經閣檢索</label>

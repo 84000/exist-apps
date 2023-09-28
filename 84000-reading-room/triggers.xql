@@ -206,7 +206,7 @@ declare function local:glossary-bo($doc, $do-all as xs:boolean) {
             $doc//tei:div[@type eq 'glossary']//tei:gloss
         else 
             $doc//tei:div[@type eq 'glossary']//tei:gloss[tei:term[@xml:lang eq 'Bo-Ltn'][not(@n eq (following-sibling::tei:term[1][@xml:lang eq 'bo']/@n, '0')[1])]]
-            
+    
     where $text-id
     return (
     

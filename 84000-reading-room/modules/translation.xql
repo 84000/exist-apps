@@ -727,7 +727,7 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
         (: Published TEI :)
         $tei-content:translations-collection//tei:TEI
             [tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability
-                [@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+                [range:eq(@status, $common:environment/m:render/m:status[@type eq 'translation']/@status-id)]
             ]
         ,
         
@@ -754,7 +754,7 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
     let $incoming-id-targets-chunks := common:ids-chunked($incoming-id-targets)
     let $incoming-teis :=
         for $key in map:keys($incoming-id-targets-chunks)
-        for $incoming-location in $published-tei/tei:text//tei:ptr[@target = map:get($incoming-id-targets-chunks, $key)]
+        for $incoming-location in $published-tei/tei:text//tei:ptr[range:eq(@target, map:get($incoming-id-targets-chunks, $key))]
         let $incoming-tei := $incoming-location/ancestor::tei:TEI
         return
             $incoming-tei
@@ -1414,26 +1414,28 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
 };
 
 declare function translation:citation-index($passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
-    ()
-    (:let $type := 'citation-index'
+
+    let $type := 'citation-index'
     let $citation-index := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
             attribute type { $type }
+            (:,element p { 'Passages this text that are quoted in other texts.' }:)
         }
     
     let $content-directive := 
         if($passage-id = ('citation-index', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            'passage'
+            'none'
         else if($view-mode[@parts eq 'outline']) then
-            'empty'
+            'none'
         else
             'preview'
     
+    where not($content-directive eq 'none') (: and false() Disable this while incomplete :)
     return
-        translation:part($citation-index, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ()):)
-        
+        translation:part($citation-index, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ())
+
 };
 
 declare function local:folio-refs-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {
@@ -1594,7 +1596,13 @@ declare function translation:folio-sort-index($tei as element(tei:TEI), $source-
     let $refs-sorted := translation:folio-refs-sorted($tei, $source-key)
     let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
     return
-        $ref/@index-in-sort ! xs:integer(.)
+        (: If the page has a folio use the sort index :)
+        if($ref[@index-in-sort]) then
+            $ref/@index-in-sort ! xs:integer(.)
+        (: If the index has no folio, but is in range use the input :)
+        else if($tei//tei:sourceDesc/tei:bibl[@key eq $source-key]/tei:location[@count-pages ! xs:integer(.) ge $index-in-resource]) then
+            $index-in-resource
+        else 0
 
 };
 
@@ -1705,18 +1713,21 @@ declare function translation:folio-content($tei as element(tei:TEI), $source-key
         else
             count($translation-paragraphs)
         
-        (: Get paragraphs including and between these 2 points :)
+    (: Get paragraphs including and between these 2 points :)
     let $folio-paragraphs :=
         if ($start-ref-paragraph) then
             $translation-paragraphs[position() ge $start-ref-paragraph-index and position() le $end-ref-paragraph-index]
         else ()
-        
+    
     return
         element {QName('http://read.84000.co/ns/1.0', 'folio-content')} {
+        
             attribute ref-index { $index-in-resource },
-            attribute count-refs { count($refs) },
-            attribute start-ref {$start-ref/@cRef},
-            attribute end-ref {$end-ref/@cRef},
+            attribute source-key { $source-key },
+            attribute count-refs { ($tei//tei:sourceDesc/tei:bibl[@key eq $source-key]/tei:location/@count-pages ! xs:integer(.), 0)[1] },
+            attribute start-ref { $start-ref/@cRef },
+            attribute end-ref { $end-ref/@cRef },
+            
             (: Convert the content to text and <ref/>s only :)
             for $node in 
                 $folio-paragraphs//text()[not(ancestor::tei:note)][not(ancestor::tei:orig)]
@@ -1732,6 +1743,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $source-key
                         text { $text },
                         if ( matches($text, '\W$', '')) then text { ' ' } else ()
                     )
+            
         }
 };
 
@@ -1874,7 +1886,7 @@ declare function translation:entities($entity-ids as xs:string*, $instance-ids a
     let $instance-entities :=
         for $key in map:keys($instance-id-chunks)
         return
-            $entities:entities//m:instance[@id = map:get($instance-id-chunks, $key)]/parent::m:entity
+            $entities:entities//m:instance[range:eq(@id, map:get($instance-id-chunks, $key))]/parent::m:entity
     
     let $entities := $entities:entities/id($entity-ids)/self::m:entity | $instance-entities
     
@@ -1911,7 +1923,7 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
     (: Local text :)
     let $this-toh := translation:toh($tei, '')
     let $this-text-type := tei-content:type($tei)
-    let $this-text-title := (tei-content:title($tei, 'shortcode', 'en'), $this-toh ! concat('t', @number, @letter) ! upper-case(.))[1]
+    let $this-text-titles := tei-content:titles-all($tei)/m:title
     let $quote-refs := $tei/tei:text//tei:ptr[@type eq 'quote-ref'][@xml:id][@target][ancestor::tei:q]
     let $quote-ref-target-ids := $quote-refs/@target ! replace(., '^#', '')
     
@@ -1922,16 +1934,7 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
     let $source-text-id := $source-tei ! tei-content:id(.)
     let $source-text-toh := $source-tei ! translation:toh(., '')
     let $source-text-type := $source-tei ! tei-content:type(.)
-    let $source-text-title := tei-content:title($source-tei, 'mainTitle', 'en')
-    let $source-text-shortcode := tei-content:title($source-tei, 'shortcode', 'en')
-    let $source-text-shortcode := 
-        if(not($source-text-shortcode)) then
-            $source-text-toh ! concat('t', @number, @letter) ! upper-case(.)
-        else 
-            $source-text-shortcode
-    
-    (: Descriptive label :)
-    let $quote-label := concat('This quote references ', $source-text-title)
+    let $source-text-titles := tei-content:titles-all($source-tei)/m:title
     
     return 
         for $source-location in $source-tei/id($quote-ref-target-ids)
@@ -1943,10 +1946,10 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
             for $quote-ref in $part//tei:ptr[@target eq $source-location-id-target]
             where $quote-ref[@type eq 'quote-ref']
             return 
-                local:quote($quote-ref, $part/@xml:id, $quote-label, $this-toh, $this-text-type, $this-text-title, $source-location, $source-part-id, $source-text-toh, $source-text-type, $source-text-shortcode)
+                local:quote($quote-ref, $part/@xml:id, $this-toh, $this-text-type, $this-text-titles, $source-location, $source-part-id, $source-text-toh, $source-text-type, $source-text-titles)
 };
 
-declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as xs:string, $quote-label as xs:string, $quote-text-toh as element(m:toh), $quote-text-type as xs:string, $quote-text-title as xs:string, $source-location as element(), $source-part-id as xs:string, $source-text-toh as element(m:toh), $source-text-type as xs:string, $source-text-title as xs:string) as element(m:quote)? {
+declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as xs:string, $quote-text-toh as element(m:toh), $quote-text-type as xs:string, $quote-text-titles as element(m:title)*, $source-location as element(), $source-part-id as xs:string, $source-text-toh as element(m:toh), $source-text-type as xs:string, $source-text-titles as element(m:title)*) as element(m:quote)? {
     
     let $quote-ref-parent := ($quote-ref/parent::tei:orig | $quote-ref/parent::tei:p | $quote-ref/parent::tei:q)(:$quote-ref/parent::tei:*:)
     let $quote := $quote-ref/ancestor::tei:q[1]
@@ -1962,18 +1965,23 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
             attribute resource-type { $quote-text-type },
             attribute part { $quote-part-id },
             
-            (: Label :)
-            element label { $quote-label },
-            (: Title of the text :)
-            element text-title { $quote-text-title },
+            (: Title of the quoting text :)
+            element text-shortcode { ($quote-text-titles[@type eq 'shortcode']/text(), $quote-text-toh ! concat('t', @number, @letter) ! upper-case(.))[1] },
+            element text-title { ($quote-text-titles[@type eq 'mainTitle'][@xml:lang eq 'en']/text(), $quote-text-titles[@type eq 'mainTitle']/text())[1] },
+            $quote-text-toh,
             
-            (: Properties of the source text :)
+            (: Properties of the quoted text :)
             element source {
+            
                 attribute resource-id { $source-text-toh/@key },
                 attribute resource-type { $source-text-type },
                 attribute location-id { $source-location/@xml:id },
                 attribute location-part { $source-part-id },
-                element text-title { $source-text-title }
+                
+                element text-shortcode { ($source-text-titles[@type eq 'shortcode']/text(), $source-text-toh ! concat('t', @number, @letter) ! upper-case(.))[1] },
+                element text-title { ($source-text-titles[@type eq 'mainTitle'][@xml:lang eq 'en']/text(), $source-text-titles[@type eq 'mainTitle']/text())[1] },
+                $source-text-toh
+                
             },
             
             (: Include quote :)

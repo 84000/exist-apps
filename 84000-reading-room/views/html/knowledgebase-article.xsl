@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -123,6 +123,10 @@
                                     </xsl:for-each-group>
                                 </ul>
                             </xsl:if>
+                            
+                            <p class="italic text-muted">
+                                <xsl:value-of select="concat(if($article/m:publication/m:publication-date[matches(text(), '^[0-9]{4}')]) then concat('First published ', $article/m:publication/m:publication-date ! replace(text(), '^([0-9]{4})(.*)', '$1'), '. ') else (), 'Last updated ', format-dateTime($article/m:page/@last-updated, '[D1o] [MNn,*-3] [Y0001]'), '.')"/>
+                            </p>
                             
                             <div id="parts">
                                 
@@ -385,9 +389,7 @@
                                     <xsl:if test="$notes-with-content">
                                         <section id="end-notes" class="tei-parser">
                                             <!--<hr class="hidden-print"/>-->
-                                           <xsl:call-template name="end-notes">
-                                                <xsl:with-param name="end-notes" select="$notes-with-content"/>
-                                            </xsl:call-template>
+                                           <xsl:call-template name="end-notes"/>
                                         </section>
                                     </xsl:if>
                                     

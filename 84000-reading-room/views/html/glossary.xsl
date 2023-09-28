@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -11,6 +11,7 @@
     <xsl:variable name="search-text" select="/m:response/m:request/m:search/data()" as="xs:string?"/>
     <xsl:variable name="search-text-bo" select="/m:response/m:request/m:search-bo/data()" as="xs:string?"/>
     <xsl:variable name="flagged" select="/m:response/m:request/@flagged" as="xs:string?"/>
+    <xsl:variable name="entities-list" select="/m:response/m:entities/m:entity" as="element(m:entity)*"/>
     
     <!-- Process entities data -->
     <xsl:variable name="entities-data" as="element(m:entity-data)*">
@@ -395,11 +396,15 @@
                                 
                             </form>
                             
+                            <!-- Results -->
                             <xsl:choose>
-                                <xsl:when test="$entities">
+                                
+                                <xsl:when test="$entities-list">
+                                    
+                                    <hr class="no-bottom-margin"/>
                                     
                                     <nav role="navigation" id="entity-list">
-                                        <xsl:for-each select="$entities">
+                                        <xsl:for-each select="$entities-list">
                                             
                                             <xsl:variable name="entity" select="."/>
                                             <xsl:variable name="entity-data" select="$entities-data[@ref eq $entity/@xml:id]"/>
@@ -411,7 +416,7 @@
                                                 
                                                 <div class="list-item" id="{ $item-id }">
                                                     
-                                                    <!-- Entity title -->
+                                                    <!-- Entity title / link -->
                                                     <a class="entity-title block-link opener-link log-click">
                                                         
                                                         <xsl:attribute name="href" select="common:internal-link(concat('/glossary/', $item-id, '.html'), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter((),())), concat('#', $item-id, '-detail'), $root/m:response/@lang)"/>
@@ -566,7 +571,7 @@
                                     </nav>
                                     
                                     <!-- Pagination -->
-                                    <xsl:copy-of select="common:pagination(m:request/@first-record, m:request/@records-per-page, m:entities/@count-entities, $page-url)"/>
+                                    <xsl:sequence select="common:pagination(m:request/@first-record, m:request/@records-per-page, m:entities/@count-entities, common:internal-link($page-url, (m:view-mode-parameter((),())),(), /m:response/@lang))"/>
                                     
                                 </xsl:when>
                                 

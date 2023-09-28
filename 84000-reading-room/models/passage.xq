@@ -47,7 +47,8 @@ let $request :=
         attribute view-mode { $view-mode/@id },
         attribute archive-path { $archive-path },
         
-        $view-mode,$passage
+        $view-mode,
+        $passage
         
     }
 

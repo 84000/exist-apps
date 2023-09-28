@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -57,26 +57,26 @@
     
     <!-- Generic alert -->
     <xsl:template name="alert-updated">
-        <xsl:if test="m:updates/m:updated[@update]">
+        <xsl:if test="/m:response/m:updates/m:updated[@update]">
             
-            <div class="alert alert-success alert-temporary" role="alert">
+            <div class="alert alert-success alert-temporary small" role="alert">
                 <xsl:value-of select="'Updated'"/>
             </div>
             
             <xsl:choose>
-                <xsl:when test="m:updates/m:updated[@update][@node eq 'text-version']">
-                    <div class="alert alert-warning" role="alert">
+                <xsl:when test="/m:response/m:updates/m:updated[@update][@node eq 'text-version']">
+                    <div class="alert alert-warning small" role="alert">
                         <xsl:value-of select="'The version number has been updated'"/>
                     </div>
                 </xsl:when>
-                <xsl:when test="m:updates/m:updated[@update][@node eq 'cache-glossary']">
-                    <div class="alert alert-warning" role="alert">
+                <xsl:when test="/m:response/m:updates/m:updated[@update][@node eq 'cache-glossary']">
+                    <div class="alert alert-warning small" role="alert">
                         <xsl:value-of select="'Glossary locations have been cached'"/>
                     </div>
                 </xsl:when>
                 <xsl:otherwise>
-                    <div class="alert alert-danger" role="alert">
-                        <xsl:value-of select="'To ensure these updates are deployed to the distribution server please update the version in the status section!!'"/>
+                    <div class="alert alert-danger small" role="alert">
+                        <xsl:value-of select="'To ensure these updates are deployed to the distribution server please increment the version number in the status section!!'"/>
                     </div>
                 </xsl:otherwise>
             </xsl:choose>
@@ -560,14 +560,10 @@
             <!-- When there is an entity  -->
             <xsl:when test="$entity">
                 
-                <div class="alert alert-danger">
-                    <p class="small text-center">
-                        <xsl:value-of select="'NOTE: Updates to this '"/>
-                        <strong>
-                            <xsl:value-of select="'shared entity'"/>
-                        </strong>
-                        <xsl:value-of select="' must apply for all grouped entries listed below!'"/>
-                    </p>
+                <div class="top-margin bottom-margin text-center">
+                    <span class="label label-danger">
+                        <xsl:value-of select="'NOTE: Updates to this shared entity must apply for all grouped entries listed below!'"/>
+                    </span>
                 </div>
                 
             </xsl:when>
@@ -575,10 +571,10 @@
             <!-- When there is no entity -->
             <xsl:otherwise>
                 
-                <div class="alert alert-danger">
-                    <p class="small text-center">
-                        <xsl:value-of select="'Please check &#34;possible matches&#34; for an existing entity before creating a new one!'"/>
-                    </p>
+                <div class="top-margin bottom-margin text-center">
+                    <span class="label label-danger">
+                        <xsl:value-of select="'Please check &#34;suggested matches&#34; for an existing entity before creating a new one!'"/>
+                    </span>
                 </div>
                 
             </xsl:otherwise>
@@ -598,8 +594,16 @@
         <xsl:param name="default-entity-type" as="xs:string"/>
         <xsl:param name="entity-types" as="element(m:type)*"/>
         <xsl:param name="instance" as="element(m:instance)?"/>
-                
+        
         <input type="hidden" name="entity-id" value="{ $entity/@xml:id }"/>
+        
+        <xsl:if test="/m:response/m:updates/m:updated[@update][@node eq 'entity']">
+            <div class="top-margin">
+                <div class="alert alert-success alert-temporary small" role="alert">
+                    <xsl:value-of select="'Updated'"/>
+                </div>
+            </div>
+        </xsl:if>
         
         <!-- Labels -->
         <div class="add-nodes-container">
@@ -1347,7 +1351,7 @@
     
     <xsl:template name="combined-definitions">
         
-        <xsl:param name="entry" as="element(m:entry)"/>
+        <xsl:param name="entry" as="element(m:entry)?"/>
         <xsl:param name="entity" as="element(m:entity)?"/>
         
         <xsl:variable name="entry-definition" select="$entry/m:definition[descendant::text()[normalize-space()]]"/>
@@ -1373,7 +1377,7 @@
         </xsl:if>
         
         <!-- Use entity definition after -->
-        <xsl:if test="$entity-definition and $entry-definition[not(@use-definition = ('both','prepend'))]">
+        <xsl:if test="$entity-definition and (not($entry-definition) or $entry-definition[not(@use-definition = ('both','prepend'))])">
             <div class="sml-margin bottom collapse-one-line">
                 <xsl:call-template name="entity-definition">
                     <xsl:with-param name="entity" select="$entity"/>
@@ -1572,7 +1576,7 @@
                             
                             <!-- Main term -->
                             <span class="text-danger">
-                                <xsl:value-of select="m:titles !(m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
+                                <xsl:value-of select="m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                             </span>
                             
                             <!-- Link to Reading Room -->

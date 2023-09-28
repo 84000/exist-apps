@@ -1102,7 +1102,8 @@ declare function common:spreadsheet-zip($spreadsheet-data as element(m:spreadshe
 declare function common:ids-chunked($ids as xs:string*) as map(*) {
     
     map:merge(
-    
+        
+        let $ids := distinct-values($ids)
         let $chunk-size := xs:integer(1024)
         let $chunks-count := xs:integer(ceiling(count($ids) div $chunk-size))
         

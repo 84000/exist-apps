@@ -34,15 +34,15 @@ let $xml-response :=
         )
     )
     
-    return
+return
+
+    (: return html data :)
+    if($resource-suffix eq 'html') then (
+        common:html($xml-response, concat(local:app-path(), '/views/create-article.xsl'))
+    )
     
-        (: return html data :)
-        if($resource-suffix eq 'html') then (
-            common:html($xml-response, concat(local:app-path(), '/views/create-article.xsl'))
-        )
-        
-        (: return xml data :)
-        else (
-            util:declare-option("exist:serialize", "method=xml indent=no"),
-            $xml-response
-        )
+    (: return xml data :)
+    else (
+        util:declare-option("exist:serialize", "method=xml indent=no"),
+        $xml-response
+    )

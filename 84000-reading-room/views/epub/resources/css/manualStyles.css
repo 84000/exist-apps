@@ -612,7 +612,7 @@ img.logo-84000 {
 .glossary-item .alternative {
     display: none;
 }
-.glossary-item > .glossary-content> *  {
+.glossary-item > .item-content> *  {
     margin-bottom: .5em;
 }
 .glossary-item .footer .heading {

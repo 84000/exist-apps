@@ -5,6 +5,7 @@ declare namespace m="http://read.84000.co/ns/1.0";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
+import module namespace contributors="http://read.84000.co/contributors" at "../../84000-reading-room/modules/contributors.xql";
 
 declare variable $local:tei := (
     collection($common:translations-path)//tei:TEI
@@ -60,6 +61,20 @@ declare function local:authors-without-pages() {
         
 };
 
-local:texts-with-issues()
+(: Contribution instances without contributions :)
+declare function local:contribution-instances-orphaned() {
+    
+    for $contribution-instance in $contributors:contributors//m:instance[@type eq 'translation-contribution']
+    where 
+        count($local:tei/id($contribution-instance/@id)[self::tei:author | self::tei:editor | self::tei:consultant]) ne 1
+        and not(matches($contribution-instance/@id, '^UT22084\-000\-000'))
+    return
+        $contribution-instance
+    
+};
+
+(:local:texts-with-issues():)
 (:local:entities-with-issues():)
 (:local:authors-without-pages():)
+local:contribution-instances-orphaned()
+

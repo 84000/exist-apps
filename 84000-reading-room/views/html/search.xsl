@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -146,8 +146,14 @@
                                 <!-- TM search form -->
                                 <xsl:call-template name="tm-search-form"/>
                                 
+                                <hr/>
+                                
                                 <!-- TM search results -->
-                                <xsl:apply-templates select="m:tm-search"/>
+                                <xsl:call-template name="tm-search-results">
+                                    <xsl:with-param name="results" select="m:tm-search/m:results"/>
+                                    <xsl:with-param name="pagination-url" select="$base-url"/>
+                                    <xsl:with-param name="dualview" select="true()"/>
+                                </xsl:call-template>
                                 
                             </div>
                             
@@ -166,7 +172,10 @@
                                 <xsl:call-template name="tei-search-form"/>
                                 
                                 <!-- TEI search results -->
-                                <xsl:apply-templates select="m:tei-search"/>
+                                <xsl:call-template name="tei-search-results">
+                                    <xsl:with-param name="results" select="m:tei-search/m:results"/>
+                                    <xsl:with-param name="pagination-url" select="$base-url"/>
+                                </xsl:call-template>
                                 
                             </div>
                             
@@ -208,7 +217,7 @@
                                     <label>
                                         <input type="checkbox" name="search-data[]">
                                             <xsl:attribute name="value" select="@id"/>
-                                            <xsl:if test="@selected eq 'selected' or not($request/m:search-data/m:type[@selected eq 'selected'])">
+                                            <xsl:if test="@selected eq 'selected'">
                                                 <xsl:attribute name="checked" select="'checked'"/>
                                             </xsl:if>
                                         </input>
@@ -234,7 +243,7 @@
                         <xsl:when test="$specified-text">
                             <input type="hidden" name="specified-text" value="{ $specified-text/@resource-id }"/>
                             <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
-                                <xsl:value-of select="concat('in ', $specified-text/m:titles/m:title[@xml:lang eq 'en'][1] , ' / ', $specified-text/m:bibl/m:toh/m:full[1])"/>
+                                <xsl:value-of select="concat('in ', ($specified-text/m:titles/m:title[@xml:lang eq 'en'])[1] , ' / ', ($specified-text/m:bibl/m:toh/m:full)[1])"/>
                                 <span class="pull-right">
                                     <a class="inline-block alert-link">
                                         <xsl:attribute name="href" select="$base-url"/>
@@ -308,19 +317,23 @@
         
     </xsl:template>
     
-    <xsl:template match="m:tei-search">
+    <xsl:template name="tei-search-results">
+        
+        <xsl:param name="results" as="element(m:results)"/>
+        <xsl:param name="pagination-url" as="xs:string"/>
+        <xsl:param name="ajax-target" as="xs:string?"/>
         
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
                 
                 <!-- Results list -->
                 <xsl:choose>
-                    <xsl:when test="m:results[m:result]">
+                    <xsl:when test="$results[m:result]">
                         
-                        <xsl:variable name="first-record" select="m:results/@first-record"/>
+                        <xsl:variable name="first-record" select="$results/@first-record"/>
                         
                         <div class="search-results">
-                            <xsl:for-each select="m:results/m:result">
+                            <xsl:for-each select="$results/m:result">
                                 
                                 <xsl:sort select="@score ! xs:double(.)" order="descending"/>
                                 
@@ -630,7 +643,7 @@
                         </div>
                         
                         <!-- Pagination -->
-                        <xsl:sequence select="common:pagination($request/@first-record, $request/@max-records, m:results/@count-records, $base-url)"/>
+                        <xsl:sequence select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, $pagination-url, $ajax-target)"/>
                         
                     </xsl:when>
                     <xsl:otherwise>
@@ -652,22 +665,25 @@
         
     </xsl:template>
     
-    <xsl:template match="m:tm-search">
+    <xsl:template name="tm-search-results">
         
-        <!-- Results list -->
+        <xsl:param name="results" as="element(m:results)"/>
+        <xsl:param name="pagination-url" as="xs:string"/>
+        <xsl:param name="ajax-target" as="xs:string?"/>
+        <xsl:param name="dualview" as="xs:boolean" select="false()"/>
+        
         <xsl:choose>
-            <xsl:when test="m:results[m:item]">
-                
-                <hr/>
+            <xsl:when test="$results[m:item]">
                 
                 <div class="search-results">
-                    <xsl:for-each select="m:results/m:item">
+                    <xsl:for-each select="$results/m:item">
                         
                         <xsl:sort select="@score ! xs:double(.)" order="descending"/>
                         
                         <div class="search-result" id="search-result-{ @index }">
                             <div class="row">
                                 
+                                <!-- Segments -->
                                 <div class="col-sm-6">
                                     <div class="row">
                                         <div class="col-sm-1 sml-margin top">
@@ -685,11 +701,9 @@
                                             <ul class="list-unstyled search-match-gloss">
                                                 <xsl:if test="m:match/m:tibetan[node()]">
                                                     <li>
-                                                        
                                                         <span class="text-bo">
                                                             <xsl:apply-templates select="m:match/m:tibetan/node()"/>
                                                         </span>
-                                                        
                                                     </li>
                                                 </xsl:if>
                                                 <xsl:if test="m:match/m:translation[node()]">
@@ -713,6 +727,7 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Metadata -->
                                 <div class="col-sm-6">
                                     
                                     <!-- 
@@ -725,9 +740,16 @@
                                                 <!-- Dualview link -->
                                                 <a>
                                                     <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
-                                                    <xsl:attribute name="target" select="concat('translation-', m:header/@resource-id)"/>
-                                                    <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, m:match/@location)"/>
-                                                    <xsl:attribute name="data-dualview-title" select="m:header/m:bibl/m:toh/m:full/text()"/>
+                                                    <xsl:choose>
+                                                        <xsl:when test="$dualview">
+                                                            <xsl:attribute name="target" select="concat('translation-', m:header/@resource-id)"/>
+                                                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, m:match/@location)"/>
+                                                            <xsl:attribute name="data-dualview-title" select="m:header/m:bibl[1]/m:toh/m:full/text()"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:attribute name="target" select="concat(m:header/@resource-id, '.html')"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
                                                     <xsl:apply-templates select="m:header/m:titles/m:title[@xml:lang eq 'en']"/>
                                                 </a>
                                                 
@@ -741,24 +763,28 @@
                                     
                                     <!-- Location in the canon -->
                                     <xsl:for-each select="m:header/m:bibl">
-                                        <xsl:variable name="header" select="."/>
+                                        
+                                        <xsl:variable name="bibl" select="."/>
+                                        
                                         <div class="ancestors text-muted small">
                                             <xsl:value-of select="'in '"/>
                                             <ul class="breadcrumb">
                                                 
-                                                <xsl:sequence select="common:breadcrumb-items($header/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
+                                                <xsl:sequence select="common:breadcrumb-items($bibl/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                                 
-                                                <xsl:if test="$header/m:toh/m:full">
+                                                <xsl:if test="$bibl/m:toh/m:full">
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key, '.html')"/>
-                                                            <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
-                                                            <xsl:apply-templates select="$header/m:toh/m:full"/>
+                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $bibl/m:toh/@key, '.html')"/>
+                                                            <xsl:attribute name="target" select="concat($bibl/@resource-id, '.html')"/>
+                                                            <xsl:apply-templates select="$bibl/m:toh/m:full"/>
                                                         </a>
                                                     </li>
                                                 </xsl:if>
+                                                
                                             </ul>
                                         </div>
+                                        
                                     </xsl:for-each>
                                     
                                     <!-- Contributors -->
@@ -822,30 +848,6 @@
                                                 </li>
                                             </xsl:if>
                                             
-                                            <!--<xsl:if test="/m:response[@tei-editor eq 'true'] and m:match[@type = ('tm-unit')][@type-id]">
-                                            <li>
-                                                <span>
-                                                    <xsl:choose>
-                                                        <xsl:when test="m:match/m:flag[@type eq 'requires-attention']">
-                                                            <xsl:attribute name="class" select="'label label-danger'"/>
-                                                            <xsl:value-of select="'Requires attention | '"/>
-                                                            <a>
-                                                                <xsl:attribute name="href" select="concat($base-url, '&amp;first-record=', $request/@first-record, '&amp;clear-flag=requires-attention', '&amp;flag-id=', m:match/@type-id, '#search-result-', @index )"/>
-                                                                <xsl:value-of select="'clear'"/>
-                                                            </a>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:attribute name="class" select="'small'"/>
-                                                            <a>
-                                                                <xsl:attribute name="href" select="concat($base-url, '&amp;first-record=', $request/@first-record, '&amp;set-flag=requires-attention', '&amp;flag-id=', m:match/@type-id, '#search-result-', @index )"/>
-                                                                <xsl:value-of select="'Flag as requiring attention'"/>
-                                                            </a>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </span>
-                                            </li>
-                                        </xsl:if>-->
-                                            
                                         </ul>
                                     </div>
                                     
@@ -861,7 +863,7 @@
                 <hr class="sml-margin"/>
                 
                 <!-- Pagination -->
-                <xsl:sequence select="common:pagination($request/@first-record, $request/@max-records, m:results/@count-records, $base-url)"/>
+                <xsl:sequence select="common:pagination($results/@first-record, $results/@max-records, $results/@count-records, $pagination-url, $ajax-target)"/>
                 
             </xsl:when>
             <xsl:otherwise>
