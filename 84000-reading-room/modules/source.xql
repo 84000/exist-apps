@@ -29,8 +29,8 @@ declare variable $source:etengyur-volume-offset := 316;
 
 declare variable $source:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default"  client="browser"  cache="use-cache"  layout="full"  glossary="bo-cache"   parts="passage"/>
-        <view-mode id="editor"   client="browser"  cache="suppress"   layout="full"  glossary="no-cache"   parts="glossary"/>
+        <view-mode id="default"  client="browser"  cache="use-cache"  layout="full"  glossary="bo-cache"   parts="passage"  annotation="none" />
+        <view-mode id="editor"   client="browser"  cache="suppress"   layout="full"  glossary="no-cache"   parts="glossary" annotation="none" />
     </view-modes>;
 
 declare function source:etext-path($work as xs:string) as xs:string {

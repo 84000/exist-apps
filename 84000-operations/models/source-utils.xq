@@ -70,11 +70,11 @@ let $result :=
         let $regex := concat('^(',string-join(distinct-values($request/m:search-string/text()), '|'),')(།)?$')
         
         let $gloss-matches := 
-            for $term in $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:term[matches(., $regex, 'i')][@xml:lang eq 'bo']
+            for $term in $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:term[matches(., $regex, 'i')][@xml:lang eq 'bo'][normalize-space(.)]
             let $gloss-id := $term/parent::tei:gloss/@xml:id
             group by $gloss-id
             (: Prioritise the longest match :)
-            order by string-length($term/text()) descending
+            order by string-length(string-join($term/text())) descending
             return
                 $term[1]/parent::tei:gloss
         

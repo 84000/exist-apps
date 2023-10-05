@@ -15,7 +15,7 @@ declare option exist:serialize "method=xml indent=no";
 (: Request parameters :)
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $section-id := request:get-parameter('work', '')
-let $work := request:get-parameter('work', $source:kangyur-work)
+let $work := request:get-parameter('work', 'all')
 let $status := local:get-status-parameter()
 let $sort := request:get-parameter('sort', '')
 let $pages-min := request:get-parameter('pages-min', '')

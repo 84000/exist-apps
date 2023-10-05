@@ -29,7 +29,7 @@
                         </xsl:if>
                         <a>
                             <xsl:attribute name="href" select="common:internal-link('/glossary/search.html', $internal-link-attrs, '', $root/m:response/@lang)"/>
-                            <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
+                            <xsl:attribute name="data-loading" select="'Loading...'"/>
                             <xsl:value-of select="text()"/>
                         </a>
                     </li>
@@ -44,7 +44,7 @@
                     <a>
                         <xsl:attribute name="href" select="common:internal-link('/glossary/downloads.html', $internal-link-attrs, '', $root/m:response/@lang)"/>
                         <xsl:attribute name="title" select="'Downloads'"/>
-                        <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
+                        <xsl:attribute name="data-loading" select="'Loading...'"/>
                         <i class="fa fa-cloud-download"/>
                         <xsl:value-of select="' Downloads'"/>
                     </a>
@@ -56,7 +56,7 @@
                         <a>
                             <xsl:attribute name="href" select="common:internal-link($page-url, (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
                             <xsl:attribute name="title" select="'Downloads'"/>
-                            <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
+                            <xsl:attribute name="data-loading" select="'Loading...'"/>
                             <xsl:value-of select="'Entry'"/>
                         </a>
                     </li>
@@ -72,7 +72,7 @@
                             <a class="editor">
                                 <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?flagged=', @id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
                                 <xsl:attribute name="title" select="concat('Filter by ', m:label)"/>
-                                <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
+                                <xsl:attribute name="data-loading" select="'Loading...'"/>
                                 <xsl:value-of select="m:label"/>
                             </a>
                         </li>
@@ -87,14 +87,14 @@
                                 <xsl:when test="$tei-editor-off">
                                     <xsl:attribute name="href" select="common:internal-link($page-url, m:view-mode-parameter('editor'), '', $root/m:response/@lang)"/>
                                     <xsl:attribute name="class" select="'editor'"/>
-                                    <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
-                                    <xsl:value-of select="'Show Editor'"/>
+                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                    <xsl:value-of select="'Show editor options'"/>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:attribute name="href" select="$page-url"/>
                                     <xsl:attribute name="class" select="'editor'"/>
-                                    <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
-                                    <xsl:value-of select="'Hide Editor'"/>
+                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                    <xsl:value-of select="'Hide editor options'"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </a>
@@ -244,7 +244,10 @@
             <xsl:call-template name="attestation-types"/>
         </div>
         
-        <xsl:call-template name="tei-editor-footer"/>
+        <!-- Pop-up for tei-editor -->
+        <xsl:if test="$tei-editor">
+            <xsl:call-template name="tei-editor-footer"/>
+        </xsl:if>
         
     </xsl:template>
     

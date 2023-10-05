@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -110,6 +110,7 @@
                                 <a>
                                     <xsl:attribute name="href" select="common:internal-link('/search.html', (concat('search=', $request/m:search)), '', $root/m:response/@lang)"/>
                                     <xsl:attribute name="title" select="'Search the 84000 published translations'"/>
+                                    <xsl:attribute name="data-loading" select="'Loading publications search...'"/>
                                     <xsl:value-of select="'The Publications'"/>
                                 </a>
                             </li>
@@ -122,6 +123,7 @@
                                 <a>
                                     <xsl:attribute name="href" select="common:internal-link('/search.html', ('search-type=tm', concat('search=', $request/m:search), 'search-glossary=1'), '', $root/m:response/@lang)"/>
                                     <xsl:attribute name="title" select="'Search the 84000 Translation Memory'"/>
+                                    <xsl:attribute name="data-loading" select="'Loading translation memory search...'"/>
                                     <xsl:value-of select="'Translation Memory'"/>
                                 </a>
                             </li>
@@ -319,7 +321,7 @@
     
     <xsl:template name="tei-search-results">
         
-        <xsl:param name="results" as="element(m:results)"/>
+        <xsl:param name="results" as="element(m:results)?"/>
         <xsl:param name="pagination-url" as="xs:string"/>
         <xsl:param name="ajax-target" as="xs:string?"/>
         
@@ -667,7 +669,7 @@
     
     <xsl:template name="tm-search-results">
         
-        <xsl:param name="results" as="element(m:results)"/>
+        <xsl:param name="results" as="element(m:results)?"/>
         <xsl:param name="pagination-url" as="xs:string"/>
         <xsl:param name="ajax-target" as="xs:string?"/>
         <xsl:param name="dualview" as="xs:boolean" select="false()"/>

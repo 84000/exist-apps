@@ -343,12 +343,14 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
     let $tm-units := $tmx/tmx:body/tmx:tu
     
     let $tei := collection($common:translations-path)//tei:TEI
+    let $search-and := string-join(tokenize($search, '\s*།\s*')[normalize-space(.)] ! normalize-space(.) ! replace(., '(^་|་$|&#8203;)', ''), ' OR ')
     
     let $results :=
         for $result in (
             (: Only search units with segments for both languages :)
             if($search-lang eq 'bo') then
-                $tm-units[ft:query(tmx:tuv, concat('bo:(', $search, ')'), map { "fields": ("bo") })][tmx:tuv[@xml:lang eq 'en']]
+            
+                $tm-units[ft:query(tmx:tuv, concat('bo:(', $search-and, ')'), map { "fields": ("bo") })][tmx:tuv[@xml:lang eq 'en']]
             else
                 $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })][tmx:tuv[@xml:lang eq 'bo']]
             ,
@@ -373,6 +375,8 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
                 attribute count-records { count($results) },
+                
+                element debug {  $search-and },
             
                 for $result at $index in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
                     

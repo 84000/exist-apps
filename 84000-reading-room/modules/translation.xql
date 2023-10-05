@@ -19,19 +19,19 @@ import module namespace functx = "http://www.functx.com";
 (: view-modes hold attributes that determine the display :)
 declare variable $translation:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections" />
-      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"            />
-      <view-mode id="passage"           client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"        />
-      <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"        />
-      <view-mode id="outline"           client="browser"  cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"        />
-      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"            />
-      <view-mode id="txt"               client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            />
-      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            />
-      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            />
-      <view-mode id="app"               client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            />
-      <view-mode id="tests"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"            />
-      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"       />
-      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"            />
+      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections" annotation="none" />
+      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"            annotation="editor" />
+      <view-mode id="passage"           client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"        annotation="none" />
+      <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"        annotation="none" />
+      <view-mode id="outline"           client="browser"  cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"        annotation="none" />
+      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"            annotation="web" />
+      <view-mode id="txt"               client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
+      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            annotation="none" />
+      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
+      <view-mode id="app"               client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            annotation="none" />
+      <view-mode id="tests"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"            annotation="editor" />
+      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"       annotation="none" />
+      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"            annotation="none" />
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
@@ -451,16 +451,16 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             (: Only return download elements if $include defined :)
             let $types :=
                 if($include gt '')then
-                    ('html', 'pdf', 'epub', 'rdf', 'cache')
+                    ('html', 'pdf', 'epub', 'rdf', 'cache', 'json')
                 else ()
-                
+            
             for $type in $types
                 
                 let $resource-id := if ($type eq 'cache') then tei-content:id($tei) else $resource-id
                 
-                let $stored-version := if (not($type eq 'html')) then download:stored-version-str($resource-id, $type) else $tei-version
+                let $stored-version := if ($type = ('pdf', 'epub', 'rdf', 'cache')) then download:stored-version-str($resource-id, $type) else $tei-version
                 
-                let $path := if ($type = ('html', 'cache')) then '/translation' else '/data'
+                let $path := if ($type = ('html', 'cache', 'json')) then '/translation' else '/data'
                 
             where (
                 ($include eq 'all')                                                                 (: return all types :)
@@ -472,7 +472,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                     attribute type { $type },
                     attribute version { $stored-version },
                     attribute url { concat($path, '/', $resource-id, '.', $type) },
-                    if(not($type = ('html', 'cache'))) then (
+                    if(not($type = ('html', 'cache', 'json'))) then (
                         attribute download-url { concat($path, '/', $file-name, '.', $type) },
                         attribute filename { $file-name }
                     )

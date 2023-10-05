@@ -42,6 +42,12 @@ let $ref-index :=
     else 
         0
 
+let $ref-index :=
+    if($ref-index gt $tei-location/@count-pages ! xs:integer(.)) then
+        1
+    else 
+        $ref-index
+
 let $view-mode := ($source:view-modes/m:view-mode[@id eq request:get-parameter('view-mode', '')], $source:view-modes/m:view-mode[@id eq 'default'])[1]
 
 (: Request parameters :)

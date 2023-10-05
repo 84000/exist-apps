@@ -114,8 +114,8 @@ return
             $request/@archive-path[. gt ''] ! concat('id=', .), 
             
             (: Keep part parameter in annotation views to maintain legacy annotations :)
-            if($view-mode-validated[@id eq 'annotation']) then concat('part=', $request/@part) else $request/@part[. gt ''] ! concat('part=', .)
-                
+            if($view-mode-validated[@annotation eq 'web']) then concat('part=', $request/@part) else $request/@part[. gt ''] ! concat('part=', .)
+            
         )
         
         let $parts := 

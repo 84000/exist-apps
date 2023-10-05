@@ -51,17 +51,19 @@
                                     <div class="item">
                                         
                                         <div>
-                                            <xsl:value-of select="@archive-path"/>
-                                            <xsl:value-of select="' / '"/>
-                                            <a class="small">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key[1], '.html?archive-path=', @archive-path, '&amp;view-mode=annotation')"/>
-                                                <xsl:attribute name="target" select="concat(@id, '.html')"/>
-                                                <xsl:value-of select="'Annotation mode'"/>
-                                            </a>
+                                            <xsl:value-of select="string-join((@archive-path, @file-name), '/')"/>
                                         </div>
                                         
                                         <div class="small text-muted">
                                             <xsl:value-of select="concat('Last modified: ', (@last-modified ! format-dateTime(., '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
+                                        </div>
+                                        
+                                        <div>
+                                            <a class="small">
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key[1], '.html?archive-path=', @archive-path, '&amp;view-mode=annotation')"/>
+                                                <xsl:attribute name="target" select="concat(@id, '.html')"/>
+                                                <xsl:value-of select="'Open in annotation mode'"/>
+                                            </a>                                            
                                         </div>
                                         
                                     </div>

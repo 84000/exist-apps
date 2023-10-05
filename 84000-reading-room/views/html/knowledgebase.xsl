@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
 
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -65,17 +65,17 @@
                 <div class="container">
 
                     <div class="section-title row">
-                        <div class="col-sm-8 col-sm-offset-2">
+                        <div class="col-sm-offset-1 col-sm-10">
                             <h1 class="main-title">
                                 <xsl:value-of select="'84000 Knowledge Base'"/>
                             </h1>
                             <hr/>
                             <p>
-                                <xsl:value-of select="'Our collection of supplementary articles about themes, people and places from the Tibetan Buddhist canon.'"/>
+                                <xsl:value-of select="'Articles on selected themes, people and places from the perspective of the Tibetan Buddhist canonical texts.'"/>
                             </p>
                             <p>
-                                <xsl:value-of select="'This is a provisional page for browsing the articles. '"/>
-                                <xsl:value-of select="'To search for articles please use the '"/>
+                                <xsl:value-of select="'This collection of pages includes in-depth articles, synopses, and cross-referenced metadata aimed at guiding readers in their exploration of the translated texts in the Reading Room. It is compiled as a by-product of the research and translation work of the 84000 team, and the small number of articles published so far will be updated and gradually increase as time and resources permit.  '"/>
+                                <xsl:value-of select="'This index page provides various options for browsing the articles by title. To search for both titles and content, please use the '"/>
                                 <a href="/search.html?search-type=tei&amp;search-data[]=knowledgebase">
                                     <xsl:value-of select="'publications search'"/>
                                 </a>
@@ -83,21 +83,16 @@
                             </p>
                             <xsl:choose>
                                 <xsl:when test="$tei-editor-off">
-                                    <div class="well well-sm">
-                                        <p class="small">
-                                            <xsl:value-of select="'For more options activate '"/>
-                                            <a href="{ $page-url }&amp;view-mode=editor" class="editor">
-                                                <xsl:value-of select="'editor mode'"/>
-                                            </a>
-                                            <xsl:value-of select="'.'"/>
-                                        </p>
-                                    </div>
+                                    <p class="small">
+                                        <a href="{ $page-url }&amp;view-mode=editor" class="editor">
+                                            <xsl:value-of select="'For more options activate editor mode'"/>
+                                        </a>
+                                    </p>
                                 </xsl:when>
                                 <xsl:when test="$tei-editor">
-                                    <div class="well well-sm">
+                                    <div class="well well-sm no-bottom-margin">
                                         <p class="small">Existing knowledge base articles and stubs may be found here or in our shared <a href="https://drive.google.com/drive/folders/11Q3B4lc7lZR_rufoupFZ5Nv4whNT9Lzc" target="84000-google-drive">Google Drive</a>. Please check both locations for any existing content.</p>
-                                        <p class="small">If you find an article here you would like to contribute to you can try editing it yourself in editor mode.</p>
-                                        <p class="small">Otherwise just search the Google Drive and add your content there. The owner of the document will automatically be notified of your changes. Once an article has enough content it can be passed onto the digital editors to publish the article.</p>
+                                        <p class="small">If you find an article here that you would like to contribute to you can try editing it yourself in editor mode. Otherwise search the Google Drive and add your content there. The owner of the document will automatically be notified of your changes. Once an article has enough content it can be passed to a digital editor for publication.</p>
                                         <ul class="list-inline inline-dots">
                                             <li>
                                                 <a href="/search.html?search-type=tei&amp;search-data[]=knowledgebase" target="_self" class="editor">
@@ -117,12 +112,24 @@
                                                     <xsl:value-of select="'Start a new article'"/>
                                                 </a>
                                             </li>
-                                            <li>
-                                                <a href="mailto:knowledgebase@84000.co" class="editor">Get some help</a>
+                                            <li class="small">
+                                                <xsl:value-of select="'Get some help: '"/>
+                                                <ul class="list-inline">
+                                                    <li>
+                                                        <a href="mailto:knowledgebase@84000.co" class="editor">
+                                                            <xsl:value-of select="'Email'"/>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a target="_blank" class="editor" href="https://84000-translate.slack.com/channels/translation-tech-helpdesk">
+                                                            <xsl:value-of select="'Slack'"/>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </li>
                                             <li>
                                                 <a href="{ $page-url }" target="_self" class="editor">
-                                                    <xsl:value-of select="'Hide editor'"/>
+                                                    <xsl:value-of select="'Hide editor options'"/>
                                                 </a>
                                             </li>
                                         </ul>
@@ -374,7 +381,10 @@
                 </div>
             </main>
             
-            <xsl:call-template name="tei-editor-footer"/>
+            <!-- Pop-up for tei-editor -->
+            <xsl:if test="$tei-editor">
+                <xsl:call-template name="tei-editor-footer"/>
+            </xsl:if>
             
         </xsl:variable>
 

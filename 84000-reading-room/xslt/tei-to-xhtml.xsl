@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -1481,7 +1481,7 @@
                         
                         <!-- Alternatives -->
                         <xsl:variable name="alternative-terms" select="$glossary-item/tei:term[@type eq 'translationAlternative'][normalize-space(data())]"/>
-                        <xsl:if test="($tei-editor or $view-mode[@id = ('annotation','tests')]) and $alternative-terms">
+                        <xsl:if test="$alternative-terms and $view-mode[@annotation = ('editor','web')]">
                             <div>
                                 <ul class="list-inline inline-dots hidden-print">
                                     <xsl:for-each select="$alternative-terms">
@@ -1724,7 +1724,7 @@
                     <a class="editor" target="84000-operations">
                         <xsl:choose>
                             <xsl:when test="$resource-type eq 'knowledgebase'">
-                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;filter=blank-form#glossary-form-blank')"/>
+                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;filter=blank-form#glossary-form-new')"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                                 <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/', $resource-type, '/', $requested-resource, '.html?view-mode=editor#parts')"/>
                             </xsl:when>
@@ -1814,7 +1814,7 @@
                 </xsl:choose>
             </xsl:if>
             
-            <xsl:if test="($tei-editor or $view-mode[@id  eq 'annotation']) and $term-status eq 'verified'">
+            <xsl:if test="$view-mode[@annotation = ('editor','web')] and $term-status eq 'verified'">
                 <xsl:value-of select="' '"/>
                 <span class="text-warning small">
                     <xsl:value-of select="'[Verified]'"/>
@@ -2882,7 +2882,7 @@
                                         </xsl:call-template>
                                     </xsl:variable>
                                     
-                                    <xsl:value-of select="concat(count($resource-quotes), if(count($resource-quotes) eq 1) then ' reference' else ' references', ' to passage this passage can be found in the commentary ')"/>
+                                    <xsl:value-of select="concat(count($resource-quotes), if(count($resource-quotes) eq 1) then ' reference' else ' references', ' to this passage can be found in the commentary ')"/>
                                     
                                     <cite>
                                         <xsl:value-of select="concat(m:toh/m:full, ', ', m:text-title[1], '.')"/>
@@ -3662,6 +3662,10 @@
         </xsl:variable>
         
         <xsl:choose>
+            
+            <xsl:when test="$target-element/tei:head[@type eq parent::m:part/@type]">
+                <xsl:value-of select="($target-element/tei:head[@type eq parent::m:part/@type])[1]/text()"/>
+            </xsl:when>
             
             <!-- The target is one of above types -->
             <xsl:when test="$target-part/ancestor-or-self::m:part[@prefix]">
@@ -4839,12 +4843,13 @@
     <xsl:template name="source-authors">
         
         <xsl:param name="text" as="element(m:text)?"/>
+        <xsl:param name="exclude-entity-ids" as="xs:string*" select="()"/>
         
         <xsl:variable name="list-output" as="element(xhtml:li)*">
             <xsl:for-each select="$text/m:source/m:attribution[@role eq 'author'][normalize-space(text())]">
                 
                 <xsl:variable name="attribution" select="."/>
-                <xsl:variable name="entity" select="$entities/m:instance[@id eq $attribution/@xml:id]/parent::m:entity" as="element(m:entity)?"/>
+                <xsl:variable name="entity" select="$entities/m:instance[@id eq $attribution/@xml:id]/parent::m:entity[not(@xml:id = $exclude-entity-ids)]" as="element(m:entity)?"/>
                 <xsl:variable name="kb-instance" select="$entity/m:instance[@type eq 'knowledgebase-article'][1]" as="element(m:instance)?"/>
                 
                 <xsl:if test="$kb-instance">

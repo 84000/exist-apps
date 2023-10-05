@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -254,23 +254,23 @@
             
             <xsl:choose>
                 <xsl:when test="$link-text eq 'fa-next'">
-                    <!--<xsl:attribute name="data-loading" select="'Loading next page...'"/>-->
+                    <xsl:attribute name="data-loading" select="'Loading next page...'"/>
                     <i class="fa fa-chevron-right"/>
                 </xsl:when>
                 <xsl:when test="$link-text eq 'fa-previous'">
-                    <!--<xsl:attribute name="data-loading" select="'Loading previous page...'"/>-->
+                    <xsl:attribute name="data-loading" select="'Loading previous page...'"/>
                     <i class="fa fa-chevron-left"/>
                 </xsl:when>
                 <xsl:when test="$link-text eq 'fa-first'">
-                    <!--<xsl:attribute name="data-loading" select="'Loading first page...'"/>-->
+                    <xsl:attribute name="data-loading" select="'Loading first page...'"/>
                     <i class="fa fa-step-backward"/>
                 </xsl:when>
                 <xsl:when test="$link-text eq 'fa-last'">
-                    <!--<xsl:attribute name="data-loading" select="'Loading last page...'"/>-->
+                    <xsl:attribute name="data-loading" select="'Loading last page...'"/>
                     <i class="fa fa-step-forward"/>
                 </xsl:when>
                 <xsl:otherwise>
-                    <!--<xsl:attribute name="data-loading" select="concat('Loading ', $link-text, '...')"/>-->
+                    <xsl:attribute name="data-loading" select="concat('Loading ', $link-text, '...')"/>
                     <xsl:value-of select="$link-text"/>
                 </xsl:otherwise>
             </xsl:choose>
@@ -372,7 +372,7 @@
                             <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), $attributes, '', /m:response/@lang)"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                    <!--<xsl:attribute name="data-loading" select="'Loading page...'"/>-->
+                    <xsl:attribute name="data-loading" select="'Loading page...'"/>
                     <xsl:apply-templates select="m:titles/m:title[@xml:lang='en']/text()"/>
                 </a>
             </li>

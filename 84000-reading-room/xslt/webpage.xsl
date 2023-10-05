@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -213,7 +213,7 @@
                     <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
                 </script>
                 
-                <xsl:if test="$view-mode[@id eq 'annotation']">
+                <xsl:if test="$view-mode[@annotation eq 'web']">
                     <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
                     <script src="https://hypothes.is/embed.js" async="async"/>
                 </xsl:if>
@@ -409,37 +409,35 @@
     <!-- Pop-up for tei-editor -->
     <xsl:template name="tei-editor-footer">
         
-        <xsl:if test="$tei-editor">
-            <div id="popup-footer-editor" class="fixed-footer collapse persist hidden-print">
-                <div class="fix-height">
-                    <div class="container">
-                        <div class="data-container">
-                            <!-- Ajax data here -->
-                        </div>
-                    </div>
-                </div>
-                <div class="fixed-btn-container close-btn-container">
-                    <div class="center-vertical">
-                        <div>
-                            <!-- Set footer height -->
-                            <button type="button" class="btn-round orange" data-drag-height="#popup-footer-editor .fix-height" aria-label="Set the height of the footer" title="Set the height of the footer">
-                                <span aria-hidden="true">
-                                    <i class="fa fa-sort"/>
-                                </span>
-                            </button>
-                        </div>
-                        <div>
-                            <!-- Close -->
-                            <button type="button" class="btn-round orange close close-collapse" title="Close" aria-label="Close">
-                                <span aria-hidden="true">
-                                    <i class="fa fa-times"/>
-                                </span>
-                            </button>
-                        </div>
+        <div id="popup-footer-editor" class="fixed-footer collapse persist hidden-print">
+            <div class="fix-height">
+                <div class="container">
+                    <div class="data-container">
+                        <!-- Ajax data here -->
                     </div>
                 </div>
             </div>
-        </xsl:if>
+            <div class="fixed-btn-container close-btn-container">
+                <div class="center-vertical">
+                    <div>
+                        <!-- Set footer height -->
+                        <button type="button" class="btn-round orange" data-drag-height="#popup-footer-editor .fix-height" aria-label="Set the height of the footer" title="Set the height of the footer">
+                            <span aria-hidden="true">
+                                <i class="fa fa-sort"/>
+                            </span>
+                        </button>
+                    </div>
+                    <div>
+                        <!-- Close -->
+                        <button type="button" class="btn-round orange close close-collapse" title="Close" aria-label="Close">
+                            <span aria-hidden="true">
+                                <i class="fa fa-times"/>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
     </xsl:template>
     

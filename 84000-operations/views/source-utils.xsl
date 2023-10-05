@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/views/html/search.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -19,7 +19,7 @@
                     <div class="col-sm-10 col-sm-offset-1">
                         <form action="/source-utils.html" method="post" class="form-horizontal" data-loading="Loading...">
                             
-                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                            <xsl:attribute name="data-ajax-target" select="'#ajax-source'"/>
                             
                             <input type="hidden" name="util" value="{ $request/@util }"/>
                             <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
@@ -27,7 +27,7 @@
                             <div class="input-group">
                                 
                                 <!-- Selected text -->
-                                <input type="search" name="search" id="search" class="form-control text-bo" aria-label="Search text" placeholder="Search" required="required">
+                                <input type="search" name="segment" id="segment" class="form-control text-bo" aria-label="Search text" placeholder="Search" required="required">
                                     <xsl:attribute name="value" select="$request/m:segment"/>
                                 </input>
                                 
@@ -134,7 +134,7 @@
                             <a>
                                 <xsl:attribute name="href" select="common:internal-link('/source-utils.html', ('util=glossary-builder', $page-attributes), '#ajax-source', '')"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                <xsl:value-of select="'Glossary Entries'"/>
+                                <xsl:value-of select="'Glossary Matches'"/>
                             </a>
                         </li>
                         
@@ -256,11 +256,22 @@
         <xsl:param name="pagination-url" as="xs:string"/>
         <xsl:param name="ajax-target" as="xs:string?"/>
         
+        <xsl:variable name="link-add-new" as="element(xhtml:a)?">
+            <a>
+                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form#glossary-entry-new')"/>
+                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor #glossary-entry-new'"/>
+                <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/source/', $translation/m:toh/@key, '.html', $request/@ref-index ! concat('?ref-index=', .), m:view-mode-parameter('editor'))"/>
+                <xsl:attribute name="data-ajax-loading" select="'Loading editor...'"/>
+                <xsl:attribute name="class" select="'editor small'"/>
+                <xsl:value-of select="concat('Create a new entry for ', $translation/m:toh/m:full)"/>
+            </a>
+        </xsl:variable>
+        
         <!-- Results list -->
-        <xsl:choose>
-            <xsl:when test="$entities[m:entity]">
-                
-                <div id="entity-list">
+        <div id="entity-list">
+            <xsl:choose>
+                <xsl:when test="$entities[m:entity]">
+                    
                     <xsl:for-each select="$entities/m:entity">
                         
                         <xsl:variable name="entity" select="."/>
@@ -283,7 +294,7 @@
                                     <xsl:attribute name="data-ajax-target" select="concat('#', $item-id, '-detail')"/>
                                     <xsl:attribute name="data-toggle-active" select="concat('#', $item-id)"/>
                                     <xsl:attribute name="data-ajax-loading" select="'Loading detail...'"/>
-                                
+                                    
                                     <div>
                                         <ul class="list-inline inline-dots">
                                             <xsl:for-each select="$entity-data/m:term[@xml:lang eq 'bo']">
@@ -371,14 +382,14 @@
                                         </form>-->
                                         
                                         <a>
-                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form&amp;entity-id=', $item-id, '&amp;default-term-bo=', $options-bo[1], '#glossary-form-blank')"/>
-                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form&amp;entity-id=', $item-id, '&amp;default-term-bo=', $options-bo[1], '#glossary-entry-new')"/>
+                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor #glossary-entry-new'"/>
                                             <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/source/', $translation/m:toh/@key, '.html', $request/@ref-index ! concat('?ref-index=', .), m:view-mode-parameter('editor'))"/>
                                             <xsl:attribute name="data-ajax-loading" select="'Loading editor...'"/>
-                                            <xsl:attribute name="class" select="'underline'"/>
-                                            <xsl:value-of select="concat('[Add to ', $translation/m:toh/m:full, ']')"/>
+                                            <xsl:attribute name="class" select="'editor small'"/>
+                                            <xsl:value-of select="concat('Add to ', $translation/m:toh/m:full)"/>
                                         </a>
-                                    
+                                        
                                     </div>
                                 </xsl:if>
                                 
@@ -386,35 +397,32 @@
                         </xsl:if>
                         
                     </xsl:for-each>
-                </div>
-                
-                <!-- Pagination -->
-                <xsl:sequence select="common:pagination($entities/@first-record, $entities/@max-records, $entities/@count-records, $pagination-url, $ajax-target)"/>
-                
-            </xsl:when>
-            <xsl:otherwise>
-                
-                <!-- No results -->
-                <div class="text-center top-margin">
                     
-                    <p class="text-muted italic ">
-                        <xsl:value-of select="'~ No results ~'"/>
-                    </p>
+                    <!-- Target for new form -->
+                    <div class="list-item">
+                        <div id="glossary-entry-new">
+                            <xsl:sequence select="$link-add-new"/>
+                        </div>
+                    </div>
                     
-                    <p>
-                        <a>
-                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form&amp;default-term-bo=', $request/m:segment, '#glossary-form-blank')"/>
-                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                            <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/source/', $translation/m:toh/@key, '.html', $request/@ref-index ! concat('?ref-index=', .), m:view-mode-parameter('editor'))"/>
-                            <xsl:attribute name="data-ajax-loading" select="'Loading editor...'"/>
-                            <xsl:value-of select="'[Add a glossary entry]'"/>
-                        </a>
-                    </p>
+                    <!-- Pagination -->
+                    <xsl:sequence select="common:pagination($entities/@first-record, $entities/@max-records, $entities/@count-records, $pagination-url, $ajax-target)"/>
                     
-                </div>
-                
-            </xsl:otherwise>
-        </xsl:choose>
+                </xsl:when>
+                <xsl:otherwise>
+                    
+                    <!-- No results -->
+                    <div class="text-center top-margin">
+                        <p class="text-muted italic">
+                            <xsl:value-of select="'~ No results ~'"/>
+                        </p>
+                        <xsl:sequence select="$link-add-new"/>
+                    </div>
+                    
+                </xsl:otherwise>
+            </xsl:choose>
+            
+        </div>
         
     </xsl:template>
     

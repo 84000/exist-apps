@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -43,7 +43,7 @@
             </xsl:if>
             
             <!-- Main content -->
-            <main class="content-band">
+            <main id="source-content" class="content-band">
                 
                 <!-- Output folios -->
                 <div>
@@ -153,9 +153,11 @@
                                             <li>
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', '1', m:view-mode-parameter(()), '#folio-content')"/>
-                                                    <xsl:attribute name="title" select="'Back to page 1'"/>
+                                                    <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                                    <xsl:attribute name="title" select="'first page (1)'"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
-                                                    <xsl:value-of select="'1'"/>
+                                                    <xsl:attribute name="data-loading" select="'Loading first page...'"/>
+                                                    <xsl:value-of select="'first'"/>
                                                 </a>
                                             </li>
                                             <li class="disabled">
@@ -166,8 +168,10 @@
                                             <li>
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page - 1), m:view-mode-parameter(()), '#folio-content')"/>
-                                                    <xsl:attribute name="title" select="concat('Back to page ', format-number(($current-page - 1), '#,###'))"/>
+                                                    <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                                    <xsl:attribute name="title" select="concat('previous page (', format-number(($current-page - 1), '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
+                                                    <xsl:attribute name="data-loading" select="'Loading previous page...'"/>
                                                     <i class="fa fa-chevron-left"/>
                                                 </a>
                                             </li>
@@ -183,8 +187,10 @@
                                             <li>
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page + 1), m:view-mode-parameter(()), '#folio-content')"/>
-                                                    <xsl:attribute name="title" select="concat('Forward to page ', format-number(($current-page + 1), '#,###'))"/>
+                                                    <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                                    <xsl:attribute name="title" select="concat('next page (', format-number(($current-page + 1), '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
+                                                    <xsl:attribute name="data-loading" select="'Loading next page...'"/>
                                                     <i class="fa fa-chevron-right"/>
                                                 </a>
                                             </li>
@@ -196,9 +202,11 @@
                                             <li>
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', $count-pages, m:view-mode-parameter(()), '#folio-content')"/>
-                                                    <xsl:attribute name="title" select="concat('Forward to page ', format-number($count-pages, '#,###'))"/>
+                                                    <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                                    <xsl:attribute name="title" select="concat('last page (', format-number($count-pages, '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
-                                                    <xsl:value-of select="format-number($count-pages, '#,###')"/>
+                                                    <xsl:attribute name="data-loading" select="'Loading last page...'"/>
+                                                    <xsl:value-of select="'last'"/>
                                                 </a>
                                             </li>
                                         </xsl:if>
@@ -257,8 +265,8 @@
                                                 <a>
                                                     <xsl:attribute name="href" select="common:internal-link($page-url, m:view-mode-parameter('editor',()), '', $root/m:response/@lang)"/>
                                                     <xsl:attribute name="class" select="'editor'"/>
-                                                    <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
-                                                    <xsl:value-of select="'Show Editor'"/>
+                                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                    <xsl:value-of select="'Show editor options'"/>
                                                 </a>
                                             </li>
                                         </xsl:when>
@@ -267,8 +275,8 @@
                                                 <a>
                                                     <xsl:attribute name="href" select="$page-url"/>
                                                     <xsl:attribute name="class" select="'editor'"/>
-                                                    <!--<xsl:attribute name="data-loading" select="'Loading...'"/>-->
-                                                    <xsl:value-of select="'Hide Editor'"/>
+                                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                                    <xsl:value-of select="'Hide editor options'"/>
                                                 </a>
                                             </li>
                                         </xsl:otherwise>
@@ -326,12 +334,12 @@
                     </div>
                 </xsl:if>
                 
+                <!-- Add relevant glossary items -->
+                <div class="container hidden" aria-hidden="true">
+                    <xsl:call-template name="glossary"/>
+                </div>
+                
             </main>
-            
-            <!-- Add relevant glossary items -->
-            <div class="container hidden" aria-hidden="true">
-                <xsl:call-template name="glossary"/>
-            </div>
             
             <!-- General pop-up for notes and glossary -->
             <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
@@ -355,8 +363,10 @@
                 </div>
             </div>
             
-            <!-- Editor popup -->
-            <xsl:call-template name="tei-editor-footer"/>
+            <!-- Pop-up for tei-editor -->
+            <xsl:if test="$tei-editor">
+                <xsl:call-template name="tei-editor-footer"/>
+            </xsl:if>
             
         </xsl:variable>
         
@@ -402,9 +412,7 @@
                         </span>
                     </xsl:when>
                     <xsl:when test="descendant-or-self::text()">
-                        <span>
-                            <xsl:value-of select="common:normalize-bo(.)"/>
-                        </span>
+                        <xsl:value-of select="common:normalize-bo(.)"/>
                     </xsl:when>
                 </xsl:choose>
             </xsl:for-each>
@@ -429,7 +437,7 @@
                 <p class="tei-parser source text continuous text-bo" aria-hidden="true">
                     
                     <xsl:variable name="text-normalized" as="text()">
-                        <xsl:value-of select="string-join($text-content/text())"/>
+                        <xsl:value-of select="string-join($text-content ! descendant-or-self::text())"/>
                     </xsl:variable>
                     
                     <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">

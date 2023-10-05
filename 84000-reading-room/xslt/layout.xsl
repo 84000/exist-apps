@@ -152,7 +152,7 @@
                         </div>
                     </xsl:when>
                     <xsl:otherwise>
-                        <a class="collapsed block-link" role="button" data-toggle="collapse" aria-expanded="false">
+                        <a class="collapsed block-link no-underline" role="button" data-toggle="collapse" aria-expanded="false">
                             
                             <xsl:attribute name="href" select="concat('#expand-item-', $id, '-detail')"/>
                             <xsl:attribute name="aria-controls" select="concat('expand-item-',$id, '-detail')"/>
@@ -163,7 +163,7 @@
                                 <xsl:attribute name="aria-expanded" select="'true'"/>
                             </xsl:if>
                             
-                            <div class="center-vertical full-width">
+                            <div class="top-vertical full-width">
                                 
                                 <div>
                                     <xsl:sequence select="$title"/>

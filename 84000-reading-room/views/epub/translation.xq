@@ -113,7 +113,7 @@ let $entries := (
     <entry name="OEBPS/titles.xhtml" type="xml">{ transform:transform($data, doc('xslt/titles.xsl'), ()) }</entry>,
     <entry name="OEBPS/imprint.xhtml" type="xml">{ transform:transform($data, doc('xslt/imprint.xsl'), ()) }</entry>,
     <entry name="OEBPS/contents.xhtml" type="xml">{ transform:transform($data, doc('xslt/contents.xsl'), ()) }</entry>,
-    for $part in $data/m:response/m:translation/m:part
+    for $part in $data/m:response/m:translation/m:part[not(@type eq 'citation-index')]
     return (
     
         <entry name="OEBPS/{ $part/@id }.xhtml" type="xml">{ transform:transform($data, doc(concat('xslt/', $part/@type, '.xsl')), ()) }</entry>,
