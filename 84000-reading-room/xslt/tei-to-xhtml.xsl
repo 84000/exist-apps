@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -1351,7 +1351,7 @@
         
         <xsl:variable name="glossary-render" as="element(tei:gloss)*">
             <xsl:choose>
-                <xsl:when test="$view-mode[@parts eq 'passage']">
+                <xsl:when test="$view-mode[@parts eq 'passage'] and $requested-passage ">
                     <xsl:sequence select="$glossary-part//tei:gloss[@xml:id eq $requested-passage]"/>
                 </xsl:when>
                 <xsl:otherwise>
@@ -2372,6 +2372,17 @@
                     </div>
                 </xsl:when>
                 
+                <xsl:when test="parent::tei:div | parent::m:part">
+                    <div class="rw rw-image">
+                        <xsl:sequence select="$img-link"/>
+                        <xsl:if test="tei:desc[@rend eq 'caption'] and $caption">
+                            <p class="caption">
+                                <xsl:value-of select="$caption"/>
+                            </p>
+                        </xsl:if>
+                    </div>
+                </xsl:when>
+                
                 <!-- others -->
                 <xsl:otherwise>
                     <span class="img-inline">
@@ -2379,6 +2390,11 @@
                             <xsl:attribute name="class" select="'img-inline inline-left'"/>
                         </xsl:if>
                         <xsl:sequence select="$img-link"/>
+                        <xsl:if test="tei:desc[@rend eq 'caption'] and $caption">
+                            <span class="caption">
+                                <xsl:value-of select="$caption"/>
+                            </span>
+                        </xsl:if>
                     </span>
                 </xsl:otherwise>
                 
@@ -2632,7 +2648,9 @@
                 
                 <!-- A knowledge base page -->
                 <xsl:when test="$article">
-                    <xsl:attribute name="id" select="$id"/>
+                    <xsl:if test="$id gt ''">
+                        <xsl:attribute name="id" select="$id"/>
+                    </xsl:if>
                 </xsl:when>
                 
                 <!-- If we are rendering a section then the id may refer to a text in that section rather than the section itself -->
@@ -2643,7 +2661,9 @@
                             <xsl:attribute name="id" select="concat($node/ancestor::m:text[1]/@resource-id, '-', $id)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:attribute name="id" select="$id"/>
+                            <xsl:if test="$id gt ''">
+                                <xsl:attribute name="id" select="$id"/>
+                            </xsl:if>
                         </xsl:otherwise>
                     </xsl:choose>
                     

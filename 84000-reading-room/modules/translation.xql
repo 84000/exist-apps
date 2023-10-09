@@ -22,7 +22,7 @@ declare variable $translation:view-modes :=
       <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections" annotation="none" />
       <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"            annotation="editor" />
       <view-mode id="passage"           client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"        annotation="none" />
-      <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"        annotation="none" />
+      <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"        annotation="editor" />
       <view-mode id="outline"           client="browser"  cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"        annotation="none" />
       <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"            annotation="web" />
       <view-mode id="txt"               client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            annotation="none" />

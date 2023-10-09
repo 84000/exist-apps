@@ -92,7 +92,7 @@ declare function local:gloss-refactored($tei as element(tei:TEI)) {
                 
                 (: Tibetan :)
                 for $term at $index in $gloss/tei:term[@xml:lang eq 'Bo-Ltn']
-                let $term-bo-ltn := string-join($term/text()) ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.)
+                let $term-bo-ltn := string-join($term/text()) (:! lower-case(.):) ! normalize-unicode(.) ! normalize-space(.)
                 let $attestation-type := ($glossary:attestation-types//m:attestation-type[@id eq $term/@type] | $glossary:attestation-types//m:attestation-type[m:migrate/@id = $term/@type] | $glossary:attestation-types//m:attestation-type[m:appliesToLang[@xml:lang eq $term/@xml:lang][@default]][1] )[1]
                 return (
                     text{ common:ws(7) },

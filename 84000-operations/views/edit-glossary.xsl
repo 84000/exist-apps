@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -2340,7 +2340,7 @@
                         <xsl:value-of select="concat($reading-room-path, '/', $request-resource-type, '/', $request-resource-id, '.html?view-mode=editor', $link-href-hash)"/>
                     </xsl:when>
                     <xsl:when test="$link[matches(@class, '(^|\s+)folio\-ref(\s+|$)')]">
-                        <xsl:value-of select="concat($reading-room-path, $link-href-query, '&amp;view-mode=editor', $link-href-hash)"/>
+                        <xsl:value-of select="concat($reading-room-path, $link-href-query, (:'&amp;view-mode=editor',:) $link-href-hash)"/>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="$link/@href"/>
@@ -2388,7 +2388,7 @@
                     <xsl:variable name="dualview-href-hash" select="concat('#', string-join((($dualview-href-tokenized[2], 'top')[1], fn:encode-for-uri(concat('[data-glossary-id=&#34;', $glossary-entry/@id, '&#34;]'))), '/'))"/>
                     
                     <xsl:attribute name="data-dualview-href">
-                        <xsl:value-of select="concat($reading-room-path, $dualview-href-query, '&amp;view-mode=editor', $dualview-href-hash)"/>
+                        <xsl:value-of select="concat($reading-room-path, $dualview-href-query, (:'&amp;view-mode=editor',:) $dualview-href-hash)"/>
                     </xsl:attribute>
                     
                 </xsl:when>

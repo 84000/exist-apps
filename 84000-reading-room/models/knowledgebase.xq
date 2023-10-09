@@ -29,7 +29,7 @@ let $request :=
         attribute resource-id { 'index' },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
-        attribute sort { request:get-parameter('sort', 'latest') },
+        attribute sort { request:get-parameter('sort', 'latest')[. = ('latest','name','status')] },
         attribute view-mode { $view-mode/@id },
         attribute article-type { string-join($article-types, ',') },
         attribute first-record { $first-record },

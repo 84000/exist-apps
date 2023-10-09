@@ -376,7 +376,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                 attribute max-records { $max-records },
                 attribute count-records { count($results) },
                 
-                element debug {  $search-and },
+                (:element debug {  $search-and },:)
             
                 for $result at $index in subsequence($results[local-name() = ('tu', 'gloss')], $first-record, $max-records)
                     
@@ -538,7 +538,7 @@ declare function local:search-query($request as xs:string, $search-as-phrase as 
                     <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>,
                     for $request-token in $request-tokenized
                         for $synonym in $synonyms//eft:synonym[eft:term/text() = $request-token]/eft:term[not(text() = $request-token)]
-                            let $request-synonym := replace($request-normalized, $request-token, $synonym)
+                        let $request-synonym := replace($request-normalized, $request-token, $synonym)
                         return (
                             <near slop="20" occur="should">{ $request-synonym }</near>,
                             <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>

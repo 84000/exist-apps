@@ -866,7 +866,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                                     if($term-status gt '') then 
                                         attribute status  { $term-status } 
                                     else (),
-                                    text { $term-text ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.) }
+                                    text { $term-text ! normalize-unicode(.) ! normalize-space(.) }
                                 )
                                 
                                 else ( 

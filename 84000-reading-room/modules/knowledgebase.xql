@@ -172,7 +172,7 @@ declare function knowledgebase:pages($ids as xs:string*, $published-only as xs:b
     let $kb-page := knowledgebase:page($tei)
     order by
         if($sort eq 'latest') then $kb-page/@last-updated ! xs:dateTime(.) else true() descending,
-        if($sort eq 'status') then ($kb-page/@status[.gt ''], '4')[1] else true() ascending,
+        if($sort eq 'status') then $tei-content:text-statuses/m:status[@type eq 'article'][@status-id eq $kb-page/@status]/@status-id else true() ascending,
         $kb-page/m:sort-name
     return 
         $kb-page

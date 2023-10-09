@@ -434,7 +434,7 @@ declare function contributors:update-institution($institution as element(m:insti
                 text { request:get-parameter('name', '') }
             },
             
-            for $element in $institution/*[not(self::m:label)]
+            for $element in $institution/*[not(local-name(.) eq 'label')]
             return (
                 $common:line-ws,
                 $element
