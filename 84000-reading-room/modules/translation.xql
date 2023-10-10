@@ -40,6 +40,7 @@ declare variable $translation:translated-status-ids := $translation:status-statu
 declare variable $translation:in-translation-status-ids := $translation:status-statuses[@group = ('in-translation')]/@status-id;
 declare variable $translation:in-progress-status-ids := $translation:translated-status-ids | $translation:in-translation-status-ids;
 declare variable $translation:marked-up-status-ids := $translation:status-statuses[@marked-up = 'true']/@status-id;
+(: These maps should be merged? :)
 declare variable $translation:type-prefixes := map {
         'summary':        's',
         'acknowledgment': 'ac',

@@ -346,7 +346,8 @@ declare function contributors:update-person($person as element(m:person)?) as xs
                 else ()
              ,
              
-             for $element in $person/*[not(self::m:label | self::m:institution | self::m:team | self::m:affiliation)]
+             (:for $element in $person/*[not(self::m:label | self::m:institution | self::m:team | self::m:affiliation)]:)
+             for $element in $person/*[not(local-name(.) = ('label','institution','team','affiliation'))]
              return (
                 $common:line-ws,
                 $element
@@ -395,7 +396,8 @@ declare function contributors:update-team($team as element(m:team)?) as xs:strin
                 text { request:get-parameter('name', '') }
             },
             
-            for $element in $team/*[not(self::m:label)]
+            (:for $element in $team/*[not(self::m:label)]:)
+            for $element in $team/*[not(local-name(.) eq 'label')]
             return (
                 $common:line-ws,
                 $element
@@ -434,6 +436,7 @@ declare function contributors:update-institution($institution as element(m:insti
                 text { request:get-parameter('name', '') }
             },
             
+            (:for $element in $institution/*[not(self::m:label)]:)
             for $element in $institution/*[not(local-name(.) eq 'label')]
             return (
                 $common:line-ws,

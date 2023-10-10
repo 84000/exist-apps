@@ -221,7 +221,7 @@ return
                 
                 (: Get expressions for these entries :)
                 let $glossary-locations := 
-                    if($filter = ('check-locations', 'check-all', 'new-locations', 'no-locations', 'cache-behind') and $gloss-filtered-subsequence and $text[@status = $common:environment/m:render/m:status[@type eq $request/@resource-type]/@status-id]) then
+                    if($filter = ('check-locations', 'check-all', 'new-locations', 'no-locations', 'cache-behind') and $gloss-filtered-subsequence and $text[@status = $common:environment/m:render/m:status[@type eq (if($request/@resource-type eq 'knowledgebase') then 'article' else $request/@resource-type)]/@status-id]) then
                         glossary:locations($tei, $resource-id, $resource-type, $gloss-filtered-subsequence/@xml:id)
                     else ()
                 

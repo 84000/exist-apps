@@ -144,7 +144,7 @@ declare function search:search($request as xs:string, $data-types as element(m:t
         (: Group text results together :)
         if($data-types[@id = ('translations','knowledgebase')]) then
         
-            for $result in $results[not(ancestor-or-self::*[@rend eq 'default-text'])]
+            for $result in subsequence($results, 1, 1000)[not(ancestor-or-self::*[@rend eq 'default-text'])]
             
             let $tei := $result/ancestor::tei:TEI[1]
             let $group-id := $tei ! tei-content:id(.)

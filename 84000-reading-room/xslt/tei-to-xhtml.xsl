@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -2275,7 +2275,7 @@
         
         <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook')]">
             
-            <xsl:variable name="caption" select="tei:desc/text() ! normalize-space()"/>
+            <xsl:variable name="title" select="tei:desc/text() ! normalize-space()"/>
             
             <xsl:variable name="img">
                 <xsl:choose>
@@ -2293,7 +2293,7 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:attribute>
-                            <xsl:attribute name="title" select="$caption"/>
+                            <xsl:attribute name="title" select="$title"/>
                         </img>
                     </xsl:when>
                     
@@ -2310,7 +2310,7 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </xsl:attribute>
-                            <xsl:attribute name="title" select="$caption"/>
+                            <xsl:attribute name="title" select="$title"/>
                         </img>
                     </xsl:when>
                     
@@ -2340,7 +2340,7 @@
                         <a>
                             <xsl:attribute name="href" select="@source ! normalize-space()"/>
                             <xsl:attribute name="target" select="'_blank'"/>
-                            <xsl:attribute name="title" select="$caption"/>
+                            <xsl:attribute name="title" select="$title"/>
                             <xsl:sequence select="$img"/>
                         </a>
                     </xsl:when>
@@ -2364,7 +2364,7 @@
                 <xsl:when test="ancestor::tei:note[@place = 'end']">
                     <div class="row sml-margin top bottom">
                         <div class="col-sm-8 col-xs-6">
-                            <xsl:apply-templates select="$caption"/>
+                            <xsl:apply-templates select="$title"/>
                         </div>
                         <div class="col-sm-4 col-xs-6">
                             <xsl:sequence select="$img-link"/>
@@ -2372,12 +2372,12 @@
                     </div>
                 </xsl:when>
                 
-                <xsl:when test="parent::tei:div | parent::m:part">
+                <xsl:when test="parent::tei:div | parent::m:part | parent::tei:figure/parent::tei:div | parent::tei:figure/parent::m:part">
                     <div class="rw rw-image">
                         <xsl:sequence select="$img-link"/>
-                        <xsl:if test="tei:desc[@rend eq 'caption'] and $caption">
+                        <xsl:if test="parent::tei:figure[tei:figDesc/text()]">
                             <p class="caption">
-                                <xsl:value-of select="$caption"/>
+                                <xsl:apply-templates select="parent::tei:figure/tei:figDesc/node()"/>
                             </p>
                         </xsl:if>
                     </div>
@@ -2386,13 +2386,13 @@
                 <!-- others -->
                 <xsl:otherwise>
                     <span class="img-inline">
-                        <xsl:if test="not(preceding-sibling::* | preceding-sibling::text()[matches(.,'\p{L}','i')])">
+                        <xsl:if test="not(preceding-sibling::* | preceding-sibling::text()[matches(.,'\p{L}','i')] | parent::tei:figure/preceding-sibling::* | parent::tei:figure/preceding-sibling::text()[matches(.,'\p{L}','i')])">
                             <xsl:attribute name="class" select="'img-inline inline-left'"/>
                         </xsl:if>
                         <xsl:sequence select="$img-link"/>
-                        <xsl:if test="tei:desc[@rend eq 'caption'] and $caption">
+                        <xsl:if test="parent::tei:figure[tei:figDesc/text()]">
                             <span class="caption">
-                                <xsl:value-of select="$caption"/>
+                                <xsl:apply-templates select="parent::tei:figure/tei:figDesc/node()"/>
                             </span>
                         </xsl:if>
                     </span>
@@ -2402,6 +2402,13 @@
             
         </xsl:if>
         
+    </xsl:template>
+    <xsl:template match="tei:figure">
+        <!-- Pass down to tei:media -->
+        <xsl:apply-templates select="*"/>
+    </xsl:template>
+    <xsl:template match="tei:figDesc">
+        <!-- Handled by tei:media -->
     </xsl:template>
     
     <xsl:template match="tei:code">
