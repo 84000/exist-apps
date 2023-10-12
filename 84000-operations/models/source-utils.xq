@@ -21,6 +21,8 @@ declare option exist:serialize "method=xml indent=no";
 
 let $text-id := request:get-parameter('text-id', '')
 let $tei := tei-content:tei($text-id, 'translation')
+let $term-types := request:get-parameter('term-type[]', $entities:types/m:type[@glossary-type]/@id)[. = $entities:types/m:type[@glossary-type]/@id]
+let $glossary-types := $entities:types/m:type[@id = $term-types]/@glossary-type
 
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
@@ -33,19 +35,23 @@ let $request :=
         attribute first-record { (request:get-parameter('first-record', 1)[functx:is-a-number(.)], 1)[1] },
         attribute records-per-page { 10 },
         
+        common:add-selected-children($entities:types, $entities:types/m:type[@id = $term-types]/@id),
+        
         let $segment := request:get-parameter('segment', '')
         return (
             element segment { $segment },
         
-            let $phrases := tokenize($segment, '\s+') ! replace(., '།', '')
-            for $phrase in $phrases
-            let $syllables := tokenize($phrase, '་')[matches(., '[\p{L}]+', 'i')]
+            for $phrase at $phrase-index in tokenize($segment, '\s+') ! replace(., '།', '')
+            let $syllables := tokenize($phrase, '(ར|ས|འི)?་')[matches(., '[\p{L}]+', 'i')]
             let $syllables-count := count($syllables)
-            for $syllable at $index in $syllables
-            for $scope in $index to $syllables-count
+            for $syllable at $syllable-index in $syllables
+            for $length in 1 to ($syllables-count - ($syllable-index - 1))
             return
                 element search-string {
-                    string-join($syllables[position() ge $index][position() le $scope], '་')
+                    (:attribute phrase { $phrase-index },
+                    attribute syllable { $syllable-index },
+                    attribute length { $length },:)
+                    string-join($syllables[position() ge $syllable-index][position() le $length], '་')
                 }
             )
     }
@@ -67,12 +73,14 @@ let $result :=
         (:let $regex := concat('^(',string-join($combinations, '|'),')(ར|ས|འི)?(\s*)?(།)?$'):)
         (:let $regex := concat('(^|[^\p{L}])(', string-join(tokenize($request/m:segment/text(), '\s+') ! replace(., '།\s*$', '') ! normalize-space(.) ! functx:escape-for-regex(.), '|'), ')(ར|ས|འི)?([^\p{L}]+|$)'):)
         
-        let $regex := concat('^(',string-join(distinct-values($request/m:search-string/text()), '|'),')(།)?$')
+        let $regex := concat('^(', string-join(distinct-values($request/m:search-string/text()), '|'),')(།)?$')
         
         let $gloss-matches := 
             for $term in $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:term[matches(., $regex, 'i')][@xml:lang eq 'bo'][normalize-space(.)]
-            let $gloss-id := $term/parent::tei:gloss/@xml:id
+            let $gloss := $term/parent::tei:gloss
+            let $gloss-id := $gloss/@xml:id
             group by $gloss-id
+            where $gloss[@type = $glossary-types]
             (: Prioritise the longest match :)
             order by string-length(string-join($term/text())) descending
             return

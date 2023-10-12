@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -157,14 +157,15 @@
                                                     <xsl:attribute name="title" select="'first page (1)'"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
                                                     <xsl:attribute name="data-loading" select="'Loading first page...'"/>
-                                                    <xsl:value-of select="'first'"/>
+                                                    <!--<xsl:value-of select="'page 1'"/>-->
+                                                    <i class="fa fa-step-backward"/>
                                                 </a>
-                                            </li>
-                                            <li class="disabled">
+                                            </li><!--
+                                            <li>
                                                 <span>
                                                     <xsl:value-of select="'...'"/>
                                                 </span>
-                                            </li>
+                                            </li>-->
                                             <li>
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page - 1), m:view-mode-parameter(()), '#folio-content')"/>
@@ -193,12 +194,12 @@
                                                     <xsl:attribute name="data-loading" select="'Loading next page...'"/>
                                                     <i class="fa fa-chevron-right"/>
                                                 </a>
-                                            </li>
-                                            <li class="disabled">
+                                            </li><!--
+                                            <li>
                                                 <span>
                                                     <xsl:value-of select="'...'"/>
                                                 </span>
-                                            </li>
+                                            </li>-->
                                             <li>
                                                 <a>
                                                     <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', $count-pages, m:view-mode-parameter(()), '#folio-content')"/>
@@ -206,7 +207,8 @@
                                                     <xsl:attribute name="title" select="concat('last page (', format-number($count-pages, '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
                                                     <xsl:attribute name="data-loading" select="'Loading last page...'"/>
-                                                    <xsl:value-of select="'last'"/>
+                                                    <!--<xsl:value-of select="'page ' || $count-pages"/>-->
+                                                    <i class="fa fa-step-forward"/>
                                                 </a>
                                             </li>
                                         </xsl:if>

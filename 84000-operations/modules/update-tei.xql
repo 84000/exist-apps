@@ -1044,7 +1044,7 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
     let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
     
     (: Which glossary entries to refresh :)
-    let $refresh-locations :=
+    let $refresh-locations-for :=
         if ($glossary-id eq 'uncached') then
             $tei-glossary[not(@xml:id = $glossary-cache/m:gloss[m:location]/@id)]/@xml:id
         else if ($glossary-id eq 'version') then
@@ -1054,15 +1054,15 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
         else
             $tei-glossary[@xml:id = $glossary-id]/@xml:id
     
-    let $log := util:log('info', concat('update-tei-cache-glossary: ', format-number(count($refresh-locations), '#,###'), ' locations'))
+    let $log := util:log('info', concat('update-tei-cache-glossary: ', format-number(count($refresh-locations-for), '#,###'), ' entries'))
     
     (: Process in chunks :)
-    let $cache-glossary-chunks := local:cache-glossary-chunk($tei, $glossary-cache, $refresh-locations, 1)
+    let $cache-glossary-chunks := local:cache-glossary-chunk($tei, $glossary-cache, $refresh-locations-for, 1)
     
     (: Record build time - only if it's the whole set :)
     let $end-time := util:system-dateTime()
     let $set-duration := 
-        if(count($refresh-locations) eq count($tei-glossary/@xml:id)) then
+        if(count($refresh-locations-for) eq count($tei-glossary/@xml:id)) then
             common:update('glossary-cache-duration', $glossary-cache/@seconds-to-build, attribute seconds-to-build { functx:total-seconds-from-duration($end-time - $start-time) }, $glossary-cache, ())
         else ()
     
@@ -1072,9 +1072,9 @@ declare function update-tei:cache-glossary($tei as element(tei:TEI), $glossary-i
 
 };
 
-declare function local:cache-glossary-chunk($tei as element(tei:TEI), $glossary-cache as element(m:glossary-cache), $refresh-locations as xs:string*, $chunk as xs:integer) as element()* {
+declare function local:cache-glossary-chunk($tei as element(tei:TEI), $glossary-cache as element(m:glossary-cache), $glossary-ids as xs:string*, $chunk as xs:integer) as element()* {
     
-    let $count := count($refresh-locations)
+    let $count := count($glossary-ids)
     let $chunk-size := xs:integer(500)
     let $chunks-count := xs:integer(ceiling($count div $chunk-size))
     let $chunk-start := ($chunk-size * ($chunk - 1)) + 1
@@ -1086,10 +1086,10 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $glossary-
         if($chunk-start le $count) then (
         
             (: Get subsequence :)
-            let $refresh-locations-chunk := subsequence($refresh-locations, $chunk-start, $chunk-size)
+            let $glossary-ids-chunk := subsequence($glossary-ids, $chunk-start, $chunk-size)
             
             (: Get new cache :)
-            let $glossary-cache-new := glossary:glossary-cache($tei, $refresh-locations-chunk, true())
+            let $glossary-cache-new := glossary:glossary-cache($tei, $glossary-ids-chunk, true())
             
             (: Save new cache :)
             return (
@@ -1102,7 +1102,7 @@ declare function local:cache-glossary-chunk($tei as element(tei:TEI), $glossary-
         ,
         (: Recurse to next chunk :)
         if($chunk-end lt $count) then
-            local:cache-glossary-chunk($tei, $glossary-cache, $refresh-locations, $chunk + 1)
+            local:cache-glossary-chunk($tei, $glossary-cache, $glossary-ids, $chunk + 1)
         else ()
     )
     

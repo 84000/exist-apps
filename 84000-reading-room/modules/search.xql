@@ -143,7 +143,8 @@ declare function search:search($request as xs:string, $data-types as element(m:t
     
         (: Group text results together :)
         if($data-types[@id = ('translations','knowledgebase')]) then
-        
+            
+            (: Very provisional fix for results overload :)
             for $result in subsequence($results, 1, 1000)[not(ancestor-or-self::*[@rend eq 'default-text'])]
             
             let $tei := $result/ancestor::tei:TEI[1]

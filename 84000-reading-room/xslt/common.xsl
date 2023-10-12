@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -884,6 +884,34 @@
                 
             </xsl:if>
             
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template name="entity-types-list">
+        
+        <xsl:param name="entity" as="element(m:entity)?"/>
+        
+        <xsl:if test="$entity">
+            <ul class="list-inline">
+                
+                <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
+                    <li>
+                        <span class="small text-muted">
+                            <xsl:value-of select="'Note: this data is still being sorted'"/>
+                        </span>
+                    </li>
+                </xsl:if>
+                
+                <xsl:for-each select="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type]">
+                    <li>
+                        <span class="label label-info">
+                            <xsl:value-of select="m:label[@type eq 'singular']"/>
+                        </span>
+                    </li>
+                </xsl:for-each>
+                
+            </ul>
         </xsl:if>
         
     </xsl:template>

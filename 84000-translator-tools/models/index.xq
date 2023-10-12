@@ -27,47 +27,13 @@ let $tab :=
     else
         $tab
 
-let $type := request:get-parameter('type', if($tab eq 'tm-search') then 'folio' else 'term')
-let $search := request:get-parameter('search', if($tab eq 'glossary') then 'a' else '')
-let $lang := request:get-parameter('lang', if($tab eq 'tm-search') then 'bo' else 'en')
-let $work := request:get-parameter('work', $source:kangyur-work)
-let $volume := request:get-parameter('volume', 1)
-let $page := request:get-parameter('page', 1)
-let $resource-id := request:get-parameter('resource-id', '')
-let $glossary-sort := request:get-parameter('glossary-sort', '')
-
-let $first-record := 
-    if(functx:is-a-number(request:get-parameter('first-record', 1))) then
-        request:get-parameter('first-record', 1)
-    else
-        1
-
-let $etext-page := 
-    if($tab eq 'tm-search') then
-        source:etext-page($work, $volume, $page, true(), ())
-    else ()
-
-let $content :=
-    if($tab eq 'tm-search') then (
-        $etext-page,
-        search:tm-search($search, $lang, $first-record, 10, true()),
-        source:etext-volumes($work, xs:integer($volume)),
-        contributors:persons(false())
-    )
-    else if($tab eq 'translations') then 
-        translations:texts($translation:published-status-ids, (), '', '', '', false())
-    else
-        doc(concat($common:data-path, '/translator-tools/sections/', $tab, '.xml'))
-
 return
     common:response(
         concat('translator-tools/', $tab),
         'translator-tools',
         (
-            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }" lang="{ $lang }" type="{ $type }" volume="{ $volume }" page="{ $page }" glossary-sort="{ $glossary-sort }">
-                <search>{ $search }</search>
-            </request>,
+            <request xmlns="http://read.84000.co/ns/1.0" tab="{ $tab }"/>,
             $tabs,
-            $content
+            doc(concat($common:data-path, '/translator-tools/sections/', $tab, '.xml'))
         )
     )
