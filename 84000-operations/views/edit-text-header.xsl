@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -197,7 +197,7 @@
                         
                     </xsl:if>
                     
-                    <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
+                    <div class="list-group accordion accordion-bordered accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
                         <xsl:call-template name="titles-form-panel">
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'titles') then true() else false()"/>
@@ -908,7 +908,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
-                                            <xsl:copy-of select="normalize-space($translation-status/m:text/m:progress-note)"/>
+                                            <xsl:sequence select="normalize-space($translation-status/m:text/m:progress-note)"/>
                                         </textarea>
                                         <xsl:if test="$translation-status/m:text/m:progress-note/@last-edited">
                                             <div class="small text-muted sml-margin top">
@@ -925,7 +925,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
-                                            <xsl:copy-of select="normalize-space($translation-status/m:text/m:text-note)"/>
+                                            <xsl:sequence select="normalize-space($translation-status/m:text/m:text-note)"/>
                                         </textarea>
                                         <xsl:if test="$translation-status/m:text/m:text-note/@last-edited">
                                             <div class="small text-muted sml-margin top">
@@ -1291,16 +1291,16 @@
                                 <xsl:for-each select="$toh-location/m:volume">
                                     <div class="row add-nodes-group">
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="ops:text-input('Volume: ', concat('volume-', $toh-key, '-', position()), @number, 6, 'required')"/>
+                                            <xsl:sequence select="ops:text-input('Volume: ', concat('volume-', $toh-key, '-', position()), @number, 6, 'required')"/>
                                         </div>
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="ops:text-input('First page: ', concat('start-page-', $toh-key, '-', position()), @start-page, 6, 'required')"/>
+                                            <xsl:sequence select="ops:text-input('First page: ', concat('start-page-', $toh-key, '-', position()), @start-page, 6, 'required')"/>
                                         </div>
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="ops:text-input('Last page: ', concat('end-page-', $toh-key, '-', position()), @end-page, 6, 'required')"/>
+                                            <xsl:sequence select="ops:text-input('Last page: ', concat('end-page-', $toh-key, '-', position()), @end-page, 6, 'required')"/>
                                         </div>
                                         <div class="col-sm-3">
-                                            <xsl:copy-of select="ops:text-input('Count: ', concat('count-pages-', $toh-key, '-', position()), sum(@end-page - (@start-page - 1)), 6, 'disabled')"/>
+                                            <xsl:sequence select="ops:text-input('Count: ', concat('count-pages-', $toh-key, '-', position()), sum(@end-page - (@start-page - 1)), 6, 'disabled')"/>
                                         </div>
                                     </div>
                                 </xsl:for-each>

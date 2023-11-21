@@ -368,7 +368,7 @@ return
                     </parameters>
                 )
             (: xml model -> model sets view :)
-            else if ($resource-suffix = ('xml', 'html')) then
+            else if ($resource-suffix = ('xml', 'html', 'resources')) then
                 local:dispatch("/models/source.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
@@ -492,7 +492,7 @@ return
         
         (: Editor :)
         (: Module located in operations app :)
-        else if ($resource-id = ("tei-editor", "edit-entity", "edit-glossary", "create-article", "source-utils") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
+        else if ($resource-id = ("tei-editor", "edit-entity", "edit-glossary", "create-article") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="/84000-operations/models/{ $resource-id }.xq">
                     <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
@@ -523,6 +523,13 @@ return
                     </forward>
                 </dispatch>
             else if ($resource-suffix eq 'rdf') then
+                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <forward url="{ download:file-path($exist:resource) }">
+                        <set-header name="Content-Type" value="application/rdf+xml"/>
+                        <set-header name="Content-Disposition" value="attachment"/>
+                    </forward>
+                </dispatch>
+            else if ($resource-suffix eq 'json') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/rdf+xml"/>

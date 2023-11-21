@@ -20,8 +20,6 @@ let $reindex-collections as xs:string* :=
         string-join(($common:data-path, 'tei'), '/')
     else if(request:get-parameter('collection', '') eq 'translation-memory') then
         string-join(($common:data-path, 'translation-memory'), '/')
-    (:else if(request:get-parameter('collection', '') eq 'translation-memory-generator') then
-        string-join(($common:data-path, 'translation-memory-generator'), '/'):)
     else if(request:get-parameter('collection', '') eq 'source') then (
         string-join(($source:source-data-path, $source:kangyur-work), '/'),
         string-join(($source:source-data-path, $source:tengyur-work), '/')
@@ -32,10 +30,9 @@ let $reindex-collections as xs:string* :=
         string-join(($common:data-path, 'epub'), '/'),
         string-join(($common:data-path, 'pdf'), '/'),
         string-join(($common:data-path, 'rdf'), '/'),
-        string-join(($common:data-path, 'cache'), '/')
+        string-join(($common:data-path, 'cache'), '/'),
+        string-join(($common:data-path, 'json'), '/')
     )
-    else if(request:get-parameter('collection', '') eq 'misc') then
-        '/db/apps/84000-cache/xml/operations-mark-source/'
     else ()
 
 return
@@ -44,8 +41,7 @@ return
         'utilities',
         (
             utilities:request(),
-            <result xmlns="http://read.84000.co/ns/1.0">
-            {
+            element { QName('http://read.84000.co/ns/1.0', 'result') } {
                 if(common:user-in-group('dba')) then
                     for $collection in $reindex-collections
                     return
@@ -57,6 +53,5 @@ return
                 else 
                     ()
             }
-            </result>
         )
     )

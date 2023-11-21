@@ -55,7 +55,7 @@ declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
 
 declare function tei-content:type($tei as element(tei:TEI)) as xs:string {
 
-    if($tei/tei:teiHeader/tei:fileDesc[@type = ('section','grouping','pseudo-section')]) then 
+    if($tei//tei:fileDesc[@type = ('section','grouping','pseudo-section')]) then 
         'section'
     
     else if($tei//tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']) then
@@ -339,6 +339,17 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                         $note/@*,
                         $note/node()
                     }
+                ,
+                
+                for $link in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:link[@type eq 'isCommentaryOf']
+                let $link-tei := tei-content:tei($link/@target, 'translation')
+                where $link-tei
+                return
+                    element isCommentaryOf {
+                        attribute toh-key { tei-content:source-bibl($link-tei, $link/@target)/@key },
+                        attribute text-id { tei-content:id($link-tei) }
+                    }
+                
             }
         </source>
 };

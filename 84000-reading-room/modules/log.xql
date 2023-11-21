@@ -10,10 +10,10 @@ declare variable $log:requests-log-path := concat($common:log-path, '/requests.x
 declare variable $log:requests-log := doc($log:requests-log-path)/m:log;
 
 declare function local:parameters() as element()* {
-    for $parameter in request:get-parameter-names()
+    for $parameter in request:get-parameter-names()[not(. eq '')][string-length(.) le 100]
     return 
         <parameter xmlns="http://read.84000.co/ns/1.0" name="{ $parameter }">
-             { request:get-parameter($parameter, "") }
+             { request:get-parameter($parameter, "") ! substring(., 1, 1000) }
         </parameter>
 };
 

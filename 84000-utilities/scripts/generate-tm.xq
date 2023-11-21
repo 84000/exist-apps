@@ -11,6 +11,8 @@ import module namespace update-tm="http://operations.84000.co/update-tm" at "../
 
 declare variable $local:tei := collection($common:translations-path);
 declare variable $local:tm := collection($update-tm:tm-path);
+declare variable $local:txt-data-path := concat($common:data-path, '/uploads/linguae-dharmae/aligned/31-10-2022/complete/');
+declare variable $local:txt-file-string := '-bo_aligned.txt';
 
 (: Published texts with no TM :)
 for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/@status = $translation:published-status-ids]
@@ -20,7 +22,7 @@ where not($tmx) and $text-id eq 'UT22084-034-009'(:'UT22084-040-002':)(:'UT22084
 
 (: Generate TM :)
 let $filename := concat(translation:filename($tei, ''), '.tmx')
-let $tmx := update-tm:new-tmx-from-linguae-dharmae($tei)
+let $tmx := update-tm:new-tmx-from-linguae-dharmae($tei, $local:txt-data-path, $local:txt-file-string)
 
 where $filename and $tmx
 return (

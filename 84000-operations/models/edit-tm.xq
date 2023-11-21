@@ -65,7 +65,7 @@ let $update-tm :=
         and request:get-parameter('tm-bo', '') gt ''
         and request:get-parameter-names()[. = 'tm-en']
     ) then
-        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), (), true())
+        update-tm:add-unit($tmx, request:get-parameter('tm-bo', ''), request:get-parameter('tm-en', ''), request:get-parameter('tei-location-id', ''), (), (), true())
     
     (: Delete a unit :)
     else if($tmx and request:get-parameter('remove-unit', '') gt '') then

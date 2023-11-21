@@ -198,7 +198,7 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                 ),
                 
                 (: Other content :)
-                for $content in $existing-entity/m:content[not(@type = ('glossary-definition', 'glossary-notes'))]
+                for $content in $existing-entity/m:content[not(@type = ('glossary-definition', 'glossary-notes', 'preferred-translation'))]
                 return (
                     common:ws(2),
                     $content
@@ -235,7 +235,21 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
                     }
                 ),
                 
+                (: Preferred translation content :)
+                let $entity-preferred-translation := request:get-parameter('entity-preferred-translation', '')
+                where $entity-preferred-translation gt '' 
+                return (
+                    common:ws(2),
+                    element content {
+                        attribute type { 'preferred-translation' },
+                        attribute user { common:user-name() },
+                        attribute timestamp { current-dateTime() },
+                        text { $entity-preferred-translation }
+                    }
+                ),
+                
                 common:ws(1)
+                
             }
         
         where $parent and ($existing-entity or $new-value)

@@ -19,6 +19,150 @@ declare variable $update-tm:units-aligned-per-page := 100;
 declare variable $update-tm:blocking-jobs := scheduler:get-scheduled-jobs()//scheduler:job[@name = ('tm-maintenance')][not(scheduler:trigger/state/text() eq 'COMPLETE')];
 declare variable $update-tm:flags := ('requires-attention','alternative-source');
 
+declare function update-tm:update-english($tmx as element(tmx:tmx), $unit-id as xs:string, $value-en as xs:string?) as element()? {
+    
+    let $tu := $tmx//tmx:tu[@id eq $unit-id]
+    let $tuv := $tu/tmx:tuv[@xml:lang eq 'en']
+    let $revision := $tu/tmx:prop[@name eq 'revision']
+    let $version-str := ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1]
+    
+    let $tuv-new := 
+        element { QName('http://www.lisa.org/tmx14', 'tuv') }{
+            attribute xml:lang { 'en' },
+            element seg { text { $value-en } }
+        }
+    
+    let $revision-new :=
+        element { QName('http://www.lisa.org/tmx14', 'prop') }{
+            attribute name { 'revision' },
+            text { $version-str }
+        }
+    
+    where $tu and not($update-tm:blocking-jobs)
+    return (
+        if($tuv) then
+            update replace $tuv with $tuv-new
+        else
+            update insert (common:ws(3), $tuv-new) following $tu/tmx:tuv[last()]
+        ,
+        if($revision) then 
+            update replace $revision with $revision-new
+        else
+            update insert (common:ws(3), $revision-new) following $tu/tmx:prop[last()]
+    )
+    
+};
+
+declare function update-tm:update-tibetan($tmx as element(tmx:tmx), $unit-id as xs:string, $value-bo as xs:string?) as element()? {
+    
+    let $tu := $tmx//tmx:tu[@id eq $unit-id]
+    let $tuv := $tu/tmx:tuv[@xml:lang eq 'bo']
+    let $revision := $tu/tmx:prop[@name eq 'revision']
+    let $location-id := $tu/tmx:prop[@name eq 'location-id']
+    let $version-str := ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1]
+    let $value-bo-tokenized := tokenize($value-bo, '\n')
+    
+    let $tuv-new := 
+        element { QName('http://www.lisa.org/tmx14', 'tuv') }{
+            attribute xml:lang { 'bo' },
+            element seg { text { normalize-space($value-bo-tokenized[1]) } }
+        }
+    
+    let $revision-new :=
+        element { QName('http://www.lisa.org/tmx14', 'prop') }{
+            attribute name { 'revision' },
+            text { $version-str }
+        }
+    
+    where $tu and not($update-tm:blocking-jobs)
+    return (
+        if($tuv) then
+            update replace $tuv with $tuv-new
+        else
+            update insert (common:ws(3), $tuv-new) following $tu/tmx:tuv[last()]
+        ,
+        if($revision) then 
+            update replace $revision with $revision-new
+        else
+            update insert (common:ws(3), $revision-new) following $tu/tmx:prop[last()]
+        ,
+        if(count($value-bo-tokenized) gt 1) then (
+            update-tm:add-unit($tmx, string-join(subsequence($value-bo-tokenized, 2)), (), ($location-id/text(), '')[1], $tu/tmx:prop, $tu, true())
+        )
+        else ()
+    )
+    
+};
+
+declare function update-tm:merge-segments($tmx as element(tmx:tmx), $unit-ids as xs:string*) as element()* {
+    
+    (: Establish first segment :)
+    let $tus := 
+        for $tu in $tmx//tmx:tu[@id = $unit-ids]
+        order by functx:index-of-node($tmx//tmx:tu, $tu)
+        return
+            $tu
+    
+    let $tu-first := $tus[1]
+    
+    (: New merged unit :)
+    let $tu-merged := 
+        element { QName('http://www.lisa.org/tmx14', 'tu') }{
+            
+            $tu-first/@*,
+            
+            for $element in $tu-first/* except $tu-first/tmx:tuv[@xml:lang = ('bo','en')]
+            return (
+                common:ws(3),
+                $element
+            ),
+            
+            common:ws(3),
+            element { QName('http://www.lisa.org/tmx14', 'tuv') }{
+                attribute xml:lang { 'bo' },
+                element seg { 
+                    let $texts-bo :=
+                        for $tu in $tus
+                        order by functx:index-of-node($tmx//tmx:tu, $tu)
+                        return 
+                            $tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text()
+                    return
+                        string-join($texts-bo, ' ')
+                }
+            },
+            
+            common:ws(3),
+            element { QName('http://www.lisa.org/tmx14', 'tuv') }{
+                attribute xml:lang { 'en' },
+                element seg { 
+                    let $texts-en :=
+                        for $tu in $tus
+                        order by functx:index-of-node($tmx//tmx:tu, $tu)
+                        return 
+                            $tu/tmx:tuv[@xml:lang eq 'en']/tmx:seg/text()
+                    return
+                        string-join($texts-en, ' ')
+                }
+            }
+            
+            
+        }
+    
+    return (
+        
+        (: Replace first tu with merged :)
+        update replace $tu-first with $tu-merged
+        ,
+        
+        (: Remove other segments :)
+        for $tu in $tus except $tu-first
+        return
+            update delete $tu
+        
+    )
+    
+};
+
 declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:string, $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string, $flags as xs:string*) as element()? {
     
     let $tm-unit := $tmx/tmx:body/tmx:tu[@id eq $unit-id]
@@ -59,7 +203,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
             common:ws(3),
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
                 attribute name { 'revision' },
-                text { $tmx/tmx:header/@eft:text-version/string() }
+                text { ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1] }
             },
             
             (: flags :)
@@ -103,7 +247,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
         ,
         
         if(count($value-bo-tokenized) gt 1 or count($value-en-tokenized) gt 1) then (
-            update-tm:add-unit($tmx, string-join(subsequence($value-bo-tokenized, 2), ''), string-join(subsequence($value-en-tokenized, 2), ''), $location-id, $tmx/tmx:body/tmx:tu[@id eq $unit-id], true())
+            update-tm:add-unit($tmx, string-join(subsequence($value-bo-tokenized, 2), ''), string-join(subsequence($value-en-tokenized, 2), ''), $location-id, $tm-unit/tmx:prop, $tmx/tmx:body/tmx:tu[@id eq $unit-id], true())
         )
         else ()
         
@@ -111,7 +255,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
     
 };
 
-declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string, $add-following as element(tmx:tu)?, $set-tu-ids as xs:boolean?) as element()? {
+declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:string?, $value-en as xs:string?, $location-id as xs:string, $add-props as element(tmx:prop)*, $add-following as element(tmx:tu)?, $set-tu-ids as xs:boolean?) as element()? {
     
     let $new-unit := 
         element { QName('http://www.lisa.org/tmx14', 'tu') }{
@@ -119,7 +263,7 @@ declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:st
             common:ws(3),
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
                 attribute name { 'revision' },
-                text { $tmx/tmx:header/@eft:text-version/string() }
+                text { ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1] }
             },
             
             if($location-id gt '') then (
@@ -131,6 +275,12 @@ declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:st
             )
             else ()
             ,
+            
+            for $prop in $add-props[not(@name = ('revision','location-id'))]
+            return (
+                common:ws(3),
+                $prop
+            ),
             
             if($value-bo) then (
                 common:ws(3),
@@ -155,15 +305,12 @@ declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:st
             common:ws(2)
         }
     
-    (: Add whitespace for readability :)
-    let $padding := common:ws(2)
-    
     return (
     
         if($add-following) then
-            update insert ($padding, $new-unit) following $add-following
+            update insert (common:ws(2), $new-unit) following $add-following
         else
-            update insert ($new-unit, $padding) into $tmx/tmx:body
+            update insert (common:ws(2), $new-unit, common:ws(1)) into $tmx/tmx:body
         ,
         
         (: If added then re-set ids :)
@@ -253,7 +400,7 @@ declare function update-tm:new-tmx-from-bcrdCorpus($tei as element(tei:TEI), $bc
     
 };
 
-declare function update-tm:new-tmx-from-linguae-dharmae($tei as element(tei:TEI)) as element(tmx:tmx)? {
+declare function update-tm:new-tmx-from-linguae-dharmae($tei as element(tei:TEI), $txt-data-path as xs:string, $txt-file-string as xs:string) as element(tmx:tmx)? {
     
     let $toh-key := tei-content:source($tei,'')/@key
     let $text-id := tei-content:id($tei)
@@ -264,7 +411,7 @@ declare function update-tm:new-tmx-from-linguae-dharmae($tei as element(tei:TEI)
     let $text-outline := translation:parts($tei, (), $translation:view-modes/eft:view-mode[@id eq 'outline'], ())
     let $translation-outline := $text-outline[@id eq 'translation']
     
-    let $ld-path := concat($common:data-path, '/uploads/linguae-dharmae/aligned/31-10-2022/complete/', $toh-key, '-bo_aligned.txt')
+    let $ld-path := concat($txt-data-path, $toh-key, $txt-file-string)
     let $ld-doc := util:binary-to-string(util:binary-doc($ld-path))
     let $ld-lines := tokenize($ld-doc, '\n')
     
@@ -352,7 +499,7 @@ declare function update-tm:apply-revisions($tei as element(tei:TEI), $tmx as ele
         let $remainder-location := $remainder-match/fn:group[@nr eq '1']/text() ! replace(., '\{{2}([a-zA-Z]+):([a-zA-Z0-9\-]+)\}{2}', '$2', 'i')
         where matches($remainder-en, '\p{L}+', 'i')
         return 
-            update-tm:add-unit($tmx, (), $remainder-en, $remainder-location, (), false())
+            update-tm:add-unit($tmx, (), $remainder-en, $remainder-location, (), (), false())
     
     let $end-time := util:system-dateTime()
     let $duration-seconds := functx:total-seconds-from-duration($end-time - $start-time)

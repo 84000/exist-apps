@@ -173,7 +173,7 @@ return
         
         let $request :=
             element { QName('http://read.84000.co/ns/1.0', 'request') }{
-                attribute resource-id { request:get-parameter('resource-id', '') },
+                attribute resource-id { $resource-id },
                 attribute resource-type { $resource-type },
                 attribute first-record { request:get-parameter('first-record', 1) },
                 attribute max-records { $max-records },
@@ -268,7 +268,6 @@ return
         
         let $entities := 
             element { QName('http://read.84000.co/ns/1.0', 'entities') }{
-                
                 let $entities := (
                     for $gloss-id in distinct-values($gloss-filtered-subsequence/@xml:id)
                     let $instance := $entities:entities//m:instance[@id = $gloss-id]
@@ -279,7 +278,11 @@ return
                 
                 return (
                     $entities,
-                    element related { entities:related(($entities | $glossary/m:entry/m:similar/m:entity), true(), ('glossary','knowledgebase'), (), ()) }
+                    element related { 
+                        if($filter = ('check-entities', 'check-all', 'check-terms', 'check-people', 'check-places', 'check-texts', 'missing-entities', 'requires-attention', 'entity-definition', 'shared-entities', 'exclusive-entities')) then
+                            entities:related(($entities | $glossary/m:entry/m:similar/m:entity), true(), ('glossary','knowledgebase'), (), ())
+                        else ()
+                     }
                 )
                 
             }

@@ -12,10 +12,12 @@ declare variable $download:file-versions-cache := doc(concat($common:data-path, 
 declare variable $download:file-versions-epub := doc(concat($common:data-path, '/epub/', $download:file-versions-file-name));
 declare variable $download:file-versions-pdf := doc(concat($common:data-path, '/pdf/', $download:file-versions-file-name));
 declare variable $download:file-versions-rdf := doc(concat($common:data-path, '/rdf/', $download:file-versions-file-name));
+declare variable $download:file-versions-json := doc(concat($common:data-path, '/json/', $download:file-versions-file-name));
 
 declare function download:file-path($requested-file as xs:string) as xs:string {
     
     (: Sanitize the file name i.e. toh and extension only :)
+    
     let $file-name := replace(lower-case($requested-file), '_.*\.', '.')
     let $file-name-tokenized := tokenize($file-name, '\.')
     let $resource-id := lower-case($file-name-tokenized[1])
@@ -23,11 +25,13 @@ declare function download:file-path($requested-file as xs:string) as xs:string {
 
     return
         concat($common:data-collection, '/', $file-extension, '/', $file-name)
+    
 };
 
 declare function download:stored-version-str($resource-id as xs:string, $file-type as xs:string) as xs:string {
     
     (: Get document version in data store :)
+    
     let $file-versions-doc :=
         if($file-type eq 'cache') then
             $download:file-versions-cache
@@ -37,6 +41,8 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ty
             $download:file-versions-pdf
         else if($file-type eq 'rdf') then
             $download:file-versions-rdf
+        else if($file-type eq 'json') then
+            $download:file-versions-json
         else
             doc(concat($common:data-path, '/', $file-type, '/', $download:file-versions-file-name))
     
@@ -46,7 +52,7 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ty
     (: Check the file is there :)
     let $file-uri := concat($common:data-path, '/', $file-type, '/', $file-name)
     let $file-exists := 
-        if($file-type = ('xml', 'rdf', 'html', 'cache')) then
+        if($file-type = ('xml', 'rdf', 'html', 'cache', 'json')) then
             doc-available($file-uri)
         else
             util:binary-doc-available($file-uri)

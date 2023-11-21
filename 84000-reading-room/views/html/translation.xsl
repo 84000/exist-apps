@@ -405,7 +405,7 @@
                                     <xsl:value-of select="concat(m:translation/m:publication/m:team[1]/m:label[1], ' (tr.). ')"/>
                                     <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
                                     <xsl:value-of select="'('"/>
-                                    <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'], m:translation/m:titles/m:title[@xml:lang eq 'bo'])[1]">
+                                    <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], m:translation/m:titles/m:title[@xml:lang eq 'bo'][text()])[1]">
                                         <span>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="@xml:lang"/>
@@ -1067,19 +1067,19 @@
                                     </div>
                                 </xsl:if>
                                 
-                                <xsl:if test="$honoration">
-                                    <div class="h2 break">
-                                        <xsl:apply-templates select="$honoration[1]/node()"/>
-                                    </div>
-                                </xsl:if>
-                                
                                 <xsl:if test="$main-title">
                                     <div class="h1 break">
+                                        <xsl:if test="$honoration">
+                                            <small>
+                                                <xsl:apply-templates select="$honoration[1]/node()"/>
+                                            </small>
+                                            <br/>
+                                        </xsl:if>
                                         <xsl:apply-templates select="$main-title[1]/node()"/>
                                         <xsl:if test="$sub-title">
                                             <br/>
                                             <small>
-                                                <xsl:apply-templates select="$sub-title[1]"/>
+                                                <xsl:apply-templates select="$sub-title[1]/node()"/>
                                             </small>
                                         </xsl:if>
                                     </div>

@@ -109,9 +109,10 @@ declare function search:search($request as xs:string, $data-types as element(m:t
     
     let $query := local:search-query($request-no-quotes, $request-is-phrase)
     
+    (: All results from all sources :)
     let $results := (
-        (: Header content :)
         if($data-types[@id = ('translations','knowledgebase')]) then (
+            (: Header content :)
             $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
@@ -138,6 +139,14 @@ declare function search:search($request as xs:string, $data-types as element(m:t
             $entities-definitions[ft:query(., $query, $options)]
         else ()
     )
+    
+    (: Sort by score :)
+    
+    (: Get the relevant chunk :)
+    
+    (: Establish the resource :)
+    
+    (: Get all content for the resource :)
     
     let $results-groups := (
     
@@ -206,7 +215,7 @@ declare function search:search($request as xs:string, $data-types as element(m:t
                 else
                     $result/parent::m:entity[1]
             
-            let $group-id := $entity/@xml:id
+            let $group-id := ($entity/@xml:id)[1]
             
             where $group-id
             group by $group-id
@@ -323,7 +332,7 @@ declare function search:search($request as xs:string, $data-types as element(m:t
         
 };
 
-declare function search:tm-search($search as xs:string, $search-lang as xs:string, $first-record as xs:double, $max-records as xs:double, $include-glossary as xs:boolean)  as element(m:tm-search) {
+declare function search:tm-search($search as xs:string, $search-lang as xs:string, $first-record as xs:double, $max-records as xs:double, $include-glossary as xs:boolean, $exclude-tmx as element(tmx:tmx)?) as element(m:tm-search) {
     
     let $lang-map := map { 'bo':'bo', 'en':'en' }
     
@@ -340,20 +349,22 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
         else
             lower-case($search-lang)
     
-    let $tmx := collection(concat($common:data-path, '/translation-memory'))//tmx:tmx
+    let $tmx := collection(concat($common:data-path, '/translation-memory'))//tmx:tmx except $exclude-tmx
     let $tm-units := $tmx/tmx:body/tmx:tu
     
     let $tei := collection($common:translations-path)//tei:TEI
-    let $search-and := string-join(tokenize($search, '\s*།\s*')[normalize-space(.)] ! normalize-space(.) ! replace(., '(^་|་$|&#8203;)', ''), ' OR ')
     
     let $results :=
         for $result in (
-            (: Only search units with segments for both languages :)
-            if($search-lang eq 'bo') then
-            
-                $tm-units[ft:query(tmx:tuv, concat('bo:(', $search-and, ')'), map { "fields": ("bo") })][tmx:tuv[@xml:lang eq 'en']]
-            else
-                $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })][tmx:tuv[@xml:lang eq 'bo']]
+            let $search-regex := string-join(tokenize($search, '\s+(།\s*)?')[normalize-space(.)] ! normalize-space(.) ! replace(., '(^་|་$|&#8203;)', ''), ' OR ')
+            let $matches := 
+                (: Only search units with segments for both languages :)
+                if($search-lang eq 'bo') then
+                    $tm-units[ft:query(tmx:tuv, concat('bo:(', $search-regex, ')'), map { "fields": ("bo") })][tmx:tuv[@xml:lang eq 'en']]
+                else
+                    $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })][tmx:tuv[@xml:lang eq 'bo']]
+                return
+                    local:some-matches($matches, 1)
             ,
             if($include-glossary) then
                 if($search-lang eq 'bo') then
@@ -362,7 +373,6 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                     $tei//tei:back//tei:gloss[ft:query(tei:term[not(@xml:lang) or @xml:lang eq 'en'](:[not(@type eq 'translationAlternative')]:), $search)]
             else ()
         )
-        
         let $score := ft:score($result)
         order by $score descending
         return 
@@ -370,6 +380,8 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
     
     return (:if(true()) then element debug { $results } else:)
         element { QName('http://read.84000.co/ns/1.0', 'tm-search') } {
+        
+            attribute search-lang { $search-lang },
             
             element results {
             
@@ -510,6 +522,27 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
             }
         }
 
+};
+
+(: Recurr search, lowering the threshold, until it finds something :)
+declare function local:some-matches($matches as element(tmx:tu)*, $min-score as xs:float) as element(tmx:tu)* {
+    
+    let $matches-count-target := 10
+    let $min-score-increment := 0.25
+    
+    let $matches-for-score := 
+        for $match in $matches
+        let $score := ft:score($match)
+        where $score ge $min-score
+        return
+            $match
+    
+    return
+        if(count($matches-for-score) lt $matches-count-target and $min-score - $min-score-increment gt 0) then
+            local:some-matches($matches, $min-score - $min-score-increment)
+        else 
+            $matches-for-score
+            
 };
 
 declare function local:search-query($request as xs:string, $search-as-phrase as xs:boolean?) as element() {

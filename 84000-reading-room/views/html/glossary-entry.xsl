@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -21,7 +21,7 @@
         <xsl:variable name="content">
             
             <!-- Title band -->
-            <div class="title-band">
+            <div class="title-band hidden-iframe">
                 <div class="container">
                     <div class="center-vertical-sm full-width">
                         
@@ -92,7 +92,7 @@
                 <div class="container">
                     
                     <!-- Page title -->
-                    <div class="section-title row">
+                    <div class="section-title row hidden-iframe">
                         <div class="col-sm-offset-2 col-sm-8">
                             <div class="h1 title main-title">
                                 <xsl:value-of select="'84000 Glossary of Terms'"/>
@@ -110,12 +110,14 @@
                     </h1>
                     
                     <!-- Tabs -->
-                    <xsl:call-template name="glossary-tabs">
-                        <xsl:with-param name="page-url" select="$page-url"/>
-                        <xsl:with-param name="term-langs" select="m:request/m:term-langs"/>
-                        <xsl:with-param name="entity-flags" select="m:entity-flags"/>
-                        <xsl:with-param name="entry-label" select="$request-entity-data/m:label[@type eq 'primary']"/>
-                    </xsl:call-template>
+                    <div class="hidden-iframe">
+                        <xsl:call-template name="glossary-tabs">
+                            <xsl:with-param name="page-url" select="$page-url"/>
+                            <xsl:with-param name="term-langs" select="m:request/m:term-langs"/>
+                            <xsl:with-param name="entity-flags" select="m:entity-flags"/>
+                            <xsl:with-param name="entry-label" select="$request-entity-data/m:label[@type eq 'primary']"/>
+                        </xsl:call-template>
+                    </div>
                     
                     <xsl:choose>
                         <xsl:when test="$request-entity">

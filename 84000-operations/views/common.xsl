@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -14,44 +14,283 @@
         <xsl:param name="active-tab"/>
         <xsl:param name="tab-content" required="yes"/>
         <xsl:param name="aside-content"/>
+        <xsl:param name="container-class" as="xs:string" select="'container'"/>
         
+        <!-- Title band -->
         <div class="title-band hidden-print">
             <div class="container">
                 <div class="center-vertical full-width">
-                    <span class="logo">
+                    <div class="logo">
                         <img alt="84000 logo">
                             <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
                         </img>
-                    </span>
-                    <span>
-                        <h1 class="title">
-                            <xsl:value-of select="'Project Management'"/>
-                        </h1>
-                    </span>
-                    <span class="text-right">
-                        <a target="reading-room">
-                            <xsl:attribute name="href" select="$reading-room-path"/>
-                            <xsl:value-of select="'Reading Room'"/>
+                    </div>
+                    <div>
+                        <nav role="navigation" aria-label="Breadcrumbs">
+                            <ul class="breadcrumb">
+                                
+                                <li>
+                                    <a href="/index.html">
+                                        <h1 class="title">
+                                            <xsl:value-of select="'Project Management'"/>
+                                        </h1>
+                                    </a>
+                                </li>
+                                
+                                <xsl:if test="$active-tab eq 'operations/index'">
+                                    <li>
+                                        <a href="index.html">
+                                            <xsl:value-of select="'Dashboard'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/search'">
+                                    <li>
+                                        <a href="search.html">
+                                            <xsl:value-of select="'Translation Projects'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/sections'">
+                                    <li>
+                                        <a href="sections.html">
+                                            <xsl:value-of select="'Sections'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/knowledgebase'">
+                                    <li>
+                                        <a href="knowledgebase.html">
+                                            <xsl:value-of select="'Knowledge Base'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/sponsors'">
+                                    <li>
+                                        <a href="sponsors.html">
+                                            <xsl:value-of select="'Sponsors'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/translators'">
+                                    <li>
+                                        <a href="translators.html">
+                                            <xsl:value-of select="'Contributors'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/translator-teams'">
+                                    <li>
+                                        <a href="translator-teams.html">
+                                            <xsl:value-of select="'Teams'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/translator-institutions'">
+                                    <li>
+                                        <a href="translator-institutions.html">
+                                            <xsl:value-of select="'Institutions'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/sys-config'">
+                                    <li>
+                                        <a href="sys-config.html">
+                                            <xsl:value-of select="'Config'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/glossary'">
+                                    <li>
+                                        <a>
+                                            <xsl:choose>
+                                                <xsl:when test="/m:response/m:request/@resource-id gt ''">
+                                                    <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', /m:response/m:request/@resource-id, '&amp;resource-type=', /m:response/m:request/@resource-type)"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:attribute name="href" select="'/edit-glossary.html'"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            <xsl:attribute name="data-loading" select="'Loading glossary...'"/>
+                                            <xsl:value-of select="'Glossary Editor'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/quotes'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', /m:response/m:request/@resource-id, '&amp;part=', /m:response/m:request/@part)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading quotes...'"/>
+                                            <xsl:value-of select="'Quotes Validation'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-text-header'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Text Header'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-kb-header'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Knowledge Base Header'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-text-sponsors'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Sponsorship'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-sponsor'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-sponsor.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:value-of select="'Edit Sponsor'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-translator'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-translator.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Contributor'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-translator-team'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-translator-team.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Translator Team'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-translator-institution'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Translator Institution'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-text-submission'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@text-id, '#submissions-form')"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Text Header'"/>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', /m:response/m:request/@text-id, '&amp;submission-id=', /m:response/m:request/@submission-id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Submission'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/annotation-tei'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', /m:response/m:request/@text-id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Archived for Annotations'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/edit-tm'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', /m:response/m:request/@text-id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Edit Translation Memory'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/source-utils'">
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/source-utils.html?text-id=', /m:response/m:request/@text-id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Source Utilities'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                            </ul>
+                        </nav>
+                    </div>
+                        
+                    <div>
+                        <a href="#navigation-sidebar" class="center-vertical align-right show-sidebar">
+                            <span class="btn-round-text">
+                                <xsl:value-of select="'Navigation'"/>
+                            </span>
+                            <span>
+                                <span class="btn-round sml">
+                                    <i class="fa fa-bars"/>
+                                </span>
+                            </span>
                         </a>
-                    </span>
+                    </div>
                 </div>
             </div>
         </div>
         
+        <!-- Content -->
         <main class="content-band">
             <div class="container">
-                <xsl:call-template name="tabs">
-                    <xsl:with-param name="active-tab" select="$active-tab"/>
-                </xsl:call-template>
-                <div class="tab-content">
-                    <xsl:copy-of select="$tab-content"/>
-                </div>
+                <xsl:if test="$container-class eq 'container-fluid'">
+                    <xsl:attribute name="class" select="$container-class"/>
+                </xsl:if>
+                <xsl:sequence select="$tab-content"/>
             </div>
         </main>
         
+        <!-- Aside -->
         <aside>
             <xsl:sequence select="$aside-content"/>
         </aside>
+        
+        <!-- Sidebar -->
+        <xsl:call-template name="tabs">
+            <xsl:with-param name="active-tab" select="$active-tab"/>
+        </xsl:call-template>
         
     </xsl:template>
     
@@ -108,224 +347,126 @@
     
     <!-- Tabs -->
     <xsl:template name="tabs">
+        
         <xsl:param name="active-tab"/>
-        <ul class="nav nav-tabs active-tab-refresh hidden-print" role="tablist">
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/index'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="index.html">
-                    <xsl:value-of select="'Summary'"/>
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/search'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="search.html">
-                    <xsl:value-of select="'Texts'"/>
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/sections'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="sections.html">
-                    <xsl:value-of select="'Sections'"/>
-                </a>
-            </li>
-            <!--<li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/knowledgebase'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="knowledgebase.html">
-                    <xsl:value-of select="'Knowledge Base'"/>
-                </a>
-            </li>-->
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/sponsors'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="sponsors.html">
-                    <xsl:value-of select="'Sponsors'"/>
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/translators'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="translators.html">
-                    <xsl:value-of select="'Contributors'"/>
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/translator-teams'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="translator-teams.html">
-                    <xsl:value-of select="'Teams'"/>
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/translator-institutions'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="translator-institutions.html">
-                    <xsl:value-of select="'Institutions'"/>
-                </a>
-            </li>
-            <li role="presentation">
-                <xsl:if test="$active-tab eq 'operations/sys-config'">
-                    <xsl:attribute name="class" select="'active'"/>
-                </xsl:if>
-                <a href="sys-config.html">
-                    <xsl:value-of select="'Config'"/>
-                </a>
-            </li>
-            <xsl:if test="$active-tab eq 'operations/glossary'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:choose>
-                            <xsl:when test="/m:response/m:request/@resource-id gt ''">
-                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', /m:response/m:request/@resource-id, '&amp;resource-type=', /m:response/m:request/@resource-type)"/>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:attribute name="href" select="'/edit-glossary.html'"/>
-                            </xsl:otherwise>
-                        </xsl:choose>
-                        <xsl:attribute name="data-loading" select="'Loading glossary...'"/>
-                        <xsl:value-of select="'Glossary'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/quotes'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', /m:response/m:request/@resource-id, '&amp;part=', /m:response/m:request/@part)"/>
-                        <xsl:attribute name="data-loading" select="'Loading quotes...'"/>
-                        <xsl:value-of select="'Quotes'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-text-header'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Text Header'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-kb-header'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Knowledge Base Article'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-text-sponsors'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Sponsorship'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-sponsor'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-sponsor.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:value-of select="'Edit Sponsor'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-translator'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-translator.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Contributor'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-translator-team'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-translator-team.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Translator Team'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-translator-institution'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-translator-institution.html?id=', /m:response/m:request/@id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Translator Institution'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-text-submission'">
-                <li role="presentation">
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@text-id, '#submissions-form')"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Text Header'"/>
-                    </a>
-                </li>
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-text-submission.html?text-id=', /m:response/m:request/@text-id, '&amp;submission-id=', /m:response/m:request/@submission-id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit Submission'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/annotation-tei'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', /m:response/m:request/@text-id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Archived for Annotations'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/edit-tm'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', /m:response/m:request/@text-id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Edit TM'"/>
-                    </a>
-                </li>
-            </xsl:if>
-            <xsl:if test="$active-tab eq 'operations/source'">
-                <li role="presentation">
-                    <xsl:attribute name="class" select="'active'"/>
-                    <a>
-                        <xsl:attribute name="href" select="concat('/source.html?text-id=', /m:response/m:request/@text-id)"/>
-                        <xsl:attribute name="data-loading" select="'Loading...'"/>
-                        <xsl:value-of select="'Source Text'"/>
-                    </a>
-                </li>
-            </xsl:if>
-        </ul>
+        
+        <div id="navigation-sidebar" class="fixed-sidebar collapse width hidden-print">
+            
+            <div class="fix-width">
+                <div class="sidebar-content">
+                    
+                    <h4>
+                        <xsl:value-of select="'84000 Project Management'"/>
+                    </h4>
+                    
+                    <table class="table table-hover">
+                        <tbody>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/index'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="index.html">
+                                        <xsl:value-of select="'Dashboard'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/search'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="search.html">
+                                        <xsl:value-of select="'Translation Projects'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/sections'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="sections.html">
+                                        <xsl:value-of select="'Sections'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/sponsors'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="sponsors.html">
+                                        <xsl:value-of select="'Sponsors'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/translators'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="translators.html">
+                                        <xsl:value-of select="'Contributors'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/translator-teams'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="translator-teams.html">
+                                        <xsl:value-of select="'Teams'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/translator-institutions'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="translator-institutions.html">
+                                        <xsl:value-of select="'Institutions'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/sys-config'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="sys-config.html">
+                                        <xsl:value-of select="'Config'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td>
+                                    <a target="reading-room">
+                                        <xsl:attribute name="href" select="$reading-room-path"/>
+                                        <xsl:value-of select="'Open the Reading Room'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                
+                </div>
+            </div>
+            
+            <div class="fixed-btn-container close-btn-container right">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+            
+        </div>
+        
     </xsl:template>
     
     <!-- Acknowledgements -->
@@ -367,8 +508,8 @@
                                     <xsl:value-of select="m:toh/m:full"/> / <xsl:value-of select="m:title"/>
                                 </a>
                                 <span class="text-right">
-                                    <xsl:copy-of select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
-                                    <xsl:copy-of select="ops:translation-status(@status-group)"/>
+                                    <xsl:sequence select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
+                                    <xsl:sequence select="ops:translation-status(@status-group)"/>
                                 </span>
                             </div>
                             
@@ -653,6 +794,32 @@
             
         </div>
         
+        <!-- Preferred translation -->
+        <div class="form-group">
+            
+            <label class="col-sm-2 control-label">
+                <xsl:attribute name="for" select="concat('entity-preferred-translation-', $context-id, '-', ($entity/@xml:id, 'new-entity')[1])"/>
+                <xsl:value-of select="'Preferred translation:'"/>
+            </label>
+            
+            <div class="col-sm-8">
+                
+                <xsl:variable name="preferred-translation" select="$entity/m:content[@type eq 'preferred-translation']"/>
+                
+                <div class="sml-margin bottom">
+                    <input type="text" class="form-control">
+                        
+                        <xsl:attribute name="id" select="concat('entity-preferred-translation-', $context-id, '-', ($entity/@xml:id, 'new-entity')[1])"/>
+                        <xsl:attribute name="name" select="'entity-preferred-translation'"/>
+                        <xsl:attribute name="value" select="$preferred-translation"/>
+                        
+                    </input>
+                </div>
+                
+            </div>
+            
+        </div>
+        
         <hr class="sml-margin"/>
         
         <!-- Type checkboxes -->
@@ -797,7 +964,6 @@
                                 <xsl:attribute name="value" select="$instance/@id"/>
                             </input>
                             <span class="text-danger">
-                                <i class="fa fa-exclamation-circle"/>
                                 <xsl:choose>
                                     <xsl:when test="$instance[@type eq 'knowledgebase-article']">
                                         <xsl:value-of select="' Un-link this articled from this shared entity'"/>

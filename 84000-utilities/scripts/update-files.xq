@@ -44,7 +44,7 @@ declare function local:files-permissions($collection-uri as xs:string, $file-ext
 (:local:files-permissions('/db/apps/84000-data/epub', 'epub', 'admin', 'utilities', 'rw-rw-r--'):)
 (:local:files-permissions('/db/apps/84000-data/pdf', 'pdf', 'admin', 'utilities', 'rw-rw-r--'):)
 (:local:files-permissions('/db/apps/84000-data/rdf', 'rdf', 'admin', 'utilities', 'rw-rw-r--'):)
-local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache')
-(:local:files-mimetype-xml('/db/apps/84000-data/translation-memory', 'tmx'):)
+(:local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'):)
+local:files-mimetype-xml('/db/apps/84000-data/translation-memory', 'tmx')
 (:xmldb:reindex('/db/apps/84000-data/tei'):)
 

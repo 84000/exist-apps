@@ -371,6 +371,57 @@ declare function translation-status:update($text-id as xs:string) as element()? 
             else ()
             ,
             
+            (: eText note :)
+            let $segment-id := request:get-parameter('segment-id[]', '')[1]
+            let $requested-text := request:get-parameter('etext-note', '') ! normalize-space(.)
+            return (
+                for $etext-note in $existing-value/m:etext-note
+                return (
+                    text { $common:line-ws },
+                    if('etext-note' = $request-parameters and $etext-note/@segment-id eq $segment-id and not(compare(normalize-space($etext-note/text()), $requested-text) eq 0)) then
+                        element etext-note {
+                            attribute last-edited { current-dateTime() },
+                            attribute last-edited-by { common:user-name() },
+                            attribute segment-id { $segment-id },
+                            text { $requested-text }
+                        }
+                    else
+                        $etext-note
+                ),
+                if(not($existing-value/m:etext-note[@segment-id eq $segment-id])) then (
+                    text { $common:line-ws },
+                    element etext-note {
+                        attribute last-edited { current-dateTime() },
+                        attribute last-edited-by { common:user-name() },
+                        attribute segment-id { $segment-id },
+                        text { $requested-text }
+                    }
+                )
+                else ()
+                
+            ),
+            
+            (: Source notes :)
+            let $segment-id := request:get-parameter('segment-id[]', '')[1]
+            let $requested-text := request:get-parameter('source-note', '') ! normalize-space(.)
+            return (
+                for $source-note in $existing-value/m:source-note
+                return (
+                    text { $common:line-ws },
+                    $source-note
+                ),
+                if('source-note' = $request-parameters and $requested-text gt '') then (
+                    text { $common:line-ws },
+                    element source-note {
+                        attribute last-edited { current-dateTime() },
+                        attribute last-edited-by { common:user-name() },
+                        attribute segment-id { $segment-id },
+                        text { $requested-text }
+                    }
+                )
+                else ()
+            ),
+            
             (: Contract :)
             if(
                 ('contract-number','contract-date') = $request-parameters

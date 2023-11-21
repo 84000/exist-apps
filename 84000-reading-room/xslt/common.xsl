@@ -666,12 +666,12 @@
     <xsl:function name="common:textarea-rows" as="xs:integer">
         
         <xsl:param name="content" as="node()*"/>
-        <xsl:param name="default-rows" as="xs:integer"/>
+        <xsl:param name="min-rows" as="xs:integer"/>
         <xsl:param name="chars-per-row" as="xs:integer"/>
         
         <xsl:variable name="lines" select="sum(tokenize($content, '\n') ! ceiling((string-length(.) + 1) div $chars-per-row))"/>
         
-        <xsl:value-of select="if($lines gt $default-rows) then $lines else $default-rows"/>
+        <xsl:value-of select="if($lines gt $min-rows) then $lines else $min-rows"/>
         
     </xsl:function>
     
@@ -891,11 +891,12 @@
     <xsl:template name="entity-types-list">
         
         <xsl:param name="entity" as="element(m:entity)?"/>
+        <xsl:param name="warnings" as="xs:boolean?" select="true()"/>
         
         <xsl:if test="$entity">
             <ul class="list-inline">
                 
-                <xsl:if test="/m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
+                <xsl:if test="$warnings and /m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
                     <li>
                         <span class="small text-muted">
                             <xsl:value-of select="'Note: this data is still being sorted'"/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
@@ -28,19 +28,19 @@
                         </div>
                     </xsl:if>
                     
-                    <xsl:if test="$honoration">
-                        <div class="h2">
-                            <xsl:apply-templates select="$honoration[1]/node()"/>
-                        </div>
-                    </xsl:if>
-                    
                     <xsl:if test="$main-title">
                         <div class="h1">
+                            <xsl:if test="$honoration">
+                                <small>
+                                    <xsl:apply-templates select="$honoration[1]/node()"/>
+                                </small>
+                                <br/>
+                            </xsl:if>
                             <xsl:apply-templates select="$main-title[1]/node()"/>
                             <xsl:if test="$sub-title">
                                 <br/>
                                 <small>
-                                    <xsl:apply-templates select="$sub-title[1]"/>
+                                    <xsl:apply-templates select="$sub-title[1]/node()"/>
                                 </small>
                             </xsl:if>
                         </div>

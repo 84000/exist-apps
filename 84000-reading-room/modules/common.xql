@@ -455,7 +455,7 @@ declare function common:normalize-bo($string as xs:string) as xs:string {
     replace(
         replace(
             replace($string, '\s+', ' ')
-            , '(།)(\S)', '$1​$2')
+        , '(།)(\S)', '$1&#8203;$2') (: Add zero-width space after the shad :)
    , '་\s+$', '་')
 };
 

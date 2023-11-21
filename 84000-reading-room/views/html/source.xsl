@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
+    <xsl:import href="../../xslt/webpage.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
-    <xsl:variable name="page-url" select="concat('/source/', $toh-key,'.html', $request/@ref-index ! concat('?ref-index=', .))"/>
-    <xsl:variable name="page-url-viewmode" select="concat($page-url, m:view-mode-parameter((),()))"/>
-    <!-- Actually we want to use the BDRC ids here, but we don't have them for the Tengyur yet -->
+    <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
+    <xsl:variable name="text-id" select="$translation/@id" as="xs:string?"/>
+    <xsl:variable name="toh-key" select="$translation/m:source/@key" as="xs:string?"/>
     <xsl:variable name="toh-number" select="$translation/m:toh/@key ! replace(., '^toh', '')" as="xs:string?"/>
-    <xsl:variable name="rdf" select="/m:response/rdf:RDF"/>
     
     <xsl:template match="/m:response">
         
@@ -61,6 +60,7 @@
                                 </xsl:choose>
                             </xsl:variable>
                             
+                            <!-- Text title -->
                             <div class="text-center hidden-iframe">
                                 
                                 <div class="container">
@@ -95,7 +95,7 @@
                                 
                             </div>
                             
-                            <!-- Title -->
+                            <!-- Page title (folio) -->
                             <div id="folio-content" class="container text-center">
                                 <h1 class="title" id="popup-title">
                                     <xsl:value-of select="concat('Degé ', $work-string, ' volume ', @volume, ', ', $folio-string)"/>
@@ -104,42 +104,7 @@
                             
                             <!-- Content -->
                             <div class="container relative">
-                                
                                 <xsl:apply-templates select="m:language[@xml:lang eq 'bo']"/>
-                                
-                                <!--<xsl:variable name="current-ref-index" select="$translation/m:folio-content/@ref-index" as="xs:integer"/>
-                                <xsl:variable name="last-ref-index" select="$translation/m:folio-content/@count-refs" as="xs:integer"/>
-                                
-                                <xsl:if test="$current-ref-index gt 1">
-                                    
-                                    <a class="carousel-control left" title="Pevious">
-                                        
-                                        <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index - 1, m:view-mode-parameter(()))"/>
-                                        
-                                        <i class="fa fa-chevron-left" aria-hidden="true"/>
-                                        <span class="sr-only">
-                                            <xsl:value-of select="'Previous'"/>
-                                        </span>
-                                        
-                                    </a>
-                                    
-                                </xsl:if>
-                                
-                                <xsl:if test="$current-ref-index lt $last-ref-index">
-                                    
-                                    <a class="carousel-control right" title="Next">
-                                        
-                                        <xsl:attribute name="href" select="concat('?ref-index=', $current-ref-index + 1, m:view-mode-parameter(()))"/>
-                                        
-                                        <i class="fa fa-chevron-right" aria-hidden="true"/>
-                                        <span class="sr-only">
-                                            <xsl:value-of select="'Next'"/>
-                                        </span>
-                                        
-                                    </a>
-                                    
-                                </xsl:if>-->
-                                
                             </div>
                             
                             <!-- Pagination -->
@@ -152,7 +117,7 @@
                                         <xsl:if test="$request/@ref-index ! xs:integer(.) gt  1">
                                             <li>
                                                 <a>
-                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', '1', m:view-mode-parameter(()), '#folio-content')"/>
+                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', '1')"/>
                                                     <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
                                                     <xsl:attribute name="title" select="'first page (1)'"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
@@ -160,15 +125,10 @@
                                                     <!--<xsl:value-of select="'page 1'"/>-->
                                                     <i class="fa fa-step-backward"/>
                                                 </a>
-                                            </li><!--
-                                            <li>
-                                                <span>
-                                                    <xsl:value-of select="'...'"/>
-                                                </span>
-                                            </li>-->
+                                            </li>
                                             <li>
                                                 <a>
-                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page - 1), m:view-mode-parameter(()), '#folio-content')"/>
+                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page - 1))"/>
                                                     <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
                                                     <xsl:attribute name="title" select="concat('previous page (', format-number(($current-page - 1), '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
@@ -187,22 +147,17 @@
                                         <xsl:if test="$current-page lt $count-pages">
                                             <li>
                                                 <a>
-                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page + 1), m:view-mode-parameter(()), '#folio-content')"/>
+                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page + 1))"/>
                                                     <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
                                                     <xsl:attribute name="title" select="concat('next page (', format-number(($current-page + 1), '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
                                                     <xsl:attribute name="data-loading" select="'Loading next page...'"/>
                                                     <i class="fa fa-chevron-right"/>
                                                 </a>
-                                            </li><!--
-                                            <li>
-                                                <span>
-                                                    <xsl:value-of select="'...'"/>
-                                                </span>
-                                            </li>-->
+                                            </li>
                                             <li>
                                                 <a>
-                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', $count-pages, m:view-mode-parameter(()), '#folio-content')"/>
+                                                    <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', $count-pages)"/>
                                                     <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
                                                     <xsl:attribute name="title" select="concat('last page (', format-number($count-pages, '#,###'), ')')"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
@@ -218,78 +173,25 @@
                             </div>
                             
                             <!-- Links -->
-                            <div class="container text-center bottom-margin">
-                                <ul class="list-inline inline-dots">
-                                    
-                                    <!-- BDRC link -->
-                                    <xsl:variable name="link-bdrc-work" select="$rdf/bdo:Work[@rdf:about/string() eq $translation/m:toh/m:ref[@type eq 'bdrc-tibetan-id']/@value/string()]"/>
-                                    <xsl:if test="$tei-editor and $link-bdrc-work">
+                            <xsl:if test="$tei-editor-off and $environment/m:url[@id eq 'operations'][text()]">
+                                <div class="container text-center bottom-margin">
+                                    <ul class="list-inline inline-dots">
+                                        
+                                        <!-- Editor link -->
                                         <li>
-                                            <a>
-                                                <xsl:attribute name="target" select="'bdrc'"/>
-                                                <xsl:attribute name="href" select="$link-bdrc-work/@rdf:about"/>
-                                                <xsl:attribute name="class" select="'link-branded brand-bdrc'"/>
-                                                <xsl:value-of select="'BDRC resources'"/>
+                                            <a class="editor" target="84000-operations">
+                                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/source-utils.html?text-id=', $text-id, $request/@ref-index ! concat('&amp;ref-index=', .))"/>
+                                                <xsl:value-of select="'Open source utilities'"/>
                                             </a>
                                         </li>
-                                    </xsl:if>
-                                    
-                                    <!-- rKTs link -->
-                                    <xsl:variable name="link-rkts" select="$link-bdrc-work/owl:sameAs[@rdf:resource ! matches(., '^http://purl\.rkts\.eu/resource')][1]/@rdf:resource"/>
-                                    <xsl:if test="$tei-editor and $link-rkts">
-                                        <li>
-                                            <a>
-                                                <xsl:attribute name="target" select="'rkts'"/>
-                                                <xsl:attribute name="href" select="$link-rkts"/>
-                                                <xsl:attribute name="class" select="'link-branded brand-rkts'"/>
-                                                <xsl:value-of select="'rKTs resources'"/>
-                                            </a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                    <!-- Buddhanexus link -->
-                                    <xsl:variable name="link-buddhanexus" select="$link-bdrc-work/owl:sameAs[@rdf:resource ! matches(., '^https://buddhanexus\.net/')][1]/@rdf:resource"/>
-                                    <xsl:if test="$tei-editor and $link-buddhanexus">
-                                        <li>
-                                            <a>
-                                                <xsl:attribute name="target" select="'buddhanexus'"/>
-                                                <xsl:attribute name="href" select="$link-buddhanexus"/>
-                                                <xsl:attribute name="class" select="'link-branded brand-buddhanexus'"/>
-                                                <xsl:value-of select="'Buddhanexus'"/>
-                                            </a>
-                                        </li>
-                                    </xsl:if>
-                                    
-                                    <!-- Editor link -->
-                                    <xsl:choose>
-                                        <xsl:when test="$tei-editor-off">
-                                            <li>
-                                                <a>
-                                                    <xsl:attribute name="href" select="common:internal-link($page-url, m:view-mode-parameter('editor',()), '', $root/m:response/@lang)"/>
-                                                    <xsl:attribute name="class" select="'editor'"/>
-                                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                    <xsl:value-of select="'Show editor options'"/>
-                                                </a>
-                                            </li>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <li>
-                                                <a>
-                                                    <xsl:attribute name="href" select="$page-url"/>
-                                                    <xsl:attribute name="class" select="'editor'"/>
-                                                    <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                    <xsl:value-of select="'Hide editor options'"/>
-                                                </a>
-                                            </li>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    
-                                </ul>
-                                
-                            </div>
+                                        
+                                    </ul>
+                                </div>
+                            </xsl:if>
                             
                             <hr/>
                             
+                            <!-- Footer - about the etext -->
                             <div class="container footer text-center" id="source-footer">
                                 
                                 <p class="text-muted">
@@ -336,39 +238,7 @@
                     </div>
                 </xsl:if>
                 
-                <!-- Add relevant glossary items -->
-                <div class="container hidden" aria-hidden="true">
-                    <xsl:call-template name="glossary"/>
-                </div>
-                
             </main>
-            
-            <!-- General pop-up for notes and glossary -->
-            <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
-                <div class="fix-height">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8">
-                                <div class="data-container tei-parser">
-                                    <!-- Ajax data here -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="fixed-btn-container close-btn-container">
-                    <button type="button" class="btn-round close close-collapse" aria-label="Close">
-                        <span aria-hidden="true">
-                            <i class="fa fa-times"/>
-                        </span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Pop-up for tei-editor -->
-            <xsl:if test="$tei-editor or $glossary-prioritised[@xml:id eq $request/@glossary-id]">
-                <xsl:call-template name="tei-editor-footer"/>
-            </xsl:if>
             
         </xsl:variable>
         
@@ -378,9 +248,6 @@
             <xsl:with-param name="page-title" select="string-join((concat(m:translation/m:toh/m:full, ' Vol.', m:source/m:page[1]/@volume, ' F.', m:source/m:page[1]/@folio-in-volume), 'Tibetan Source', '84000 Reading Room'), ' | ')"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
-                <script>var eft = {"textId": "<xsl:value-of select="$translation/@id"/>", "tohKey": "<xsl:value-of select="$translation/m:toh/@key"/>", "refIndex": "<xsl:value-of select="m:request/@ref-index"/>"};</script>
-            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>
@@ -428,49 +295,9 @@
             
         </xsl:variable>
         
-        <div class="text-overlay">
-            
-            <p class="source text divided text-bo">
-                <xsl:sequence select="$text-content"/>
-            </p>
-            
-            <!-- If editor the overlay with marked content -->
-            <xsl:if test="$tei-editor or $glossary-prioritised[@xml:id eq $request/@glossary-id]">
-                <p class="tei-parser source text continuous text-bo" aria-hidden="true">
-                    
-                    <xsl:variable name="text-normalized" as="text()">
-                        <xsl:value-of select="string-join($text-content ! descendant-or-self::text())"/>
-                    </xsl:variable>
-                    
-                    <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
-                        <xsl:for-each select="$glossary-prioritised[not(@mode eq 'marked')]">
-                            
-                            <xsl:variable name="terms" select="m:glossary-terms-to-match(.)"/>
-                            
-                            <!-- Do an initial check to avoid too much recursion -->
-                            <xsl:variable name="match-glossary-item-terms-regex" as="xs:string">
-                                <xsl:value-of select="common:matches-regex($terms, 'bo')"/>
-                            </xsl:variable>
-                            
-                            <!-- If it matches then include it in the scan -->
-                            <xsl:if test="matches($text-normalized, $match-glossary-item-terms-regex, 'i')">
-                                <xsl:sequence select="."/>
-                            </xsl:if>
-                            
-                        </xsl:for-each>
-                    </xsl:variable>
-                    
-                    <xsl:call-template name="glossary-scan-text">
-                        <xsl:with-param name="match-glossary-items" select="$match-glossary-items"/>
-                        <xsl:with-param name="match-glossary-index" select="1"/>
-                        <xsl:with-param name="location-id" select="'source'"/>
-                        <xsl:with-param name="text" select="$text-normalized"/>
-                    </xsl:call-template>
-                    
-                </p>
-            </xsl:if>
-            
-        </div>
+        <p class="source text-bo">
+            <xsl:sequence select="$text-content"/>
+        </p>
         
     </xsl:template>
     
@@ -482,12 +309,6 @@
         <xsl:if test="@n ne '1'">
             <!-- <br/> -->
         </xsl:if>
-    </xsl:template>
-    
-    <xsl:template match="exist:match">
-        <span class="mark">
-            <xsl:apply-templates select="node()"/>
-        </span>
     </xsl:template>
     
 </xsl:stylesheet>

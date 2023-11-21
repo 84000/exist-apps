@@ -39,16 +39,13 @@ let $ref-index :=
     else if (lower-case($resource-suffix) eq 'html') then
         1
     
-    else 
-        0
+    else 0
 
 let $ref-index :=
     if($ref-index gt $tei-location/@count-pages ! xs:integer(.)) then
         1
     else 
         $ref-index
-
-let $view-mode := ($source:view-modes/m:view-mode[@id eq request:get-parameter('view-mode', '')], $source:view-modes/m:view-mode[@id eq 'default'])[1]
 
 (: Request parameters :)
 let $request := 
@@ -58,27 +55,23 @@ let $request :=
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
         attribute ref-index { $ref-index },
-        attribute view-mode { $view-mode/@id },
-        request:get-parameter('glossary-id', '')[not(. eq '')][1] ! attribute glossary-id { . },
-        $view-mode
+        request:get-parameter('glossary-id', '')[not(. eq '')][1] ! attribute glossary-id { . }
     }
 
 (: Suppress cache if there's a highlight :)
 (: Update the cache-key string to invalidate existing cache :)
 let $cache-key := 
-    if($request/m:view-mode[@cache eq 'use-cache']) then
-        let $tei-timestamp := tei-content:last-modified($tei)
-        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
-        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
-        return 
-            lower-case(
-                string-join((
-                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $common:app-version ! replace(., '\.', '-')
-                ),'-')
-            )
-    else ()
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+    where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
+    return 
+        lower-case(
+            string-join((
+                $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $common:app-version ! replace(., '\.', '-')
+            ),'-')
+        )
 
 let $cached := common:cache-get($request, $cache-key)
 
@@ -86,6 +79,9 @@ where $tei
 return 
     (: Return cached :)
     if($cached) then $cached 
+    
+    else if($request/@resource-suffix eq 'resources') then
+        common:html(common:response($request/@model, $common:app-id, ()), concat($common:app-path, "/views/html/resources-help.xsl"))
     
     (: Not cached :)
     else
@@ -99,18 +95,8 @@ return
                 tei-content:ancestors($tei, $request/@resource-id, 1),
                 tei-content:source($tei, $request/@resource-id),
                 translation:toh($tei, $request/@resource-id),
-                translation:folio-content($tei, $request/@resource-id, $ref-index),
-                if($request/m:view-mode[@id eq 'editor']) then
-                    translation:glossary($tei, (), $view-mode, ())
-                else if($request[@glossary-id]) then
-                    translation:glossary($tei, $request/@glossary-id, $view-mode, ())
-                else ()
+                translation:folio-content($tei, $request/@resource-id, $ref-index)
             }
-        
-        let $rdf := 
-            if($view-mode[@id eq 'editor']) then
-                source:bdrc-rdf($translation/m:toh)
-            else ()
         
         (: Check the sort index in the translation :)
         let $ref-sort-index := 
@@ -137,13 +123,6 @@ return
             else 
                 source:etext-full($tei-location)
         
-        (: Get the cached outline of the text :)
-        let $outline := translation:outline-cached($tei)
-        let $outlines-related := translation:outlines-related($tei, $translation/m:part, ())
-        
-        let $glossary-cache := glossary:glossary-cache($tei, (), false())
-        let $entities-data := translation:entities((), $translation/m:part[@id eq 'glossary']//tei:gloss/@xml:id)
-        
         let $xml-response := 
             common:response(
                 $request/@model, 
@@ -151,13 +130,7 @@ return
                 (
                     $request,
                     $source,
-                    $translation,
-                    $outline,
-                    $outlines-related,
-                    $entities-data,
-                    $glossary-cache,
-                    $rdf
-                    
+                    $translation
                 )
             )
         

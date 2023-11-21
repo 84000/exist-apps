@@ -51,7 +51,7 @@ let $request :=
 
 let $results := 
     if($request/@search-type eq 'tm' and compare($search, '') gt 0) then
-        search:tm-search($search, $request/@search-lang, $request/@first-record, $request/@max-records, if($request/@search-glossary) then true() else false())
+        search:tm-search($search, $request/@search-lang, $request/@first-record, $request/@max-records, if($request/@search-glossary) then true() else false(), ())
     else if(compare($search, '') gt 0) then 
         search:search($search, $search-data/m:type[@selected eq 'selected'], $request/@specified-text, $request/@first-record, $request/@max-records)
     else ()

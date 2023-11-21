@@ -524,7 +524,7 @@
                                             </div>
                                             
                                             <div class="input-group">
-                                                <button class="btn btn-primary" type="submit" data-loading="Applying filter...">
+                                                <button class="btn btn-round" type="submit" data-loading="Applying filter...">
                                                     <i class="fa fa-refresh"/>
                                                 </button>
                                             </div>
@@ -553,7 +553,7 @@
                         <xsl:variable name="request-entity" select="$entities/id(/m:response/m:request/@entity-id)" as="element(m:entity)?"/>
                         <xsl:variable name="form-id" select="string-join(('glossary-entry-new', $request-entity/@xml:id),'-')"/>
                         
-                        <div id="{ $form-id }" class="list-group top-margin">
+                        <div id="{ $form-id }" class="list-group top-margin data-container">
                             
                             <xsl:call-template name="expand-item">
                                 <xsl:with-param name="id" select="$form-id"/>
@@ -764,7 +764,7 @@
                                     </xsl:if>
                                     
                                     <!-- Accordion -->
-                                    <div class="list-group accordion accordion-background" role="tablist" aria-multiselectable="false">
+                                    <div class="list-group accordion accordion-bordered accordion-background" role="tablist" aria-multiselectable="false">
                                         
                                         <xsl:attribute name="id" select="concat('accordion-', $loop-glossary-id)"/>
                                         
@@ -1196,7 +1196,7 @@
                                                             
                                                             <xsl:when test="$loop-glossary-entity-relations">
                                                                 
-                                                                <div class="list-group accordion top-margin" role="tablist" aria-multiselectable="false">
+                                                                <div class="list-group accordion accordion-bordered top-margin" role="tablist" aria-multiselectable="false">
                                                                     
                                                                     <xsl:attribute name="id" select="concat('accordion-glossary-', $loop-glossary-id, '-relations')"/>
                                                                     
@@ -1644,15 +1644,33 @@
         </xsl:if>
         
         <!-- Main term -->
-        <xsl:variable name="main-term" select="$entry/m:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type eq 'translationAlternative')][1]"/>
+        <xsl:variable name="preferred-translation" select="$entity/m:content[@type eq 'preferred-translation']"/>
+        <xsl:variable name="main-term" select="($entry/m:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type eq 'translationAlternative')], $preferred-translation)[1]"/>
         <xsl:variable name="element-id" select="string-join(('main-term', $entry/@id), '-')"/>
         <div class="form-group">
+            <xsl:if test="$preferred-translation">
+                <xsl:choose>
+                    <xsl:when test="$main-term ! normalize-space(.) eq $preferred-translation ! normalize-space(.)">
+                        <xsl:attribute name="class" select="'form-group has-success'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="class" select="'form-group has-warning'"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:if>
             <label for="{ $element-id }" class="col-sm-2 control-label">
                 <xsl:value-of select="'Translated term:'"/>
             </label>
             <div class="col-sm-8">
                 <input type="text" name="main-term" id="{ $element-id }" value="{ $main-term/text() }" class="form-control" required="required"/>
             </div>
+            <xsl:if test="$preferred-translation">
+                <div class="col-sm-offset-2 col-sm-8">
+                    <span class="help-block">
+                        <xsl:value-of select="'Preferred translation: ' || $preferred-translation"/>
+                    </span>
+                </div>
+            </xsl:if>
         </div>
         
         <!-- Equivalent terms -->
@@ -2038,7 +2056,7 @@
             
             <xsl:when test="$entry/m:similar[m:entity]">
                 
-                <div class="list-group accordion" role="tablist" aria-multiselectable="false">
+                <div class="list-group accordion accordion-bordered" role="tablist" aria-multiselectable="false">
                     
                     <xsl:variable name="id" select="concat('accordion-glossary-', $entry/@id, '-entities')"/>
                     <xsl:attribute name="id" select="$id"/>

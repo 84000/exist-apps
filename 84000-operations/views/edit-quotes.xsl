@@ -205,7 +205,7 @@
         
         <xsl:param name="quote" as="element(m:quote)"/>
         
-        <div class="list-group accordion" role="tablist" aria-multiselectable="false">
+        <div class="list-group accordion accordion-bordered" role="tablist" aria-multiselectable="false">
             
             <xsl:attribute name="id" select="concat('quote-accordion-', $quote/@id)"/>
             

@@ -301,7 +301,7 @@
                 <xsl:apply-templates select="$eft-header"/>
                 
                 <!-- Content -->
-                <xsl:copy-of select="$content"/>
+                <xsl:sequence select="$content"/>
                 
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">

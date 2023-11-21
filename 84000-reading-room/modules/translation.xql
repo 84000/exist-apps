@@ -29,7 +29,7 @@ declare variable $translation:view-modes :=
       <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            annotation="none" />
       <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
       <view-mode id="app"               client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            annotation="none" />
-      <view-mode id="tests"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"            annotation="editor" />
+      <view-mode id="tests"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
       <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"       annotation="none" />
       <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"            annotation="none" />
     </view-modes>;
@@ -200,7 +200,10 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
     return
         element {QName('http://read.84000.co/ns/1.0', 'publication')} {
             
-            $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][1][@xml:id] ! contributors:contributor-id(.) ! contributors:team(., false(), false()),
+            for $contribution in ($fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][@xml:id])[1]
+            return
+                $contributors:contributors//m:instance[@id eq $contribution/@xml:id]/parent::m:team ! contributors:team(@xml:id, false(), false())
+            ,
             
             element contributors {
                 for $contributor in $fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain']
@@ -399,18 +402,20 @@ declare function translation:location($tei as element(tei:TEI), $source-key as x
 
 declare function translation:filename($tei as element(tei:TEI), $source-key as xs:string) as xs:string {
     
-    (: Generate a filename for a text :)
+    (: Generate a human readable filename for a text :)
     
     let $source-key := translation:source-key($tei, $source-key)! lower-case(.)
     let $title := translation:title($tei, $source-key)
     let $title-normalized :=
-    replace(
-        common:normalized-chars(
-            lower-case(
-                $title                  (: title :)
-            )                           (: convert to lower case :)
-        )                               (: remove diacritics :)
-    , '[^a-zA-Z0-9\s]', ' ')            (: remove non-alphanumeric, except spaces :)
+    replace( 
+        replace(
+            common:normalized-chars(
+                lower-case(
+                    $title                  (: title :)
+                )                           (: convert to lower case :)
+            )                               (: remove diacritics :)
+        , '[^a-zA-Z0-9\s]', ' ')            (: remove non-alphanumeric, except spaces :)
+    , '(^\s+|\s+$)', '')                    (: remove leading and trailing spaces :)
     
     let $file-title :=  concat($source-key, '_', '84000', ' ', $title-normalized)
     let $filename :=    replace($file-title, '\s+', '-') (: convert spaces to hyphen :)
@@ -439,6 +444,17 @@ declare function translation:canonical-html($resource-id as xs:string, $conditio
 };
 
 declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element(m:downloads) {
+        
+    (: Types :)
+    (: Only return download elements if $include defined :)
+    let $types :=
+        if($include gt '') then
+            ('html', 'pdf', 'epub', 'rdf', 'cache', 'json')
+        else ()
+    (: Types stored in the database :)
+    let $stored-types := ('pdf', 'epub', 'rdf', 'cache', 'json')
+    (: Types returned via /data :)
+    let $data-path-types := ('pdf', 'epub', 'rdf', 'json')
     
     let $tei-version := tei-content:version-str($tei)
     let $file-name := translation:filename($tei, $resource-id)
@@ -449,20 +465,14 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
             attribute tei-version { $tei-version },
             attribute resource-id { $resource-id },
             
-            (: Only return download elements if $include defined :)
-            let $types :=
-                if($include gt '')then
-                    ('html', 'pdf', 'epub', 'rdf', 'cache', 'json')
-                else ()
-            
             for $type in $types
                 
-                let $resource-id := if ($type eq 'cache') then tei-content:id($tei) else $resource-id
+                let $resource-id := if($type eq 'cache') then tei-content:id($tei) else $resource-id
                 
-                let $stored-version := if ($type = ('pdf', 'epub', 'rdf', 'cache')) then download:stored-version-str($resource-id, $type) else $tei-version
+                let $stored-version := if($type = $stored-types) then download:stored-version-str($resource-id, $type) else $tei-version
                 
-                let $path := if ($type = ('html', 'cache', 'json')) then '/translation' else '/data'
-                
+                let $path := if($type = $data-path-types) then '/data' else '/translation'
+            
             where (
                 ($include eq 'all')                                                                 (: return all types :)
                 or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
@@ -473,7 +483,7 @@ declare function translation:downloads($tei as element(tei:TEI), $resource-id as
                     attribute type { $type },
                     attribute version { $stored-version },
                     attribute url { concat($path, '/', $resource-id, '.', $type) },
-                    if(not($type = ('html', 'cache', 'json'))) then (
+                    if($type = $data-path-types) then (
                         attribute download-url { concat($path, '/', $file-name, '.', $type) },
                         attribute filename { $file-name }
                     )
@@ -579,7 +589,7 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     
 };
 
-declare function translation:passage($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) (:as element(m:part)*:) {
+declare function translation:passage($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)* {
     
     let $passage := $tei//id($passage-id)
     let $passage-num := replace($passage-id, '^node\-', '')[functx:is-a-number(.)] ! xs:integer(.)

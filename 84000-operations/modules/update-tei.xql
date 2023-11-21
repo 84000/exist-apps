@@ -726,6 +726,16 @@ declare function update-tei:source($tei as element(tei:TEI)) as element()* {
         ):)
 };
 
+(: Stub function for adding multiple glossary items from post
+declare function update-tei:glossary-add-items($tei as element(tei:TEI)) as element()* {
+    
+    for $entity-id in request:get-parameter('entity-add[]', '')
+    let $glossary-id := tei-content:next-xml-id($tei)
+    return
+        update-tei:update-glossary($tei, $glossary-id)
+    
+};:)
+
 declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-id as xs:string) as element()* {
 
     (: To create a new item pass a $glossary-id that is unused :)

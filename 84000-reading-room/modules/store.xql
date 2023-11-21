@@ -188,7 +188,7 @@ declare function store:create($file-name as xs:string) as element() {
     let $tei-version := tei-content:version-str($tei)
     
     (: Select which file types to process :)
-    let $file-types := ('pdf', 'epub', 'rdf', 'cache')
+    let $file-types := ('pdf', 'epub', 'rdf', 'cache', 'json')
     let $file-types := 
         (: Validate the file extension :)
         if($file-types[. = $file-extension]) then
@@ -255,6 +255,14 @@ declare function store:create($file-name as xs:string) as element() {
                                 deploy:push('data-rdf', (), concat('Sync ', $toh-key, '.rdf'), ())
                             )
                         
+                        else if($file-type eq 'json') then
+                            (:'Store new rdf':)
+                            let $file-path := concat($common:data-path, '/json/', $toh-key, '.json')
+                            return (
+                                store:store-new-json($file-path, $tei-version),
+                                deploy:push('data-json', (), concat('Sync ', $toh-key, '.json'), ())
+                            )
+                            
                         else
                             <error xmlns="http://read.84000.co/ns/1.0">
                                 <message>{ 'Unknown file type' }</message>
@@ -511,6 +519,45 @@ declare function store:store-new-rdf($file-path as xs:string, $version as xs:str
          else
             <error xmlns="http://read.84000.co/ns/1.0">
                 <message>{ concat('RDF generation failed: RDF generation config not found (', $file-path,')') }</message>
+            </error>
+};
+
+declare function store:store-new-json($file-path as xs:string, $version as xs:string) as element() {
+    
+    let $json-url := $store:conf/m:json-url/text()
+    
+    return
+        if($json-url) then
+        
+            let $file-path-tokenized := tokenize($file-path, '/')
+            let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
+            let $file-name := lower-case($file-path-tokenized[last()])
+            let $url := concat($json-url, '/translation/', $file-name)
+            
+            let $log := util:log('info', concat('store-new-json:', $file-name))
+            
+            let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
+            return
+                if(name($download) eq 'stored') then
+                    let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
+                    let $set-file-permissions:= sm:chmod(xs:anyURI($file-path), $store:file-permissions)
+                    let $store-version-number := store:store-version-str($file-collection, $file-name, $version)
+                    return
+                        <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
+                        
+                else if(name($download) eq 'error') then
+                    <error xmlns="http://read.84000.co/ns/1.0">
+                        <message>{ concat('JSON generation failed: ', $download/m:message, '(', $url,')') }</message>
+                    </error>
+                    
+                else
+                    <error xmlns="http://read.84000.co/ns/1.0">
+                        <message>{ concat('JSON generation failed: (', $file-path,')') }</message>
+                    </error>
+         
+         else
+            <error xmlns="http://read.84000.co/ns/1.0">
+                <message>{ concat('JSON generation failed: JSON generation config not found (', $file-path,')') }</message>
             </error>
 };
 

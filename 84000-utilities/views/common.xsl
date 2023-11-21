@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
@@ -84,16 +84,42 @@
         <div class="title-band">
             <div class="container">
                 <div class="center-vertical full-width">
-                    <span class="logo">
+                    <div class="logo">
                         <img alt="84000 logo">
                             <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
                         </img>
-                    </span>
-                    <span>
-                        <h1 class="title">
-                            <xsl:value-of select="concat('Publishing Utilities / ', $tabs//m:tab[@model eq $response-model]/m:label)"/>
-                        </h1>
-                    </span>
+                    </div>
+                    <div>
+                        <nav role="navigation" aria-label="Breadcrumbs">
+                            <ul class="breadcrumb">
+                                
+                                <li>
+                                    <a href="/index.html">
+                                        <h1 class="title">
+                                            <xsl:value-of select="'Publishing Utilities'"/>
+                                        </h1>
+                                    </a>
+                                </li>
+                                
+                                <xsl:variable name="tab-selected" select="$tabs//m:tab[@model eq $response-model]"/>
+                                <li>
+                                    <xsl:choose>
+                                        <xsl:when test="$tab-selected[@page]">
+                                            <a>
+                                                <xsl:attribute name="href" select="$tab-selected/@page"/>
+                                                <xsl:attribute name="data-loading" select="'Loading ' || $tab-selected/m:label/data() || '...'"/>
+                                                <xsl:value-of select="$tab-selected/m:label"/>
+                                            </a>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="$tab-selected/m:label"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </li>
+                                
+                            </ul>
+                        </nav>
+                    </div>
                     <span>
                         <a href="#navigation-sidebar" class="center-vertical align-right show-sidebar">
                             <span class="btn-round-text">
@@ -113,7 +139,7 @@
         <div class="content-band">
             <div class="container">
                 <div class="tab-content">
-                    <xsl:copy-of select="$content"/>
+                    <xsl:sequence select="$content"/>
                 </div>
             </div>
         </div>
@@ -124,13 +150,14 @@
             <div class="fix-width">
                 <div class="sidebar-content">
                     
-                    <h4 class="uppercase">
-                        <xsl:value-of select="'84000 Utilities'"/>
+                    <h4>
+                        <xsl:value-of select="'84000 Publishing Utilities'"/>
                     </h4>
-                    <table class="table table-hover no-border">
+                    
+                    <table class="table table-hover">
                         <tbody>
                             <xsl:for-each select="$tabs//m:tab[@page]">
-                                <tr class="vertical-middle">
+                                <tr>
                                     <xsl:if test="@model eq $response-model">
                                         <xsl:attribute name="class" select="'vertical-middle active'"/>
                                     </xsl:if>

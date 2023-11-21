@@ -469,7 +469,7 @@
                                                                 </label>
                                                                 
                                                                 <textarea name="tm-en" id="tm-en-{ $tm-unit/@id }" class="form-control monospace onkeypress-ctrlreturn-submit">
-                                                                    <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 116)"/>
+                                                                    <xsl:attribute name="rows" select="ops:textarea-rows($tm-en, 1, 110)"/>
                                                                     <xsl:value-of select="normalize-space($tm-en)"/>
                                                                 </textarea>
                                                                 
@@ -697,7 +697,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Translation Memory Editor | 84000 Project Management'"/>
+            <xsl:with-param name="page-title" select="$translation/eft:toh[1]/eft:full/data(.) || ' | Translation Memory Editor | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'Create Translation Memory pairs from 84000 TEI files'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
