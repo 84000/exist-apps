@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -907,7 +907,8 @@
                                         <xsl:value-of select="'Progress notes:'"/>
                                     </label>
                                     <div class="col-sm-9">
-                                        <textarea class="form-control" rows="4" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
+                                        <textarea class="form-control" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
+                                            <xsl:attribute name="rows" select="common:textarea-rows($translation-status/m:text/m:progress-note, 4, 70)"/>
                                             <xsl:sequence select="normalize-space($translation-status/m:text/m:progress-note)"/>
                                         </textarea>
                                         <xsl:if test="$translation-status/m:text/m:progress-note/@last-edited">
@@ -924,7 +925,8 @@
                                         <xsl:value-of select="'Text notes:'"/>
                                     </label>
                                     <div class="col-sm-9">
-                                        <textarea class="form-control" rows="4" name="text-note" id="text-note" placeholder="Notes about the text itself...">
+                                        <textarea class="form-control" name="text-note" id="text-note" placeholder="Notes about the text itself...">
+                                            <xsl:attribute name="rows" select="common:textarea-rows($translation-status/m:text/m:text-note, 4, 70)"/>
                                             <xsl:sequence select="normalize-space($translation-status/m:text/m:text-note)"/>
                                         </textarea>
                                         <xsl:if test="$translation-status/m:text/m:text-note/@last-edited">

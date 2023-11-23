@@ -4,6 +4,11 @@
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
+    <xsl:variable name="request" select="/m:response/m:request"/>
+    <xsl:variable name="selected-type" select="$request/m:article-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
+    <xsl:variable name="page-url" select="concat($environment/m:url[@id eq 'operations'], '/knowledgebase.html?') || string-join(($selected-type ! concat('article-type[]=', @id), $request/@sort ! concat('sort=', .)), '&amp;')" as="xs:string"/>
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="content">
@@ -11,154 +16,102 @@
                 <xsl:with-param name="active-tab" select="@model"/>
                 <xsl:with-param name="tab-content">
                     
-                    <div class="well well-sm bottom-margin">
+                    <form action="/knowledgebase.html" method="get" role="search" class="form-inline" data-loading="Searching...">
                         
-                        <!-- Header -->
+                        <!-- Type checkboxes -->
                         <div class="center-vertical full-width">
                             
-                            <span>
-                                <xsl:value-of select="concat('Listing ', fn:format-number(xs:integer(count(m:knowledgebase/m:page)),'#,##0'), ' Knowledge Base articles')"/>
-                            </span>
-                            
-                            <span>
-                                <a href="#new-article-form-container" data-toggle="collapse" class="btn btn-primary btn-sml pull-right">
-                                    <xsl:value-of select="'Add an article'"/>
-                                </a>
-                            </span>
-                            
-                        </div>
-                        
-                        <!-- Form to add -->
-                        <div class="collapse" id="new-article-form-container">
-                            
-                            <hr class="sml-margin"/>
-                            
-                            <form action="/knowledgebase.html" method="post" id="new-article-form" class="form-inline text-center bottom-margin" data-loading="Adding new article...">
-                                <input type="hidden" name="form-action" value="new-article"/>
+                            <div>
                                 <div class="form-group">
-                                    <div class="input-group">
-                                        <label for="new-title" class="input-group-addon">
-                                            <xsl:value-of select="'Title: '"/>
-                                        </label>
-                                        <input type="text" name="new-title" id="new-title" class="form-control" size="70"/>
-                                        <div class="input-group-btn">
-                                            <button type="submit" class="btn btn-primary" data-loading="Creating article...">
-                                                <xsl:value-of select="'Create this article'"/>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                            
-                        </div>
-                        
-                    </div>
-                    
-                    <div class="row">
-                        
-                        <!-- Articles list -->
-                        <div class="col-items div-list no-border-top">
-                            
-                            <xsl:for-each-group select="m:knowledgebase/m:page" group-by="@start-letter">
-                                
-                                <xsl:sort select="@start-letter"/>
-                                
-                                <!-- Article -->
-                                <div>
                                     
-                                    <a class="marker">
-                                        <xsl:attribute name="name" select="@start-letter"/>
-                                        <xsl:attribute name="id" select="concat('marker-', @start-letter)"/>
-                                        <xsl:value-of select="@start-letter"/>
-                                    </a>
-                                
-                                    <xsl:for-each select="fn:current-group()">
-                                        
-                                        <xsl:sort select="m:sort-name"/>
-                                        
-                                        <div class="item">
-                                            
-                                            <div class="center-vertical full-width">
-                                                <span>
-                                                    <a>
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
-                                                        <xsl:attribute name="target" select="concat(@xml:id, '.html')"/>
-                                                        <xsl:value-of select="m:titles !(m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
-                                                    </a>
-                                                </span>
-                                                <span class="text-right">
-                                                    <span>
-                                                        <xsl:choose>
-                                                            <xsl:when test="@status-group eq 'published'">
-                                                                <xsl:attribute name="class" select="'label label-success'"/>
-                                                                <xsl:value-of select="'Published'"/>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <xsl:attribute name="class" select="'label label-default'"/>
-                                                                <xsl:value-of select="'Not published'"/>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </span>
-                                                </span>
-                                            </div>
-                                            
-                                            <div>
-                                                <a class="text-muted small">
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
-                                                    <xsl:attribute name="target" select="concat(@xml:id, '.tei')"/>
-                                                    <xsl:value-of select="@document-url"/>
-                                                </a>
-                                            </div>
-                                            
-                                            <!-- Alert if file locked -->
-                                            <xsl:if test="@locked-by-user gt ''">
-                                                <div class="sml-margin bottom">
-                                                    <span class="label label-danger">
-                                                        <xsl:value-of select="concat('WARNING: This file is currenly locked by user ', @locked-by-user)"/>
-                                                    </span>
-                                                </div>
-                                            </xsl:if>
-                                            
-                                            <div>
-                                                <ul class="list-inline inline-dots small hidden-print">
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', @xml:id)"/>
-                                                            <xsl:value-of select="'Edit headers'"/>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html?view-mode=editor')"/>
-                                                            <xsl:attribute name="target" select="concat(@xml:id, '.html')"/>
-                                                            <xsl:value-of select="'Edit article'"/>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', @xml:id, '&amp;resource-type=knowledgebase')"/>
-                                                            <xsl:value-of select="'Edit glossary'"/>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            
+                                    <xsl:for-each select="m:request/m:article-types/m:type">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="article-type[]">
+                                                    <xsl:attribute name="value" select="@id"/>
+                                                    <xsl:if test="@selected eq 'selected'">
+                                                        <xsl:attribute name="checked" select="'checked'"/>
+                                                    </xsl:if>
+                                                </input>
+                                                <xsl:value-of select="' ' || text()"/>
+                                            </label>
                                         </div>
-                                        
                                     </xsl:for-each>
-                                
+                                    
+                                    <select name="sort" class="form-control">
+                                        <option value="latest">
+                                            <xsl:if test="$request[@sort eq 'latest']">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Most recently updated'"/>
+                                        </option>
+                                        <option value="name">
+                                            <xsl:if test="$request[@sort eq 'name']">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Sort A-Z'"/>
+                                        </option>
+                                        <option value="status">
+                                            <xsl:if test="$request[@sort eq 'status']">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Sort by status'"/>
+                                        </option>
+                                    </select>
+                                    
+                                    <button type="submit" class="btn btn-round" title="Reload">
+                                        <i class="fa fa-refresh"/>
+                                    </button>
+                                    
                                 </div>
+                            </div>
+                            
+                            <xsl:if test="$environment/m:url[@id eq 'operations']">
+                                <div>
+                                    <a target="84000-operations" class="btn btn-danger">
+                                        <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
+                                        <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                        <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($environment/m:url[@id eq 'operations'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
+                                        <xsl:value-of select="'Add a new article'"/>
+                                    </a>
+                                </div>
+                            </xsl:if>
+                            
+                            <div>
                                 
-                            </xsl:for-each-group>
+                                <!-- Pagination -->
+                                <xsl:sequence select="common:pagination($request/@first-record, $request/@records-per-page, m:knowledgebase/@count-pages, $page-url)"/>
+                                
+                            </div>
                             
                         </div>
                         
-                        <!-- Alphabetical navigation -->
-                        <div class="col-nav affix-container">
-                            <xsl:sequence select="common:marker-nav(m:knowledgebase/m:page)"/>
-                        </div>
-                        
-                    </div>
+                    </form>
+                    
+                    <hr class="sml-margin"/>
+                    
+                    <xsl:choose>
+                        <xsl:when test="m:knowledgebase/m:page">
+                            <div class="div-list no-border-top">
+                                <xsl:for-each select="m:knowledgebase/m:page">
+                                    <xsl:apply-templates select="."/>
+                                </xsl:for-each>
+                            </div>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <div class="text-center text-muted">
+                                <p class="italic">
+                                    <xsl:value-of select="'~ No matches for this query ~'"/>
+                                </p>
+                            </div>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
+                </xsl:with-param>
+                <xsl:with-param name="aside-content">
+                    
+                    <!-- Pop-up for tei-editor -->
+                    <xsl:call-template name="tei-editor-footer"/>
                     
                 </xsl:with-param>
             </xsl:call-template>
@@ -171,6 +124,154 @@
             <xsl:with-param name="page-description" select="'Manage and access articles in the 84000 Knowledge Base'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
+        
+    </xsl:template>
+    
+    <xsl:template match="m:page[parent::m:knowledgebase]">
+        
+        <xsl:variable name="page-id" select="concat('page-', fn:encode-for-uri(@xml:id))"/>
+        
+        <div class="item">
+            
+            <!-- Title / status -->
+            <div class="center-vertical full-width sml-margin bottom">
+                
+                <div>
+                    <span class="h3">
+                        <xsl:value-of select="m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
+                    </span>
+                    <small>
+                        <xsl:value-of select="concat(' / ', @kb-id)"/>
+                    </small>
+                    <xsl:value-of select="' '"/>
+                    <span class="label label-default">
+                        <xsl:choose>
+                            <xsl:when test="@type eq 'section'">
+                                <xsl:value-of select="'Section'"/>
+                            </xsl:when>
+                            <xsl:when test="@type eq 'author'">
+                                <xsl:value-of select="'Author'"/>
+                            </xsl:when>
+                            <xsl:when test="@type eq 'article'">
+                                <xsl:value-of select="'Article'"/>
+                            </xsl:when>
+                        </xsl:choose>
+                    </span>
+                </div>
+                
+                <!-- Status -->
+                <div class="text-right">
+                    <span>
+                        <xsl:choose>
+                            <xsl:when test="@status-group eq 'published'">
+                                <xsl:attribute name="class" select="'label label-success'"/>
+                                <xsl:value-of select="concat(@status, ' / ', 'Published')"/>
+                            </xsl:when>
+                            <xsl:when test="@status-group eq 'in-progress'">
+                                <xsl:attribute name="class" select="'label label-warning'"/>
+                                <xsl:value-of select="concat(@status, ' / ', 'In-progress')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="class" select="'label label-default'"/>
+                                <xsl:value-of select="concat(@status, ' / ', 'Not published')"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </span>
+                </div>
+                
+            </div>
+            
+            <!-- Links -->
+            <div class="sml-margin bottom">
+                <ul class="list-inline inline-dots">
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.tei')"/>
+                            <span class="small">
+                                <xsl:value-of select="'tei'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.xml')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.xml')"/>
+                            <span class="small">
+                                <xsl:value-of select="'xml'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.html')"/>
+                            <span class="small">
+                                <xsl:value-of select="'html'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat('https://github.com/84000/data-tei/commits/master', substring-after(@document-url, concat($environment/@data-path, '/tei')))"/>
+                            <xsl:attribute name="target" select="'_blank'"/>
+                            <span class="small">
+                                <xsl:value-of select="'commits'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat('/edit-kb-header.html?id=', @xml:id)"/>
+                            <span class="small">
+                                <xsl:value-of select="'edit headers'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html?view-mode=editor')"/>
+                            <xsl:attribute name="target" select="concat(@kb-id, '.html')"/>
+                            <span class="small">
+                                <xsl:value-of select="'edit article'"/>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a>
+                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', @xml:id, '&amp;resource-type=knowledgebase')"/>
+                            <span class="small">
+                                <xsl:value-of select="'edit glossary'"/>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Alert if file locked -->
+            <xsl:if test="@locked-by-user gt ''">
+                <div class="sml-margin bottom">
+                    <span class="label label-danger">
+                        <xsl:value-of select="concat('WARNING: This file is currenly locked by user ', @locked-by-user)"/>
+                    </span>
+                </div>
+            </xsl:if>
+            
+            <!-- Location -->
+            <div class="small text-muted sml-margin bottom">
+                <xsl:value-of select="concat('File: ', @document-url)"/>
+            </div>
+            
+            <!-- Version -->
+            <div class="sml-margin bottom">
+                <span class="text-danger small">
+                    <xsl:value-of select="concat('Local TEI: ', @tei-version)"/>
+                </span>
+            </div>
+            
+            <!-- Version note -->
+            
+        </div>
         
     </xsl:template>
     

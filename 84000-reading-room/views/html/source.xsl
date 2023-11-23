@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
-    <xsl:import href="../../xslt/webpage.xsl"/>
+    <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
@@ -295,9 +295,50 @@
             
         </xsl:variable>
         
-        <p class="source text-bo">
-            <xsl:sequence select="$text-content"/>
-        </p>
+        <div class="text-overlay">
+            
+            <p class="source text divided text-bo">
+                <xsl:sequence select="$text-content"/>
+            </p>
+            
+            <!-- If editor the overlay with marked content -->
+            <xsl:if test="$glossary-prioritised[@xml:id eq $request/@glossary-id]">
+                <p class="tei-parser source text continuous text-bo" aria-hidden="true">
+                    
+                    <xsl:variable name="text-normalized" as="text()">
+                        <xsl:value-of select="string-join($text-content ! descendant-or-self::text())"/>
+                    </xsl:variable>
+                    
+                    <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
+                        <xsl:for-each select="$glossary-prioritised[not(@mode eq 'marked')]">
+                            
+                            <xsl:variable name="terms" select="m:glossary-terms-to-match(., 'bo')"/>
+                            
+                            <!-- Do an initial check to avoid too much recursion -->
+                            <xsl:variable name="match-glossary-item-terms-regex" as="xs:string">
+                                <xsl:value-of select="common:matches-regex($terms, 'bo')"/>
+                            </xsl:variable>
+                            
+                            <!-- If it matches then include it in the scan -->
+                            <xsl:if test="matches($text-normalized, $match-glossary-item-terms-regex, 'i')">
+                                <xsl:sequence select="."/>
+                            </xsl:if>
+                            
+                        </xsl:for-each>
+                    </xsl:variable>
+                    
+                    <xsl:call-template name="glossary-scan-text">
+                        <xsl:with-param name="match-glossary-items" select="$match-glossary-items"/>
+                        <xsl:with-param name="match-glossary-index" select="1"/>
+                        <xsl:with-param name="location-id" select="'source'"/>
+                        <xsl:with-param name="text" select="$text-normalized"/>
+                        <xsl:with-param name="lang" select="'bo'"/>
+                    </xsl:call-template>
+                    
+                </p>
+            </xsl:if>
+            
+        </div>
         
     </xsl:template>
     

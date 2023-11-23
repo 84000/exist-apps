@@ -1,41 +1,47 @@
 xquery version "3.0" encoding "UTF-8";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
-import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
-import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
-import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
-import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "../../84000-reading-room/modules/knowledgebase.xql";
-
 declare namespace m="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 
-let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $form-action := request:get-parameter('form-action', '')
-let $new-title := request:get-parameter('new-title', '')
+import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
+import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "../../84000-reading-room/modules/knowledgebase.xql";
+import module namespace functx="http://www.functx.com";
 
-let $add-article :=
-    if($form-action eq 'new-article' and $new-title gt '') then
-        update-tei:add-knowledgebase($new-title)
-    else ()
+let $article-types := request:get-parameter('article-type[]', $knowledgebase:article-types//m:type[1]/@id)[. = $knowledgebase:article-types//m:type/@id]
 
-let $pages := knowledgebase:pages()
+let $first-record := 
+    if(functx:is-a-number(request:get-parameter('first-record', 1))) then
+        request:get-parameter('first-record', 1)
+    else 1
+
+let $request := 
+    element { QName('http://read.84000.co/ns/1.0', 'request')} {
+    
+        attribute resource-suffix { request:get-parameter('resource-suffix', '') },
+        attribute sort { request:get-parameter('sort', 'latest') },
+        attribute article-type { string-join($article-types, ',') },
+        attribute first-record { $first-record },
+        attribute records-per-page { 50 },
+        
+        common:add-selected-children($knowledgebase:article-types, $article-types)
+        
+    }
+
+let $kb-pages := knowledgebase:pages($request/m:article-types/m:type[@selected]/@id, false(), $request/@sort)
 
 let $xml-response :=
     common:response(
         'operations/knowledgebase', 
         'operations', 
         (
-            (: Include request parameters :)
-            element { QName('http://read.84000.co/ns/1.0', 'request') } {},
+        
+            $request,
             
-            (: Details of updates :)
-            element { QName('http://read.84000.co/ns/1.0', 'updates') } {
-                $add-article
-            },
-            
-            $pages,
-            
-            tei-content:text-statuses-sorted('article')
+            element { QName('http://read.84000.co/ns/1.0', 'knowledgebase')} {
+                attribute count-pages { count($kb-pages) },
+                subsequence($kb-pages, $request/@first-record, $request/@records-per-page)
+            }
             
         )
     )
@@ -43,7 +49,7 @@ let $xml-response :=
 return
 
     (: return html data :)
-    if($resource-suffix eq 'html') then (
+    if($request/@resource-suffix eq 'html') then (
         common:html($xml-response, concat(local:app-path(), '/views/knowledgebase.xsl'))
     )
     

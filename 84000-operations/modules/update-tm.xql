@@ -384,7 +384,7 @@ declare function update-tm:new-tmx-from-bcrdCorpus($tei as element(tei:TEI), $bc
     let $text-id := tei-content:id($tei)
     let $text-version := tei-content:version-str($tei)
     
-    let $filename := concat(translation:filename($tei, ''), '.tmx')
+    let $filename := concat(update-tm:filename($tei, ''), '.tmx')
     
     let $segments-bo := 
         for $sentence in $bcrd-resource//bcrdb:sentence
@@ -456,6 +456,16 @@ declare function update-tm:new-tmx-from-linguae-dharmae($tei as element(tei:TEI)
             </body>
         { common:ws(0) }
         </tmx>
+
+};
+
+declare function update-tm:filename($tei as element(tei:TEI), $source-key as xs:string) as xs:string {
+    
+    (: Generate a filename for a tmx file :)
+    let $source-key := translation:source-key($tei, $source-key)! lower-case(.)
+    let $version-string := 'v3'
+    return
+        concat($source-key, '-', $version-string)
 
 };
 
@@ -906,3 +916,15 @@ declare function local:tei-text-remainder($remainder as xs:string?) as xs:string
         string-join($match/fn:group)
         
 };
+
+(:declare function update-tm:unit-keys($tuvs as element(tmx:tuv)*) as item()* {
+
+    (\: Get index keys for the tm units :\)
+    let $index-keys := distinct-values(util:index-keys($tuvs, (), function($key, $count) { $key }, -1, "lucene-index")) ! element index-key { . }
+    let $tuvs-with-index := util:index-keys($tm-units, (), function($key, $count) { if($key = $tm-units-index-keys) then $key else () }, -1, "lucene-index")
+    return (
+        $tm-units-index-keys,
+        $tm-units-with-index
+    )
+        
+};:)

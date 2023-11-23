@@ -41,11 +41,8 @@ let $ref-index :=
     
     else 0
 
-let $ref-index :=
-    if($ref-index gt $tei-location/@count-pages ! xs:integer(.)) then
-        1
-    else 
-        $ref-index
+let $count-pages := translation:count-volume-pages($tei-location)
+let $ref-index := ($ref-index[. le $count-pages], 1)[1]
 
 (: Request parameters :)
 let $request := 
@@ -61,17 +58,19 @@ let $request :=
 (: Suppress cache if there's a highlight :)
 (: Update the cache-key string to invalidate existing cache :)
 let $cache-key := 
-    let $tei-timestamp := tei-content:last-modified($tei)
-    let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
-    where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
-    return 
-        lower-case(
-            string-join((
-                $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                $common:app-version ! replace(., '\.', '-')
-            ),'-')
-        )
+    if($request[not(@glossary-id)]) then
+        let $tei-timestamp := tei-content:last-modified($tei)
+        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
+        return 
+            lower-case(
+                string-join((
+                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                    $common:app-version ! replace(., '\.', '-')
+                ),'-')
+            )
+    else ()
 
 let $cached := common:cache-get($request, $cache-key)
 
@@ -95,7 +94,10 @@ return
                 tei-content:ancestors($tei, $request/@resource-id, 1),
                 tei-content:source($tei, $request/@resource-id),
                 translation:toh($tei, $request/@resource-id),
-                translation:folio-content($tei, $request/@resource-id, $ref-index)
+                translation:folio-content($tei, $request/@resource-id, $ref-index),
+                if($request[@glossary-id]) then
+                    translation:glossary($tei, $request/@glossary-id, $translation:view-modes/m:view-mode[@id eq 'default'], ())
+                else ()
             }
         
         (: Check the sort index in the translation :)

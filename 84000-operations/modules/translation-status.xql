@@ -388,7 +388,7 @@ declare function translation-status:update($text-id as xs:string) as element()? 
                     else
                         $etext-note
                 ),
-                if(not($existing-value/m:etext-note[@segment-id eq $segment-id])) then (
+                if($segment-id gt '' and not($existing-value/m:etext-note[@segment-id eq $segment-id])) then (
                     text { $common:line-ws },
                     element etext-note {
                         attribute last-edited { current-dateTime() },

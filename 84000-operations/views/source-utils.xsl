@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -7,10 +7,12 @@
     <xsl:variable name="request" select="/eft:response/eft:request"/>
     <xsl:variable name="page-attributes" select="($request/eft:segment ! concat('segment-id[]=', @id), $request/@text-id ! concat('text-id=', .), $request/@folio-index ! concat('folio-index=', .))" as="xs:string*"/>
     <xsl:variable name="translation" select="/eft:response/eft:translation"/>
-    <xsl:variable name="tmx" select="/eft:response/tmx:tmx[tmx:body/tmx:tu[tmx:tuv[@xml:lang eq 'bo']][tmx:prop[@name eq 'eft:folio-index-in-text']]]"/>
+    <xsl:variable name="toh-label" select="$translation/eft:toh[1]/eft:full/data()" as="xs:string"/>
+    <xsl:variable name="tmx" select="/eft:response/tmx:tmx[tmx:body/tmx:tu[tmx:tuv[@xml:lang eq 'bo']][tmx:prop[@name eq 'folio-index']]]"/>
     <xsl:variable name="rdf" select="/eft:response/rdf:RDF"/>
+    <xsl:variable name="etext" select="/eft:response/eft:source/eft:page[1]"/>
     <xsl:variable name="folio-index-requested" select="($request/@folio-index[not(. eq '')], 1)[1] ! xs:integer(.)"/>
-    <xsl:variable name="folio-indexes" select="distinct-values($tmx/tmx:body/tmx:tu/tmx:prop[@name eq 'eft:folio-index-in-text']/text() ! xs:integer(.))"/>
+    <xsl:variable name="folio-indexes" select="distinct-values($tmx/tmx:body/tmx:tu/tmx:prop[@name eq 'folio-index']/text() ! xs:integer(.))"/>
     <xsl:variable name="units-selected" select="$tmx//tmx:tu[@id = $request/eft:segment/@id]"/>
     <xsl:variable name="entities-suggested" select="/eft:response/eft:entities/eft:entity[not(eft:instance/@id = $glossary-prioritised/@xml:id)]"/>
     <xsl:variable name="entities-regex" select="/eft:response/eft:entities/eft:regex/text()" as="xs:string"/>
@@ -49,7 +51,7 @@
                                             
                                             <span class="small nowrap">
                                                 <xsl:value-of select="' / '"/>
-                                                <xsl:value-of select="$translation/eft:toh[1]/eft:full/data()"/>
+                                                <xsl:value-of select="$toh-label"/>
                                             </span>
                                             
                                         </a>
@@ -131,8 +133,8 @@
                     
                     <div id="source-utils" class="row">
                         
-                        <!-- List segments -->
-                        <div class="col-sm-7">
+                        <!-- Segments -->
+                        <div class="col-sm-7 sticky">
                             
                             <hr class="sml-margin no-top-margin"/>
                             
@@ -147,7 +149,7 @@
                                         <!-- Segments -->
                                         <div class="source tei-parser">
                                             <xsl:for-each select="$tmx//tmx:tu[tmx:tuv[@xml:lang eq 'bo']]">
-                                                <xsl:if test="tmx:prop[@name eq 'eft:folio-index-in-text']/text() ! xs:integer(.) eq $folio-index-requested or following-sibling::tmx:tu[1][tmx:prop[@name eq 'eft:folio-index-in-text']/text() ! xs:integer(.) eq $folio-index-requested]">
+                                                <xsl:if test="tmx:prop[@name eq 'folio-index']/text() ! xs:integer(.) = $folio-index-requested (:or following-sibling::tmx:tu[1][tmx:prop[@name eq 'folio-index']/text() ! xs:integer(.) = $folio-index-requested]:)">
                                                     
                                                     <xsl:variable name="unit-id" select="@id"/>
                                                     
@@ -232,510 +234,292 @@
                         </div>
                         
                         <!-- Utilities -->
-                        <div class="col-sm-5 affix-container">
+                        <div class="col-sm-5 sticky">
                             
-                            <div data-spy="affix" data-offset-top="60">
+                            <div id="accordion" class="list-group accordion accordion-bordered accordion-background">
                                 
-                                <div id="accordion" class="list-group accordion accordion-bordered accordion-background affix-scroll">
-                                    
-                                    <!-- Summary / reload -->
-                                    <div class="list-group-item">
-                                        <div class="center-vertical full-width">
+                                <!-- Summary -->
+                                <div class="list-group-item">
+                                    <div class="center-vertical full-width">
+                                        
+                                        <div>
+                                            <span class="badge badge-notification badge-muted">
+                                                <xsl:if test="count($units-selected) gt 0">
+                                                    <xsl:attribute name="class" select="'badge badge-notification'"/>
+                                                </xsl:if>
+                                                <xsl:value-of select="count($units-selected)"/>
+                                            </span>
+                                            <span class="badge-text text-muted">
+                                                <xsl:choose>
+                                                    <xsl:when test="count($units-selected) eq 1">
+                                                        <xsl:value-of select="'segment selected'"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="'segments selected'"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </span>
+                                        </div>
+                                        
+                                        <xsl:if test="count($units-selected) gt 0">
+                                            <div class="text-right small">
+                                                <a class="underline">
+                                                    <xsl:attribute name="href" select="concat($operations-path, '/source-utils.html?', string-join(($request/@text-id ! concat('text-id=', .), $request/@folio-index ! concat('folio-index=', .)), '&amp;'))"/>
+                                                    <!--<xsl:attribute name="data-onclick-set" select="'{&#34;[name=\&#34;segment-id[]\&#34;]:checked&#34; : &#34;&#34;}'"/>-->
+                                                    <!--<xsl:attribute name="data-mouseup-submit" select="'form#segments'"/>-->
+                                                    <xsl:value-of select="'clear selection'"/>
+                                                </a>
+                                            </div>
+                                        </xsl:if>
+                                        
+                                    </div>
+                                </div>
+                                
+                                <!-- Resources -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'resources'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'resources']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
                                             <div>
-                                                <span class="badge badge-notification badge-muted">
-                                                    <xsl:if test="count($units-selected) gt 0">
-                                                        <xsl:attribute name="class" select="'badge badge-notification'"/>
-                                                    </xsl:if>
-                                                    <xsl:value-of select="count($units-selected)"/>
-                                                </span>
-                                                <span class="badge-text">
-                                                    <xsl:choose>
-                                                        <xsl:when test="count($units-selected) eq 1">
-                                                            <xsl:value-of select="'segment selected'"/>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:value-of select="'segments selected'"/>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </span>
+                                                <h3 class="list-group-item-heading">
+                                                    <xsl:value-of select="'Online resources' "/>
+                                                </h3>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <!-- Resources -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'resources'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'resources']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading">
-                                                        <xsl:value-of select="'Online resources' "/>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            <ul class="sml-margin top">
-                                                
-                                                <!-- Google Drive link -->
-                                                <li>
-                                                    <a>
-                                                        <xsl:attribute name="target" select="'84000-google-drive'"/>
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $request/@text-id, '.resources')"/>
-                                                        <xsl:attribute name="class" select="'link-branded brand-gdrive'"/>
-                                                        <xsl:value-of select="$translation/eft:toh[1]/eft:full/data() || ' on 84000 Google Drive'"/>
-                                                    </a>
-                                                </li>
-                                                
-                                                <!-- BDRC link -->
-                                                <xsl:variable name="link-bdrc-work" select="$rdf/bdo:Work[@rdf:about/string() eq $translation/eft:toh/eft:ref[@type eq 'bdrc-tibetan-id']/@value/string()]"/>
-                                                <xsl:if test="$link-bdrc-work">
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="target" select="'bdrc'"/>
-                                                            <xsl:attribute name="href" select="$link-bdrc-work/@rdf:about"/>
-                                                            <xsl:attribute name="class" select="'link-branded brand-bdrc'"/>
-                                                            <xsl:value-of select="$translation/eft:toh[1]/eft:full/data() || ' on BDRC'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <!-- rKTs link -->
-                                                <xsl:variable name="link-rkts" select="$link-bdrc-work/owl:sameAs[@rdf:resource ! matches(., '^http://purl\.rkts\.eu/resource')][1]/@rdf:resource"/>
-                                                <xsl:if test="$link-rkts">
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="target" select="'rkts'"/>
-                                                            <xsl:attribute name="href" select="$link-rkts"/>
-                                                            <xsl:attribute name="class" select="'link-branded brand-rkts'"/>
-                                                            <xsl:value-of select="$translation/eft:toh[1]/eft:full/data() || ' on rKTs'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <!-- Buddhanexus link -->
-                                                <xsl:variable name="link-buddhanexus" select="$link-bdrc-work/owl:sameAs[@rdf:resource ! matches(., '^https://buddhanexus\.net/')][1]/@rdf:resource"/>
-                                                <xsl:if test="$link-buddhanexus">
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="target" select="'buddhanexus'"/>
-                                                            <xsl:attribute name="href" select="$link-buddhanexus"/>
-                                                            <xsl:attribute name="class" select="'link-branded brand-buddhanexus'"/>
-                                                            <xsl:value-of select="$translation/eft:toh[1]/eft:full/data() || ' on Buddhanexus'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <li>
-                                                    <a>
-                                                        <xsl:attribute name="target" select="'steinert'"/>
-                                                        <xsl:attribute name="href" select="'https://dictionary.christian-steinert.de'"/>
-                                                        <xsl:value-of select="'Christian Steinert Dictionary'"/>
-                                                    </a>
-                                                </li>
-                                                
-                                            </ul>
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Glossary -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'glossary'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'glossary']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading">
-                                                        <xsl:if test="not($glossary-prioritised)">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading text-muted'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Glossary' "/>
-                                                    </h3>
-                                                </div>
-                                                <xsl:if test="$glossary-prioritised">
-                                                    <div>
-                                                        <span class="badge badge-notification">
-                                                            <xsl:if test="count($glossary-prioritised) lt 1">
-                                                                <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="format-number(count($glossary-prioritised),'#,###')"/>
-                                                        </span>
-                                                    </div>
-                                                </xsl:if>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <hr class="sml-margin"/>
+                                        
+                                        <ul class="list-unstyled">
                                             
-                                            <xsl:for-each select="$glossary-prioritised">
-                                                
-                                                <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
-                                                
-                                                <hr class="sml-margin"/>
-                                                
-                                                <div id="{ @xml:id }" class="glossary-item">
+                                            <!-- Google Drive link -->
+                                            <li class="sml-margin bottom">
+                                                <a>
+                                                    <xsl:attribute name="target" select="'84000-google-drive'"/>
+                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $request/@text-id, '.resources')"/>
+                                                    <xsl:attribute name="class" select="'link-branded brand-gdrive'"/>
+                                                    <xsl:value-of select="$toh-label || ' on 84000 Google Drive'"/>
+                                                </a>
+                                            </li>
+                                            
+                                            <!-- BDRC link -->
+                                            <xsl:variable name="link-bdrc-work" select="$rdf/bdo:Work[@rdf:about/string() eq $translation/eft:toh/eft:ref[@type eq 'bdrc-tibetan-id']/@value/string()]"/>
+                                            <xsl:if test="$link-bdrc-work">
+                                                <li class="sml-margin bottom">
+                                                    <a>
+                                                        <xsl:attribute name="target" select="'bdrc'"/>
+                                                        <xsl:attribute name="href" select="$link-bdrc-work/@rdf:about"/>
+                                                        <xsl:attribute name="class" select="'link-branded brand-bdrc'"/>
+                                                        <xsl:value-of select="$toh-label || ' on BDRC'"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:if>
+                                            
+                                            <!-- rKTs link -->
+                                            <xsl:variable name="link-rkts" select="$link-bdrc-work/owl:sameAs[@rdf:resource ! matches(., '^http://purl\.rkts\.eu/resource')][1]/@rdf:resource"/>
+                                            <xsl:if test="$link-rkts">
+                                                <li class="sml-margin bottom">
+                                                    <a>
+                                                        <xsl:attribute name="target" select="'rkts'"/>
+                                                        <xsl:attribute name="href" select="$link-rkts"/>
+                                                        <xsl:attribute name="class" select="'link-branded brand-rkts'"/>
+                                                        <xsl:value-of select="$toh-label || ' on rKTs'"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:if>
+                                            
+                                            <!-- Buddhanexus link -->
+                                            <xsl:variable name="link-buddhanexus" select="$link-bdrc-work/owl:sameAs[@rdf:resource ! matches(., '^https://buddhanexus\.net/')][1]/@rdf:resource"/>
+                                            <xsl:if test="$link-buddhanexus">
+                                                <li class="sml-margin bottom">
+                                                    <a>
+                                                        <xsl:attribute name="target" select="'buddhanexus'"/>
+                                                        <xsl:attribute name="href" select="$link-buddhanexus"/>
+                                                        <xsl:attribute name="class" select="'link-branded brand-buddhanexus'"/>
+                                                        <xsl:value-of select="$toh-label || ' on Buddhanexus'"/>
+                                                    </a>
+                                                </li>
+                                            </xsl:if>
+                                            
+                                        </ul>
+                                        
+                                        <hr class="sml-margin"/>
+                                        
+                                        <ul>
+                                            <li class="sml-margin bottom">
+                                                <a>
+                                                    <xsl:attribute name="target" select="'steinert'"/>
+                                                    <xsl:attribute name="href" select="'https://dictionary.christian-steinert.de'"/>
+                                                    <xsl:value-of select="'Christian Steinert Dictionary'"/>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Glossary -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'glossary'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'glossary']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading">
+                                                    <xsl:if test="not($glossary-prioritised)">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading text-muted'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select=" $toh-label || ' glossary' "/>
+                                                </h3>
+                                            </div>
+                                            <xsl:if test="$glossary-prioritised">
+                                                <div>
+                                                    <span class="badge badge-notification">
+                                                        <xsl:if test="count($glossary-prioritised) lt 1">
+                                                            <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="format-number(count($glossary-prioritised),'#,###')"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:if>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <xsl:for-each select="$glossary-prioritised">
+                                            
+                                            <xsl:sort select="key('glossary-pre-processed', @xml:id, $root)[1]/@index ! common:enforce-integer(.)"/>
+                                            
+                                            <hr class="sml-margin"/>
+                                            
+                                            <div id="{ @xml:id }" class="tei-parser">
+                                                <div class="glossary-item">
                                                     <xsl:call-template name="glossary-item">
                                                         <xsl:with-param name="glossary-item" select="."/>
                                                     </xsl:call-template>
                                                 </div>
-                                                
-                                            </xsl:for-each>
+                                            </div>
                                             
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Glossary builder -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'glossary-builder'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'glossary-builder']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
+                                        </xsl:for-each>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Glossary builder -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'glossary-builder'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'glossary-builder']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:if test="count($units-selected) eq 1">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Add to ' || $toh-label || ' glossary'"/>
+                                                </h3>
+                                            </div>
+                                            <xsl:if test="$request[@util eq 'glossary-builder'] and count($units-selected) eq 1">
                                                 <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:if test="count($units-selected) eq 1">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    <span class="badge badge-notification">
+                                                        <xsl:if test="count($entities-suggested) lt 1">
+                                                            <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
                                                         </xsl:if>
-                                                        <xsl:value-of select="'Add to glossary'"/>
-                                                    </h3>
+                                                        <xsl:value-of select="format-number(count($entities-suggested), '#,###')"/>
+                                                    </span>
                                                 </div>
-                                                <xsl:if test="$request[@util eq 'glossary-builder'] and count($units-selected) eq 1">
-                                                    <div>
-                                                        <span class="badge badge-notification">
-                                                            <xsl:if test="count($entities-suggested) lt 1">
-                                                                <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="format-number(count($entities-suggested), '#,###')"/>
-                                                        </span>
-                                                    </div>
-                                                </xsl:if>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <div id="glossary-builder-ajax-content">
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="$request[@util eq 'glossary-builder']">
-                                                        <xsl:choose>
-                                                            <xsl:when test="$entities-suggested">
-                                                                
-                                                                <form action="/source-utils.html" method="post" class="form-horizontal labels-left" data-loading="Loading...">
-                                                                    
-                                                                    <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
-                                                                    <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
-                                                                    <xsl:for-each select="$request/eft:segment[@id]">
-                                                                        <input type="hidden" name="segment-id[]" value="{ @id }"/>
-                                                                    </xsl:for-each>
-                                                                    <input type="hidden" name="form-action" value="glossary-add-items"/>
-                                                                    
-                                                                    <!-- Type checkboxes -->
-                                                                    <!--
-                                                                    <div class="center-vertical-sm align-center bottom-margin">
-                                                                        <div class="form-group">
-                                                                            <xsl:for-each select="eft:request/eft:entity-types/eft:type[@glossary-type]">
-                                                                                
-                                                                                <div class="checkbox-inline">
-                                                                                    <label>
-                                                                                        <input type="checkbox" name="term-type[]">
-                                                                                            <xsl:attribute name="value" select="@id"/>
-                                                                                            <xsl:if test="@selected eq 'selected'">
-                                                                                                <xsl:attribute name="checked" select="'checked'"/>
-                                                                                            </xsl:if>
-                                                                                        </input>
-                                                                                        <xsl:value-of select="' ' || eft:label[@type eq 'plural']"/>
-                                                                                    </label>
-                                                                                </div>
-                                                                                
-                                                                            </xsl:for-each>
-                                                                        </div>
-                                                                    </div>-->
-                                                                    
-                                                                    <!-- New glossary entry form -->
-                                                                    <div class="center-vertical full-width sml-margin top">
-                                                                        <div>
-                                                                            <xsl:value-of select="'Select terms found'"/>
-                                                                        </div>
-                                                                        <div class="text-right">
-                                                                            <a class="underline">
-                                                                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form#glossary-entry-new')"/>
-                                                                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                                                                <xsl:attribute name="data-editor-callbackurl" select="concat($operations-path, '/source-utils.html?', string-join($page-attributes, '&amp;'))"/>
-                                                                                <xsl:attribute name="data-ajax-loading" select="'Loading glossary editor...'"/>
-                                                                                <xsl:value-of select="'enter a new term'"/>
-                                                                            </a>
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    <!-- Glossary scan results -->
-                                                                    <xsl:call-template name="glossary-suggestions"/>
-                                                                    
-                                                                </form>
-                                                                
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                
-                                                                <hr class="sml-margin"/>
-                                                                <p class="text-muted italic">
-                                                                    <xsl:value-of select="'No suggestions'"/>
-                                                                </p>
-                                                                
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </xsl:when>
-                                                    <xsl:when test="count($units-selected) eq 1">
-                                                        
-                                                        <div class="top-margin loading" data-in-view-replace="{ concat('/source-utils.html?', string-join(($page-attributes, 'util=glossary-builder'), '&amp;'), '#glossary-builder-ajax-content') }"/>
-                                                        
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        
-                                                        <hr class="sml-margin"/>
-                                                        <p class="text-muted italic">
-                                                            <xsl:value-of select="'Select a segment'"/>
-                                                        </p>
-                                                        
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                            </div>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- TM search -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'tm-search'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'tm-search']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:if test="count($units-selected) gt 0">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Translation memory'"/>
-                                                    </h3>
-                                                </div>
-                                                <xsl:if test="$request[@util eq 'tm-search'] and count($units-selected) gt 0">
-                                                    <div>
-                                                        <span class="badge badge-notification">
-                                                            <xsl:if test="count(eft:tm-search/eft:results/eft:item) lt 1">
-                                                                <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="format-number(count(eft:tm-search/eft:results/eft:item), '#,###')"/>
-                                                        </span>
-                                                    </div>
-                                                </xsl:if>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <div id="tm-search-ajax-content">
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="$request[@util eq 'tm-search']">
-                                                        <xsl:choose>
-                                                            <xsl:when test="eft:tm-search/eft:results[eft:item]">
-                                                                
-                                                                <div id="search-container" class="sml-margin top">
-                                                                    <xsl:call-template name="tm-search-results">
-                                                                        <xsl:with-param name="results" select="eft:tm-search/eft:results"/>
-                                                                    </xsl:call-template>
-                                                                </div>
-                                                                
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                
-                                                                <hr class="sml-margin"/>
-                                                                <p class="text-muted italic">
-                                                                    <xsl:value-of select="'No results'"/>
-                                                                </p>
-                                                                
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                    </xsl:when>
-                                                    <xsl:when test="count($units-selected) gt 0"> 
-                                                        
-                                                        <div class="loading" data-in-view-replace="{ concat('/source-utils.html?', string-join(($page-attributes, 'util=tm-search'), '&amp;'), '#tm-search-ajax-content') }"/>
-                                                        
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        
-                                                        <hr class="sml-margin"/>
-                                                        <p class="text-muted italic">
-                                                            <xsl:value-of select="'Select a segment'"/>
-                                                        </p>
-                                                        
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                                
-                                            </div>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Machine translation -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'machine-translation'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'machine-translation']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading">
-                                                        <xsl:if test="count($units-selected) eq 0">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading text-muted'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Machine translation'"/>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <div id="machine-translation-ajax-content">
-                                                
-                                                <xsl:choose>
-                                                    <xsl:when test="$request[@util eq 'machine-translation']">
-                                                        
-                                                        <hr class="sml-margin"/>
-                                                        
-                                                        <p>
-                                                            <xsl:choose>
-                                                                <xsl:when test="eft:machine-translation/eft:response-sentence[text()]">
-                                                                    <xsl:value-of select="eft:machine-translation/eft:response-sentence"/>
-                                                                </xsl:when>
-                                                                <xsl:otherwise>
-                                                                    <xsl:attribute name="class" select="'text-muted italic'"/>
-                                                                    <xsl:value-of select="'[No translation returned]'"/>
-                                                                </xsl:otherwise>
-                                                            </xsl:choose>
-                                                        </p>
-                                                
-                                                        <xsl:if test="eft:machine-translation">
-                                                            
-                                                            <hr class="sml-margin"/>
-                                                            
-                                                            <p class="text-muted italic">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="eft:machine-translation[eft:trailer/text()]">
-                                                                        <xsl:value-of select="eft:machine-translation/eft:trailer"/>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <small>
-                                                                            <i>
-                                                                                <xsl:value-of select="'This translation is generated by the MITRA model, being developed at the Berkeley AI Research Lab.'"/>
-                                                                            </i>
-                                                                        </small>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
-                                                            </p>
-                                                            
-                                                        </xsl:if>
-                                                
-                                                    </xsl:when>
-                                                    <xsl:when test="count($units-selected) gt 0">
-                                                        
-                                                        <div class="top-margin loading" data-in-view-replace="{ concat('/source-utils.html?', string-join(($page-attributes, 'util=machine-translation'), '&amp;'), '#machine-translation-ajax-content') }"/>
-                                                        
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        
-                                                        <hr class="sml-margin"/>
-                                                        <p class="text-muted italic">
-                                                            <xsl:value-of select="'Select a segment'"/>
-                                                        </p>
-                                                        
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
-                                            </div>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Translate -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'translate'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'translate']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:if test="count($units-selected) eq 1">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Translate'"/>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
+                                            </xsl:if>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <div id="glossary-builder-ajax-content">
                                             
                                             <xsl:choose>
+                                                <xsl:when test="$request[@util eq 'glossary-builder']">
+                                                    <xsl:choose>
+                                                        <xsl:when test="$entities-suggested">
+                                                            
+                                                            <form action="/source-utils.html" method="post" class="form-horizontal labels-left" data-loading="Loading...">
+                                                                
+                                                                <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
+                                                                <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
+                                                                <xsl:for-each select="$request/eft:segment[@id]">
+                                                                    <input type="hidden" name="segment-id[]" value="{ @id }"/>
+                                                                </xsl:for-each>
+                                                                <input type="hidden" name="form-action" value="glossary-add-items"/>
+                                                                
+                                                                <!-- Type checkboxes -->
+                                                                <!--
+                                                                <div class="center-vertical-sm align-center bottom-margin">
+                                                                    <div class="form-group">
+                                                                        <xsl:for-each select="eft:request/eft:entity-types/eft:type[@glossary-type]">
+                                                                            
+                                                                            <div class="checkbox-inline">
+                                                                                <label>
+                                                                                    <input type="checkbox" name="term-type[]">
+                                                                                        <xsl:attribute name="value" select="@id"/>
+                                                                                        <xsl:if test="@selected eq 'selected'">
+                                                                                            <xsl:attribute name="checked" select="'checked'"/>
+                                                                                        </xsl:if>
+                                                                                    </input>
+                                                                                    <xsl:value-of select="' ' || eft:label[@type eq 'plural']"/>
+                                                                                </label>
+                                                                            </div>
+                                                                            
+                                                                        </xsl:for-each>
+                                                                    </div>
+                                                                </div>-->
+                                                                
+                                                                <!-- New glossary entry form -->
+                                                                <div class="center-vertical full-width sml-margin top">
+                                                                    <div>
+                                                                        <xsl:value-of select="'Add from the list:'"/>
+                                                                    </div>
+                                                                    <div class="text-right">
+                                                                        <span class="text-muted">
+                                                                            <xsl:value-of select="' or '"/>
+                                                                        </span>
+                                                                        <a class="underline">
+                                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form#glossary-entry-new')"/>
+                                                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                                                            <xsl:attribute name="data-editor-callbackurl" select="concat($operations-path, '/source-utils.html?', string-join($page-attributes, '&amp;'))"/>
+                                                                            <xsl:attribute name="data-ajax-loading" select="'Loading glossary editor...'"/>
+                                                                            <xsl:value-of select="'enter a new term'"/>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <!-- Glossary scan results -->
+                                                                <xsl:call-template name="glossary-suggestions"/>
+                                                                
+                                                            </form>
+                                                            
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            
+                                                            <hr class="sml-margin"/>
+                                                            <p class="text-muted italic">
+                                                                <xsl:value-of select="'No suggestions'"/>
+                                                            </p>
+                                                            
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </xsl:when>
                                                 <xsl:when test="count($units-selected) eq 1">
                                                     
-                                                    <form action="/source-utils.html" method="post" class="" data-loading="Loading...">
-                                                        
-                                                        <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
-                                                        <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
-                                                        <xsl:for-each select="$request/eft:segment[@id]">
-                                                            <input type="hidden" name="segment-id[]" value="{ @id }"/>
-                                                        </xsl:for-each>
-                                                        
-                                                        <input type="hidden" name="form-action" value="translate"/>
-                                                        
-                                                        <div class="form-group sml-margin top">
-                                                            
-                                                            <label for="translation">
-                                                                <xsl:choose>
-                                                                    <xsl:when test="$units-selected/tmx:tuv[@xml:lang eq 'en']/tmx:seg">
-                                                                        <xsl:value-of select="'Revise the translation'"/>
-                                                                    </xsl:when>
-                                                                    <xsl:otherwise>
-                                                                        <xsl:value-of select="'Add a translation'"/>
-                                                                    </xsl:otherwise>
-                                                                </xsl:choose>
-                                                            </label>
-                                                            
-                                                            <textarea name="translation" id="translation" class="form-control">
-                                                                <xsl:attribute name="rows" select="common:textarea-rows($units-selected/tmx:tuv[@xml:lang eq 'en']/tmx:seg, 5, 60)"/>
-                                                                <xsl:value-of select="$units-selected/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
-                                                            </textarea>
-                                                            
-                                                        </div>
-                                                        
-                                                        <div class="form-group">
-                                                            <button type="submit" class="btn btn-primary pull-right">
-                                                                <xsl:value-of select="'Apply'"/>
-                                                            </button>
-                                                        </div>
-                                                        
-                                                    </form>
-                                                    
-                                                </xsl:when>
-                                                <xsl:when test="count($units-selected) gt 1">
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    <p class="text-muted italic">
-                                                        <xsl:value-of select="'Too many segments selected. Only single segment can be translated.'"/>
-                                                    </p>
+                                                    <div class="top-margin loading" data-in-view-replace="{ concat('/source-utils.html?', string-join(($page-attributes, 'util=glossary-builder'), '&amp;'), '#glossary-builder-ajax-content') }"/>
                                                     
                                                 </xsl:when>
                                                 <xsl:otherwise>
@@ -748,30 +532,191 @@
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                             
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Split segment -->
-                                    <!-- Still problematic and unlikely to be necessary. Disable for now
-                                    <xsl:if test="$request[@util eq 'source-split'] and count($request/eft:segment) eq 1">
-                                        <xsl:call-template name="expand-item">
-                                            <xsl:with-param name="id" select="'source-split'"/>
-                                            <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                            <xsl:with-param name="active" select="if($request[@util eq 'source-split']) then true() else false()"/>
-                                            <xsl:with-param name="title-opener" select="true()"/>
-                                            <xsl:with-param name="persist" select="false()"/>
-                                            <xsl:with-param name="title">
-                                                <div class="center-vertical align-left">
-                                                    <div>
-                                                        <h3 class="list-group-item-heading">
-                                                            <xsl:value-of select="'Split segment'"/>
-                                                        </h3>
-                                                    </div>
+                                        </div>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- TM search -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'tm-search'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'tm-search']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:if test="count($units-selected) gt 0">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Translation memory'"/>
+                                                </h3>
+                                            </div>
+                                            <xsl:if test="$request[@util eq 'tm-search'] and count($units-selected) gt 0">
+                                                <div>
+                                                    <span class="badge badge-notification">
+                                                        <xsl:if test="count(eft:tm-search/eft:results/eft:item) lt 1">
+                                                            <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="format-number(count(eft:tm-search/eft:results/eft:item), '#,###')"/>
+                                                    </span>
                                                 </div>
-                                            </xsl:with-param>
-                                            <xsl:with-param name="content">
+                                            </xsl:if>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <div id="tm-search-ajax-content">
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="$request[@util eq 'tm-search']">
+                                                    <xsl:choose>
+                                                        <xsl:when test="eft:tm-search/eft:results[eft:item]">
+                                                            
+                                                            <div id="search-container" class="sml-margin top">
+                                                                <xsl:call-template name="tm-search-results">
+                                                                    <xsl:with-param name="results" select="eft:tm-search/eft:results"/>
+                                                                </xsl:call-template>
+                                                            </div>
+                                                            
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            
+                                                            <hr class="sml-margin"/>
+                                                            <p class="text-muted italic">
+                                                                <xsl:value-of select="'No results'"/>
+                                                            </p>
+                                                            
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </xsl:when>
+                                                <xsl:when test="count($units-selected) gt 0"> 
+                                                    
+                                                    <div class="loading" data-in-view-replace="{ concat('/source-utils.html?', string-join(($page-attributes, 'util=tm-search'), '&amp;'), '#tm-search-ajax-content') }"/>
+                                                    
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    
+                                                    <hr class="sml-margin"/>
+                                                    <p class="text-muted italic">
+                                                        <xsl:value-of select="'Select a segment'"/>
+                                                    </p>
+                                                    
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                            
+                                        </div>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Machine translation -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'machine-translation'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'machine-translation']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading">
+                                                    <xsl:if test="count($units-selected) eq 0">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading text-muted'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Machine translation'"/>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <div id="machine-translation-ajax-content">
+                                            
+                                            <xsl:choose>
+                                                <xsl:when test="$request[@util eq 'machine-translation']">
+                                                    
+                                                    <hr class="sml-margin"/>
+                                                    
+                                                    <p>
+                                                        <xsl:choose>
+                                                            <xsl:when test="eft:machine-translation/eft:response-sentence[text()]">
+                                                                <xsl:value-of select="eft:machine-translation/eft:response-sentence"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <xsl:attribute name="class" select="'text-muted italic'"/>
+                                                                <xsl:value-of select="'[No translation returned]'"/>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </p>
+                                            
+                                                    <xsl:if test="eft:machine-translation">
+                                                        
+                                                        <hr class="sml-margin"/>
+                                                        
+                                                        <p class="text-muted italic">
+                                                            <xsl:choose>
+                                                                <xsl:when test="eft:machine-translation[eft:trailer/text()]">
+                                                                    <xsl:value-of select="eft:machine-translation/eft:trailer"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <small>
+                                                                        <i>
+                                                                            <xsl:value-of select="'This translation is generated by the MITRA model, being developed at the Berkeley AI Research Lab.'"/>
+                                                                        </i>
+                                                                    </small>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </p>
+                                                        
+                                                    </xsl:if>
+                                            
+                                                </xsl:when>
+                                                <xsl:when test="count($units-selected) gt 0">
+                                                    
+                                                    <div class="top-margin loading" data-in-view-replace="{ concat('/source-utils.html?', string-join(($page-attributes, 'util=machine-translation'), '&amp;'), '#machine-translation-ajax-content') }"/>
+                                                    
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    
+                                                    <hr class="sml-margin"/>
+                                                    <p class="text-muted italic">
+                                                        <xsl:value-of select="'Select a segment'"/>
+                                                    </p>
+                                                    
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </div>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Translate -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'translate'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'translate']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:if test="count($units-selected) eq 1">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Translate'"/>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <xsl:choose>
+                                            <xsl:when test="count($units-selected) eq 1">
                                                 
-                                                <!-\- Form to adjust and re-load -\->
                                                 <form action="/source-utils.html" method="post" class="" data-loading="Loading...">
                                                     
                                                     <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
@@ -780,17 +725,24 @@
                                                         <input type="hidden" name="segment-id[]" value="{ @id }"/>
                                                     </xsl:for-each>
                                                     
-                                                    <input type="hidden" name="form-action" value="source-split"/>
+                                                    <input type="hidden" name="form-action" value="translate"/>
                                                     
                                                     <div class="form-group sml-margin top">
                                                         
-                                                        <label for="source-split">
-                                                            <xsl:value-of select="'Add a return character to the location where the segment should be split'"/>
+                                                        <label for="translation">
+                                                            <xsl:choose>
+                                                                <xsl:when test="$units-selected/tmx:tuv[@xml:lang eq 'en']/tmx:seg">
+                                                                    <xsl:value-of select="'Revise the translation'"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="'Add a translation'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
                                                         </label>
                                                         
-                                                        <textarea name="source-split" id="source-split" class="form-control text-bo">
-                                                            <xsl:attribute name="rows" select="common:textarea-rows($segments-raw, 3, 60)"/>
-                                                            <xsl:value-of select="$segments-raw"/>
+                                                        <textarea name="translation" id="translation" class="form-control">
+                                                            <xsl:attribute name="rows" select="common:textarea-rows($units-selected/tmx:tuv[@xml:lang eq 'en']/tmx:seg, 5, 60)"/>
+                                                            <xsl:value-of select="$units-selected/tmx:tuv[@xml:lang eq 'en']/tmx:seg"/>
                                                         </textarea>
                                                         
                                                     </div>
@@ -803,512 +755,606 @@
                                                     
                                                 </form>
                                                 
-                                            </xsl:with-param>
-                                        </xsl:call-template>
-                                    </xsl:if>-->
-                                    
-                                    <!-- Join segments -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'source-join'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'source-join']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:if test="count($units-selected) gt 1">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Join segments'"/>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="count($units-selected) gt 1">
-                                                    
-                                                    <form action="/source-utils.html" method="post" class="" data-loading="Loading...">
-                                                        
-                                                        
-                                                        <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
-                                                        <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
-                                                        <xsl:for-each select="$request/eft:segment[@id]">
-                                                            <input type="hidden" name="segment-id[]" value="{ @id }"/>
-                                                        </xsl:for-each>
-                                                        
-                                                        <input type="hidden" name="form-action" value="source-join"/>
-                                                        
-                                                        <div class="form-group sml-margin top">
-                                                            
-                                                            <label for="source-joined">
-                                                                <xsl:value-of select="'The selected segments will be joined'"/>
-                                                            </label>
-                                                            
-                                                            <textarea name="source-joined" id="source-joined" class="form-control text-bo" disabled="disabled">
-                                                                <xsl:attribute name="rows" select="common:textarea-rows($segments-joined, 3, 60)"/>
-                                                                <xsl:value-of select="$segments-joined"/>
-                                                            </textarea>
-                                                            
-                                                        </div>
-                                                        
-                                                        <div class="form-group">
-                                                            <button type="submit" class="btn btn-primary pull-right">
-                                                                <xsl:value-of select="'Apply'"/>
-                                                            </button>
-                                                        </div>
-                                                        
-                                                    </form>
-                                                    
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    <p class="text-muted italic">
-                                                        <xsl:value-of select="'Select more than one segment'"/>
-                                                    </p>
-                                                    
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Review folios -->
-                                    <xsl:variable name="etext-note" select="eft:translation-status/eft:text/eft:etext-note[@segment-id eq $request/eft:segment/@id]" as="element(eft:etext-note)?"/>
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'review-folios'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'review-folios']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:if test="count($units-selected) eq 1">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Etext issues'"/>
-                                                    </h3>
-                                                </div>
-                                                <xsl:if test="$request[@util eq 'review-folios'] and count($units-selected) eq 1">
-                                                    <div>
-                                                        <span class="badge badge-notification">
-                                                            <xsl:if test="count($etext-note) eq 0">
-                                                                <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="count($etext-note)"/>
-                                                        </span>
-                                                    </div>
-                                                </xsl:if>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="count($units-selected) eq 1">
-                                                    
-                                                    <!-- Note -->
-                                                    <form action="/source-utils.html" method="post" class="sml-margin top" data-loading="Loading...">
-                                                        
-                                                        <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
-                                                        <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
-                                                        <xsl:for-each select="$request/eft:segment[@id]">
-                                                            <input type="hidden" name="segment-id[]" value="{ @id }"/>
-                                                        </xsl:for-each>
-                                                        
-                                                        <input type="hidden" name="form-action" value="etext-note"/>
-                                                        
-                                                        <div class="form-group">
-                                                            
-                                                            <label for="etext-note">
-                                                                <xsl:value-of select="'Note about this segment:'"/>
-                                                            </label>
-                                                            
-                                                            <xsl:variable name="etext-note-text" as="text()?">
-                                                                <xsl:value-of select="normalize-space(string-join($etext-note, ' '))"/>
-                                                            </xsl:variable>
-                                                            <textarea name="etext-note" id="etext-note" class="form-control">
-                                                                <xsl:attribute name="rows" select="common:textarea-rows($etext-note-text, 5, 60)"/>
-                                                                <xsl:value-of select="$etext-note-text"/>
-                                                            </textarea>
-                                                            
-                                                            <xsl:if test="$etext-note[@last-edited]">
-                                                                <div class="small text-muted sml-margin top">
-                                                                    <xsl:value-of select="common:date-user-string('Last updated', $etext-note/@last-edited, $etext-note/@last-edited-by)"/>
-                                                                </div>
-                                                            </xsl:if>
-                                                            
-                                                        </div>
-                                                        
-                                                        <div class="form-group text-right">
-                                                            <button type="submit" class="btn btn-primary">
-                                                                <xsl:value-of select="'Submit'"/>
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    
-                                                    <!-- Scans -->
-                                                    <div>
-                                                        
-                                                        <label>
-                                                            <xsl:value-of select="'Standard reference scans:'"/>
-                                                        </label>
-                                                        
-                                                        <xsl:variable name="volume" select="$units-selected[1]/tmx:prop[@name eq 'eft:folio-volume']/text() ! xs:integer(.)"/>
-                                                        <xsl:variable name="folio-etext-key" select="$units-selected[1]/tmx:prop[@name eq 'eft:folio-etext-key']/text()"/>
-                                                        
-                                                        <ul>
-                                                            
-                                                            <!-- W4CZ5369 -->
-                                                            <li>
-                                                                
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="'#scan-W4CZ5369'"/>
-                                                                    <xsl:attribute name="class" select="'pop-up'"/>
-                                                                    <xsl:value-of select="'Degé W4CZ5369 (from Library of Congress)'"/>
-                                                                    <br/>
-                                                                    <small class="text-muted">
-                                                                        <xsl:value-of select="'late post par phud'"/>
-                                                                    </small>
-                                                                </a>
-                                                                
-                                                                <div class="hidden">
-                                                                    <div id="scan-W4CZ5369">
-                                                                        <h3>
-                                                                            <xsl:value-of select="'Degé W4CZ5369 (from Library of Congress) '"/>
-                                                                            <small class="text-muted">
-                                                                                <xsl:value-of select="'late post par phud'"/>
-                                                                            </small>
-                                                                        </h3>
-                                                                        <p class="text-muted italic">
-                                                                            <xsl:value-of select="'This text is the basis for the eKangyur. (This image will occasionally be off-alignment, so you may need to adjust a page or two.)'"/>
-                                                                        </p>
-                                                                        <div>
-                                                                            <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'W4CZ5369' ) }"/>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </li>
-                                                            
-                                                            <!-- W30532 -->
-                                                            <li>
-                                                                
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="'#scan-W30532'"/>
-                                                                    <xsl:attribute name="class" select="'pop-up'"/>
-                                                                    <xsl:value-of select="'Degé W30532 (printed from the library of Situ Rinpoche)'"/>
-                                                                    <br/>
-                                                                    <small class="text-muted">
-                                                                        <xsl:value-of select="'late post par phud'"/>
-                                                                    </small>
-                                                                </a>
-                                                                
-                                                                <div class="hidden">
-                                                                    <div id="scan-W30532">
-                                                                        <h3>
-                                                                            <xsl:value-of select="'Degé W30532 (printed from the library of Situ Rinpoche) '"/>
-                                                                            <small class="text-muted">
-                                                                                <xsl:value-of select="'late post par phud'"/>
-                                                                            </small>
-                                                                        </h3>
-                                                                        <div>
-                                                                            <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'W30532' ) }"/>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </li>
-                                                            
-                                                            <!-- adarsha -->
-                                                            <li>
-                                                                
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="'#scan-adarsha'"/>
-                                                                    <xsl:attribute name="class" select="'pop-up'"/>
-                                                                    <xsl:value-of select="'Degé (adarsha.dharma-treasure.org)'"/>
-                                                                    <br/>
-                                                                    <small class="text-muted">
-                                                                        <xsl:value-of select="'seems to be post par phud'"/>
-                                                                    </small>
-                                                                </a>
-                                                                
-                                                                <div class="hidden">
-                                                                    <div id="scan-adarsha">
-                                                                        <h3>
-                                                                            <xsl:value-of select="'Degé (adarsha.dharma-treasure.org) '"/>
-                                                                            <small class="text-muted">
-                                                                                <xsl:value-of select="'seems to be post par phud'"/>
-                                                                            </small>
-                                                                        </h3>
-                                                                        <p class="text-muted italic">
-                                                                            <xsl:value-of select="'Note, volumes 100-102 have been reordered to align with the other scans.'"/>
-                                                                        </p>
-                                                                        <div>
-                                                                            <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'adarsha' ) }"/>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </li>
-                                                            
-                                                            <!-- W3CN20612 -->
-                                                            <li>
-                                                                
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="'#scan-W3CN20612'"/>
-                                                                    <xsl:attribute name="class" select="'pop-up'"/>
-                                                                    <xsl:value-of select="'Degé W3CN20612 (Tsalparma)'"/>
-                                                                    <br/>
-                                                                    <small class="text-muted">
-                                                                        <xsl:value-of select="'early post par-phud (1762?)'"/>
-                                                                    </small>
-                                                                </a>
-                                                                
-                                                                <div class="hidden">
-                                                                    <div id="scan-W3CN20612">
-                                                                        <h3>
-                                                                            <xsl:value-of select="'Degé W3CN20612 (Tsalparma) '"/>
-                                                                            <small class="text-muted">
-                                                                                <xsl:value-of select="'early post par-phud (1762?)'"/>
-                                                                            </small>
-                                                                        </h3>
-                                                                        <p class="text-muted italic">
-                                                                            <xsl:value-of select="'Note that the original volume order in W3CN20612 does not follow the order of the other editions. This script has reordered this volume to match the others. This early version doesn''t have the extra texts in Vol. 81, 83, and 88 that were added to the late post par phud editions.'"/>
-                                                                        </p>
-                                                                        <div>
-                                                                            <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'W3CN20612' ) }"/>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </li>
-                                                            
-                                                            <!-- W22084 -->
-                                                            <li>
-                                                                
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="'#scan-W22084'"/>
-                                                                    <xsl:attribute name="class" select="'pop-up'"/>
-                                                                    <xsl:value-of select="'Degé W22084 (printed by 16th Karmapa)'"/>
-                                                                    <br/>
-                                                                    <small class="text-muted">
-                                                                        <xsl:value-of select="'facsimile par phud (1733)'"/>
-                                                                    </small>
-                                                                </a>
-                                                                
-                                                                <div class="hidden">
-                                                                    <div id="scan-W22084">
-                                                                        
-                                                                        <h3>
-                                                                            <xsl:value-of select="'Degé W22084 (printed by 16th Karmapa) '"/>
-                                                                            <small class="text-muted">
-                                                                                <xsl:value-of select="'facsimile par phud (1733)'"/>
-                                                                            </small>
-                                                                        </h3>
-                                                                        <p class="text-muted italic">
-                                                                            <xsl:value-of select="'par phud recension is NOT the basis for eKangyur but it may be helpful for comparison. It also isn’t used as a main source because it was retouched with marker pens before printing in Delhi.'"/>
-                                                                        </p>
-                                                                        <div>
-                                                                            <img class="img-responsive" src="{eft:scan-src( $volume, $folio-etext-key, 'W22084' ) }"/>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                            </li>
-                                                            
-                                                        </ul>
-                                                        
-                                                    </div>
+                                            </xsl:when>
+                                            <xsl:when test="count($units-selected) gt 1">
                                                 
-                                                </xsl:when>
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Too many segments selected. Only single segment can be translated.'"/>
+                                                </p>
                                                 
-                                                <xsl:when test="count($units-selected) gt 1">
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    <p class="text-muted italic">
-                                                        <xsl:value-of select="'Too many segments selected. Only single segments can be annotated.'"/>
-                                                    </p>
-                                                    
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    <p class="text-muted italic">
-                                                        <xsl:value-of select="'Select a segment'"/>
-                                                    </p>
-                                                    
-                                                </xsl:otherwise>
+                                            </xsl:when>
+                                            <xsl:otherwise>
                                                 
-                                            </xsl:choose>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Source Annotation -->
-                                    <xsl:variable name="source-notes" select="eft:translation-status/eft:text/eft:source-note[@segment-id eq $request/eft:segment/@id]" as="element(eft:source-note)*"/>
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Select a segment'"/>
+                                                </p>
+                                                
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Split segment -->
+                                <!-- Still problematic and unlikely to be necessary. Disable for now
+                                <xsl:if test="$request[@util eq 'source-split'] and count($request/eft:segment) eq 1">
                                     <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'annotate-source'"/>
+                                        <xsl:with-param name="id" select="'source-split'"/>
                                         <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'annotate-source']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:if test="count($units-selected) eq 1">
-                                                            <xsl:attribute name="class" select="'list-group-item-heading'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="'Annotations'"/>
-                                                    </h3>
-                                                </div>
-                                                <xsl:if test="$request[@util eq 'annotate-source'] and count($units-selected) eq 1">
-                                                    <div>
-                                                        <span class="badge badge-notification">
-                                                            <xsl:if test="count($source-notes) eq 0">
-                                                                <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
-                                                            </xsl:if>
-                                                            <xsl:value-of select="count($source-notes)"/>
-                                                        </span>
-                                                    </div>
-                                                </xsl:if>
-                                            </div>
-                                            
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <xsl:choose>
-                                                <xsl:when test="count($units-selected) eq 1">
-                                                    
-                                                    <div class="sml-margin top">
-                                                        <xsl:for-each select="$source-notes">
-                                                            
-                                                            <xsl:sort select="@last-updated"/>
-                                                            
-                                                            <blockquote>
-                                                                <p>
-                                                                    <xsl:value-of select="normalize-space(text())"/>
-                                                                </p>
-                                                                <footer>
-                                                                    <xsl:value-of select="common:date-user-string('Comment', @last-edited, @last-edited-by)"/>
-                                                                </footer>
-                                                            </blockquote>
-                                                            
-                                                        </xsl:for-each>
-                                                    </div>
-                                                    
-                                                    <form action="/source-utils.html" method="post" class="sml-margin top" data-loading="Loading...">
-                                                        
-                                                        <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
-                                                        <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
-                                                        <xsl:for-each select="$request/eft:segment[@id]">
-                                                            <input type="hidden" name="segment-id[]" value="{ @id }"/>
-                                                        </xsl:for-each>
-                                                        
-                                                        <input type="hidden" name="form-action" value="source-note"/>
-                                                        
-                                                        <div class="form-group">
-                                                            <label for="source-note">
-                                                                <xsl:value-of select="'Add a note'"/>
-                                                            </label>
-                                                            <textarea name="source-note" id="source-note" class="form-control" rows="4"/>
-                                                        </div>
-                                                        
-                                                        <div class="form-group text-right">
-                                                            <button type="submit" class="btn btn-primary">
-                                                                <xsl:value-of select="'Submit'"/>
-                                                            </button>
-                                                        </div>
-                                                        
-                                                    </form>
-                                                    
-                                                </xsl:when>
-                                                <xsl:when test="count($units-selected) gt 1">
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    <p class="text-muted italic">
-                                                        <xsl:value-of select="'Too many segments selected. Only single segment can be annotated.'"/>
-                                                    </p>
-                                                    
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    
-                                                    <hr class="sml-margin"/>
-                                                    <p class="text-muted italic">
-                                                        <xsl:value-of select="'Select a segment'"/>
-                                                    </p>
-                                                    
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Bibliography -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'bibliography'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'bibliography']) then true() else false()"/>
-                                        <xsl:with-param name="title-opener" select="true()"/>
-                                        <xsl:with-param name="persist" select="false()"/>
-                                        <xsl:with-param name="title">
-                                            <div class="center-vertical align-left">
-                                                <div>
-                                                    <h3 class="list-group-item-heading text-muted">
-                                                        <xsl:value-of select="'Bibliography' "/>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="content">
-                                            
-                                            <hr class="sml-margin"/>
-                                            <p class="text-muted italic">
-                                                <xsl:value-of select="'To come...'"/>
-                                            </p>
-                                            
-                                        </xsl:with-param>
-                                    </xsl:call-template>
-                                    
-                                    <!-- Help and feedback -->
-                                    <xsl:call-template name="expand-item">
-                                        <xsl:with-param name="id" select="'help'"/>
-                                        <xsl:with-param name="accordion-selector" select="'#accordion'"/>
-                                        <xsl:with-param name="active" select="if($request[@util eq 'help']) then true() else false()"/>
+                                        <xsl:with-param name="active" select="if($request[@util eq 'source-split']) then true() else false()"/>
                                         <xsl:with-param name="title-opener" select="true()"/>
                                         <xsl:with-param name="persist" select="false()"/>
                                         <xsl:with-param name="title">
                                             <div class="center-vertical align-left">
                                                 <div>
                                                     <h3 class="list-group-item-heading">
-                                                        <xsl:value-of select="'Help &amp; Feedback' "/>
+                                                        <xsl:value-of select="'Split segment'"/>
                                                     </h3>
                                                 </div>
                                             </div>
                                         </xsl:with-param>
                                         <xsl:with-param name="content">
                                             
-                                            <p class="sml-margin top">
-                                                <xsl:value-of select="'To report a problem, get help or to make a suggestion for improvement please contact the tech team via '"/>
-                                                <a target="translation-tech-helpdesk" href="https://84000-translate.slack.com/channels/translation-tech-helpdesk">
-                                                    <xsl:value-of select="'Slack'"/>
-                                                </a>
-                                            </p>
+                                            <!-\- Form to adjust and re-load -\->
+                                            <form action="/source-utils.html" method="post" class="" data-loading="Loading...">
+                                                
+                                                <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
+                                                <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
+                                                <xsl:for-each select="$request/eft:segment[@id]">
+                                                    <input type="hidden" name="segment-id[]" value="{ @id }"/>
+                                                </xsl:for-each>
+                                                
+                                                <input type="hidden" name="form-action" value="source-split"/>
+                                                
+                                                <div class="form-group sml-margin top">
+                                                    
+                                                    <label for="source-split">
+                                                        <xsl:value-of select="'Add a return character to the location where the segment should be split'"/>
+                                                    </label>
+                                                    
+                                                    <textarea name="source-split" id="source-split" class="form-control text-bo">
+                                                        <xsl:attribute name="rows" select="common:textarea-rows($segments-raw, 3, 60)"/>
+                                                        <xsl:value-of select="$segments-raw"/>
+                                                    </textarea>
+                                                    
+                                                </div>
+                                                
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary pull-right">
+                                                        <xsl:value-of select="'Apply'"/>
+                                                    </button>
+                                                </div>
+                                                
+                                            </form>
                                             
                                         </xsl:with-param>
                                     </xsl:call-template>
-                                    
-                                </div>
-                            
+                                </xsl:if>-->
+                                
+                                <!-- Join segments -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'source-join'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'source-join']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:if test="count($units-selected) gt 1">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Join segments'"/>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <xsl:choose>
+                                            <xsl:when test="count($units-selected) gt 1">
+                                                
+                                                <form action="/source-utils.html" method="post" class="" data-loading="Loading...">
+                                                    
+                                                    
+                                                    <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
+                                                    <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
+                                                    <xsl:for-each select="$request/eft:segment[@id]">
+                                                        <input type="hidden" name="segment-id[]" value="{ @id }"/>
+                                                    </xsl:for-each>
+                                                    
+                                                    <input type="hidden" name="form-action" value="source-join"/>
+                                                    
+                                                    <div class="form-group sml-margin top">
+                                                        
+                                                        <label for="source-joined">
+                                                            <xsl:value-of select="'The selected segments will be joined'"/>
+                                                        </label>
+                                                        
+                                                        <textarea name="source-joined" id="source-joined" class="form-control text-bo" disabled="disabled">
+                                                            <xsl:attribute name="rows" select="common:textarea-rows($segments-joined, 3, 60)"/>
+                                                            <xsl:value-of select="$segments-joined"/>
+                                                        </textarea>
+                                                        
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <button type="submit" class="btn btn-primary pull-right">
+                                                            <xsl:value-of select="'Apply'"/>
+                                                        </button>
+                                                    </div>
+                                                    
+                                                </form>
+                                                
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Select more than one segment'"/>
+                                                </p>
+                                                
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Review folios -->
+                                <xsl:variable name="etext-note" select="eft:translation-status/eft:text/eft:etext-note[@segment-id eq $request/eft:segment/@id]" as="element(eft:etext-note)?"/>
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'review-folios'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'review-folios']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:if test="count($units-selected) eq 1">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Etext issues'"/>
+                                                </h3>
+                                            </div>
+                                            <xsl:if test="count($units-selected) eq 1">
+                                                <div>
+                                                    <span class="badge badge-notification">
+                                                        <xsl:if test="count($etext-note) eq 0">
+                                                            <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="count($etext-note)"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:if>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <xsl:choose>
+                                            <xsl:when test="count($units-selected) eq 1">
+                                                
+                                                <hr class="sml-margin"/>
+                                                
+                                                <!-- Note -->
+                                                <form action="/source-utils.html" method="post" class="sml-margin top" data-loading="Loading...">
+                                                    
+                                                    <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
+                                                    <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
+                                                    <xsl:for-each select="$request/eft:segment[@id]">
+                                                        <input type="hidden" name="segment-id[]" value="{ @id }"/>
+                                                    </xsl:for-each>
+                                                    
+                                                    <input type="hidden" name="form-action" value="etext-note"/>
+                                                    
+                                                    <div class="form-group">
+                                                        
+                                                        <label for="etext-note">
+                                                            <xsl:choose>
+                                                                <xsl:when test="$etext-note[@last-edited]">
+                                                                    <xsl:value-of select="common:date-user-string('Last edited', $etext-note/@last-edited, $etext-note/@last-edited-by)"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="'Note about this segment:'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </label>
+                                                        
+                                                        <xsl:variable name="etext-note-text" as="text()?">
+                                                            <xsl:value-of select="normalize-space(string-join($etext-note, ' '))"/>
+                                                        </xsl:variable>
+                                                        <textarea name="etext-note" id="etext-note" class="form-control sticky-note">
+                                                            <xsl:attribute name="rows" select="common:textarea-rows($etext-note-text, 5, 60)"/>
+                                                            <xsl:value-of select="$etext-note-text"/>
+                                                        </textarea>
+                                                        
+                                                    </div>
+                                                    
+                                                    <div class="form-group text-right">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <xsl:choose>
+                                                                <xsl:when test="count($units-selected) gt 0">
+                                                                    <xsl:attribute name="class" select="'btn btn-danger'"/>
+                                                                    <xsl:value-of select="'Edit'"/>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <xsl:value-of select="'Add'"/>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                                
+                                                <hr class="sml-margin"/>
+                                                
+                                                <!-- Scans -->
+                                                <div>
+                                                    
+                                                    <label>
+                                                        <xsl:value-of select="'Standard reference scans:'"/>
+                                                    </label>
+                                                    
+                                                    <xsl:variable name="volume" select="$etext/@volume ! xs:integer(.)"/>
+                                                    <xsl:variable name="folio-etext-key" select="$etext/@folio-in-etext"/>
+                                                    
+                                                    <xsl:choose>
+                                                        <xsl:when test="$volume and $folio-etext-key">
+                                                            
+                                                            <ul>
+                                                                
+                                                                <!-- W4CZ5369 -->
+                                                                <li>
+                                                                    
+                                                                    <a>
+                                                                        <xsl:attribute name="href" select="'#scan-W4CZ5369'"/>
+                                                                        <xsl:attribute name="class" select="'pop-up'"/>
+                                                                        <xsl:value-of select="'Degé W4CZ5369 (from Library of Congress)'"/>
+                                                                        <br/>
+                                                                        <small class="text-muted">
+                                                                            <xsl:value-of select="'late post par phud'"/>
+                                                                        </small>
+                                                                    </a>
+                                                                    
+                                                                    <div class="hidden">
+                                                                        <div id="scan-W4CZ5369">
+                                                                            <h3>
+                                                                                <xsl:value-of select="'Degé W4CZ5369 (from Library of Congress) '"/>
+                                                                                <small class="text-muted">
+                                                                                    <xsl:value-of select="'late post par phud'"/>
+                                                                                </small>
+                                                                            </h3>
+                                                                            <p class="text-muted italic">
+                                                                                <xsl:value-of select="'This text is the basis for the eKangyur. (This image will occasionally be off-alignment, so you may need to adjust a page or two.)'"/>
+                                                                            </p>
+                                                                            <div>
+                                                                                <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'W4CZ5369' ) }"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                </li>
+                                                                
+                                                                <!-- W30532 -->
+                                                                <li>
+                                                                    
+                                                                    <a>
+                                                                        <xsl:attribute name="href" select="'#scan-W30532'"/>
+                                                                        <xsl:attribute name="class" select="'pop-up'"/>
+                                                                        <xsl:value-of select="'Degé W30532 (printed from the library of Situ Rinpoche)'"/>
+                                                                        <br/>
+                                                                        <small class="text-muted">
+                                                                            <xsl:value-of select="'late post par phud'"/>
+                                                                        </small>
+                                                                    </a>
+                                                                    
+                                                                    <div class="hidden">
+                                                                        <div id="scan-W30532">
+                                                                            <h3>
+                                                                                <xsl:value-of select="'Degé W30532 (printed from the library of Situ Rinpoche) '"/>
+                                                                                <small class="text-muted">
+                                                                                    <xsl:value-of select="'late post par phud'"/>
+                                                                                </small>
+                                                                            </h3>
+                                                                            <div>
+                                                                                <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'W30532' ) }"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                </li>
+                                                                
+                                                                <!-- adarsha -->
+                                                                <li>
+                                                                    
+                                                                    <a>
+                                                                        <xsl:attribute name="href" select="'#scan-adarsha'"/>
+                                                                        <xsl:attribute name="class" select="'pop-up'"/>
+                                                                        <xsl:value-of select="'Degé (adarsha.dharma-treasure.org)'"/>
+                                                                        <br/>
+                                                                        <small class="text-muted">
+                                                                            <xsl:value-of select="'seems to be post par phud'"/>
+                                                                        </small>
+                                                                    </a>
+                                                                    
+                                                                    <div class="hidden">
+                                                                        <div id="scan-adarsha">
+                                                                            <h3>
+                                                                                <xsl:value-of select="'Degé (adarsha.dharma-treasure.org) '"/>
+                                                                                <small class="text-muted">
+                                                                                    <xsl:value-of select="'seems to be post par phud'"/>
+                                                                                </small>
+                                                                            </h3>
+                                                                            <p class="text-muted italic">
+                                                                                <xsl:value-of select="'Note, volumes 100-102 have been reordered to align with the other scans.'"/>
+                                                                            </p>
+                                                                            <div>
+                                                                                <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'adarsha' ) }"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                </li>
+                                                                
+                                                                <!-- W3CN20612 -->
+                                                                <li>
+                                                                    
+                                                                    <a>
+                                                                        <xsl:attribute name="href" select="'#scan-W3CN20612'"/>
+                                                                        <xsl:attribute name="class" select="'pop-up'"/>
+                                                                        <xsl:value-of select="'Degé W3CN20612 (Tsalparma)'"/>
+                                                                        <br/>
+                                                                        <small class="text-muted">
+                                                                            <xsl:value-of select="'early post par-phud (1762?)'"/>
+                                                                        </small>
+                                                                    </a>
+                                                                    
+                                                                    <div class="hidden">
+                                                                        <div id="scan-W3CN20612">
+                                                                            <h3>
+                                                                                <xsl:value-of select="'Degé W3CN20612 (Tsalparma) '"/>
+                                                                                <small class="text-muted">
+                                                                                    <xsl:value-of select="'early post par-phud (1762?)'"/>
+                                                                                </small>
+                                                                            </h3>
+                                                                            <p class="text-muted italic">
+                                                                                <xsl:value-of select="'Note that the original volume order in W3CN20612 does not follow the order of the other editions. This script has reordered this volume to match the others. This early version doesn''t have the extra texts in Vol. 81, 83, and 88 that were added to the late post par phud editions.'"/>
+                                                                            </p>
+                                                                            <div>
+                                                                                <img class="img-responsive" src="{ eft:scan-src( $volume, $folio-etext-key, 'W3CN20612' ) }"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                </li>
+                                                                
+                                                                <!-- W22084 -->
+                                                                <li>
+                                                                    
+                                                                    <a>
+                                                                        <xsl:attribute name="href" select="'#scan-W22084'"/>
+                                                                        <xsl:attribute name="class" select="'pop-up'"/>
+                                                                        <xsl:value-of select="'Degé W22084 (printed by 16th Karmapa)'"/>
+                                                                        <br/>
+                                                                        <small class="text-muted">
+                                                                            <xsl:value-of select="'facsimile par phud (1733)'"/>
+                                                                        </small>
+                                                                    </a>
+                                                                    
+                                                                    <div class="hidden">
+                                                                        <div id="scan-W22084">
+                                                                            
+                                                                            <h3>
+                                                                                <xsl:value-of select="'Degé W22084 (printed by 16th Karmapa) '"/>
+                                                                                <small class="text-muted">
+                                                                                    <xsl:value-of select="'facsimile par phud (1733)'"/>
+                                                                                </small>
+                                                                            </h3>
+                                                                            <p class="text-muted italic">
+                                                                                <xsl:value-of select="'par phud recension is NOT the basis for eKangyur but it may be helpful for comparison. It also isn’t used as a main source because it was retouched with marker pens before printing in Delhi.'"/>
+                                                                            </p>
+                                                                            <div>
+                                                                                <img class="img-responsive" src="{eft:scan-src( $volume, $folio-etext-key, 'W22084' ) }"/>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                </li>
+                                                                
+                                                            </ul>
+                                                            
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <p class="text-muted italic">
+                                                                <xsl:value-of select="'Scans not available for the translation memeory format'"/>
+                                                            </p>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                    
+                                                </div>
+                                            
+                                            </xsl:when>
+                                            
+                                            <xsl:when test="count($units-selected) gt 1">
+                                                
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Too many segments selected. Only single segments can be annotated.'"/>
+                                                </p>
+                                                
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Select a segment'"/>
+                                                </p>
+                                                
+                                            </xsl:otherwise>
+                                            
+                                        </xsl:choose>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Source Annotation -->
+                                <xsl:variable name="source-notes" select="eft:translation-status/eft:text/eft:source-note[@segment-id eq $request/eft:segment/@id]" as="element(eft:source-note)*"/>
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'annotate-source'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'annotate-source']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:if test="count($units-selected) eq 1">
+                                                        <xsl:attribute name="class" select="'list-group-item-heading'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Annotations'"/>
+                                                </h3>
+                                            </div>
+                                            <xsl:if test="count($units-selected) eq 1">
+                                                <div>
+                                                    <span class="badge badge-notification">
+                                                        <xsl:if test="count($source-notes) eq 0">
+                                                            <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="count($source-notes)"/>
+                                                    </span>
+                                                </div>
+                                            </xsl:if>
+                                        </div>
+                                        
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <xsl:choose>
+                                            <xsl:when test="count($units-selected) eq 1">
+                                                
+                                                <div class="sml-margin top">
+                                                    <xsl:for-each select="$source-notes">
+                                                        
+                                                        <xsl:sort select="@last-updated"/>
+                                                        
+                                                        <blockquote>
+                                                            <p>
+                                                                <xsl:value-of select="normalize-space(text())"/>
+                                                            </p>
+                                                            <footer>
+                                                                <xsl:value-of select="common:date-user-string('Comment', @last-edited, @last-edited-by)"/>
+                                                            </footer>
+                                                        </blockquote>
+                                                        
+                                                    </xsl:for-each>
+                                                </div>
+                                                
+                                                <form action="/source-utils.html" method="post" class="sml-margin top" data-loading="Loading...">
+                                                    
+                                                    <input type="hidden" name="text-id" value="{ $request/@text-id }"/>
+                                                    <input type="hidden" name="folio-index" value="{ $folio-index-requested }"/>
+                                                    <xsl:for-each select="$request/eft:segment[@id]">
+                                                        <input type="hidden" name="segment-id[]" value="{ @id }"/>
+                                                    </xsl:for-each>
+                                                    
+                                                    <input type="hidden" name="form-action" value="source-note"/>
+                                                    
+                                                    <div class="form-group">
+                                                        <label for="source-note">
+                                                            <xsl:value-of select="'Add a note'"/>
+                                                        </label>
+                                                        <textarea name="source-note" id="source-note" class="form-control" rows="4"/>
+                                                    </div>
+                                                    
+                                                    <div class="form-group text-right">
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <xsl:value-of select="'Submit'"/>
+                                                        </button>
+                                                    </div>
+                                                    
+                                                </form>
+                                                
+                                            </xsl:when>
+                                            <xsl:when test="count($units-selected) gt 1">
+                                                
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Too many segments selected. Only single segment can be annotated.'"/>
+                                                </p>
+                                                
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                
+                                                <hr class="sml-margin"/>
+                                                <p class="text-muted italic">
+                                                    <xsl:value-of select="'Select a segment'"/>
+                                                </p>
+                                                
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Bibliography -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'bibliography'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'bibliography']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading text-muted">
+                                                    <xsl:value-of select="'Bibliography' "/>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <hr class="sml-margin"/>
+                                        <p class="text-muted italic">
+                                            <xsl:value-of select="'To come...'"/>
+                                        </p>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
+                                <!-- Help and feedback -->
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'help'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#accordion'"/>
+                                    <xsl:with-param name="active" select="if($request[@util eq 'help']) then true() else false()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="persist" select="false()"/>
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <div>
+                                                <h3 class="list-group-item-heading">
+                                                    <xsl:value-of select="'Help &amp; Feedback' "/>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        
+                                        <p class="sml-margin top">
+                                            <xsl:value-of select="'To report a problem, get help or to make a suggestion for improvement please contact the tech team via '"/>
+                                            <a target="translation-tech-helpdesk" href="https://84000-translate.slack.com/channels/translation-tech-helpdesk">
+                                                <xsl:value-of select="'Slack'"/>
+                                            </a>
+                                        </p>
+                                        
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                                
                             </div>
                         
                         </div>
@@ -1322,7 +1368,7 @@
                     <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
                         <div class="fix-height">
                             <div class="container">
-                                <div class="data-container tei-parser">
+                                <div class="data-container">
                                     <!-- Ajax data here -->
                                 </div>
                             </div>
@@ -1350,7 +1396,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="$translation/eft:toh[1]/eft:full/data(.) || ' | Source Utilities | 84000 Project Management'"/>
+            <xsl:with-param name="page-title" select="$toh-label || ' | Source Utilities | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'84000 Source Utilities'"/>
             <xsl:with-param name="content">
                 

@@ -57,7 +57,9 @@ let $request :=
                 $tu/@id,
                 text { normalize-space($tu/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text()) ! replace(., '\{{2}[^\{\}]+\}{2}', '') }
             }
-        )
+        ),
+        
+        $translation:view-modes/eft:view-mode[@id eq 'editor']
         
     }
 
@@ -90,13 +92,47 @@ let $updates :=
         translation-status:update($request/@text-id)
     
     else ()
-    
-let $glossary-existing := translation:glossary($tei, 'glossary', $translation:view-modes/eft:view-mode[@id eq 'editor'], ())
+
+let $toh := $tei ! translation:toh(., '')
+let $glossary-existing := $tei ! translation:glossary(., 'glossary', $translation:view-modes/eft:view-mode[@id eq 'editor'], ())
+let $translation-data := $tei ! 
+    element { QName('http://read.84000.co/ns/1.0', 'translation')} {
+        attribute id { tei-content:id(.) },
+        attribute status { tei-content:publication-status(.) },
+        attribute status-group { tei-content:publication-status-group(.) },
+        translation:titles(., ()),
+        translation:location(., $toh/@key),
+        $toh,
+        $glossary-existing
+    }
 
 let $analysis := (
 
     (: Glossary matches :)
     if($request[@util eq 'glossary-builder'] and count($request/eft:segment) eq 1) then
+        
+        (:let $index-keys := distinct-values(util:index-keys($tmx//tmx:tu[@id = $segment-ids]/tmx:tuv[@xml:lang eq 'bo'], (), function($key, $count) { $key }, -1, "lucene-index"))
+        let $search-string := string-join($tmx//tmx:tu[@id = $segment-ids]/tmx:tuv[@xml:lang eq 'bo']/tmx:seg/text(), ' ')
+        
+        let $query :=
+            <query>
+                <phrase>{
+                    tokenize($search-string, '(་|།)\s*')[. = $index-keys] ! <term>{ . }</term>
+                }</phrase>
+            </query>
+        
+        let $options :=
+            <options>
+                <query-analyzer-id>bo</query-analyzer-id>
+                <default-operator>or</default-operator>
+                <phrase-slop>2</phrase-slop>
+                <leading-wildcard>no</leading-wildcard>
+                <filter-rewrite>yes</filter-rewrite>
+                <lowercase-expanded-terms>yes</lowercase-expanded-terms>
+            </options>
+        
+        let $regex := ''
+        let $terms := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:term[ft:query(., $query, $options)][@xml:lang eq 'bo'][normalize-space(.)]:)
         
         let $glossary-existing-bo := $glossary-existing//tei:term[@xml:lang eq 'bo'] ! replace(., '(་)?།$', '')
         let $segments-filtered := string-join($request/eft:segment, ' ') ! replace(., concat('(', string-join($glossary-existing-bo ! concat(., '(་)?(།)?'), '|'), ')'), '')
@@ -119,9 +155,10 @@ let $analysis := (
                 }
         
         let $regex := concat('^(', string-join(distinct-values($search-strings/text()) ! concat(., '(ར|ས|འི)?'), '|'),')་?།?$')
+        let $terms := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:term[matches(., $regex, 'i')][@xml:lang eq 'bo'][normalize-space(.)]
         
         let $gloss-matches := 
-            for $term in $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:term[matches(., $regex, 'i')][@xml:lang eq 'bo'][normalize-space(.)]
+            for $term in $terms
             let $gloss := $term/parent::tei:gloss
             let $gloss-id := $gloss/@xml:id
             group by $gloss-id
@@ -152,6 +189,7 @@ let $analysis := (
             element { QName('http://read.84000.co/ns/1.0', 'entities')} {
             
                 element regex { $regex },
+                (:$query,:)
                 
                 $entities-existing | $entities-suggested,
                 
@@ -182,25 +220,24 @@ let $analysis := (
     ,
     
     (: Annotations :)
-    if($request[@util = ('review-folios', 'annotate-source')] and count($request/eft:segment) eq 1) then
+    if(count($request/eft:segment) eq 1) then
         element { QName('http://read.84000.co/ns/1.0', 'translation-status') } {
             translation-status:texts($request/@text-id, false())
         }
     else ()
+    ,
     
-)
+    (: Source data - for scans :)
+    if(count($request/eft:segment) eq 1) then
+        
+        (:let $tm-unit-folio-indexes := distinct-values($tmx//tmx:tu[@id = $request/eft:segment/@id]/tmx:prop[@name eq 'folio-index'][functx:is-a-number(text())]/text()) ! xs:integer(.)
+        return 
+            $tm-unit-folio-indexes ! source:etext-page($translation-data/eft:location, ., true()):)
+        
+        source:etext-page($translation-data/eft:location, $request/@folio-index ! xs:integer(.), true())
 
-let $toh := $tei ! translation:toh(., '')
-let $translation-data := $tei ! 
-    element { QName('http://read.84000.co/ns/1.0', 'translation')} {
-        attribute id { tei-content:id(.) },
-        attribute status { tei-content:publication-status(.) },
-        attribute status-group { tei-content:publication-status-group(.) },
-        translation:titles(., ()),
-        $toh,
-        translation:location($tei, $toh/@key),
-        $glossary-existing
-    }
+    else()
+)
 
 let $xml-response :=
     common:response(

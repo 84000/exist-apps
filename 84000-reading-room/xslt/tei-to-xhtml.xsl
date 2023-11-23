@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -1631,34 +1631,38 @@
         <xsl:variable name="further-resources-links">
             <xsl:if test="($glossary-instances, $knowledgebase-instances)">
                 
-                <h4 class="heading">
-                    <xsl:value-of select="'Links to further resources:'"/>
-                </h4>
-                
-                <ul class="list-inline inline-dots">
-                    <xsl:if test="$glossary-instances">
-                        <li>
-                            <a target="84000-glossary">
-                                <xsl:call-template name="href-attribute">
-                                    <xsl:with-param name="resource-type" select="'glossary'"/>
-                                    <xsl:with-param name="resource-id" select="$entity/@xml:id"/>
-                                </xsl:call-template>
-                                <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
-                            </a>
-                        </li>
-                    </xsl:if>
-                    <xsl:if test="$knowledgebase-instances">
-                        <li>
-                            <a target="84000-knowledgebase">
-                                <xsl:call-template name="href-attribute">
-                                    <xsl:with-param name="resource-type" select="'knowledgebase'"/>
-                                    <xsl:with-param name="resource-id" select="$knowledgebase-instances[1]/@id"/>
-                                </xsl:call-template>
-                                <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
-                            </a>
-                        </li>
-                    </xsl:if>
-                </ul>
+                <div>
+                    
+                    <!--<h4 class="heading">
+                        <xsl:value-of select="'Links to further resources:'"/>
+                    </h4>-->
+                    
+                    <ul class="list-inline inline-dots">
+                        <xsl:if test="$glossary-instances">
+                            <li>
+                                <a target="84000-glossary">
+                                    <xsl:call-template name="href-attribute">
+                                        <xsl:with-param name="resource-type" select="'glossary'"/>
+                                        <xsl:with-param name="resource-id" select="$entity/@xml:id"/>
+                                    </xsl:call-template>
+                                    <xsl:value-of select="concat(format-number(count($glossary-instances), '#,###'), ' related glossary ', if(count($glossary-instances) eq 1) then 'entry' else 'entries')"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                        <xsl:if test="$knowledgebase-instances">
+                            <li>
+                                <a target="84000-knowledgebase">
+                                    <xsl:call-template name="href-attribute">
+                                        <xsl:with-param name="resource-type" select="'knowledgebase'"/>
+                                        <xsl:with-param name="resource-id" select="$knowledgebase-instances[1]/@id"/>
+                                    </xsl:call-template>
+                                    <xsl:value-of select="'View the 84000 Knowledge Base article'"/>
+                                </a>
+                            </li>
+                        </xsl:if>
+                    </ul>
+                    
+                </div>
                 
             </xsl:if>
         </xsl:variable>
@@ -1674,49 +1678,51 @@
                 <xsl:sequence select="$further-resources-links"/>
                 
                 <xsl:if test="$tei-editor and ($requires-attention or not($entity) or $environment/m:url[@id eq 'operations'])">
-                    <ul class="list-inline">
-                        
-                        <xsl:if test="$requires-attention ">
-                            <li>
-                                <span class="label label-danger">
-                                    <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
-                                </span>
-                            </li>
+                    <div>
+                        <ul class="list-inline">
                             
-                        </xsl:if>
-                        
-                        <xsl:if test="not($entity)">
-                            <li>
-                                <span class="label label-warning">
-                                    <xsl:value-of select="'No shared entity assigned'"/>
-                                </span>
-                            </li>
-                        </xsl:if>
-                        
-                        <!-- Link to glossary tool -->
-                        <xsl:if test="$environment/m:url[@id eq 'operations']">
-                            <li>
+                            <xsl:if test="$requires-attention ">
+                                <li>
+                                    <span class="label label-danger">
+                                        <xsl:value-of select="/m:response/m:entity-flags/m:flag[@id eq 'requires-attention']/m:label"/>
+                                    </span>
+                                </li>
                                 
-                                <xsl:variable name="resource-type" select="if($article) then 'knowledgebase' else 'translation'"/>
-                                
-                                <a target="84000-glossary-tool" class="editor">
-                                    <xsl:choose>
-                                        <xsl:when test="$resource-type eq 'knowledgebase'">
-                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;filter=check-none&amp;max-records=1#glossary-form-', $glossary-item/@xml:id)"/>
-                                            <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                            <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/', $resource-type, '/', $requested-resource, '.html?view-mode=editor#parts')"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html', '?resource-id=', $text-id, '&amp;resource-type=', $resource-type,'&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:value-of select="'Open in the glossary editor'"/>
-                                </a>
-                                
-                            </li>
-                        </xsl:if>
-                        
-                    </ul>
+                            </xsl:if>
+                            
+                            <xsl:if test="not($entity)">
+                                <li>
+                                    <span class="label label-warning">
+                                        <xsl:value-of select="'No shared entity assigned'"/>
+                                    </span>
+                                </li>
+                            </xsl:if>
+                            
+                            <!-- Link to glossary tool -->
+                            <xsl:if test="$environment/m:url[@id eq 'operations']">
+                                <li>
+                                    
+                                    <xsl:variable name="resource-type" select="if($article) then 'knowledgebase' else 'translation'"/>
+                                    
+                                    <a target="84000-glossary-tool" class="editor">
+                                        <xsl:choose>
+                                            <xsl:when test="$resource-type eq 'knowledgebase'">
+                                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text-id, '&amp;resource-type=', $resource-type, '&amp;glossary-id=', $glossary-item/@xml:id, '&amp;filter=check-none&amp;max-records=1#glossary-form-', $glossary-item/@xml:id)"/>
+                                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                                <xsl:attribute name="data-editor-callbackurl" select="concat($reading-room-path, '/', $resource-type, '/', $requested-resource, '.html?view-mode=editor#parts')"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations']/data(), '/edit-glossary.html', '?resource-id=', $text-id, '&amp;resource-type=', $resource-type,'&amp;glossary-id=', $glossary-item/@xml:id, '&amp;max-records=1')"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        <xsl:value-of select="'Open in the glossary editor'"/>
+                                    </a>
+                                    
+                                </li>
+                            </xsl:if>
+                            
+                        </ul>
+                    </div>
                 </xsl:if>
                 
             </div>
@@ -3453,7 +3459,7 @@
                 
                 <xsl:choose>
                     
-                    <!-- Link to an external text -->
+                    <!-- Link to an external resource -->
                     <xsl:when test="$resource-id and (not($resource-id eq $requested-resource) or not($resource-type eq $requested-type))">
                         <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
@@ -3477,7 +3483,7 @@
                 
                 <xsl:choose>
                     
-                    <!-- Link to an external text -->
+                    <!-- Link to an external resource -->
                     <xsl:when test="$resource-id and (not($resource-id eq $requested-resource) or not($resource-type eq $requested-type))">
                         <xsl:attribute name="href" select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html',  if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
@@ -3495,9 +3501,9 @@
                 
                 <xsl:choose>
                     
-                    <!-- Link to an external text -->
+                    <!-- Link to an external resource -->
                     <xsl:when test="$resource-id and (not($resource-id eq $requested-resource) or not($resource-type eq $requested-type))">
-                        <xsl:attribute name="href" select="concat('/', $resource-type, '/', $resource-id, '.html',  if($fragment-id) then concat('#', $fragment-id) else ())"/>
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/', $resource-type, '/', $resource-id, '.html',  if($fragment-id) then concat('#', $fragment-id) else ())"/>
                     </xsl:when>
                     
                     <!-- Default to fragment -->

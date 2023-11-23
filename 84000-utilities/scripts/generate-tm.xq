@@ -21,7 +21,7 @@ let $tmx := $local:tm//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
 where not($tmx) and $text-id eq 'UT22084-034-009'(:'UT22084-040-002':)(:'UT22084-001-006':)(:'UT22084-042-002':)
 
 (: Generate TM :)
-let $filename := concat(translation:filename($tei, ''), '.tmx')
+let $filename := concat(update-tm:filename($tei, ''), '.tmx')
 let $tmx := update-tm:new-tmx-from-linguae-dharmae($tei, $local:txt-data-path, $local:txt-file-string)
 
 where $filename and $tmx

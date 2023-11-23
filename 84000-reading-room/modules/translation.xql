@@ -254,6 +254,9 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
     let $text-id := tei-content:id($tei)
     let $sponsored := if($sponsorship-text-ids = $text-id) then true() else false()
     let $bibl-first := if(not($bibl/preceding-sibling::tei:bibl)) then true() else false()
+    let $location := translation:location($tei, $bibl/@key)
+    let $text-pages := translation:count-volume-pages($location)
+    
     order by $text-id
     return (
         
@@ -277,7 +280,7 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
                     }
             
             let $blocks-pages := sum($blocks-statuses/@count-pages ! xs:integer(.))
-            let $remainder-pages := $bibl/tei:location/@count-pages ! xs:integer(.) - $blocks-pages
+            let $remainder-pages := $text-pages - $blocks-pages
             
             return (
                 
@@ -304,6 +307,7 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
         
         (: Simple status per text :)
         else
+        
             let $status := ($tei//tei:publicationStmt/tei:availability/@status[. gt ''], '0')[1]
             return
                 element { QName('http://read.84000.co/ns/1.0','publication-status') } {
@@ -313,7 +317,7 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
                     attribute block-id { $text-id },
                     attribute status { $status },
                     attribute status-group { $translation:status-statuses[@status-id eq $status]/@group ! string() },
-                    attribute count-pages { $bibl/tei:location/@count-pages ! xs:integer(.) - translation:unpublished-pages($tei) },
+                    attribute count-pages { $text-pages - translation:unpublished-pages($tei) },
                     if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
                     if($sponsored) then attribute sponsored { $text-id } else ()
                 }
@@ -1515,7 +1519,7 @@ declare function translation:start-volume($tei as element(tei:TEI), $source-key 
 };
 
 declare function translation:count-volume-pages($location as element(m:location)) as xs:integer {
-    sum($location/m:volume ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
+    sum($location/m:volume[@start-page][@end-page] ! ((@end-page ! xs:integer(.) - @start-page ! xs:integer(.)) + 1))
 };
 
 declare function translation:folio-refs($tei as element(tei:TEI), $source-key as xs:string) as element(tei:ref)* {
@@ -1606,12 +1610,14 @@ declare function translation:folio-sort-index($tei as element(tei:TEI), $source-
     (: Convert the index of the folio in the resource into the index of the folio when sorted :)
     let $refs-sorted := translation:folio-refs-sorted($tei, $source-key)
     let $ref := $refs-sorted[xs:integer(@index-in-resource) eq $index-in-resource]
+    let $location := translation:location($tei, $source-key)
+    let $count-pages := translation:count-volume-pages($location)
     return
         (: If the page has a folio use the sort index :)
         if($ref[@index-in-sort]) then
             $ref/@index-in-sort ! xs:integer(.)
         (: If the index has no folio, but is in range use the input :)
-        else if($tei//tei:sourceDesc/tei:bibl[@key eq $source-key]/tei:location[@count-pages ! xs:integer(.) ge $index-in-resource]) then
+        else if($index-in-resource le $count-pages) then
             $index-in-resource
         else 0
 
@@ -1735,7 +1741,7 @@ declare function translation:folio-content($tei as element(tei:TEI), $source-key
         
             attribute ref-index { $index-in-resource },
             attribute source-key { $source-key },
-            attribute count-refs { ($tei//tei:sourceDesc/tei:bibl[@key eq $source-key]/tei:location/@count-pages ! xs:integer(.), 0)[1] },
+            attribute count-refs { count($refs) },
             attribute start-ref { $start-ref/@cRef },
             attribute end-ref { $end-ref/@cRef },
             

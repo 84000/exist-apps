@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -366,7 +366,7 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="index.html">
+                                    <a href="index.html" data-loading="Loading Dashboard...">
                                         <xsl:value-of select="'Dashboard'"/>
                                     </a>
                                 </td>
@@ -376,7 +376,7 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="search.html">
+                                    <a href="search.html" data-loading="Loading Translation Projects...">
                                         <xsl:value-of select="'Translation Projects'"/>
                                     </a>
                                 </td>
@@ -386,8 +386,18 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="sections.html">
+                                    <a href="sections.html" data-loading="Loading Sections...">
                                         <xsl:value-of select="'Sections'"/>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <xsl:if test="$active-tab eq 'operations/knowledgebase'">
+                                    <xsl:attribute name="class" select="'vertical-middle active'"/>
+                                </xsl:if>
+                                <td>
+                                    <a href="knowledgebase.html" data-loading="Loading Knowledge base...">
+                                        <xsl:value-of select="'Knowledge Base'"/>
                                     </a>
                                 </td>
                             </tr>
@@ -396,7 +406,7 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="sponsors.html">
+                                    <a href="sponsors.html" data-loading="Loading Sponsors...">
                                         <xsl:value-of select="'Sponsors'"/>
                                     </a>
                                 </td>
@@ -406,7 +416,7 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="translators.html">
+                                    <a href="translators.html" data-loading="Loading Contributors...">
                                         <xsl:value-of select="'Contributors'"/>
                                     </a>
                                 </td>
@@ -416,8 +426,8 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="translator-teams.html">
-                                        <xsl:value-of select="'Teams'"/>
+                                    <a href="translator-teams.html" data-loading="Loading Translation Teams...">
+                                        <xsl:value-of select="'Translation Teams'"/>
                                     </a>
                                 </td>
                             </tr>
@@ -426,8 +436,8 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="translator-institutions.html">
-                                        <xsl:value-of select="'Institutions'"/>
+                                    <a href="translator-institutions.html" data-loading="Loading Translation Institutions...">
+                                        <xsl:value-of select="'Translation Institutions'"/>
                                     </a>
                                 </td>
                             </tr>
@@ -436,8 +446,8 @@
                                     <xsl:attribute name="class" select="'vertical-middle active'"/>
                                 </xsl:if>
                                 <td>
-                                    <a href="sys-config.html">
-                                        <xsl:value-of select="'Config'"/>
+                                    <a href="sys-config.html" data-loading="Loading Internationalisation...">
+                                        <xsl:value-of select="'Internationalisation'"/>
                                     </a>
                                 </td>
                             </tr>

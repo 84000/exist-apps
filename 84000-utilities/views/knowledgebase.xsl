@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
-    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-    <xsl:variable name="utilities-path" select="$environment/m:url[@id eq 'utilities']/text()"/>
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="selected-type" select="$request/m:article-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
     <xsl:variable name="page-url" select="concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(($selected-type ! concat('article-type[]=', @id), $request/@sort ! concat('sort=', .)), '&amp;')" as="xs:string"/>
@@ -60,9 +58,8 @@
                                     </option>
                                 </select>
                                 
-                                <button type="submit" class="btn btn-primary btn-sm" title="Search">
+                                <button type="submit" class="btn btn-round" title="Reload">
                                     <i class="fa fa-refresh"/>
-                                    <xsl:value-of select="' Reload'"/>
                                 </button>
                                 
                             </div>
