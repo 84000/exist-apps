@@ -6,13 +6,13 @@
     
     <xsl:variable name="request" select="/eft:response/eft:request"/>
     <xsl:variable name="page-attributes" select="($request/eft:segment ! concat('segment-id[]=', @id), $request/@text-id ! concat('text-id=', .), $request/@folio-index ! concat('folio-index=', .))" as="xs:string*"/>
-    <xsl:variable name="translation" select="/eft:response/eft:translation"/>
-    <xsl:variable name="toh-label" select="$translation/eft:toh[1]/eft:full/data()" as="xs:string"/>
-    <xsl:variable name="tmx" select="/eft:response/tmx:tmx[tmx:body/tmx:tu[tmx:tuv[@xml:lang eq 'bo']][tmx:prop[@name eq 'folio-index']]]"/>
+    <xsl:variable name="text" select="/eft:response/eft:text"/>
+    <xsl:variable name="toh-label" select="$text/eft:toh[1]/eft:full/data()" as="xs:string"/>
+    <xsl:variable name="tmx" select="/eft:response/tmx:tmx[tmx:body/tmx:tu[tmx:tuv[@xml:lang eq 'bo']][tmx:prop[@type eq 'folio-index']]]"/>
     <xsl:variable name="rdf" select="/eft:response/rdf:RDF"/>
     <xsl:variable name="etext" select="/eft:response/eft:source/eft:page[1]"/>
     <xsl:variable name="folio-index-requested" select="($request/@folio-index[not(. eq '')], 1)[1] ! xs:integer(.)"/>
-    <xsl:variable name="folio-indexes" select="distinct-values($tmx/tmx:body/tmx:tu/tmx:prop[@name eq 'folio-index']/text() ! xs:integer(.))"/>
+    <xsl:variable name="folio-indexes" select="distinct-values($tmx/tmx:body/tmx:tu/tmx:prop[@type eq 'folio-index']/text() ! xs:integer(.))"/>
     <xsl:variable name="units-selected" select="$tmx//tmx:tu[@id = $request/eft:segment/@id]"/>
     <xsl:variable name="entities-suggested" select="/eft:response/eft:entities/eft:entity[not(eft:instance/@id = $glossary-prioritised/@xml:id)]"/>
     <xsl:variable name="entities-regex" select="/eft:response/eft:entities/eft:regex/text()" as="xs:string"/>
@@ -32,111 +32,46 @@
                 <xsl:with-param name="container-class" select="'container'"/>
                 <xsl:with-param name="tab-content">
                     
-                    <!-- Text title and pagination -->
+                    <!-- Text title, links and pagination -->
                     <header class="center-vertical full-width">
                         
-                        <!-- Text title -->
                         <div>
-                            <nav role="navigation" aria-label="Breadcrumbs" class="sml-margin bottom">
-                                <ul class="breadcrumb">
-                                    <li>
-                                        <a>
-                                            
-                                            <xsl:if test="$translation[eft:toh]">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/eft:toh[1]/@key, '.html')"/>
-                                                <xsl:attribute name="target" select="$translation/@id"/>
-                                            </xsl:if>
-                                            
-                                            <xsl:value-of select="common:limit-str($translation/eft:titles/eft:title[@xml:lang eq 'en'][1], 80)"/>
-                                            
-                                            <span class="small nowrap">
-                                                <xsl:value-of select="' / '"/>
-                                                <xsl:value-of select="$toh-label"/>
-                                            </span>
-                                            
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a>
-                                            <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $translation/eft:toh[1]/@key, '.html')"/>
-                                            <xsl:attribute name="target" select="'check-folios'"/>
-                                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/source/', $translation/eft:toh[1]/@key, '.html?page=1')"/>
-                                            <xsl:attribute name="data-dualview-title" select="'Folio view'"/>
-                                            <xsl:value-of select="'Folio view'"/>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <xsl:sequence select="ops:translation-status($translation/@status-group)"/>
-                                    </li>
-                                </ul>
-                            </nav>
+                            
+                            <!-- Title / status -->
+                            <div class="center-vertical full-width sml-margin bottom">
+                                
+                                <div class="h3">
+                                    <a target="_blank">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                        <xsl:value-of select="concat(string-join($text/eft:toh/eft:full, ' / '), ' / ', $text/eft:titles/eft:title[@xml:lang eq 'en'][1])"/>
+                                    </a>
+                                </div>
+                                
+                                <div class="text-right">
+                                    <xsl:sequence select="ops:translation-status($text/@status-group)"/>
+                                </div>
+                                
+                            </div>
+                            
+                            <!-- Links -->
+                            <div>
+                                <xsl:call-template name="text-links-list">
+                                    <xsl:with-param name="text" select="$text"/>
+                                    <xsl:with-param name="exclude-links" select="('source-utils')"/>
+                                    <xsl:with-param name="text-status" select="eft:text-statuses/eft:status[@status-id eq $text/@status]"/>
+                                </xsl:call-template>
+                            </div>
+                            
                         </div>
                         
-                        <!-- Pagination -->
-                        <xsl:if test="$tmx">
-                            <div>
-                                <nav aria-label="Page navigation" class="pagination-nav pull-right">
-                                    <ul class="pagination pagination-sm">
-                                        
-                                        <li class="disabled">
-                                            <span>
-                                                <xsl:value-of select="'Folio:'"/>
-                                            </span>
-                                        </li>
-                                        
-                                        <xsl:variable name="folio-limiter" select="5"/>
-                                        <xsl:for-each select="$folio-indexes">
-                                            <xsl:variable name="folio-index" select="."/>
-                                            <xsl:choose>
-                                                <xsl:when test="$folio-index eq $folio-index-requested">
-                                                    
-                                                    <li class="active">
-                                                        <span>
-                                                            <xsl:value-of select="$folio-index"/>
-                                                        </span>
-                                                    </li>
-                                                    
-                                                </xsl:when>
-                                                <xsl:when test="$folio-index = (min($folio-indexes), max($folio-indexes)) or ($folio-index gt $folio-index-requested and $folio-index le $folio-index-requested + $folio-limiter) or ($folio-index lt $folio-index-requested and $folio-index ge $folio-index-requested - $folio-limiter)">
-                                                    
-                                                    <li>
-                                                        <a>
-                                                            <xsl:attribute name="href" select="concat('/source-utils.html?text-id=', $request/@text-id,'&amp;folio-index=', $folio-index)"/>
-                                                            <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
-                                                            <xsl:attribute name="title" select="'Go to page ' || $folio-index"/>
-                                                            <xsl:attribute name="target" select="'_self'"/>
-                                                            <xsl:attribute name="data-loading" select="'Loading page...'"/>
-                                                            <xsl:value-of select="$folio-index"/>
-                                                        </a>
-                                                    </li>
-                                                    
-                                                </xsl:when>
-                                                <xsl:when test="($folio-index gt $folio-index-requested and $folio-index eq $folio-index-requested + ($folio-limiter + 1)) or ($folio-index lt $folio-index-requested and $folio-index eq $folio-index-requested - ($folio-limiter + 1))">
-                                                    
-                                                    <li class="disabled">
-                                                        <span>
-                                                            <xsl:value-of select="'...'"/>
-                                                        </span>
-                                                    </li>
-                                                    
-                                                </xsl:when>
-                                            </xsl:choose>
-                                        </xsl:for-each>
-                                        
-                                    </ul>
-                                </nav>
-                            
-                            </div>
-                        </xsl:if>
-                        
                     </header>
+                    
+                    <hr class="sml-margin"/>
                     
                     <div id="source-utils" class="row">
                         
                         <!-- Segments -->
                         <div class="col-sm-7 sticky">
-                            
-                            <hr class="sml-margin no-top-margin"/>
                             
                             <xsl:choose>
                                 <xsl:when test="$tmx">
@@ -149,7 +84,7 @@
                                         <!-- Segments -->
                                         <div class="source tei-parser">
                                             <xsl:for-each select="$tmx//tmx:tu[tmx:tuv[@xml:lang eq 'bo']]">
-                                                <xsl:if test="tmx:prop[@name eq 'folio-index']/text() ! xs:integer(.) = $folio-index-requested (:or following-sibling::tmx:tu[1][tmx:prop[@name eq 'folio-index']/text() ! xs:integer(.) = $folio-index-requested]:)">
+                                                <xsl:if test="tmx:prop[@type eq 'folio-index']/text() ! xs:integer(.) = $folio-index-requested (:or following-sibling::tmx:tu[1][tmx:prop[@type eq 'folio-index']/text() ! xs:integer(.) = $folio-index-requested]:)">
                                                     
                                                     <xsl:variable name="unit-id" select="@id"/>
                                                     
@@ -238,11 +173,12 @@
                             
                             <div id="accordion" class="list-group accordion accordion-bordered accordion-background">
                                 
-                                <!-- Summary -->
+                                <!-- Summary and pagination -->
                                 <div class="list-group-item">
-                                    <div class="center-vertical full-width">
+                                    <div class="top-vertical full-width">
                                         
                                         <div>
+                                            
                                             <span class="badge badge-notification badge-muted">
                                                 <xsl:if test="count($units-selected) gt 0">
                                                     <xsl:attribute name="class" select="'badge badge-notification'"/>
@@ -259,16 +195,75 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </span>
+                                            <xsl:if test="count($units-selected) gt 0">
+                                                <span class="badge-text text-muted">
+                                                    <xsl:value-of select="' | '"/>
+                                                    <a class="underline">
+                                                        <xsl:attribute name="href" select="concat($operations-path, '/source-utils.html?', string-join(($request/@text-id ! concat('text-id=', .), $request/@folio-index ! concat('folio-index=', .)), '&amp;'))"/>
+                                                        <!--<xsl:attribute name="data-onclick-set" select="'{&#34;[name=\&#34;segment-id[]\&#34;]:checked&#34; : &#34;&#34;}'"/>-->
+                                                        <!--<xsl:attribute name="data-mouseup-submit" select="'form#segments'"/>-->
+                                                        <xsl:value-of select="'clear'"/>
+                                                    </a>
+                                                </span>
+                                            </xsl:if>
+                                            
                                         </div>
                                         
-                                        <xsl:if test="count($units-selected) gt 0">
-                                            <div class="text-right small">
-                                                <a class="underline">
-                                                    <xsl:attribute name="href" select="concat($operations-path, '/source-utils.html?', string-join(($request/@text-id ! concat('text-id=', .), $request/@folio-index ! concat('folio-index=', .)), '&amp;'))"/>
-                                                    <!--<xsl:attribute name="data-onclick-set" select="'{&#34;[name=\&#34;segment-id[]\&#34;]:checked&#34; : &#34;&#34;}'"/>-->
-                                                    <!--<xsl:attribute name="data-mouseup-submit" select="'form#segments'"/>-->
-                                                    <xsl:value-of select="'clear selection'"/>
-                                                </a>
+                                        <!-- Pagination -->
+                                        <xsl:if test="$tmx">
+                                            <div>
+                                                
+                                                <nav aria-label="Page navigation" class="pagination-nav">
+                                                    <ul class="pagination pagination-sm pull-right no-top-margin no-bottom-margin">
+                                                        
+                                                        <li class="disabled">
+                                                            <span>
+                                                                <xsl:value-of select="'Folio:'"/>
+                                                            </span>
+                                                        </li>
+                                                        
+                                                        <xsl:variable name="folio-limiter" select="5"/>
+                                                        <xsl:for-each select="$folio-indexes">
+                                                            <xsl:variable name="folio-index" select="."/>
+                                                            <xsl:choose>
+                                                                <xsl:when test="$folio-index eq $folio-index-requested">
+                                                                    
+                                                                    <li class="active">
+                                                                        <span>
+                                                                            <xsl:value-of select="$folio-index"/>
+                                                                        </span>
+                                                                    </li>
+                                                                    
+                                                                </xsl:when>
+                                                                <xsl:when test="$folio-index = (min($folio-indexes), max($folio-indexes)) or ($folio-index gt $folio-index-requested and $folio-index le $folio-index-requested + $folio-limiter) or ($folio-index lt $folio-index-requested and $folio-index ge $folio-index-requested - $folio-limiter)">
+                                                                    
+                                                                    <li>
+                                                                        <a>
+                                                                            <xsl:attribute name="href" select="concat('/source-utils.html?text-id=', $request/@text-id,'&amp;folio-index=', $folio-index)"/>
+                                                                            <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                                                            <xsl:attribute name="title" select="'Go to page ' || $folio-index"/>
+                                                                            <xsl:attribute name="target" select="'_self'"/>
+                                                                            <xsl:attribute name="data-loading" select="'Loading page...'"/>
+                                                                            <xsl:value-of select="$folio-index"/>
+                                                                        </a>
+                                                                    </li>
+                                                                    
+                                                                </xsl:when>
+                                                                <xsl:when test="($folio-index gt $folio-index-requested and $folio-index eq $folio-index-requested + ($folio-limiter + 1)) or ($folio-index lt $folio-index-requested and $folio-index eq $folio-index-requested - ($folio-limiter + 1))">
+                                                                    
+                                                                    <li class="disabled">
+                                                                        <span>
+                                                                            <xsl:value-of select="'...'"/>
+                                                                        </span>
+                                                                    </li>
+                                                                    
+                                                                </xsl:when>
+                                                            </xsl:choose>
+                                                        </xsl:for-each>
+                                                        
+                                                    </ul>
+                                                </nav>
+                                                
                                             </div>
                                         </xsl:if>
                                         
@@ -308,7 +303,7 @@
                                             </li>
                                             
                                             <!-- BDRC link -->
-                                            <xsl:variable name="link-bdrc-work" select="$rdf/bdo:Work[@rdf:about/string() eq $translation/eft:toh/eft:ref[@type eq 'bdrc-tibetan-id']/@value/string()]"/>
+                                            <xsl:variable name="link-bdrc-work" select="$rdf/bdo:Work[@rdf:about/string() eq $text/eft:toh/eft:ref[@type eq 'bdrc-tibetan-id']/@value/string()]"/>
                                             <xsl:if test="$link-bdrc-work">
                                                 <li class="sml-margin bottom">
                                                     <a>
@@ -492,7 +487,7 @@
                                                                             <xsl:value-of select="' or '"/>
                                                                         </span>
                                                                         <a class="underline">
-                                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form#glossary-entry-new')"/>
+                                                                            <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id,  '&amp;resource-type=translation&amp;filter=blank-form#glossary-entry-new')"/>
                                                                             <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                                                                             <xsl:attribute name="data-editor-callbackurl" select="concat($operations-path, '/source-utils.html?', string-join($page-attributes, '&amp;'))"/>
                                                                             <xsl:attribute name="data-ajax-loading" select="'Loading glossary editor...'"/>
@@ -1568,7 +1563,7 @@
                             <xsl:variable name="form-id" select="string-join(('glossary-entry-new', $entity/@xml:id),'-')"/>
                             
                             <a class="underline">
-                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $translation/@id,  '&amp;resource-type=translation&amp;filter=blank-form&amp;entity-id=', $entity/@xml:id, '&amp;default-term-bo=', string-join(($term-bo-marked, $terms-bo-marked)[1]/descendant::text()), '#', $form-id)"/>
+                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id,  '&amp;resource-type=translation&amp;filter=blank-form&amp;entity-id=', $entity/@xml:id, '&amp;default-term-bo=', string-join(($term-bo-marked, $terms-bo-marked)[1]/descendant::text()), '#', $form-id)"/>
                                 <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
                                 <xsl:attribute name="data-editor-callbackurl" select="concat($operations-path, '/source-utils.html?', string-join($page-attributes, '&amp;'))"/>
                                 <xsl:attribute name="data-ajax-loading" select="'Loading glossary editor...'"/>

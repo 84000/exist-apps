@@ -493,7 +493,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Tokenise the input (applying mode) :)
     let $find-tokenized :=
         if($mode = ('words')) then
-             $find ! tokenize(., '[^\p{L}]+')
+             $find ! tokenize(., (:'(\s|&#8203;)+':)'[^\p{L}]+')
              
         else if($mode = ('tibetan')) then
              $find ! tokenize(., '\s+') ! replace(., '(་|།)$', '')
@@ -504,9 +504,9 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: A list of words with diacritics that are equivalent to a search term, so we can look for those too :)
     let $find-diacritics := 
         if($mode = ('words')) then
-            for $word in tokenize($text, '[^\p{L}]+')
+            for $word in tokenize($text, (:'(\s|&#8203;)+':)'[^\p{L}]+')
             let $word-standardised := $word ! lower-case(.) ! normalize-unicode(.)
-            let $word-normalized := $word-standardised ! common:normalized-chars(.) 
+            let $word-normalized := $word-standardised ! common:normalized-chars(.) ! functx:escape-for-regex(.)
             
             (: Return if it's changed by removing diacritics, and if it's in the search :)
             where 
@@ -520,9 +520,9 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Construct the regex :)
     let $regex := 
         if($mode = ('tibetan')) then
-            concat('(', string-join($find-tokenized[not(. = ('།'))] ! functx:escape-for-regex(.), '|'),')')
+            concat('(', string-join($find-tokenized[matches(., '\p{L}+')](:[not(. = ('།'))]:) ! functx:escape-for-regex(.), '|'),')')
         else
-            let $find-escaped := ($find-tokenized, $find-diacritics)[. gt ' '] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
+            let $find-escaped := ($find-tokenized, $find-diacritics)[matches(., '\p{L}+')] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
             return
                 concat('\b(', string-join($find-escaped, '|'),')\b')
     

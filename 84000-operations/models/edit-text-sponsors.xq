@@ -54,6 +54,23 @@ let $updated :=
 (: Return output :)
 let $acknowledgment := translation:acknowledgment($tei)
 
+let $text := 
+    element { QName('http://read.84000.co/ns/1.0', 'text') } {
+        
+        attribute id { $text-id },
+        attribute document-url { base-uri($tei) },
+        attribute locked-by-user { tei-content:locked-by-user($tei) },
+        attribute status { tei-content:publication-status($tei) },
+        attribute status-group { tei-content:publication-status-group($tei) },
+        attribute tei-version { tei-content:version-str($tei) },
+        
+        translation:titles($tei, ()),
+        translation:toh($tei, ''),
+        translation:sponsors($tei, true()),
+        translation:publication($tei)
+        
+    }
+
 let $xml-response := 
     common:response(
         'operations/edit-text-sponsors', 
@@ -66,19 +83,10 @@ let $xml-response :=
                 xmlns="http://read.84000.co/ns/1.0" >
                 { $updated }
             </updates>,
-            <translation 
-                xmlns="http://read.84000.co/ns/1.0" 
-                id="{ $text-id }"
-                document-url="{ base-uri($tei) }" 
-                locked-by-user="{ tei-content:locked-by-user($tei) }"
-                status="{ tei-content:publication-status($tei) }">
-                { translation:titles($tei, ()) }
-                { translation:sponsors($tei, true()) }
-                { translation:publication($tei) }
-                { translation:toh($tei, '') }
-            </translation>,
+            $text,
             sponsors:sponsors('all', false(), true()),
-            sponsorship:text-status($text-id, true())
+            sponsorship:text-status($text-id, true()),
+            tei-content:text-statuses-selected(tei-content:publication-status($tei), 'translation')
         )
     )
     

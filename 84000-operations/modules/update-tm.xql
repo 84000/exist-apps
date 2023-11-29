@@ -23,7 +23,7 @@ declare function update-tm:update-english($tmx as element(tmx:tmx), $unit-id as 
     
     let $tu := $tmx//tmx:tu[@id eq $unit-id]
     let $tuv := $tu/tmx:tuv[@xml:lang eq 'en']
-    let $revision := $tu/tmx:prop[@name eq 'revision']
+    let $revision := $tu/tmx:prop[@type eq 'revision']
     let $version-str := ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1]
     
     let $tuv-new := 
@@ -34,7 +34,7 @@ declare function update-tm:update-english($tmx as element(tmx:tmx), $unit-id as 
     
     let $revision-new :=
         element { QName('http://www.lisa.org/tmx14', 'prop') }{
-            attribute name { 'revision' },
+            attribute type { 'revision' },
             text { $version-str }
         }
     
@@ -57,8 +57,8 @@ declare function update-tm:update-tibetan($tmx as element(tmx:tmx), $unit-id as 
     
     let $tu := $tmx//tmx:tu[@id eq $unit-id]
     let $tuv := $tu/tmx:tuv[@xml:lang eq 'bo']
-    let $revision := $tu/tmx:prop[@name eq 'revision']
-    let $location-id := $tu/tmx:prop[@name eq 'location-id']
+    let $revision := $tu/tmx:prop[@type eq 'revision']
+    let $location-id := $tu/tmx:prop[@type eq 'location-id']
     let $version-str := ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1]
     let $value-bo-tokenized := tokenize($value-bo, '\n')
     
@@ -70,7 +70,7 @@ declare function update-tm:update-tibetan($tmx as element(tmx:tmx), $unit-id as 
     
     let $revision-new :=
         element { QName('http://www.lisa.org/tmx14', 'prop') }{
-            attribute name { 'revision' },
+            attribute type { 'revision' },
             text { $version-str }
         }
     
@@ -182,7 +182,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
             ),
             
             (: Preserve additional tmx:props :)
-            for $prop in $tm-unit/tmx:prop[not(@name = ('location-id','revision','unmatched', $update-tm:flags ))]
+            for $prop in $tm-unit/tmx:prop[not(@type = ('location-id','revision','unmatched', $update-tm:flags ))]
             return (
                 common:ws(3),
                 $prop
@@ -192,7 +192,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
             if($location-id gt '') then (
                common:ws(3),
                element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                   attribute name { 'location-id' },
+                   attribute type { 'location-id' },
                    text { $location-id }
                }
             )
@@ -202,7 +202,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
             (: revision :)
             common:ws(3),
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                attribute name { 'revision' },
+                attribute type { 'revision' },
                 text { ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1] }
             },
             
@@ -212,7 +212,7 @@ declare function update-tm:update-unit($tmx as element(tmx:tmx), $unit-id as xs:
             return (
                common:ws(3),
                element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                   attribute name { $flag },
+                   attribute type { $flag },
                    attribute user { common:user-name() },
                    attribute timestamp { current-dateTime() }
                }
@@ -262,21 +262,21 @@ declare function update-tm:add-unit($tmx as element(tmx:tmx), $value-bo as xs:st
         
             common:ws(3),
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                attribute name { 'revision' },
+                attribute type { 'revision' },
                 text { ($tmx/tmx:header/@eft:text-version/string()[not(. eq '')],'undefined')[1] }
             },
             
             if($location-id gt '') then (
                 common:ws(3),
                 element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                    attribute name { 'location-id' },
+                    attribute type { 'location-id' },
                     text { $location-id }
                 }
             )
             else ()
             ,
             
-            for $prop in $add-props[not(@name = ('revision','location-id'))]
+            for $prop in $add-props[not(@type = ('revision','location-id'))]
             return (
                 common:ws(3),
                 $prop
@@ -463,7 +463,7 @@ declare function update-tm:filename($tei as element(tei:TEI), $source-key as xs:
     
     (: Generate a filename for a tmx file :)
     let $source-key := translation:source-key($tei, $source-key)! lower-case(.)
-    let $version-string := 'v3'
+    let $version-string := 'v0'
     return
         concat($source-key, '-', $version-string)
 
@@ -565,19 +565,19 @@ declare function local:apply-revisions($tm-units as element(tmx:tu)*, $start-uni
         
         let $tu-revision-prop-new :=
             element { QName('http://www.lisa.org/tmx14','prop') } { 
-                attribute name { 'revision' },
+                attribute type { 'revision' },
                 text { $tei-version }
             }
         
         for $tm-unit-aligned in $tm-units-revised
         let $tu := $tm-units[@id eq $tm-unit-aligned/@id]
-        let $tu-location-id := $tu/tmx:prop[@name eq 'location-id']
-        let $tu-revision-prop := $tu/tmx:prop[@name eq 'revision']
-        let $tu-unmatched-prop := $tu/tmx:prop[@name eq 'unmatched']
+        let $tu-location-id := $tu/tmx:prop[@type eq 'location-id']
+        let $tu-revision-prop := $tu/tmx:prop[@type eq 'revision']
+        let $tu-unmatched-prop := $tu/tmx:prop[@type eq 'unmatched']
         
         let $tu-location-id-new :=
             element { QName('http://www.lisa.org/tmx14','prop') } {
-                attribute name { 'location-id' },
+                attribute type { 'location-id' },
                 text { $tm-unit-aligned/@new-location }
             }
         
@@ -608,7 +608,7 @@ declare function local:apply-revisions($tm-units as element(tmx:tu)*, $start-uni
                     
                     let $tu-unmatched-prop-new :=
                         element { QName('http://www.lisa.org/tmx14','prop') } { 
-                            attribute name { 'unmatched' },
+                            attribute type { 'unmatched' },
                             text { $tei-version }
                         }
                     
@@ -721,7 +721,7 @@ declare function local:tm-unit-aligned($tm-units as element(tmx:tu)*, $tm-unit-p
         else '--force-no-match--'
     
     (: A content-break property resets the $tei-text :)
-    let $tm-content-break := $tm-unit/tmx:prop[@name eq 'content-break']/text() ! string()
+    let $tm-content-break := $tm-unit/tmx:prop[@type eq 'content-break']/text() ! string()
     let $tei-content-break-section := $tei//tei:div[@type eq 'translation']/tei:div[@xml:id eq $tm-content-break]
     
     (: Store any remainder text :)
@@ -739,7 +739,7 @@ declare function local:tm-unit-aligned($tm-units as element(tmx:tu)*, $tm-unit-p
         (: Otherwise, start at the beginning, but exclude content-break sections to come :)
         else if($tm-unit-index eq 1) then
             
-            let $tmx-content-breaks := $tm-unit/ancestor::tmx:body//tmx:prop[@name eq 'content-break']/text() ! string()
+            let $tmx-content-breaks := $tm-unit/ancestor::tmx:body//tmx:prop[@type eq 'content-break']/text() ! string()
             return
                 local:tei-text-string($tei//tei:div[@type eq 'translation']/tei:*[not(@xml:id = $tmx-content-breaks)])
         
@@ -790,7 +790,7 @@ declare function local:tm-unit-aligned($tm-units as element(tmx:tu)*, $tm-unit-p
     
     (: Test for a new location :)
     let $new-location := 
-        if($tei-location-id gt '' and not($tei-location-id eq $tm-unit/tmx:prop[@name eq 'location-id']/string())) then
+        if($tei-location-id gt '' and not($tei-location-id eq $tm-unit/tmx:prop[@type eq 'location-id']/string())) then
             $tei-location-id
         else ()
     

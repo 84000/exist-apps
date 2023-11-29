@@ -94,8 +94,8 @@ let $request :=
         }
     }
 
-let $translation := 
-    element { QName('http://read.84000.co/ns/1.0', 'translation') }{
+let $text := 
+    element { QName('http://read.84000.co/ns/1.0', 'text') }{
         attribute id { tei-content:id($tei) },
         attribute tei-version { tei-content:version-str($tei) },
         attribute document-url { base-uri($tei) },
@@ -113,7 +113,8 @@ let $xml-response :=
         'operations', (
             $request,
             $update-tm,
-            $translation,
+            $text,
+            tei-content:text-statuses-selected($text/@status, 'translation'),
             $tmx,
             $update-tm:blocking-jobs
         )

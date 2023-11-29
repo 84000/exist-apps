@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
+    
+    <xsl:variable name="response" select="/m:response"/>
+    <xsl:variable name="text" select="$response/m:text"/>
     
     <xsl:template match="/m:response">
         
@@ -16,18 +19,30 @@
                     
                     <xsl:call-template name="alert-translation-locked"/>
                     
-                    <div class="center-vertical full-width bottom-margin">
-                        <div class="h3 sml-margin top bottom">
-                            <a target="_blank">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:translation/@id, '.html')"/>
-                                <xsl:value-of select="concat(string-join(m:translation/m:toh/m:full, ' / '), ' : ', m:translation/m:titles/m:title[@xml:lang eq 'en'])"/>
+                    <div class="center-vertical full-width sml-margin bottom">
+                        
+                        <div class="h3">
+                            <a target="{ $text/@id }-html">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' / ', $text/m:titles/m:title[@xml:lang eq 'en'])"/>
                             </a>
                         </div>
+                        
                         <div class="text-right">
                             <xsl:sequence select="ops:sponsorship-status(m:sponsorship-status/m:status)"/>
-                            <xsl:sequence select="ops:translation-status(m:translation/@status-group)"/>
+                            <xsl:sequence select="ops:translation-status($text/@status-group)"/>
                         </div>
+                        
                     </div>
+                    
+                    <!-- Links -->
+                    <xsl:call-template name="text-links-list">
+                        <xsl:with-param name="text" select="$text"/>
+                        <xsl:with-param name="exclude-links" select="('edit-glossary')"/>
+                        <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
+                    </xsl:call-template>
+                    
+                    <hr class="sml-margin"/>
                     
                     <xsl:call-template name="text-sponsors-form"/>
                     
@@ -52,7 +67,7 @@
             <xsl:attribute name="action" select="'edit-text-sponsors.html'"/>
             <input type="hidden" name="form-action" value="update-sponsorship"/>
             <input type="hidden" name="post-id">
-                <xsl:attribute name="value" select="m:translation/@id"/>
+                <xsl:attribute name="value" select="$text/@id"/>
             </input>
             <input type="hidden" name="sponsorship-project-id">
                 <xsl:attribute name="value" select="m:sponsorship-status/@project-id"/>
@@ -90,7 +105,7 @@
                                                 </label>
                                                 <div class="col-sm-8">
                                                     <input type="text" name="sponsorship-text-1" class="form-control">
-                                                        <xsl:attribute name="value" select="m:translation/@id"/>
+                                                        <xsl:attribute name="value" select="$text/@id"/>
                                                     </input>
                                                 </div>
                                             </div>
@@ -234,10 +249,10 @@
                             <xsl:value-of select="'Sponsors'"/>
                         </legend>
                         <xsl:choose>
-                            <xsl:when test="m:translation/m:publication/m:sponsors/m:sponsor">
+                            <xsl:when test="$text/m:publication/m:sponsors/m:sponsor">
                                 <xsl:call-template name="sponsors-controls">
-                                    <xsl:with-param name="text-sponsors" select="m:translation/m:publication/m:sponsors/m:sponsor"/>
-                                    <xsl:with-param name="all-sponsors" select="/m:response/m:sponsors/m:sponsor"/>
+                                    <xsl:with-param name="text-sponsors" select="$text/m:publication/m:sponsors/m:sponsor"/>
+                                    <xsl:with-param name="all-sponsors" select="$response/m:sponsors/m:sponsor"/>
                                 </xsl:call-template>
                             </xsl:when>
                             <xsl:otherwise>
@@ -245,7 +260,7 @@
                                     <xsl:with-param name="text-sponsors">
                                         <m:sponsor ref="dummy"/>
                                     </xsl:with-param>
-                                    <xsl:with-param name="all-sponsors" select="/m:response/m:sponsors/m:sponsor"/>
+                                    <xsl:with-param name="all-sponsors" select="$response/m:sponsors/m:sponsor"/>
                                 </xsl:call-template>
                             </xsl:otherwise>
                         </xsl:choose>
@@ -262,13 +277,13 @@
                     <div class="text-bold">
                         <xsl:value-of select="'Acknowledgment'"/>
                     </div>
-                    <xsl:if test="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
+                    <xsl:if test="$text/m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
                         <div class="alert alert-warning small sml-margin bottom">
                             <p>Text auto-generated from the list. No acknowledgment found in the TEI.</p>
                         </div>
                     </xsl:if>
-                    <xsl:if test="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
-                        <xsl:apply-templates select="m:translation/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
+                    <xsl:if test="$text/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
+                        <xsl:apply-templates select="$text/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
                         <hr/>
                     </xsl:if>
                     <p class="small text-muted">
@@ -276,59 +291,62 @@
                     </p>
                 </div>
             </div>
-            <hr/>
+            
+            <hr class="sml-margin"/>
+            
+            
             <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <div class="pull-right">
-                        <div class="center-vertical">
-                            <span>
-                                <a>
-                                    <xsl:if test="not(/m:response/@model eq 'operations/edit-text-sponsors')">
-                                        <xsl:attribute name="target" select="'operations'"/>
-                                    </xsl:if>
-                                    <xsl:choose>
-                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'full']">
-                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=fully-sponsored')"/>
-                                            <xsl:value-of select="'Back to search: Fully sponsored texts'"/>
-                                        </xsl:when>
-                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'part']">
-                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=part-sponsored')"/>
-                                            <xsl:value-of select="'Back to search: Part sponsored texts'"/>
-                                        </xsl:when>
-                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'available']">
-                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=available')"/>
-                                            <xsl:value-of select="'Back to search: Texts available for sponsorship'"/>
-                                        </xsl:when>
-                                        <xsl:when test="m:sponsorship-status/m:status[@id = 'priority']">
-                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=priority')"/>
-                                            <xsl:value-of select="'Back to search: Texts prioritised for sponsorship'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:attribute name="href" select="concat($operations-path, '/search.html?sponsored=sponsored')"/>
-                                            <xsl:value-of select="'Back to search: All sponsored texts'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </a>
-                            </span>
-                            <span>|</span>
-                            <span>
-                                <a>
-                                    <xsl:if test="not(/m:response/@model eq 'operations/edit-text-sponsors')">
-                                        <xsl:attribute name="target" select="'operations'"/>
-                                    </xsl:if>
-                                    <xsl:attribute name="href" select="concat($operations-path, '/edit-sponsor.html')"/>
-                                    <xsl:value-of select="'Add a new sponsor'"/>
-                                </a>
-                            </span>
-                            <span>|</span>
-                            <span>
-                                <button type="submit" class="btn btn-primary">
-                                    <xsl:if test="/m:response/m:translation[@locked-by-user gt '']">
-                                        <xsl:attribute name="disabled" select="'disabled'"/>
-                                    </xsl:if>
-                                    <xsl:value-of select="'Save'"/>
-                                </button>
-                            </span>
+                <div class="col-sm-12">
+                    <div class="center-vertical full-width">
+                        <div>
+                            <ul class="list-inline inline-dots small">
+                                <li>
+                                    <span class="text-muted">
+                                        <xsl:value-of select="'Back to search: '"/>
+                                    </span>
+                                    <a>
+                                        <xsl:choose>
+                                            <xsl:when test="m:sponsorship-status/m:status[@id = 'full']">
+                                                <xsl:attribute name="href" select="concat($operations-path, '/search.html?filter=fully-sponsored')"/>
+                                                <xsl:value-of select="'Fully sponsored texts'"/>
+                                            </xsl:when>
+                                            <xsl:when test="m:sponsorship-status/m:status[@id = 'part']">
+                                                <xsl:attribute name="href" select="concat($operations-path, '/search.html?filter=part-sponsored')"/>
+                                                <xsl:value-of select="'Part sponsored texts'"/>
+                                            </xsl:when>
+                                            <xsl:when test="m:sponsorship-status/m:status[@id = 'available']">
+                                                <xsl:attribute name="href" select="concat($operations-path, '/search.html?filter=available')"/>
+                                                <xsl:value-of select="'Texts available for sponsorship'"/>
+                                            </xsl:when>
+                                            <xsl:when test="m:sponsorship-status/m:status[@id = 'priority']">
+                                                <xsl:attribute name="href" select="concat($operations-path, '/search.html?filter=priority')"/>
+                                                <xsl:value-of select="'Texts prioritised for sponsorship'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="href" select="concat($operations-path, '/search.html?filter=sponsored')"/>
+                                                <xsl:value-of select="'All sponsored texts'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a>
+                                        <xsl:if test="not($response/@model eq 'operations/edit-text-sponsors')">
+                                            <xsl:attribute name="target" select="'operations'"/>
+                                        </xsl:if>
+                                        <xsl:attribute name="href" select="concat($operations-path, '/edit-sponsor.html')"/>
+                                        <xsl:value-of select="'Add a new sponsor'"/>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary pull-right">
+                                <xsl:if test="$text[@locked-by-user gt '']">
+                                    <xsl:attribute name="disabled" select="'disabled'"/>
+                                </xsl:if>
+                                <xsl:value-of select="'Save'"/>
+                            </button>
                         </div>
                     </div>
                 </div>

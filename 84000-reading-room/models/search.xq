@@ -42,7 +42,7 @@ let $request :=
             attribute search-glossary { '1' }
         else (),
         attribute first-record { $first-record },
-        attribute max-records { 15 },
+        attribute max-records { 10 },
         attribute specified-text { request:get-parameter('specified-text', '') },
         $search-langs,
         $search-data,

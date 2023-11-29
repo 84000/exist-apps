@@ -95,11 +95,14 @@ let $updates :=
 
 let $toh := $tei ! translation:toh(., '')
 let $glossary-existing := $tei ! translation:glossary(., 'glossary', $translation:view-modes/eft:view-mode[@id eq 'editor'], ())
-let $translation-data := $tei ! 
-    element { QName('http://read.84000.co/ns/1.0', 'translation')} {
+let $text := $tei ! 
+    element { QName('http://read.84000.co/ns/1.0', 'text')} {
         attribute id { tei-content:id(.) },
+        attribute document-url { base-uri($tei) },
+        attribute locked-by-user { tei-content:locked-by-user($tei) },
         attribute status { tei-content:publication-status(.) },
         attribute status-group { tei-content:publication-status-group(.) },
+        attribute tei-version { tei-content:version-str($tei) },
         translation:titles(., ()),
         translation:location(., $toh/@key),
         $toh,
@@ -230,11 +233,11 @@ let $analysis := (
     (: Source data - for scans :)
     if(count($request/eft:segment) eq 1) then
         
-        (:let $tm-unit-folio-indexes := distinct-values($tmx//tmx:tu[@id = $request/eft:segment/@id]/tmx:prop[@name eq 'folio-index'][functx:is-a-number(text())]/text()) ! xs:integer(.)
+        (:let $tm-unit-folio-indexes := distinct-values($tmx//tmx:tu[@id = $request/eft:segment/@id]/tmx:prop[@type eq 'folio-index'][functx:is-a-number(text())]/text()) ! xs:integer(.)
         return 
             $tm-unit-folio-indexes ! source:etext-page($translation-data/eft:location, ., true()):)
         
-        source:etext-page($translation-data/eft:location, $request/@folio-index ! xs:integer(.), true())
+        source:etext-page($text/eft:location, $request/@folio-index ! xs:integer(.), true())
 
     else()
 )
@@ -247,9 +250,10 @@ let $xml-response :=
             $request,
             $tmx,
             $analysis,
-            $translation-data,
-            $translation-data ! source:bdrc-rdf(eft:toh),
-            $tei ! translation:outline-cached(.)
+            $text,
+            $text ! source:bdrc-rdf(eft:toh),
+            $tei ! translation:outline-cached(.),
+            tei-content:text-statuses-selected($text/@status, 'translation')
         
         )
     )

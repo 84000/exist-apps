@@ -28,13 +28,13 @@ declare variable $search:data-types :=
         <type id="glossary">Glossary</type>
     </search-data>;
 
-declare function search:search($request as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
+declare function search:search($search as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
 
-    search:search($request, $search:data-types/m:type, '', $first-record, $max-records)
+    search:search($search, $search:data-types/m:type, '', $first-record, $max-records)
     
 };
 
-declare function search:search($request as xs:string, $data-types as element(m:type)*, $resource-id as xs:string, $first-record as xs:double, $max-records as xs:double) as element(m:tei-search) {
+declare function search:search($search as xs:string, $data-types as element(m:type)*, $resource-id as xs:string, $first-record as xs:integer, $max-records as xs:integer) as element(m:tei-search) {
     
     (: Search translations, sections, knowledgebase and shared definitions :)
     let $translations-tei := collection($common:translations-path)//tei:TEI
@@ -60,6 +60,9 @@ declare function search:search($request as xs:string, $data-types as element(m:t
         else 
             $translation-render-status
     
+    let $data-types-excluded := if($single-tei) then 'glossary' else ()
+    let $data-types := $data-types[not(@id eq $data-types-excluded)]
+    
     let $all := 
         if($single-tei) then
             $single-tei
@@ -84,8 +87,8 @@ declare function search:search($request as xs:string, $data-types as element(m:t
             else ()
             ,
             if($data-types[@id eq 'knowledgebase']) then (
-                $knowledgebase-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
-                | $sections-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $article-render-status]
+                $knowledgebase-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[tei:idno/@type = 'eft-kb-id'][tei:availability/@status = $article-render-status]]
+                | $sections-tei[tei:teiHeader/tei:fileDesc/tei:publicationStmt[tei:idno/@type = 'eft-kb-id'][tei:availability/@status = $article-render-status]]
             )
             else ()
         )
@@ -98,16 +101,16 @@ declare function search:search($request as xs:string, $data-types as element(m:t
     let $options :=
         <options>
             <default-operator>or</default-operator>
-            <phrase-slop>0</phrase-slop>
+            <phrase-slop>30</phrase-slop>
             <leading-wildcard>no</leading-wildcard>
             <filter-rewrite>yes</filter-rewrite>
         </options>
     
     (: Check the request to see if it's a phrase :)
-    let $request-is-phrase := matches($request, '^\s*["“].+["”]\s*$')
-    let $request-no-quotes := replace($request, '("|“|”)', '')
+    let $search-is-phrase := matches($search, '^\s*["“].+["”]\s*$')
+    let $search-no-quotes := replace($search, '("|“|”)', '')
     
-    let $query := local:search-query($request-no-quotes, $request-is-phrase)
+    let $query := local:search-query($search-no-quotes, $search-is-phrase)
     
     (: All results from all sources :)
     let $results := (
@@ -117,7 +120,7 @@ declare function search:search($request as xs:string, $data-types as element(m:t
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
             (: Text content :)
-            | $published/tei:text//tei:p[not(parent::tei:gloss)][ft:query(., $query, $options)]
+            | $published/tei:text//tei:p[ft:query(., $query, $options)][not(parent::tei:note[@type eq 'definition'])][not(@rend eq 'default-text')]
             | $published/tei:text//tei:label[ft:query(., $query, $options)]
             | $published/tei:text//tei:table[ft:query(., $query, $options)]
             | $published/tei:text//tei:head[ft:query(., $query, $options)]
@@ -127,12 +130,14 @@ declare function search:search($request as xs:string, $data-types as element(m:t
             | $published/tei:text//tei:ab[ft:query(., $query, $options)]
             | $published/tei:text//tei:trailer[ft:query(., $query, $options)]
             (: Back content :)
-            | $published/tei:text/tei:back//tei:bibl[@key][ft:query(., $query, $options)][@xml:id]
+            | $published/tei:text/tei:back//tei:bibl[@key][ft:query(., $query, $options)][@xml:id][not(@rend eq 'default-text')]
         )
         else ()
         ,
-        if($data-types[@id = ('translations','glossary')]) then
-            $published/tei:text/tei:back//tei:gloss[ft:query(node(), $query, $options)][@xml:id][not(@mode eq 'surfeit')][ancestor::tei:div[@type eq 'glossary'][not(@status eq 'excluded')]]
+        if($data-types[@id = ('translations','glossary')]) then (
+            $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., $query, $options)][parent::tei:gloss[not(@mode eq 'surfeit')]]
+            | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:note[ft:query(tei:p, $query, $options)][@type eq 'definition'][not(@rend eq 'override')][parent::tei:gloss[not(@mode eq 'surfeit')]]
+        )
         else ()
         ,
         if($data-types[@id  eq 'glossary']) then
@@ -140,196 +145,173 @@ declare function search:search($request as xs:string, $data-types as element(m:t
         else ()
     )
     
-    (: Sort by score :)
+    let $results-count := count($results)
     
-    (: Get the relevant chunk :)
+    let $max-matches := 1000
     
-    (: Establish the resource :)
-    
-    (: Get all content for the resource :)
-    
-    let $results-groups := (
-    
-        (: Group text results together :)
-        if($data-types[@id = ('translations','knowledgebase')]) then
-            
-            (: Very provisional fix for results overload :)
-            for $result in subsequence($results, 1, 1000)[not(ancestor-or-self::*[@rend eq 'default-text'])]
-            
-            let $tei := $result/ancestor::tei:TEI[1]
-            let $group-id := $tei ! tei-content:id(.)
-            
-            where $group-id
-            group by $group-id
+    let $results-triaged := 
+        if($results-count gt $max-matches) then
+            let $results-sorted := fn:sort($results, (), function($item) {-ft:score($item)})
             return
-                element { QName('http://read.84000.co/ns/1.0', 'results-group') } { 
-                    
-                    attribute id { $group-id },
-                    attribute type { tei-content:type($tei[1]) },
-                    attribute document-uri { base-uri($tei[1]) },
-                    
-                    for $single at $index in $result
-                    
-                    (: Get nearest id - required :)
-                    let $nearest-id :=
-                        if($single/ancestor::tei:fileDesc) then
-                            if($single[self::tei:title] and $single[not(@type eq 'mainTitle')]) then 'other-titles'
-                            else if($single[self::tei:title]) then 'titles'
-                            else if($single[self::tei:author][@role]) then 'other-authors'
-                            else 'authors'
-                        else
-                            $single/ancestor-or-self::*[not(@xml:id)][preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id
-                    
-                    let $nearest-id := if(not($nearest-id)) then ($single/ancestor-or-self::*[@xml:id][1]/@xml:id, $single/ancestor-or-self::tei:div[@type][1]/@type)[1] else $nearest-id
-                    
-                    (: Get score :)
-                    let $score := ft:score($single)[. gt 0]
-                    
-                    where $nearest-id
-                    group by $nearest-id
-                    
-                    (: Set a score for the group :)
-                    let $score-calc := max($score)
-                    return
-                        element result {
-                            attribute score { $score-calc },
-                            attribute nearest-id { $nearest-id },
-                            $single
-                        }
-                    
-                }
-                
-        else ()
-        ,
-        
-        (: Group glossaries together :)
-        if(not($single-tei) and $data-types[@id  eq 'glossary']) then
-            
-            for $result in $results[self::tei:gloss or parent::m:entity][not(ancestor-or-self::*[@rend eq 'default-text'])]
-            
-            let $entity :=
-                (: Glossary entry in a text :)
-                if($result[self::tei:gloss]) then 
-                    $entities:entities//m:instance[@id eq $result/@xml:id]/parent::m:entity[1]
-                (: Entity definition :)
-                else
-                    $result/parent::m:entity[1]
-            
-            let $group-id := ($entity/@xml:id)[1]
-            
-            where $group-id
-            group by $group-id
-            return
-                element { QName('http://read.84000.co/ns/1.0', 'results-group') } { 
-                    
-                    attribute id { $group-id },
-                    attribute type { 'entity' },
-                    
-                    for $single at $index in $result
-                    
-                    (: Get nearest id - required :)
-                    let $nearest-id := $single/ancestor-or-self::*[@xml:id][1]/@xml:id
-                    
-                    (: Get score, boost glossary a bit :)
-                    let $score := ft:score($single)[. gt 0] * 1.5
-                    
-                    where $nearest-id
-                    group by $nearest-id
-                    
-                    (: Set a score for the group :)
-                    let $score-calc := max($score)
-                    return
-                        element result {
-                            attribute score { $score-calc },
-                            attribute nearest-id { $nearest-id },
-                            $single
-                        }
-                    
-                }
-                
-        else ()
-    )
+                subsequence($results, 1, $max-matches)
+        else
+            $results
     
-    let $results-groups :=
-        for $results-group in $results-groups
-        order by max($results-group/m:result/@score ! xs:float(.)) descending
-        return
-            $results-group
+    let $results-grouped := local:result-groups($results-triaged,(), $data-types, $first-record, $max-records, $max-matches, $search)
     
-    return 
-        (:if(true()) then element { QName('http://read.84000.co/ns/1.0', 'tei-search') } { $results-groups } else:)
-        
+    return
         element { QName('http://read.84000.co/ns/1.0', 'tei-search') } { 
-        
+            
             element request { 
                 $single-tei ! local:result-header(.),
-                $request
+                element search { $search },
+                $data-types,
+                $query,
+                $options
             },
-
-            element results {
             
+            element results {
+                
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
-                attribute count-records { count($results-groups) },
+                attribute count-records { count($results-grouped) },
+                attribute count-matches-all { $results-count },
+                attribute count-matches-processed { count($results-triaged) },
                 
-                (: Pagination :)
-                for $results-group in subsequence($results-groups, $first-record, $max-records)
+                $results-grouped[descendant::m:match]
+                    
+            }
+            
+        }
+    
+};
+
+declare function local:result-groups($results as element()*, $result-groups as element()*, $data-types as element(m:type)*, $first-record as xs:integer, $max-records as xs:integer, $max-matches as xs:integer, $search as xs:string) as element()* {
+    
+    let $result-groups-count := count($result-groups)
+    let $end-record := $first-record + ($max-records - 1)
+    
+    return
+    if(not($results)) then
+        $result-groups
+    
+    else
+    
+        (: Sort by score :)
+        let $results-sorted := fn:sort($results, (), function($item) {-ft:score($item)})
+        
+        let $result-top := $results-sorted[1]
+        
+        let $group := 
+            if($result-top[parent::m:entity]) then
+                $result-top/parent::m:entity[1]
+            else if($data-types[@id eq 'glossary'] and $result-top[parent::tei:gloss][@xml:id]) then
+                $entities:entities//m:instance[@id = $result-top/parent::tei:gloss/@xml:id]/parent::m:entity[1]
+            else
+                $result-top/ancestor::tei:TEI
+        
+        (: Get results in this group :)
+        let $results-in-group := 
+            if($group[self::m:entity]) then
+                ($results-sorted[parent::m:entity][count(parent::m:entity[1] | $group) eq 1] | $results-sorted[parent::tei:gloss/@xml:id = $group/m:instance/@id])
+            else
+                $results-sorted[ancestor::tei:TEI][count(ancestor::tei:TEI[1] | $group) eq 1]
+        
+        (: Get results not in this group :)
+        let $results-not-in-group := $results-sorted except $results-in-group
+        
+        let $result-group-index := $result-groups-count + 1
+        
+        let $result-group :=
+            element { QName('http://read.84000.co/ns/1.0', 'result') } { 
                 
-                let $container := 
-                    if($results-group[@type = ('knowledgebase','translation','section')]) then
-                        tei-content:tei($results-group/@id, $results-group/@type)
-                    else
-                        $entities:entities/id($results-group/@id)[self::m:entity]
+                attribute index { $result-group-index },
                 
-                let $header := local:result-header($container)
+                if($result-group-index ge $first-record and $result-group-index le $end-record) then 
                 
-                (: Sort matches :)
-                let $results := 
-                    for $result in $results-group/m:result
-                    order by $result/@score ! xs:float(.) descending
-                    return
-                        $result
-                
-                (: Max results :)
-                let $max-results := if($single-tei) then 1000 else 10
-                
-                where $header
-                return
-                    element result {
+                    let $results-in-group-sorted := fn:sort($results-in-group, (), function($item) {-ft:score($item)})
+                    
+                    let $group-header := local:result-header($group)
+                    
+                    let $boost := 
+                        if($group-header[@type eq 'entity']) then 1.5
+                        else 1
+                    
+                    (: Show all results (max 1000) if this is the only group :)
+                    let $max-matches :=
+                        if($results-not-in-group) then 10
+                        else $max-matches
+                    
+                    let $matches :=
                         
-                        attribute type { $results-group/@type },
-                        attribute score { max($results/@score) },
-                        attribute count-matches { count($results) },
+                        for $result-in-group in subsequence($results-in-group-sorted, 1, $max-matches)
                         
-                        (: Include header info :)
-                        $header,
+                        (: Get nearest id - required :)
+                        let $nearest-id := 
+                            if($group-header[not(@type eq 'entity')]) then
+                                if($result-in-group/ancestor::tei:fileDesc) then
+                                    if($result-in-group[self::tei:title] and $result-in-group[not(@type eq 'mainTitle')]) then 'other-titles'
+                                    else if($result-in-group[self::tei:title]) then 'titles'
+                                    else if($result-in-group[self::tei:author][@role]) then 'other-authors'
+                                    else 'authors'
+                                else if($result-in-group[parent::tei:gloss[@xml:id]]) then
+                                    $result-in-group/parent::tei:gloss/@xml:id
+                                else
+                                    $result-in-group/ancestor-or-self::*[not(@xml:id)][preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id
+                            else 
+                                $result-in-group/ancestor-or-self::*[@xml:id][1]/@xml:id
                         
-                        (: Take the top x matches :)
-                        for $match in subsequence($results, 1, $max-results)
-                        let $marked := common:mark-nodes($match/node(), $request-no-quotes, 'words')
+                        let $nearest-id := 
+                            if(not($nearest-id)) then
+                                ($result-in-group/ancestor-or-self::*[@xml:id][1]/@xml:id, $result-in-group/ancestor-or-self::tei:div[@type][1]/@type)[1] 
+                            else 
+                                $nearest-id
+                        
+                        (: Get score :)
+                        let $score := ft:score($result-in-group)[. gt 0] * $boost
+                        
+                        where $nearest-id
+                        group by $nearest-id
+                        order by max($score) descending
+                        
                         return
                             element match {
-                                $match/@*,
-                                attribute link { local:match-link($match, $header) },
-                                $marked
+                                attribute score { max($score) },
+                                attribute nearest-id { $nearest-id },
+                                attribute link { local:match-link($result-in-group[1], $nearest-id[1], $group-header) },
+                                if($result-in-group[1][parent::tei:gloss[@xml:id]]) then
+                                    $result-in-group[1]/parent::tei:gloss[@xml:id] ! common:mark-nodes(., $search, 'words')
+                                else
+                                    $result-in-group ! common:mark-nodes(., $search, 'words')
                             }
-                        ,
+                    
+                    return (
+                    
+                        attribute type { $group-header/@type },
+                        attribute score { ft:score($result-top) * $boost },
+                        attribute count-matches { count($matches) },
+                        
+                        $group-header,
+                        
+                        $matches,
                         
                         (: Notes cache :)
-                        if($results//tei:note[@place eq 'end'][@xml:id]) then
-                            if($results-group[@type eq 'knowledgebase']) then
-                                knowledgebase:outline($container)/m:pre-processed[@type eq 'end-notes']
-                            else if($results-group[@type eq 'translation']) then
-                                translation:outline-cached($container)/m:pre-processed[@type eq 'end-notes']
+                        if(lower-case(local-name($group)) eq 'tei' and $results-in-group//tei:note[@place eq 'end'][@xml:id]) then
+                            if($group-header[@type eq 'knowledgebase']) then
+                                knowledgebase:outline($group)/m:pre-processed[@type eq 'end-notes']
+                            else if($group-header[@type eq 'translation']) then
+                                translation:outline-cached($group)/m:pre-processed[@type eq 'end-notes']
                             else ()
                         else ()
-                        
-                    }
+                    
+                    )
+                else ()
                 
             }
         
-        }
-        
+        return 
+            local:result-groups($results-not-in-group, ($result-groups, $result-group), $data-types, $first-record, $max-records, $max-matches, $search)
+    
 };
 
 declare function search:tm-search($search as xs:string, $search-lang as xs:string, $first-record as xs:double, $max-records as xs:double, $include-glossary as xs:boolean, $exclude-tmx as element(tmx:tmx)?) as element(m:tm-search) {
@@ -425,11 +407,11 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                 (: Translation memory result :)
                                 
                                 let $location-id := 
-                                    if($result/tmx:prop[@name eq 'location-id']) then
-                                        $result/tmx:prop[@name eq 'location-id']/text()
+                                    if($result/tmx:prop[@type eq 'location-id']) then
+                                        $result/tmx:prop[@type eq 'location-id']/text()
                                     else 
                                         (: The folio is a prop of the TM unit :)
-                                        let $result-folio := $result/tmx:prop[@name eq 'folio']
+                                        let $result-folio := $result/tmx:prop[@type eq 'folio']
                                         
                                         (: Get the full list of folios :)
                                         let $folio-refs-sorted := translation:folio-refs-sorted($tei, $toh-key)
@@ -455,9 +437,9 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                         else ()
                                         ,
                                         
-                                        for $prop in $result/tmx:prop[@name = ('alternative-source','requires-attention')]
+                                        for $prop in $result/tmx:prop[@type = ('alternative-source','requires-attention')]
                                         return
-                                            element flag { attribute type { $prop/@name/string() } }
+                                            element flag { attribute type { $prop/@type/string() } }
                                         ,
                                         
                                         element tibetan { 
@@ -559,38 +541,39 @@ declare function local:search-query($request as xs:string, $search-as-phrase as 
     
     let $request-normalized := common:normalized-chars($request)
     
-    let $request-tokenized := tokenize($request-normalized, '\s')
+    let $request-tokenized := tokenize($request-normalized, '\s')[normalize-space(.)]
     
     return
         <query>
-            <bool>
             {
                 if($search-as-phrase) then
                     <phrase slop="1" occur="must">{ $request-normalized }</phrase>
+                
                 else (
-                    <near slop="20" occur="should">{ $request-normalized }</near>,
-                    <wildcard occur="should">{ concat($request-normalized,'*') }</wildcard>,
+                    (:<near slop="100" ordered="no">{ $request-tokenized ! <term>{ . }</term> }</near>,:)
+                    <bool slop="100" min="{ if(count($request-tokenized) ge 2) then 2 else 1 }">{ $request-tokenized ! <term occur="should">{ . }</term>  }</bool>,
+                    (:<bool slop="100">{ $request-tokenized ! <regex occur="must">{ concat(., '.*') }</regex> }</bool>,:)
                     for $request-token in $request-tokenized
+                    return (
+                    
                         for $synonym in $synonyms//eft:synonym[eft:term/text() = $request-token]/eft:term[not(text() = $request-token)]
                         let $request-synonym := replace($request-normalized, $request-token, $synonym)
-                        return (
-                            <near slop="20" occur="should">{ $request-synonym }</near>,
+                        return 
                             <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
-                        )
-                
+                        
+                    )
                 )
             }   
-            </bool>
         </query>
 };
 
 declare function local:result-header($content as element()) as element() {
     
     let $type := 
-        if(lower-case(local-name($content)) eq 'tei') then
-            tei-content:type($content)
-        else if(local-name($content) eq 'entity') then
+        if(local-name($content) eq 'entity') then
             'entity'
+        else if(lower-case(local-name($content)) eq 'tei') then
+            tei-content:type($content)
         else ()
     
     (: What sort of link? :)
@@ -606,10 +589,10 @@ declare function local:result-header($content as element()) as element() {
         (: Default to section :)
         else if($type = ('translation', 'section')) then
             'section'
-            
+        
         else if($type eq 'entity') then 
             'glossary'
-            
+        
         else ()
     
     let $resource-id := 
@@ -674,28 +657,31 @@ declare function local:result-header($content as element()) as element() {
         }
 };
 
-declare function local:match-link($result as element(m:result)*, $header as element(m:header)?) as xs:string? {
+declare function local:match-link($match as element()*, $nearest-id as xs:string?, $header as element(m:header)?) as xs:string? {
     
     (: Handle some exceptions :)
     
     if($header[@render eq 'glossary']) then
-        () (: Just use the link in the header :)
+        $header/@link (: Just use the link in the header :)
     
-    else if($header[@render eq 'section'][@type eq 'translation'] and $result[@nearest-id = ('other-titles')]) then
+    else if($header[@render eq 'section'][@type eq 'translation'] and $nearest-id = ('other-titles')) then
         concat(functx:substring-before-if-contains($header/@link, '#'), '#title-variants-', $header/@resource-id)
     
-    else if($header[@render eq 'section'][@type eq 'translation'] and $result[@nearest-id = ('other-authors')]) then
+    else if($header[@render eq 'section'][@type eq 'translation'] and $nearest-id = ('other-authors')) then
         concat(functx:substring-before-if-contains($header/@link, '#'), '#supplementary-roles-', $header/@resource-id)
     
-    else if($header[@render eq 'translation'] and $result[@nearest-id = ('authors', 'other-titles', 'other-authors')]) then
+    else if($header[@render eq 'translation'] and $nearest-id = ('authors', 'other-titles', 'other-authors')) then
         concat(functx:substring-before-if-contains($header/@link, '#'), '#titles')
     
     (: The match is in a note, so link to the note so it pops up (the same match may have multiple matching notes) :)
-    else if($header[@render = ('translation', 'knowledgebase')] and $result[descendant::exist:match/ancestor::tei:note[@place eq 'end'][@xml:id]]) then
-        concat(functx:substring-before-if-contains($header/@link, '#'), '#', ($result/descendant::exist:match/ancestor::tei:note[@place eq 'end']/@xml:id)[1])
+    else if($header[@render = ('translation', 'knowledgebase')] and $match[descendant::exist:match/ancestor::tei:note[@place eq 'end'][@xml:id]]) then
+        concat(functx:substring-before-if-contains($header/@link, '#'), '#', ($match/descendant::exist:match/ancestor::tei:note[@place eq 'end']/@xml:id)[1])
+    
+    else if($header[@render eq 'section']) then
+        $header/@link (: Just use the link in the header :)
     
     (: Default to link + nearest-id :)
     else
-        concat(functx:substring-before-if-contains($header/@link, '#'), $result/@nearest-id ! concat('#',.))
+        concat(functx:substring-before-if-contains($header/@link, '#'), $nearest-id ! concat('#',.))
         
     };

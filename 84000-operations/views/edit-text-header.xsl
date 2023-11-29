@@ -27,18 +27,25 @@
                         <div class="h3">
                             <a target="_blank">
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
-                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' : ', $text/m:title)"/>
+                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' / ', $text/m:titles/m:title[@xml:lang eq 'en'])"/>
                             </a>
                         </div>
                         
-                        <span class="text-right">
+                        <div class="text-right">
                             <xsl:sequence select="ops:translation-status($text/@status-group)"/>
-                        </span>
+                        </div>
                         
                     </div>
                     
+                    <!-- Links -->
+                    <xsl:call-template name="text-links-list">
+                        <xsl:with-param name="text" select="$text"/>
+                        <xsl:with-param name="exclude-links" select="('edit-text-header', 'source-folios')"/>
+                        <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
+                    </xsl:call-template>
+                    
                     <!-- TEI -->
-                    <div class="center-vertical full-width sml-margin bottom">
+                    <div class="center-vertical full-width sml-margin top bottom">
                         
                         <!-- url -->
                         <div>
@@ -59,6 +66,8 @@
                         </span>
                         
                     </div>
+                    
+                    <hr class="sml-margin"/>
                     
                     <!-- Due date -->
                     <xsl:variable name="next-target-date" select="$translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
@@ -170,18 +179,13 @@
                         <xsl:if test="$cache-glosses-behind or ($master-store and $files-outdated)">
                             <div class="sml-margin bottom text-right">
                                 <ul class="list-inline inline-dots">
-                                    <li>
-                                        <a class="small" data-loading="Loading...">
-                                            <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $text/@id)"/>
-                                            <xsl:value-of select="'Glossary editor'"/>
-                                        </a>
-                                        <xsl:if test="$cache-glosses-behind">
-                                            <xsl:value-of select="' '"/>
+                                    <xsl:if test="$cache-glosses-behind">
+                                        <li>
                                             <span class="label label-warning">
-                                                <xsl:value-of select="'glossary locations may need re-caching'"/>
+                                                <xsl:value-of select="'Glossary locations may need re-caching'"/>
                                             </span>
-                                        </xsl:if>
-                                    </li>
+                                        </li>
+                                    </xsl:if>
                                     <xsl:if test="$master-store and $files-outdated">
                                         <li>
                                             <a class="small">

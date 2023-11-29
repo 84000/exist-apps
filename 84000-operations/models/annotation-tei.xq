@@ -21,7 +21,7 @@ let $request :=
 let $tei := tei-content:tei($request/@text-id, 'translation')
 
 (: Files list for the dropdown :)
-let $translation-files := 
+(:let $translation-files := 
     element { QName('http://read.84000.co/ns/1.0', 'translations') }{
         for $tei in $tei-content:translations-collection//tei:fileDesc/tei:publicationStmt/tei:availability[@status = $translation:marked-up-status-ids]/ancestor::tei:TEI
         let $text-id := tei-content:id($tei)
@@ -33,7 +33,7 @@ let $translation-files :=
                 else (),
                 concat(string-join($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key]/tei:ref, ' / '), ' - ', tei-content:title-any($tei))
             }
-    }
+    }:)
 
 (: Do actions :)
 let $updated := 
@@ -41,6 +41,20 @@ let $updated :=
     if($tei and request:get-parameter('form-action', '') eq 'archive-latest') then
         update-tei:archive-latest($tei)
     else ()
+
+
+let $text := 
+    element { QName('http://read.84000.co/ns/1.0', 'text') }{
+        attribute id { tei-content:id($tei) },
+        attribute tei-version { tei-content:version-str($tei) },
+        attribute document-url { base-uri($tei) },
+        attribute locked-by-user { tei-content:locked-by-user($tei) },
+        attribute status { tei-content:publication-status($tei) },
+        attribute status-group { tei-content:publication-status-group($tei) },
+        tei-content:titles-all($tei),
+        translation:toh($tei, ''),
+        tei-content:status-updates($tei)
+    }
 
 (: Get archived texts :)
 let $archived-texts := 
@@ -71,8 +85,10 @@ let $xml-response :=
         'operations',
         (
             $request,
-            $translation-files,
-            $archived-texts
+            (:$translation-files,:)
+            $text,
+            $archived-texts,
+            tei-content:text-statuses-selected($text/@status, 'translation')
         )
     )
 

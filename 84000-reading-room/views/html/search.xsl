@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
-    <xsl:variable name="base-url" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
+    <xsl:variable name="base-url" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
     <xsl:variable name="specified-text" select="/m:response/m:tei-search/m:request/m:header"/>
     
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
@@ -239,20 +239,24 @@
                         </span>
                     </div>
                     
-                    <xsl:choose>
-                        <xsl:when test="$specified-text">
-                            <input type="hidden" name="specified-text" value="{ $specified-text/@resource-id }"/>
-                            <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
-                                <xsl:value-of select="concat('in ', ($specified-text/m:titles/m:title[@xml:lang eq 'en'])[1] , ' / ', ($specified-text/m:bibl/m:toh/m:full)[1])"/>
-                                <span class="pull-right">
-                                    <a class="inline-block alert-link">
-                                        <xsl:attribute name="href" select="$base-url"/>
-                                        <xsl:value-of select="'remove filter'"/>
-                                    </a>
-                                </span>
-                            </div>
-                        </xsl:when>
-                    </xsl:choose>
+                    <xsl:if test="$specified-text">
+                        <input type="hidden" name="specified-text" value="{ $specified-text/@resource-id }"/>
+                        <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
+                            <xsl:value-of select="concat('in ', ($specified-text/m:titles/m:title[@xml:lang eq 'en'])[1] , ' / ', ($specified-text/m:bibl/m:toh/m:full)[1])"/>
+                            <span class="pull-right">
+                                <a class="inline-block alert-link">
+                                    <xsl:attribute name="href" select="$base-url"/>
+                                    <xsl:value-of select="'remove filter'"/>
+                                </a>
+                            </span>
+                        </div>
+                    </xsl:if>
+                    
+                    <xsl:if test="m:tei-search/m:results[@count-matches-processed lt @count-matches-all]">
+                        <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
+                            <xsl:value-of select="concat('Please refine your search. Only the first ', format-number(m:tei-search/m:results/@count-matches-processed, '#,###'), ' of ',  format-number(m:tei-search/m:results/@count-matches-all, '#,###'), ' matches have been processed.')"/>
+                        </div>
+                    </xsl:if>
                     
                 </form>
             </div>
@@ -377,7 +381,7 @@
                                                         </xsl:when>
                                                         
                                                         <xsl:when test="$matched-entity-data">
-                                                            <xsl:value-of select="($matched-entity-data/m:term[@xml:lang eq 'en'], $matched-entity-data/m:label[@xml:lang eq 'Sa-Ltn'], $matched-entity-data/m:label[@xml:lang eq 'bo'])[1]/text() ! normalize-space(.)"/>
+                                                            <xsl:sequence select="common:mark-string(($matched-entity-data/m:term[@xml:lang eq 'en'], $matched-entity-data/m:label[@xml:lang eq 'Sa-Ltn'], $matched-entity-data/m:label[@xml:lang eq 'bo'])[1]/text() ! normalize-space(.), common:escape-for-regex($request/m:search/text()))"/>
                                                         </xsl:when>
                                                         
                                                         <xsl:otherwise>
@@ -558,7 +562,7 @@
                                                     <div class="search-match">
                                                         
                                                         <!-- Output the match (unless it's only in the note) -->
-                                                        <xsl:if test="($match/descendant::exist:match[not(ancestor::tei:note)][not(ancestor::tei:orig)] or not($match/descendant::exist:match))">
+                                                        <xsl:if test="($match/descendant::exist:match[not(ancestor::tei:note[@place eq 'end'])][not(ancestor::tei:orig)] or not($match/descendant::exist:match))">
                                                             <div>
                                                                 <!-- Reduce this to a snippet -->
                                                                 <xsl:apply-templates select="node()"/>

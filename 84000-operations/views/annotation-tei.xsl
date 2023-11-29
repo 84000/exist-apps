@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
+    <xsl:variable name="response" select="/m:response"/>
+    <xsl:variable name="text" select="$response/m:text"/>
+    
     <xsl:template match="/m:response">
-        
-        <xsl:variable name="request-text" select="m:translations/m:text[@id eq /m:response/m:request/@text-id]"/>
         
         <xsl:variable name="content">
             <xsl:call-template name="operations-page">
                 <xsl:with-param name="active-tab" select="@model"/>
                 <xsl:with-param name="tab-content">
                     
-                    <form action="/annotation-tei.html" method="post" class="filter-form" data-loading="Checking archive...">
+                    <!--<h3>
+                        <xsl:value-of select="($request-text/text(), '[Please select a text]')[1]"/>
+                    </h3>-->
+                    
+                    <!--<form action="/annotation-tei.html" method="get" class="filter-form" data-loading="Checking archive...">
                         <div class="form-group">
                             <select name="text-id" id="text-id" class="form-control">
                                 <xsl:for-each select="m:translations/m:text">
@@ -28,19 +33,39 @@
                                 </xsl:for-each>
                             </select>
                         </div>
-                    </form>
+                    </form>-->
                     
-                    <h3>
-                        <xsl:value-of select="($request-text/text(), '[Please select a text]')[1]"/>
-                    </h3>
+                    <!-- Title / status -->
+                    <div class="center-vertical full-width sml-margin bottom">
+                        
+                        <div class="h3">
+                            <a target="_blank">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' / ', $text/m:titles/m:title[@xml:lang eq 'en'])"/>
+                            </a>
+                        </div>
+                        
+                        <div class="text-right">
+                            <xsl:sequence select="ops:translation-status($text/@status-group)"/>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Links -->
+                    <xsl:call-template name="text-links-list">
+                        <xsl:with-param name="text" select="$text"/>
+                        <xsl:with-param name="exclude-links" select="('annotation-tei', 'source-folios')"/>
+                        <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
+                    </xsl:call-template>
+                    
+                    <hr class="sml-margin"/>
+                                        
+                    <!--<h2>
+                        <xsl:value-of select="'Archived copies of the TEI'"/>
+                    </h2>-->
                     
                     <div class="div-list no-border-top">
                         
-                        <div class="item">
-                            <strong>
-                                <xsl:value-of select="'Archived copies of the TEI'"/>
-                            </strong>
-                        </div>
                         
                         <xsl:choose>
                             <xsl:when test="m:archived-texts[m:text]">
@@ -83,20 +108,19 @@
                             </xsl:otherwise>
                         </xsl:choose>
                         
-                        <xsl:if test="$request-text">
+                        <xsl:if test="$text[@id]">
                             <div class="item">
                                 
                                 <form action="/annotation-tei.html" method="post" data-loading="Creating archive...">
-                                    <input type="hidden" name="text-id" value="{ $request-text/@id }"/>
+                                    <input type="hidden" name="text-id" value="{ $text/@id }"/>
                                     <input type="hidden" name="form-action" value="archive-latest"/>
-                                    <button type="submit" class="btn btn-success">
+                                    <button type="submit" class="btn btn-danger">
                                         <xsl:value-of select="'Archive a copy of the current TEI'"/>
                                     </button>
                                 </form>
                                 
                             </div>
                         </xsl:if>
-                        
                         
                     </div>
                     

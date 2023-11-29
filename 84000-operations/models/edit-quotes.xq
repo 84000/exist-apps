@@ -137,7 +137,8 @@ let $xml-response :=
             $request,
             $updates,
             $text,
-            $quotes-with-responses
+            $quotes-with-responses,
+            tei-content:text-statuses-selected($text/@status, 'translation')
         )
     )
     

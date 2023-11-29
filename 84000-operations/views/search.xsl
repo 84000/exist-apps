@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -650,101 +650,13 @@
                                     <!-- Links -->
                                     <tr class="sub">
                                         <td colspan="5">
-                                            <ul class="list-inline inline-dots hidden-print">
-                                                
-                                                <li>
-                                                    <a class="small">
-                                                        <xsl:attribute name="href" select="concat('source-utils.html', '?text-id=', $text/@id)"/>
-                                                        <xsl:value-of select="'Source utilities'"/>
-                                                    </a>
-                                                </li>
-                                                
-                                                <xsl:if test="$text-status[@marked-up eq 'true']">
-                                                    <li>
-                                                        <a target="_blank" class="small">
-                                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text/m:toh/@key, '.html?view-mode=editor')"/>
-                                                            <xsl:value-of select="'Editor mode'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <li>
-                                                    <a class="small" data-loading="Loading headers form...">
-                                                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text/@id)"/>
-                                                        <xsl:value-of select="'Edit headers'"/>
-                                                    </a>
-                                                    <xsl:if test="@status-group eq 'published' and $text/m:downloads[@tei-version != m:download/@version]">
-                                                        <xsl:value-of select="' '"/>
-                                                        <span class="text-danger" title="Associated file are out of date">
-                                                            <i class="fa fa-exclamation-circle"/>
-                                                        </span>
-                                                    </xsl:if>
-                                                </li>
-                                                
-                                                <li>
-                                                    <a class="small" data-loading="Loading sponsorship form...">
-                                                        <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text/@id)"/>
-                                                        <xsl:value-of select="'Edit sponsorship'"/>
-                                                    </a>
-                                                </li>
-                                                
-                                                <li>
-                                                    <a class="small" data-loading="Loading glossary editor...">
-                                                        
-                                                        <xsl:choose>
-                                                            <xsl:when test="$texts[@filter eq 'entities-missing']">
-                                                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id, '&amp;filter=missing-entities')"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$texts[@filter eq 'entities-flagged-attention']">
-                                                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id, '&amp;filter=requires-attention')"/>
-                                                            </xsl:when>
-                                                            <xsl:otherwise>
-                                                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id)"/>
-                                                            </xsl:otherwise>
-                                                        </xsl:choose>
-                                                        
-                                                        <xsl:value-of select="'Edit glossary'"/>
-                                                        
-                                                    </a>
-                                                </li>
-                                                
-                                                <xsl:if test="$text-status[@marked-up eq 'true']">
-                                                    <li>
-                                                        <a class="small" data-loading="Loading TM editor...">
-                                                            <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id)"/>
-                                                            <xsl:value-of select="'Edit TM'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <xsl:if test="$text-status[@marked-up eq 'true']">
-                                                    <li>
-                                                        <a class="small" data-loading="Loading quotes...">
-                                                            <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', $text/@id)"/>
-                                                            <xsl:value-of select="'Review quotes'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <xsl:if test="$text-status[@marked-up eq 'true']">
-                                                    <li>
-                                                        <a class="small">
-                                                            <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', $text/@id)"/>
-                                                            <xsl:value-of select="'Archived copies'"/>
-                                                        </a>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                                <xsl:if test="$text[@locked-by-user gt '']">
-                                                    <li>
-                                                        <span class="text-danger small">
-                                                            <i class="fa fa-exclamation-circle"/>
-                                                            <xsl:value-of select="concat(' File locked by user ', $text/@locked-by-user)"/>
-                                                        </span>
-                                                    </li>
-                                                </xsl:if>
-                                                
-                                            </ul>
+                                            
+                                            <xsl:call-template name="text-links-list">
+                                                <xsl:with-param name="text" select="$text"/>
+                                                <xsl:with-param name="exclude-links" select="('source-folios')"/>
+                                                <xsl:with-param name="text-status" select="$text-status"/>
+                                                <xsl:with-param name="glossary-filter" select="$texts/@filter"/>
+                                            </xsl:call-template>
                                             
                                         </td>
                                     </tr>

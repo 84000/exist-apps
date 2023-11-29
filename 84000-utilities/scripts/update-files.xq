@@ -31,8 +31,8 @@ declare function local:files-permissions($collection-uri as xs:string, $file-ext
     order by $file
     where ends-with($file, '.' || $file-extension)
     return(
-        (:sm:get-permissions($file-uri),
-        :)sm:chown($file-uri, $owner),
+        (:sm:get-permissions($file-uri),:)
+        sm:chown($file-uri, $owner),
         sm:chgrp($file-uri, $group),
         sm:chmod($file-uri, $permissions),
         concat($file-uri, ' owner:', $owner, ' group:', $group, ' permissions:', $permissions)
@@ -45,6 +45,7 @@ declare function local:files-permissions($collection-uri as xs:string, $file-ext
 (:local:files-permissions('/db/apps/84000-data/pdf', 'pdf', 'admin', 'utilities', 'rw-rw-r--'):)
 (:local:files-permissions('/db/apps/84000-data/rdf', 'rdf', 'admin', 'utilities', 'rw-rw-r--'):)
 (:local:files-mimetype-xml('/db/apps/84000-data/cache', 'cache'):)
-local:files-mimetype-xml('/db/apps/84000-data/translation-memory', 'tmx')
+(:local:files-mimetype-xml('/db/apps/84000-data/translation-memory/placeholders', 'tmx'):)
+local:files-permissions('/db/apps/84000-data/translation-memory/published', 'tmx', 'admin', 'tei', 'rw-rw-r--')
 (:xmldb:reindex('/db/apps/84000-data/tei'):)
 

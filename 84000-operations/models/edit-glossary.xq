@@ -297,6 +297,7 @@ return
                     $updates,
                     $text,
                     $glossary,
+                    tei-content:text-statuses-selected($text/@status, $resource-type),
                     $entities,
                     $glossary-cache,
                     $glossary:attestation-types,

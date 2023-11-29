@@ -106,7 +106,7 @@ let $text :=
             translation:downloads($tei, $bibl/@key, 'all')
         ),
         
-        translation:title-element($tei, ()),
+        (:translation:title-element($tei, ()),:)
         tei-content:titles-all($tei),
         translation:publication($tei),
         translation:contributors($tei, true()),

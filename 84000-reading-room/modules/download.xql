@@ -52,7 +52,7 @@ declare function download:stored-version-str($resource-id as xs:string, $file-ty
     (: Check the file is there :)
     let $file-uri := concat($common:data-path, '/', $file-type, '/', $file-name)
     let $file-exists := 
-        if($file-type = ('xml', 'rdf', 'html', 'cache', 'json')) then
+        if($file-type = ('xml', 'rdf', 'html', 'cache')) then
             doc-available($file-uri)
         else
             util:binary-doc-available($file-uri)

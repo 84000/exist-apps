@@ -26,17 +26,17 @@ declare function local:tm-units($bcrd-sentences as element(bcrd:sentence)*){
         element { QName('http://www.lisa.org/tmx14', 'tu') }{
 
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                attribute name { 'bcrd:s_id' },
+                attribute type { 'bcrd:s_id' },
                 text { $sentence/@s_id }
             },
 
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                attribute name { 'bcrd:type' },
+                attribute type { 'bcrd:type' },
                 text { $sentence/@type }
             },
             
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                attribute name { 'eft:wylie-key' },
+                attribute type { 'eft:wylie-key' },
                 text { string-join($sentence/bcrd:phrase ! string-join(text()) ! normalize-space(.) ! replace(., '(&#10;|\+)', '') ! translate(., 'āīū', 'AIU'), ' ') ! replace(., '\s', '-') }
             }
             
@@ -92,7 +92,7 @@ declare function local:tmx-bo-segments($tm-units as element(tmx:tu)*, $tm-units-
     if($tm-units-index le count($tm-units)) then (
     
         let $tm-unit := $tm-units[$tm-units-index]
-        let $tm-unit-wylie-key := $tm-unit/tmx:prop[@name eq 'eft:wylie-key']
+        let $tm-unit-wylie-key := $tm-unit/tmx:prop[@type eq 'eft:wylie-key']
         let $tm-unit-phrases := local:tm-unit-phrases($tm-unit-wylie-key, $etext-phrases, 1)
         
         return (
@@ -104,14 +104,14 @@ declare function local:tmx-bo-segments($tm-units as element(tmx:tu)*, $tm-units-
                 $text-version ! (
                     common:ws(3),
                     element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                        attribute name { 'revision' },
+                        attribute type { 'revision' },
                         text { . }
                     }
                 ),
                 
                 (: Values from segment :)
                 $tm-unit/@*,
-                for $element in $tm-unit/*[@name = ('bcrd:s_id', 'bcrd:type')]
+                for $element in $tm-unit/*[@type = ('bcrd:s_id', 'bcrd:type')]
                 return (
                     common:ws(3),
                     $element
@@ -123,14 +123,14 @@ declare function local:tmx-bo-segments($tm-units as element(tmx:tu)*, $tm-units-
                     distinct-values($tm-unit-phrases/@folio-index-in-text) ! (
                         common:ws(3),
                         element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                            attribute name { 'folio-index' },
+                            attribute type { 'folio-index' },
                             text { . }
                         }
                     ),
                     distinct-values($tm-unit-phrases/@folio-etext-key) ! (
                         common:ws(3),
                         element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                            attribute name { 'folio-label' },
+                            attribute type { 'folio-label' },
                             text { . }
                         }
                     ),

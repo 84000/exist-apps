@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" xmlns:m="http://read.84000.co/ns/1.0" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
-    <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)*"/>
-    <xsl:variable name="tmx" select="/m:response/tmx:tmx" as="element(tmx:tmx)?"/>
+    <xsl:variable name="response" select="/m:response"/>
+    <xsl:variable name="text" select="$response/m:text" as="element(m:text)*"/>
+    <xsl:variable name="tmx" select="$response/tmx:tmx" as="element(tmx:tmx)?"/>
     <xsl:variable name="tmx-text-version" select="$tmx/tmx:header/@eft:text-version" as="xs:string?"/>
     <xsl:variable name="tm-units" select="$tmx/tmx:body/tmx:tu" as="element(tmx:tu)*"/>
     
-    <xsl:variable name="first-record" select="/m:response/m:request/@first-record ! xs:integer(.)" as="xs:integer"/>
-    <xsl:variable name="max-records" select="/m:response/m:request/@max-records ! xs:integer(.)" as="xs:integer"/>
-    <xsl:variable name="filter" select="/m:response/m:request/@filter[string() = ('revisions', 'unmatched', 'nolocation', 'remainder', 'flagged')]" as="xs:string?"/>
-    <xsl:variable name="active-record" select="/m:response/m:request/@active-record" as="xs:string?"/>
-    <xsl:variable name="job-running" select="/m:response/scheduler:job"/>
+    <xsl:variable name="first-record" select="$response/m:request/@first-record ! xs:integer(.)" as="xs:integer"/>
+    <xsl:variable name="max-records" select="$response/m:request/@max-records ! xs:integer(.)" as="xs:integer"/>
+    <xsl:variable name="filter" select="$response/m:request/@filter[string() = ('revisions', 'unmatched', 'nolocation', 'remainder', 'flagged')]" as="xs:string?"/>
+    <xsl:variable name="active-record" select="$response/m:request/@active-record" as="xs:string?"/>
+    <xsl:variable name="job-running" select="$response/scheduler:job"/>
     <xsl:variable name="flag-types" select="('requires-attention', 'alternative-source')" as="xs:string*"/>
     
     <xsl:template match="/m:response">
@@ -31,45 +32,28 @@
                         <!--<xsl:value-of select="concat(' / ', $filter)"/>-->
                     </h3>
                     
-                    <!-- Text title -->
-                    <div class="h4">
+                    <!-- Title / status -->
+                    <div class="center-vertical full-width sml-margin bottom">
                         
-                        <a>
-                            <xsl:if test="$translation[m:toh]">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html')"/>
-                                <xsl:attribute name="target" select="$translation/@id"/>
-                                <xsl:value-of select="$translation/m:toh[1]/m:full/data()"/>
-                                <xsl:value-of select="' / '"/>
-                            </xsl:if>
-                            <xsl:value-of select="common:limit-str($translation/m:titles/m:title[@xml:lang eq 'en'][1], 80)"/>
-                        </a>
+                        <div class="h3">
+                            <a target="_blank">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' / ', $text/m:titles/m:title[@xml:lang eq 'en'][1])"/>
+                            </a>
+                        </div>
                         
-                        <small>
-                            <xsl:value-of select="' / '"/>
-                        </small>
-                        
-                        <a class="small underline">
-                            <xsl:attribute name="target" select="'check-folios'"/>
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $translation/m:toh[1]/@key, '.html?page=1')"/>
-                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/source/', $translation/m:toh[1]/@key, '.html?page=1')"/>
-                            <xsl:attribute name="data-dualview-title" select="'Tibetan source'"/>
-                            <xsl:value-of select="'Tibetan source'"/>
-                        </a>
-                        
-                        <small>
-                            <xsl:value-of select="' / '"/>
-                        </small>
-                        
-                        <a target="_self" class="small underline" data-loading="Loading...">
-                            <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $translation/@id)"/>
-                            <xsl:value-of select="'Edit headers'"/>
-                        </a>
-                        
-                        <div class="pull-right">
-                            <xsl:sequence select="ops:translation-status($translation/@status-group)"/>
+                        <div class="text-right">
+                            <xsl:sequence select="ops:translation-status($text/@status-group)"/>
                         </div>
                         
                     </div>
+                    
+                    <!-- Links -->
+                    <xsl:call-template name="text-links-list">
+                        <xsl:with-param name="text" select="$text"/>
+                        <xsl:with-param name="exclude-links" select="('edit-tm')"/>
+                        <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
+                    </xsl:call-template>
                     
                     <xsl:choose>
                         
@@ -77,10 +61,10 @@
                             
                             <xsl:variable name="tm-noid" select="$tm-units[not(@id)]" as="element(tmx:tu)*"/>
                             <xsl:variable name="tm-remainder" select="$tm-units[not(tmx:tuv[@xml:lang eq 'bo']) or not(tmx:tuv[@xml:lang eq 'en'])]" as="element(tmx:tu)*"/>
-                            <xsl:variable name="tm-revisions" select="$tm-units[tmx:prop[@name eq 'revision'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
-                            <xsl:variable name="tm-unmatched" select="$tm-units[tmx:prop[@name eq 'unmatched'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
-                            <xsl:variable name="tm-nolocation" select="$tm-units[not(tmx:prop[@name eq 'location-id']/text() gt '')] except ($tm-unmatched | $tm-remainder)" as="element(tmx:tu)*"/>
-                            <xsl:variable name="tm-flagged" select="$tm-units[tmx:prop[@name = $flag-types]]" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-revisions" select="$tm-units[tmx:prop[@type eq 'revision'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-unmatched" select="$tm-units[tmx:prop[@type eq 'unmatched'][text() eq $tmx-text-version]] except $tm-remainder" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-nolocation" select="$tm-units[not(tmx:prop[@type eq 'location-id']/text() gt '')] except ($tm-unmatched | $tm-remainder)" as="element(tmx:tu)*"/>
+                            <xsl:variable name="tm-flagged" select="$tm-units[tmx:prop[@type = $flag-types]]" as="element(tmx:tu)*"/>
                             <xsl:variable name="tm-units-filtered" as="element(tmx:tu)*">
                                 <xsl:choose>
                                     <xsl:when test="$filter eq 'remainder'">
@@ -104,7 +88,7 @@
                                 </xsl:choose>
                             </xsl:variable>
                             <xsl:variable name="count-records" select="count($tm-units-filtered)" as="xs:integer"/>
-                            <xsl:variable name="tei-revised" select="not($translation/@tei-version eq $tmx-text-version)" as="xs:boolean"/>
+                            <xsl:variable name="tei-revised" select="not($text/@tei-version eq $tmx-text-version)" as="xs:boolean"/>
                             
                             <!-- Version comparison -->
                             <hr class="sml-margin"/>
@@ -116,7 +100,7 @@
                                                 <xsl:value-of select="'Current TEI version: '"/>
                                             </span>
                                             <span class="label label-default">
-                                                <xsl:value-of select="$translation/@tei-version"/>
+                                                <xsl:value-of select="$text/@tei-version"/>
                                             </span>
                                         </li>
                                         <li>
@@ -135,7 +119,7 @@
                                                 <xsl:if test="$tei-revised">
                                                     <xsl:attribute name="class" select="'small italic text-danger'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="concat('Version note: ', $translation/m:status-updates/m:status-update[@type eq 'text-version'][@current-version eq 'true'][1])"/>
+                                                <xsl:value-of select="concat('Version note: ', $text/m:status-updates/m:status-update[@type eq 'text-version'][@current-version eq 'true'][1])"/>
                                             </span>
                                         </li>
                                     </ul>
@@ -156,7 +140,7 @@
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id)"/>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id)"/>
                                                 <xsl:value-of select="'All units'"/>
                                             </a>
                                         </li>
@@ -167,7 +151,7 @@
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=revisions')"/>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id, '&amp;filter=revisions')"/>
                                                 <xsl:value-of select="'Revised'"/>
                                                 <xsl:value-of select="' '"/>
                                                 <span class="badge">
@@ -182,7 +166,7 @@
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=unmatched')"/>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id, '&amp;filter=unmatched')"/>
                                                 <xsl:value-of select="'Not matched'"/>
                                                 <xsl:value-of select="' '"/>
                                                 <xsl:variable name="tm-unmatched-count" select="count($tm-unmatched)"/>
@@ -201,7 +185,7 @@
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=nolocation')"/>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id, '&amp;filter=nolocation')"/>
                                                 <xsl:value-of select="'No location'"/>
                                                 <xsl:value-of select="' '"/>
                                                 <xsl:variable name="tm-nolocation-count" select="count($tm-nolocation)"/>
@@ -220,7 +204,7 @@
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=remainder')"/>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id, '&amp;filter=remainder')"/>
                                                 <xsl:value-of select="'Remainders'"/>
                                                 <xsl:value-of select="' '"/>
                                                 <xsl:variable name="tm-remainder-count" select="count($tm-remainder)"/>
@@ -239,7 +223,7 @@
                                                 <xsl:attribute name="class" select="'active'"/>
                                             </xsl:if>
                                             <a>
-                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=flagged')"/>
+                                                <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id, '&amp;filter=flagged')"/>
                                                 <xsl:value-of select="'Flagged'"/>
                                                 <xsl:value-of select="' '"/>
                                                 <xsl:variable name="tm-flagged-count" select="count($tm-flagged)"/>
@@ -257,7 +241,7 @@
                                 
                                 <!-- Pagination -->
                                 <div>
-                                    <xsl:sequence select="common:pagination($first-record, $max-records, $count-records, concat('?text-id=', $translation/@id))"/>
+                                    <xsl:sequence select="common:pagination($first-record, $max-records, $count-records, concat('?text-id=', $text/@id))"/>
                                 </div>
                                 
                             </div>
@@ -267,7 +251,7 @@
                                 <div class="alert alert-danger small" id="alert-ids-missing">
                                     <p>
                                         <xsl:value-of select="'Some IDs are missing from this TMX | '"/>
-                                        <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=fix-ids')}" class="alert-link">
+                                        <a href="{concat('/edit-tm.html?text-id=', $text/@id, '&amp;form-action=fix-ids')}" class="alert-link">
                                             <xsl:value-of select="'Fix missing IDs'"/>
                                         </a>
                                     </p>
@@ -293,7 +277,7 @@
                                     <div class="alert alert-warning" id="alert-tei-revised">
                                         <p>
                                             <xsl:value-of select="'The TEI has been revised since this TM was created | '"/>
-                                            <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=apply-revisions')}" class="alert-link">
+                                            <a href="{concat('/edit-tm.html?text-id=', $text/@id, '&amp;form-action=apply-revisions')}" class="alert-link">
                                                 <xsl:value-of select="'Apply revisions'"/>
                                             </a>
                                             <xsl:if test="$tmx/tmx:header/@eft:seconds-to-revise">
@@ -310,9 +294,9 @@
                                     <div class="alert alert-warning" id="alert-tei-revised">
                                         <p>
                                             <xsl:value-of select="concat(format-number(count($tm-nolocation), '#,###'),' units are missing locations | ')"/>
-                                             <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;form-action=apply-revisions')}" class="alert-link">
+                                            <a href="{concat('/edit-tm.html?text-id=', $text/@id, '&amp;form-action=apply-revisions')}" class="alert-link">
                                                 <xsl:value-of select="'Apply revisions'"/>
-                                             </a>
+                                            </a>
                                             <xsl:if test="$tmx/tmx:header/@eft:seconds-to-revise">
                                                 <small>
                                                     <br/>
@@ -327,7 +311,7 @@
                                     <div class="alert alert-warning" id="alert-tei-revised">
                                         <p>
                                             <xsl:value-of select="'There is some '"/>
-                                            <a href="{concat('/edit-tm.html?text-id=', $translation/@id, '&amp;filter=remainder')}" class="alert-link">
+                                            <a href="{concat('/edit-tm.html?text-id=', $text/@id, '&amp;filter=remainder')}" class="alert-link">
                                                 <xsl:value-of select="'remainder'"/>
                                             </a>
                                             <xsl:value-of select="' text left over from the alignment process.'"/>
@@ -351,7 +335,7 @@
                                             <xsl:variable name="tm-en" select="string-join($tm-unit/tmx:tuv[@xml:lang eq 'en']/tmx:seg)" as="xs:string?"/>
                                             <xsl:variable name="row-id" select="concat('row-', ($tm-unit/@id, 'new')[1])" as="xs:string"/>
                                             <xsl:variable name="row-number" select="common:index-of-node($tm-units, $tm-unit)" as="xs:integer"/>
-                                            <xsl:variable name="tm-location-id" select="$tm-unit/tmx:prop[@name eq 'location-id'][1]/string()"/>
+                                            <xsl:variable name="tm-location-id" select="$tm-unit/tmx:prop[@type eq 'location-id'][1]/string()"/>
                                             
                                             <div class="item">
                                                 <div class="row">
@@ -367,21 +351,21 @@
                                                         
                                                         <xsl:choose>
                                                             
-                                                            <xsl:when test="$tm-unit/tmx:prop[@name eq 'unmatched']">
+                                                            <xsl:when test="$tm-unit/tmx:prop[@type eq 'unmatched']">
                                                                 <br/>
                                                                 <span class="label label-danger">
                                                                     <xsl:value-of select="'Not matched'"/>
                                                                 </span>
                                                             </xsl:when>
                                                             
-                                                            <xsl:when test="$tm-unit[not(tmx:prop[@name eq 'location-id']/text() gt '')]">
+                                                            <xsl:when test="$tm-unit[not(tmx:prop[@type eq 'location-id']/text() gt '')]">
                                                                 <br/>
                                                                 <span class="label label-warning">
                                                                     <xsl:value-of select="'No location'"/>
                                                                 </span>
                                                             </xsl:when>
                                                             
-                                                            <xsl:when test="$tm-unit/tmx:prop[@name eq 'revision'][text() eq $tmx-text-version]">
+                                                            <xsl:when test="$tm-unit/tmx:prop[@type eq 'revision'][text() eq $tmx-text-version]">
                                                                 <br/>
                                                                 <span class="label label-success">
                                                                     <xsl:value-of select="'Revised'"/>
@@ -390,22 +374,22 @@
                                                             
                                                         </xsl:choose>
                                                         
-                                                        <xsl:for-each select="$tm-unit/tmx:prop[@name = $flag-types]">
+                                                        <xsl:for-each select="$tm-unit/tmx:prop[@type = $flag-types]">
                                                             <br/>
                                                             <xsl:choose>
-                                                                <xsl:when test="@name eq 'requires-attention'">
+                                                                <xsl:when test="@type eq 'requires-attention'">
                                                                     <span class="label label-danger">
                                                                         <xsl:value-of select="'Requires attention'"/>
                                                                     </span>
                                                                 </xsl:when>
-                                                                <xsl:when test="@name eq 'alternative-source'">
+                                                                <xsl:when test="@type eq 'alternative-source'">
                                                                     <span class="label label-warning">
                                                                         <xsl:value-of select="'Alternative source'"/>
                                                                     </span>
                                                                 </xsl:when>
                                                                 <xsl:otherwise>
                                                                     <span class="label label-warning">
-                                                                        <xsl:value-of select="@name"/>
+                                                                        <xsl:value-of select="@type"/>
                                                                     </span>
                                                                 </xsl:otherwise>
                                                             </xsl:choose>
@@ -424,7 +408,7 @@
                                                                 <xsl:attribute name="class" select="'form form-update stealth reveal'"/>
                                                             </xsl:if>
                                                             
-                                                            <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $translation/@id, '#', $row-id)"/>
+                                                            <xsl:attribute name="action" select="concat('/edit-tm.html?text-id=', $text/@id, '#', $row-id)"/>
                                                             <xsl:attribute name="data-loading" select="'Updating translation memory...'"/>
                                                             
                                                             <!-- Action -->
@@ -479,7 +463,7 @@
                                                             <xsl:choose>
                                                                 
                                                                 <!-- Unmatched -->
-                                                                <xsl:when test="$tm-unit[tmx:prop[@name eq 'unmatched']]">
+                                                                <xsl:when test="$tm-unit[tmx:prop[@type eq 'unmatched']]">
                                                                     
                                                                     <!-- Include the unmatched TEI -->
                                                                     <div class="form-group stealth-hidden">
@@ -523,10 +507,10 @@
                                                                                     <xsl:value-of select="' / '"/>
                                                                                 </span>
                                                                                 
-                                                                                <a target="{ $translation/@id }-html">
-                                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
-                                                                                    <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $translation/m:toh[1]/@key, '.html#', $tm-location-id)"/>
-                                                                                    <xsl:attribute name="data-dualview-title" select="$translation/m:toh[1]/m:full/data()"/>
+                                                                                <a target="{ $text/@id }-html">
+                                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh[1]/@key, '.html#', $tm-location-id)"/>
+                                                                                    <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $text/m:toh[1]/@key, '.html#', $tm-location-id)"/>
+                                                                                    <xsl:attribute name="data-dualview-title" select="$text/m:toh[1]/m:full/data()"/>
                                                                                     <span class="small">
                                                                                         <xsl:value-of select="'Test'"/>
                                                                                     </span>
@@ -554,7 +538,7 @@
                                                                             <xsl:for-each select="$flag-types">
                                                                                 
                                                                                 <xsl:variable name="flag-name" select="." as="xs:string"/>
-                                                                                <xsl:variable name="unit-flag" select="$tm-unit/tmx:prop[@name = $flag-name]"/>
+                                                                                <xsl:variable name="unit-flag" select="$tm-unit/tmx:prop[@type = $flag-name]"/>
                                                                                 
                                                                                 <div class="col-sm-{ floor(12 div count($flag-types)) }">
                                                                                     <div class="checkbox">
@@ -624,7 +608,7 @@
                                                                                 
                                                                                 <xsl:if test="$tm-unit/@id gt ''">
                                                                                     <a role="button" class="btn btn-danger btn-sm">
-                                                                                        <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $translation/@id, '&amp;remove-unit=', $tm-unit/@id, '&amp;filter=', $filter)"/>
+                                                                                        <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id, '&amp;remove-unit=', $tm-unit/@id, '&amp;filter=', $filter)"/>
                                                                                         <xsl:attribute name="data-confirm" select="'Are you sure you want to delete this unit?'"/>
                                                                                         <xsl:value-of select="'Delete'"/>
                                                                                     </a>
@@ -697,7 +681,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="$translation/eft:toh[1]/eft:full/data(.) || ' | Translation Memory Editor | 84000 Project Management'"/>
+            <xsl:with-param name="page-title" select="$text/eft:toh[1]/eft:full/data(.) || ' | Translation Memory Editor | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'Create Translation Memory pairs from 84000 TEI files'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

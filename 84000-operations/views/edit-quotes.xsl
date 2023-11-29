@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
     
-    <xsl:variable name="request-resource-id" select="/m:response/m:request/@resource-id" as="xs:string"/>
-    <xsl:variable name="request-part" select="/m:response/m:request/@part" as="xs:string?"/>
+    <xsl:variable name="response" select="/m:response"/>
+    <xsl:variable name="request-resource-id" select="$response/m:request/@resource-id" as="xs:string"/>
+    <xsl:variable name="request-part" select="$response/m:request/@part" as="xs:string?"/>
     
-    <xsl:variable name="text" select="/m:response/m:text[1]"/>
+    <xsl:variable name="text" select="$response/m:text[1]"/>
     <xsl:variable name="main-title" select="$text/m:titles/m:title[@xml:lang eq 'en'][1]"/>
-    <xsl:variable name="quotes" select="/m:response/m:quotes[1]"/>
+    <xsl:variable name="quotes" select="$response/m:quotes[1]"/>
     
     <xsl:template match="/m:response">
         
@@ -27,65 +28,31 @@
                     
                     <!-- Page title -->
                     <h3 class="visible-print-block no-top-margin">
-                        <xsl:value-of select="'Quotes'"/>
+                        <xsl:value-of select="'Review Quotes'"/>
                     </h3>
                     
-                    <!-- Text title -->
-                    <div class="h4 no-bottom-margin">
+                    <!-- Title / status -->
+                    <div class="center-vertical full-width sml-margin bottom">
                         
-                        <xsl:variable name="main-title-limited" select="common:limit-str(string-join(($text/m:toh[1]/m:full/data(), $main-title), ' / '), 80)"/>
+                        <div class="h3">
+                            <a target="_blank">
+                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' / ', $main-title)"/>
+                            </a>
+                        </div>
                         
-                        <a>
-                            <xsl:if test="$text[m:toh]">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh[1]/@key, '.html?view-mode=editor')"/>
-                                <xsl:attribute name="target" select="$request-resource-id"/>
-                            </xsl:if>
-                            <xsl:value-of select="$main-title-limited"/>
-                        </a>
-                        
-                        <xsl:if test="$text[@tei-version]">
-                            
-                            <xsl:value-of select="' '"/>
-                            
-                            <span class="label label-default">
-                                <xsl:value-of select="$text/@tei-version"/>
-                            </span>
-                            
-                        </xsl:if>
-                        
-                        <small>
-                            <xsl:value-of select="' / '"/>
-                        </small>
-                        
-                        <a class="small underline">
-                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $request-resource-id, '.html?view-mode=editor')"/>
-                            <xsl:attribute name="target" select="$request-resource-id"/>
-                            <xsl:value-of select="common:limit-str($request-resource-id, 100 - string-length($main-title-limited))"/>
-                        </a>
-                        
-                        <!--<small>
-                            <xsl:value-of select="' / '"/>
-                        </small>
-                        
-                        <a target="_blank" class="small underline" data-loading="Loading...">
-                            <xsl:attribute name="href" select="concat('/test-cases-quotes.xml?resource-ids=', $request-resource-id, '&amp;part=', $requested-part)"/>
-                            <xsl:value-of select="'Test cases'"/>
-                        </a>-->
-                        
-                        <small>
-                            <xsl:value-of select="' / '"/>
-                        </small>
-                        
-                        <a target="_self" class="small underline" data-loading="Loading...">
-                            <xsl:attribute name="href" select="concat('edit-text-header.html?id=', $request-resource-id)"/>
-                            <xsl:value-of select="'Edit headers'"/>
-                        </a>
-                        
-                        <div class="pull-right">
+                        <div class="text-right">
                             <xsl:sequence select="ops:translation-status($text/@status-group)"/>
                         </div>
                         
                     </div>
+                    
+                    <!-- Links -->
+                    <xsl:call-template name="text-links-list">
+                        <xsl:with-param name="text" select="$text"/>
+                        <xsl:with-param name="exclude-links" select="('edit-quotes', 'source-folios')"/>
+                        <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
+                    </xsl:call-template>
                     
                     <hr class="sml-margin"/>
                     
@@ -105,7 +72,7 @@
                                                 <xsl:attribute name="selected" select="'selected'"/>
                                             </xsl:if>
                                             <xsl:attribute name="value" select="@id"/>
-                                            <xsl:value-of select="tei:head[@type eq parent::m:part/@type]"/>
+                                            <xsl:value-of select="(tei:head[@type eq parent::m:part/@type], '[Section with no header]')[1]"/>
                                         </option>
                                     </xsl:for-each>
                                 </select>

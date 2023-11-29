@@ -119,7 +119,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
         )
     
     (: Download other files :)
-    let $downloadable-extensions := ('pdf', 'epub', 'rdf')
+    let $downloadable-extensions := ('pdf', 'epub', 'rdf'(:, 'json':))
     let $download-files := 
     
         (: loop through one or all file types in the master data :)

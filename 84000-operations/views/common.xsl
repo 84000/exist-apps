@@ -131,7 +131,7 @@
                                         <a>
                                             <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', /m:response/m:request/@resource-id, '&amp;part=', /m:response/m:request/@part)"/>
                                             <xsl:attribute name="data-loading" select="'Loading quotes...'"/>
-                                            <xsl:value-of select="'Quotes Validation'"/>
+                                            <xsl:value-of select="'Review Quotes'"/>
                                         </a>
                                     </li>
                                 </xsl:if>
@@ -1791,6 +1791,131 @@
                 
             </fieldset>    
         </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template name="text-links-list">
+        
+        <xsl:param name="text" as="element(m:text)"/>
+        <xsl:param name="exclude-links" as="xs:string*"/>
+        <xsl:param name="text-status" as="element(m:status)?"/>
+        <xsl:param name="glossary-filter" as="xs:string?"/>
+        
+        <ul class="list-inline inline-dots small hidden-print">
+            
+            <xsl:if test="not($exclude-links[. eq 'edit-text-header']) and $text[@id]">
+                <li>
+                    <a data-loading="Loading headers form...">
+                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text/@id)"/>
+                        <xsl:value-of select="'Edit headers'"/>
+                    </a>
+                    <xsl:if test="$text[@status-group eq 'published'] and $text/m:downloads[@tei-version != m:download/@version]">
+                        <xsl:value-of select="' '"/>
+                        <span class="text-danger">
+                            <i class="fa fa-exclamation-circle"/>
+                            <xsl:value-of select="' Version updated'"/>
+                        </span>
+                    </xsl:if>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'edit-text-sponsors']) and $text[@id]">
+                <li>
+                    <a data-loading="Loading sponsorship form...">
+                        <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text/@id)"/>
+                        <xsl:value-of select="'Edit sponsorship'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'source-utils']) and $text[@id]">
+                <li>
+                    <a data-loading="Loading source utilities...">
+                        <xsl:attribute name="href" select="concat('source-utils.html', '?text-id=', $text/@id)"/>
+                        <xsl:value-of select="'Source utilities'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'edit-glossary']) and $text[@id]">
+                <li>
+                    <a data-loading="Loading glossary editor...">
+                        
+                        <xsl:choose>
+                            <xsl:when test="$glossary-filter = 'entities-missing'">
+                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id, '&amp;filter=missing-entities')"/>
+                            </xsl:when>
+                            <xsl:when test="$glossary-filter = 'entities-flagged-attention'">
+                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id, '&amp;filter=requires-attention')"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id)"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                        <xsl:value-of select="'Glossary editor'"/>
+                        
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'edit-tm']) and $text[@id] and $text-status[@marked-up eq 'true']">
+                <li>
+                    <a data-loading="Loading TM editor...">
+                        <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id)"/>
+                        <xsl:value-of select="'TM editor'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'edit-quotes']) and $text[@id] and $text-status[@marked-up eq 'true']">
+                <li>
+                    <a data-loading="Loading quotes...">
+                        <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', $text/@id)"/>
+                        <xsl:value-of select="'Review quotes'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'annotation-tei']) and $text[@id] and $text-status[@marked-up eq 'true']">
+                <li>
+                    <a data-loading="Loading archive...">
+                        <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', $text/@id)"/>
+                        <xsl:value-of select="'Archived copies'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'editor-mode']) and $text[m:toh] and $text-status[@marked-up eq 'true']">
+                <li>
+                    <a target="{ $text/@id }-html">
+                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text/m:toh[1]/@key, '.html?view-mode=editor')"/>
+                        <xsl:value-of select="'Editor mode'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'source-folios']) and $text[m:toh]">
+                <li>
+                    <a target="check-folios">
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $text/m:toh[1]/@key, '.html')"/>
+                        <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/source/', $text/m:toh[1]/@key, '.html?page=1')"/>
+                        <xsl:attribute name="data-dualview-title" select="'Folio view'"/>
+                        <xsl:value-of select="'Folio view'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="not($exclude-links[. eq 'user-lock']) and $text[@locked-by-user gt '']">
+                <li>
+                    <span class="text-danger">
+                        <i class="fa fa-exclamation-circle"/>
+                        <xsl:value-of select="concat(' File locked by #', $text/@locked-by-user)"/>
+                    </span>
+                </li>
+            </xsl:if>
+            
+        </ul>
         
     </xsl:template>
     
