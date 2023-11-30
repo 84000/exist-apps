@@ -700,8 +700,12 @@ function common:valid-lang($lang as xs:string) as xs:string {
         'bo'
     else if(lower-case($lang) eq 'zh') then
         'zh'
+    else if(lower-case($lang) eq 'ja') then
+        'ja'
     else if(lower-case($lang) eq 'en') then
         'en'
+    else if(lower-case($lang) = ('pi-ltn', 'pi-latn')) then
+        'Pi-Ltn'
     else
         ''
 };

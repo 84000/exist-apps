@@ -1447,7 +1447,7 @@
         </h3>
         
         <!-- Output terms grouped and ordered by language -->
-        <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh')">
+        <xsl:for-each select="('Bo-Ltn','bo','Sa-Ltn', 'zh', 'Pi-Ltn')">
             
             <xsl:variable name="term-lang" select="."/>
             <xsl:variable name="term-lang-terms" select="$glossary-item/tei:term[not(@type eq 'translationAlternative')][@xml:lang eq $term-lang][normalize-space(text())]"/>
@@ -1459,6 +1459,15 @@
             
             <xsl:if test="$term-lang-terms or ($translation and $term-empty-text gt '')">
                 <div>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$term-lang eq 'Pi-Ltn'">
+                            <span>
+                                <xsl:value-of select="'Pali: '"/>
+                            </span>
+                        </xsl:when>
+                    </xsl:choose>
+                    
                     <ul class="list-inline inline-dots">
                         <xsl:choose>
                             
@@ -1485,6 +1494,7 @@
                             
                         </xsl:choose>
                     </ul>
+                    
                 </div>
             </xsl:if>
             
@@ -1757,7 +1767,7 @@
             </xsl:call-template>
             
             <xsl:choose>
-                <xsl:when test="$term-lang eq 'Sa-Ltn'">
+                <xsl:when test="$term-lang = ('Sa-Ltn', 'Pi-Ltn')">
                     <xsl:apply-templates select="string-join($term-text) ! normalize-space(.) ! lower-case(.)"/>
                 </xsl:when>
                 <xsl:otherwise>

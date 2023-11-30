@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -577,19 +577,7 @@
                                             <!-- Title -->
                                             <a target="_blank" class="printable">
                                                 <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text/m:toh/@key, '.html')"/>
-                                                <xsl:choose>
-                                                    <xsl:when test="$text/m:titles/m:title[@xml:lang eq 'en'][text()]">
-                                                        <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'en']"/>
-                                                    </xsl:when>
-                                                    <xsl:when test="$text/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()]">
-                                                        <xsl:attribute name="class" select="'printable text-sa break'"/>
-                                                        <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                                                    </xsl:when>
-                                                    <xsl:otherwise>
-                                                        <xsl:attribute name="class" select="'printable text-wy'"/>
-                                                        <xsl:value-of select="$text/m:titles/m:title[@xml:lang eq 'Bo-Ltn']"/>
-                                                    </xsl:otherwise>
-                                                </xsl:choose>
+                                                <xsl:value-of select="($text/m:titles/m:title[@xml:lang eq 'en'], $text/m:titles/m:title[@xml:lang eq 'Sa-Ltn'], $text/m:titles/m:title[@xml:lang eq 'Bo-Ltn'])[normalize-space()][1]"/>
                                             </a>
                                             
                                             <!-- Stats -->

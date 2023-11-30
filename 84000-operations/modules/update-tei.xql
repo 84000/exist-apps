@@ -828,7 +828,7 @@ declare function update-tei:update-glossary($tei as element(tei:TEI), $glossary-
                     (: Get all the term-lang-n input :)
                     let $lang-params := common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'term-lang-')], '-')
                     (: Loop per lang :)
-                    for $lang in ('en','Sa-Ltn','Bo-Ltn','zh')
+                    for $lang in ('en','Sa-Ltn','Bo-Ltn','zh','Pi-Ltn')
                     return
                         (: Get the input for this lang :)
                         for $lang-param at $index in $lang-params[request:get-parameter(., '') ! common:valid-lang(.) eq $lang]

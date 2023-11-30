@@ -602,32 +602,44 @@
             
             <!-- Output terms grouped and ordered by language -->
             <div class="tei-parser">
-                <xsl:for-each select="('en','bo','Bo-Ltn','Sa-Ltn','zh')">
+                <xsl:for-each select="('en','bo','Bo-Ltn','Sa-Ltn','zh', 'Pi-Ltn')">
                     
                     <xsl:variable name="term-lang" select="."/>
                     <xsl:variable name="term-lang-terms" select="$entry/m:term[@xml:lang eq $term-lang][text()]"/>
                     
                     <!--<xsl:if test="$term-lang-terms[text()[not(normalize-space(.) = $entity-data/m:label[@xml:lang eq $term-lang]/text())]]">-->
                     <xsl:if test="$term-lang-terms[text()]">
-                        <ul class="list-inline inline-dots term-list">
+                        <div class="term-list">
+                            
                             <xsl:choose>
-                                <xsl:when test="$term-lang-terms">
-                                    <xsl:for-each select="$term-lang-terms">
-                                        <li>
-                                            
-                                            <xsl:call-template name="glossary-term">
-                                                <xsl:with-param name="term-text" select="text()"/>
-                                                <xsl:with-param name="term-lang" select="@xml:lang"/>
-                                                <xsl:with-param name="term-type" select="@type"/>
-                                                <xsl:with-param name="term-status" select="@status"/>
-                                                <xsl:with-param name="glossary-type" select="$entry/@type"/>
-                                            </xsl:call-template>
-                                            
-                                        </li>
-                                    </xsl:for-each>
+                                <xsl:when test="$term-lang eq 'Pi-Ltn'">
+                                    <span>
+                                        <xsl:value-of select="'Pali: '"/>
+                                    </span>
                                 </xsl:when>
                             </xsl:choose>
-                        </ul>
+                            
+                            <ul class="list-inline inline-dots">
+                                <xsl:choose>
+                                    <xsl:when test="$term-lang-terms">
+                                        <xsl:for-each select="$term-lang-terms">
+                                            <li>
+                                                
+                                                <xsl:call-template name="glossary-term">
+                                                    <xsl:with-param name="term-text" select="text()"/>
+                                                    <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                    <xsl:with-param name="term-type" select="@type"/>
+                                                    <xsl:with-param name="term-status" select="@status"/>
+                                                    <xsl:with-param name="glossary-type" select="$entry/@type"/>
+                                                </xsl:call-template>
+                                                
+                                            </li>
+                                        </xsl:for-each>
+                                    </xsl:when>
+                                </xsl:choose>
+                            </ul>
+                            
+                        </div>
                     </xsl:if>
                     
                 </xsl:for-each>

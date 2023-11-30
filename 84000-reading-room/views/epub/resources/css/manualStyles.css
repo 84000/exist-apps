@@ -140,6 +140,9 @@ small, .small {
 .text-wy {
     font-style: italic;
 }
+.text-pi {
+    font-style: italic;
+}
 .text-zh {
     font-family: "NotoSansTC" !important;
     /* font-size: 1.2em; */
@@ -253,6 +256,7 @@ ul.list-inline {
     padding-left: 0px;
     margin-left: 0px;
     list-style: none;
+    display: inline-block;
 }
 .list-inline>li {
     display: inline-block;
