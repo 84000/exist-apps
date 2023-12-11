@@ -591,14 +591,12 @@
                 
             </div>
             
-            <!-- Tantric restriction warning -->
-            <!--<xsl:variable name="tantric-restriction" select="$text[@type eq 'translation']/m:publication/m:tantric-restriction"/>
-            <xsl:if test="$tantric-restriction/tei:p">
+            <!-- Tantric restriction warning
+            <xsl:if test="$text[@type eq 'translation']/m:publication/m:tantric-restriction[tei:p]">
                 <xsl:call-template name="tantra-warning">
                     <xsl:with-param name="id" select="$entry/@id"/>
-                    <xsl:with-param name="node" select="$tantric-restriction"/>
                 </xsl:call-template>
-            </xsl:if>-->
+            </xsl:if> -->
             
             <!-- Output terms grouped and ordered by language -->
             <div class="tei-parser">

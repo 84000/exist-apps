@@ -51,44 +51,51 @@ declare variable $glossary:attestation-types :=
     <attestation-types xmlns="http://read.84000.co/ns/1.0">
         <attestation-type id="attestedSource" code="AS" >
             <label>Attested in source text</label>
-            <description>This term is attested in the Sanskrit manuscript used as a source for this translation.</description>
+            <description>This term is attested in a manuscript used as a source for this translation.</description>
             <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
             <appliesToLang xml:lang="Bo-Ltn" default="true"/>
             <appliesToLang xml:lang="bo" default="true"/>
             <appliesToLang xml:lang="zh" default="true"/>
+            <appliesToLang xml:lang="Pi-Ltn" rend="note"/>
             <migrate id="sourceAttested"/>
         </attestation-type>
         <attestation-type id="attestedOther" code="AO">
             <label>Attested in other text</label>
-            <description>This term is attested in other Sanskrit manuscripts of the Kangyur or Tengyur.</description>
+            <description>This term is attested in other manuscripts with a parallel or similar context.</description>
             <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Pi-Ltn" rend="note"/>
         </attestation-type>
         <attestation-type id="attestedDictionary" code="AD">
             <label>Attested in dictionary</label>
-            <description>This term is attested in Tibetan-Sanskrit dictionaries.</description>
+            <description>This term is attested in dictionaries matching Tibetan to the corresponding language.</description>
             <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Pi-Ltn" rend="note"/>
         </attestation-type>
         <attestation-type id="attestedApproximate" code="AA">
             <label>Approximate attestation</label>
-            <description>The attestation of this name is approximate. It is based on other names where Tibetan-Sanskrit relationship is attested in dictionaries or other manuscripts.</description>
+            <description>The attestation of this name is approximate. It is based on other names where the relationship between the Tibetan and source language is attested in dictionaries or other manuscripts.</description>
             <appliesToLang xml:lang="Sa-Ltn" rend="note"/>
+            <appliesToLang xml:lang="Pi-Ltn" rend="note"/>
         </attestation-type>
         <attestation-type id="reconstructedPhonetic" code="RP">
             <label>Reconstruction from Tibetan phonetic rendering</label>
             <description>This term is a reconstruction based on the Tibetan phonetic rendering of the term.</description>
             <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
+            <appliesToLang xml:lang="Pi-Ltn" rend="asterisk note"/>
             <migrate id="transliterationReconstruction"/>
         </attestation-type>
         <attestation-type id="reconstructedSemantic" code="RS">
             <label>Reconstruction from Tibetan semantic rendering</label>
             <description>This term is a reconstruction based on the semantics of the Tibetan translation.</description>
             <appliesToLang xml:lang="Sa-Ltn" rend="asterisk note"/>
+            <appliesToLang xml:lang="Pi-Ltn" rend="asterisk note"/>
             <migrate id="semanticReconstruction"/>
         </attestation-type>
         <attestation-type id="sourceUnspecified" code="SU">
             <label>Source Unspecified</label>
             <description>This term has been supplied from an unspecified source, which most often is a widely trusted dictionary.</description>
             <appliesToLang xml:lang="Sa-Ltn" default="true"/>
+            <appliesToLang xml:lang="Pi-Ltn" default="true"/>
         </attestation-type>
     </attestation-types>;
 
@@ -237,7 +244,7 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
     
     let $flagged-instances := 
         if($flag[@id eq 'entity-definition']) then
-            $entities:entities//m:entity[m:content[@type eq 'glossary-definition'][node()]]/m:instance
+            $entities:entities//m:content[@type eq 'glossary-definition']/parent::m:entity/m:instance
         else
             $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
     
@@ -443,6 +450,7 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                     local:distinct-terms($term-glosses/tei:term[not(@xml:lang) or @xml:lang eq 'en'][not(@type eq 'translationAlternative')][normalize-space(text())]) ! ( text{ common:ws(2) }, element translation { . } ),
                     local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Sa-Ltn'][normalize-space(text())]) ! ( text{ common:ws(2) }, element sanskrit { lower-case(.) } ),
                     local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'zh'][normalize-space(text())]) ! ( text{ common:ws(2) }, element chinese { . } ),
+                    local:distinct-terms($term-glosses/tei:term[@xml:lang eq 'Pi-Ltn'][normalize-space(text())]) ! ( text{ common:ws(2) }, element pali { lower-case(.) } ),
                     
                     (: Definition :)
                     $entity/m:content[@type eq 'glossary-definition'][descendant::text()[normalize-space()]] ! ( text{ common:ws(2) }, element definition { string-join(descendant::text() ! normalize-space(.), '') } ),
@@ -551,6 +559,7 @@ declare function glossary:spreadsheet-data($request-xml as element(m:request), $
                     element Translation { string-join($term/m:translation, '; ') },
                     element Sanskrit { string-join($term/m:sanskrit, '; ') },
                     element Chinese { string-join($term/m:chinese, '; ') },
+                    element Pali { string-join($term/m:pali, '; ') },
                     element Definition { 
                         attribute width { '80' }, 
                         string-join($term/m:definition, '; ')
@@ -585,6 +594,7 @@ declare function glossary:combined-txt($request-xml as element(m:request), $cach
                     if($term/m:translation[text()]) then concat('Translated: ', string-join($term/m:translation, '; '), ' / ') else (),
                     if($term/m:sanskrit[text()]) then concat('Sanskrit: ', string-join($term/m:sanskrit, '; '), ' / ') else (),
                     if($term/m:chinese[text()]) then concat('Chinese: ', string-join($term/m:chinese, '; '), ' / ') else (),
+                    if($term/m:pali[text()]) then concat('Pali: ', string-join($term/m:pali, '; '), ' / ') else (),
                     if($term/m:definition[text()]) then concat('Definition: ', string-join($term/m:definition, '; '), ' / ') else (),
                     if($term[@href]) then
                         concat('Link: ', $term/@href/string())

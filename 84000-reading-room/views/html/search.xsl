@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -469,40 +469,10 @@
                                         <div class="row">
                                             <div class="col-sm-12">
                                                 
-                                                <a data-toggle="modal" class="warning">
-                                                    <xsl:attribute name="href" select="concat('#tantra-warning-', $header/@resource-id)"/>
-                                                    <xsl:attribute name="data-target" select="concat('#tantra-warning-', $header/@resource-id)"/>
-                                                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                                    <xsl:value-of select="' Tantra Text Warning'"/>
-                                                </a>
+                                                <xsl:call-template name="tantra-warning">
+                                                    <xsl:with-param name="id" select="$header/@resource-id"/>
+                                                </xsl:call-template>
                                                 
-                                                <div class="modal fade warning" tabindex="-1" role="dialog">
-                                                    <xsl:attribute name="id" select="concat('tantra-warning-', $header/@resource-id)"/>
-                                                    <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $header/@resource-id)"/>
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">
-                                                                        <i class="fa fa-times"/>
-                                                                    </span>
-                                                                </button>
-                                                                <h4 class="modal-title">
-                                                                    <xsl:attribute name="id" select="concat('tantra-warning-label-', $header/@resource-id)"/>
-                                                                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                                                    <xsl:value-of select="' Tantra Text Warning'"/>
-                                                                </h4>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <xsl:for-each select="$tantric-restriction/tei:p">
-                                                                    <p>
-                                                                        <xsl:apply-templates select="node()"/>
-                                                                    </p>
-                                                                </xsl:for-each>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </xsl:if>
@@ -1066,6 +1036,22 @@
             </p>
         </xsl:for-each>
         
+    </xsl:template>
+    
+    <xsl:template match="tei:emph">
+        <em>
+            <xsl:attribute name="class">
+                <xsl:variable name="classes" as="xs:string*">
+                    <xsl:if test="@rend eq 'bold'">
+                        <xsl:value-of select="'text-bold'"/>
+                    </xsl:if>
+                    <xsl:value-of select="common:lang-class(@xml:lang)"/>
+                </xsl:variable>
+                <xsl:value-of select="string-join($classes, ' ')"/>
+            </xsl:attribute>
+            
+            <xsl:apply-templates select="node()"/>
+        </em>
     </xsl:template>
     
 </xsl:stylesheet>

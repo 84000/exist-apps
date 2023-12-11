@@ -310,7 +310,7 @@
                     </xsl:variable>
                     
                     <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
-                        <xsl:for-each select="$glossary-prioritised[not(@mode eq 'marked')]">
+                        <xsl:for-each select="$glossary-prioritised">
                             
                             <xsl:variable name="terms" select="m:glossary-terms-to-match(., 'bo')"/>
                             

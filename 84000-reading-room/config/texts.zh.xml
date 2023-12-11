@@ -40,6 +40,31 @@
     <item key="translation.partial-text-warning">This webpage does not include the entire published text</item>
     <item key="translation.partial-text-link">The full translation is available to download as pdf at:</item>
     
+    <!-- Tantra warning -->
+    <item key="about.common.tantra-warning-title">Tantra Text Warning</item>
+    <item key="about.common.tantra-warning-body">
+        <p>Readers are reminded that according to Vajrayāna Buddhist tradition there are restrictions and commitments concerning tantra.</p>
+        <p>Practitioners who are not sure if they should read translations in this section are advised to consult the authorities of their lineage.</p>
+        <p>The responsibility for reading these texts or sharing them with others—and hence the consequences—lies in the hands of readers.</p>
+    </item>
+    <item key="about.common.tantra-warning-dismiss">Don't show this warning again for this text</item>
+    <item key="about.common.unrestricted-access-title">About unrestricted access</item>
+    <item key="about.common.unrestricted-access-body">
+        <p>The decision to publish tantra texts without restricted access has been considered carefully. First of all, it should be noted that all the original Tibetan texts of the Kangyur, including
+            those in this Tantra section, are in the public domain. Some of the texts in this section (but by no means all of them) are nevertheless, according to some traditions, only studied with
+            authorization and after suitable preliminaries.</p>
+        <p>It is true, of course, that a translation makes the content accessible to a far greater number of people; 84000 has therefore consulted many senior Buddhist teachers on this question, and
+            most of them felt that to publish the texts openly is, on balance, the best solution. The alternatives would be not to translate them at all (which would defeat the purposes of the whole
+            project), or to place some sort of restriction on their access. Restricted access has been tried by some Buddhist book publishers, and of course needs a system of administration, judgment,
+            and policing that is either a mere formality, or is very difficult to implement. It would be even harder to implement in the case of electronic texts—and even easier to circumvent. Indeed,
+            nowadays practically the whole range of traditionally restricted Tibetan Buddhist material is already available to anyone who looks for it, and is all too often misrepresented, taken out
+            of context, or its secret and esoteric nature deliberately vaunted.</p>
+        <p>84000’s policy is to present carefully authenticated translations in their proper setting of the whole body of Buddhist sacred literature, and to trust the good sense of the vast majority
+            of readers not to misuse or misunderstand them. Readers are reminded that according to Vajrayāna Buddhist tradition there are restrictions and commitments concerning tantra. Practitioners
+            who are not sure if they should read translations in this section are advised to consult the authorities of their lineage. The responsibility, and hence consequences, of reading these
+            texts and/or sharing them with others who may or may not fulfill the requirements lie in the hands of readers.</p>
+    </item>
+    
     <!--<item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">
         <p>There are many ways to get eBooks onto eReader devices. If you already have a reliable method for this, please simply download

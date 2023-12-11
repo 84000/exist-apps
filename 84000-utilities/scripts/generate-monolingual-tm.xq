@@ -14,7 +14,7 @@ import module namespace levenshtein="http://read.84000.co/xquery-levenshtein-dis
 import module namespace ewts = "http://tbrc.org/xquery/ewts2unicode";
 import module namespace functx="http://www.functx.com";
 
-declare variable $local:toh-key := 'toh20';
+declare variable $local:toh-key := 'toh5';
 declare variable $local:tei := tei-content:tei($local:toh-key, 'translation');
 declare variable $local:text-id := tei-content:id($local:tei);
 declare variable $local:levenshtein-tolerance := 5;
@@ -37,7 +37,7 @@ declare function local:tm-units($bcrd-sentences as element(bcrd:sentence)*){
             
             element { QName('http://www.lisa.org/tmx14', 'prop') }{
                 attribute type { 'eft:wylie-key' },
-                text { string-join($sentence/bcrd:phrase ! string-join(text()) ! normalize-space(.) ! replace(., '(&#10;|\+)', '') ! translate(., 'āīū', 'AIU'), ' ') ! replace(., '\s', '-') }
+                text { string-join($sentence/bcrd:phrase ! string-join(text()) ! normalize-space(.) ! replace(., '(&#10;|\+|\.)', '') ! translate(., 'āīū', 'AIU'), ' ') ! replace(., '\s', '-') }
             }
             
         }
@@ -70,7 +70,7 @@ declare function local:etext-phrases($etext-pages as element(eft:page)*) as elem
             and $index-in-text lt ($index-of-text-end, count($text-nodes))[1]
             and $text-node[. instance of text()]
         return
-            for $token at $index-of-token in tokenize(string-join($text-node), '\s+')[not(. = ('༄༅།',''))] ! normalize-space(.)
+            for $token at $index-of-token in tokenize(string-join($text-node), '\s+')[matches(., '\p{L}')](:[not(. = ('༄༅།','༄༅༅།','།',''))]:) ! normalize-space(.)
             return
                 element { QName('http://read.84000.co/ns/1.0','etext-phrase') } {
                     (:attribute position { $index-in-text },:)
@@ -95,67 +95,84 @@ declare function local:tmx-bo-segments($tm-units as element(tmx:tu)*, $tm-units-
         let $tm-unit-wylie-key := $tm-unit/tmx:prop[@type eq 'eft:wylie-key']
         let $tm-unit-phrases := local:tm-unit-phrases($tm-unit-wylie-key, $etext-phrases, 1)
         
-        return (
+        return 
+            if($tm-unit-phrases) then (
         
-            element { node-name($tm-unit) } {
-                
-                attribute id { concat($local:text-id, '-TU-', $tm-units-index)},
-                
-                $text-version ! (
-                    common:ws(3),
-                    element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                        attribute type { 'revision' },
-                        text { . }
-                    }
-                ),
-                
-                (: Values from segment :)
-                $tm-unit/@*,
-                for $element in $tm-unit/*[@type = ('bcrd:s_id', 'bcrd:type')]
-                return (
-                    common:ws(3),
-                    $element
-                ),
-                
-                (:  Values from etext :)
-                if($tm-unit-phrases) then (
+                element { node-name($tm-unit) } {
                     
-                    distinct-values($tm-unit-phrases/@folio-index-in-text) ! (
+                    attribute id { concat($local:text-id, '-TU-', $tm-units-index)},
+                    
+                    $text-version ! (
                         common:ws(3),
                         element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                            attribute type { 'folio-index' },
-                            text { . }
-                        }
-                    ),
-                    distinct-values($tm-unit-phrases/@folio-etext-key) ! (
-                        common:ws(3),
-                        element { QName('http://www.lisa.org/tmx14', 'prop') }{
-                            attribute type { 'folio-label' },
+                            attribute type { 'revision' },
                             text { . }
                         }
                     ),
                     
-                    common:ws(3),
-                    element tuv {
-                        attribute xml:lang { 'bo' },
-                        (:attribute debug { string-join($tm-unit-phrases/@wylie-key, '-') },:)
-                        (:attribute debug { levenshtein:levenshtein-distance($etext-phrases[1]/@wylie-key, 'd--' || substring($tm-unit-wylie-key, 1, string-length($etext-phrases[1]/@wylie-key)) || 'sdff') div string-length($tm-unit-wylie-key) },:)
-                        element seg { string-join($tm-unit-phrases ! concat(@folio-change ! concat('{{folio:', string(),'}}'), text()), ' ') }
-                    }
+                    (: Values from segment :)
+                    $tm-unit/@*,
+                    for $element in $tm-unit/*[@type = ('bcrd:s_id', 'bcrd:type')]
+                    return (
+                        common:ws(3),
+                        $element
+                    ),
                     
-                )
-                else ()
-                ,
-                common:ws(2)
-            },
-            
-            local:tmx-bo-segments($tm-units, $tm-units-index + 1, subsequence($etext-phrases, count($tm-unit-phrases) + 1), $text-version)
-            
-        )
+                    (:  Values from etext :)
+                    if($tm-unit-phrases) then (
+                        
+                        distinct-values($tm-unit-phrases/@folio-index-in-text) ! (
+                            common:ws(3),
+                            element { QName('http://www.lisa.org/tmx14', 'prop') }{
+                                attribute type { 'folio-index' },
+                                text { . }
+                            }
+                        ),
+                        distinct-values($tm-unit-phrases/@folio-etext-key) ! (
+                            common:ws(3),
+                            element { QName('http://www.lisa.org/tmx14', 'prop') }{
+                                attribute type { 'folio-label' },
+                                text { . }
+                            }
+                        ),
+                        
+                        common:ws(3),
+                        element tuv {
+                            attribute xml:lang { 'bo' },
+                            (:attribute debug { string-join($tm-unit-phrases/@wylie-key, '-') },:)
+                            (:attribute debug { levenshtein:levenshtein-distance($etext-phrases[1]/@wylie-key, 'd--' || substring($tm-unit-wylie-key, 1, string-length($etext-phrases[1]/@wylie-key)) || 'sdff') div string-length($tm-unit-wylie-key) },:)
+                            element seg { string-join($tm-unit-phrases ! concat(@folio-change ! concat('{{folio:', string(),'}}'), text()), ' ') }
+                        }
+                        
+                    )
+                    else ()
+                    ,
+                    common:ws(2)
+                },
+                
+                local:tmx-bo-segments($tm-units, $tm-units-index + 1, subsequence($etext-phrases, count($tm-unit-phrases) + 1), $text-version)
+                
+            )
+            else (
+                $tm-unit-wylie-key, 
+                $etext-phrases
+            )
         
     )
     else ()
+    
 };
+
+(:declare function local:tmx-bo-segments-chunks($tm-units as element(tmx:tu)*, $tm-units-index as xs:integer, $etext-phrases as element(eft:etext-phrase)*, $text-version as xs:string?){
+    let $chunk-size := xs:integer(100)
+    return
+        if($tm-units-index le count($tm-units) and $tm-units-index le 200) then (
+            (\:element chunk { attribute start {$tm-units-index} },:\)
+            local:tmx-bo-segments(subsequence($tm-units, $tm-units-index, $chunk-size), 1, $etext-phrases, $text-version),
+            local:tmx-bo-segments-chunks($tm-units, $tm-units-index + $chunk-size, $etext-phrases, $text-version)
+        )
+        else ()
+};:)
 
 declare function local:tm-unit-phrases($tm-unit-wylie-key, $etext-phrases as element(eft:etext-phrase)*, $etext-phrases-index as xs:integer)  as element(eft:etext-phrase)* {
      if($etext-phrases-index le count($etext-phrases) and string-length($tm-unit-wylie-key) gt 0) then (
@@ -179,18 +196,20 @@ declare function local:tm-unit-phrases($tm-unit-wylie-key, $etext-phrases as ele
 let $text-version := tei-content:version-str($local:tei)
 let $tei-location := translation:location($local:tei, $local:toh-key)
 let $etext := source:etext-full($tei-location)
+(:return if(true()) then $etext else :)
 
 let $text-refs := doc(concat($common:data-path, '/config/linked-data/text-refs.xml'))
 let $bcrd-ref := $text-refs//eft:text[@key eq $local:toh-key]/eft:ref[@type eq 'bcrd-resource']
 let $bcrd-resource-path := concat('/db/apps/84000-data/BCRDCORPUS/', $bcrd-ref/@value, '.xml')
 let $bcrd-resource := doc($bcrd-resource-path)
 
-(:return if(true()) then $etext/eft:page/eft:language[@xml:lang eq "bo"]/tei:p/node()[. instance of text() or self::tei:milestone[@unit eq 'text']] ! concat('[', position(), ']', .) else :)
-
 let $tm-units := local:tm-units($bcrd-resource//bcrd:sentence)
-let $etext-phrases := local:etext-phrases($etext/eft:page)
+(:return if(true()) then $tm-units else :)
 
-let $tmx-bo-segments := local:tmx-bo-segments($tm-units, 1, $etext-phrases, $text-version)
+let $etext-phrases := local:etext-phrases($etext/eft:page)
+(:return if(true()) then $etext-phrases else :)
+
+let $tmx-bo-segments := local:tmx-bo-segments($tm-units, 1, $etext-phrases, $text-version)(:local:tmx-bo-segments-chunks($tm-units, 1, $etext-phrases, $text-version):)
 
 let $tmx := 
     element { QName('http://www.lisa.org/tmx14', 'tmx') } {
@@ -200,6 +219,8 @@ let $tmx :=
         namespace {'bcrd'} {'http://www.bcrdb.org/ns/1.0'},
         
         attribute version { '1.4b' },
+        (:attribute count-units { count($tm-units) },:)
+        
         common:ws(1),
         element header {
             attribute creationtool { '84000-tm-editor' },

@@ -73,7 +73,12 @@ return
                 knowledgebase:end-notes($tei),
                 knowledgebase:related-texts($tei),
                 knowledgebase:glossary($tei),
-                $tei[tei:teiHeader/tei:fileDesc[@type eq 'section']] ! section:child-sections(., 'none')
+                $tei[tei:teiHeader/tei:fileDesc[@type eq 'section']] ! (
+                    section:child-sections(., 'none'),
+                    element parent-section {
+                        section:ancestors($tei, 1)
+                    }
+                )
             }
         
         let $glossary-ids := $knowledgebase-content/m:part[@type eq 'glossary']/tei:gloss/@xml:id

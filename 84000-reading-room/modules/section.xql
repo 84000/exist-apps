@@ -243,6 +243,30 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
         
 };
 
+declare function section:ancestors($tei as element(tei:TEI), $nest as xs:integer) as element(m:section)* {
+
+    (: Returns an ancestor tree for the tei file :)
+    
+    let $source-bibl := $tei//tei:sourceDesc/tei:bibl
+    let $parent-id := $source-bibl/tei:idno/@parent-id
+    let $parent-tei := tei-content:tei($parent-id, 'section')
+    
+    where $parent-tei
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'section') }{
+            attribute id { upper-case($parent-id) },
+            attribute nesting { $nest },
+            attribute type {  $parent-tei//tei:teiHeader/tei:fileDesc/@type  },
+            
+            tei-content:title-set($parent-tei, 'mainTitle'),
+            
+            knowledgebase:page($parent-tei),
+            
+            section:ancestors($parent-tei, $nest + 1)
+            
+        }
+};
+
 declare function section:section-tree($tei as element(tei:TEI), $include-text-stats as xs:boolean, $include-texts as xs:string) as element(m:section)? {
     
     (: Includes ancestors and descendant sections, and about content :)

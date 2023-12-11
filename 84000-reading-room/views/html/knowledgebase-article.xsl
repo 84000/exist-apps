@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -335,10 +335,10 @@
                                                                                 
                                                                             </xsl:for-each>
                                                                             
-                                                                            <xsl:if test="$text/m:publication/m:tantric-restriction/tei:p">
+                                                                            <xsl:if test="$text/m:publication/m:tantric-restriction[tei:p]">
+                                                                                <hr class="sml-margin"/>
                                                                                 <xsl:call-template name="tantra-warning">
                                                                                     <xsl:with-param name="id" select="$text/@id"/>
-                                                                                    <xsl:with-param name="node" select="$text/m:publication/m:tantric-restriction/tei:p"/>
                                                                                 </xsl:call-template>
                                                                             </xsl:if>
                                                                             
@@ -637,23 +637,47 @@
                                     
                                     <xsl:if test="$related-section">
                                         <div class="panel-body">
-                                            <h4>
-                                                <xsl:value-of select="'This section in The Collection'"/>
-                                            </h4>
+                                            
                                             <p>
                                                 <a>
                                                     
-                                                    <xsl:variable name="main-title" select="$related-section/m:titles/m:title[@xml:lang eq 'en'][1]"/>
+                                                    <xsl:variable name="section-title" select="$related-section/m:titles/m:title[@xml:lang eq 'en'][1]"/>
                                                     
                                                     <xsl:attribute name="href" select="concat('/section/', $related-section/@id, '.html')"/>
                                                     <xsl:call-template name="class-attribute">
-                                                        <xsl:with-param name="lang" select="$main-title/@xml:lang"/>
+                                                        <xsl:with-param name="lang" select="$section-title/@xml:lang"/>
                                                     </xsl:call-template>
                                                     
-                                                    <xsl:value-of select="normalize-space($main-title/text())"/>
+                                                    <xsl:value-of select="concat('Go to the section &#34;', $section-title, '&#34;')"/>
                                                     
                                                 </a>
                                             </p>
+                                            
+                                            <xsl:if test="$article/m:parent-section[m:section]">
+                                                
+                                                <h4 class="sml-margin bottom">
+                                                    <xsl:value-of select="'This section is located in'"/>
+                                                </h4>
+                                                
+                                                <xsl:call-template name="section-structure">
+                                                    <xsl:with-param name="sections" select="($article/m:parent-section//m:section)[last()]"/>
+                                                    <xsl:with-param name="direction" select="'ascending'"/>
+                                                </xsl:call-template>
+                                                
+                                            </xsl:if>
+                                            
+                                            <xsl:if test="$related-section[m:section]">
+                                                
+                                                <h4 class="sml-margin bottom">
+                                                    <xsl:value-of select="'Subsections'"/>
+                                                </h4>
+                                                
+                                                <xsl:call-template name="section-structure">
+                                                    <xsl:with-param name="sections" select="$related-section/m:section"/>
+                                                </xsl:call-template>
+                                                
+                                            </xsl:if>
+                                            
                                         </div>
                                     </xsl:if>
                                     
@@ -783,5 +807,59 @@
         </ul>
         
     </xsl:template>-->
+    
+    <xsl:template name="section-structure">
+        
+        <xsl:param name="sections" as="element(m:section)*"/>
+        <xsl:param name="direction" as="xs:string?"/>
+        
+        <xsl:if test="$sections">
+            <ul>
+                <xsl:for-each select="$sections">
+                    
+                    <xsl:variable name="section-title" select="m:titles/m:title[@xml:lang eq 'en'][1]"/>
+                    <xsl:variable name="kb-page" select="m:page"/>
+                    <li>
+                        <a>
+                            
+                            <xsl:attribute name="href">
+                                <xsl:choose>
+                                    <xsl:when test="$kb-page[@kb-id]">
+                                        <xsl:value-of select="concat('/knowledgebase/', $kb-page/@kb-id, '.html')"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat('/section/', @id, '.html')"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
+                            
+                            <xsl:call-template name="class-attribute">
+                                <xsl:with-param name="lang" select="$section-title/@xml:lang"/>
+                            </xsl:call-template>
+                            
+                            <xsl:value-of select="normalize-space($section-title/text())"/>
+                            
+                        </a>
+                        <xsl:choose>
+                            <xsl:when test="$direction eq 'ascending'">
+                                <xsl:call-template name="section-structure">
+                                    <xsl:with-param name="sections" select="parent::m:section"/>
+                                    <xsl:with-param name="direction" select="$direction"/>
+                                </xsl:call-template>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:call-template name="section-structure">
+                                    <xsl:with-param name="sections" select="m:section"/>
+                                </xsl:call-template>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        
+                    </li>
+                    
+                </xsl:for-each>
+            </ul>
+        </xsl:if>
+        
+    </xsl:template>
     
 </xsl:stylesheet>

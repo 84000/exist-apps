@@ -50,7 +50,7 @@
         </xsl:choose>
     </xsl:variable>
     
-    <xsl:variable name="page-url" select="concat($reading-room-path, '/glossary/', if($active-tab eq 'downloads') then 'downloads' else 'search', '.html?') || string-join(($selected-term-lang ! concat('term-lang=', @id), $selected-type ! concat('term-type[]=', @id), $selected-letter ! concat('letter=', @index), concat('search=', $search-text)), '&amp;')" as="xs:string"/>
+    <xsl:variable name="page-url" select="concat($reading-room-path, '/glossary/', if($active-tab eq 'downloads') then 'downloads' else 'search', '.html?') || string-join(($selected-term-lang ! concat('term-lang=', @id), $selected-type ! concat('term-type[]=', @id), $selected-letter ! concat('letter=', @index), concat('search=', $search-text), concat('flagged=', $flagged)), '&amp;')" as="xs:string"/>
     
     <xsl:template match="/m:response">
         

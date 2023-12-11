@@ -96,7 +96,7 @@ return
                 translation:toh($tei, $request/@resource-id),
                 translation:folio-content($tei, $request/@resource-id, $ref-index),
                 if($request[@glossary-id]) then
-                    translation:glossary($tei, $request/@glossary-id, $translation:view-modes/m:view-mode[@id eq 'default'], ())
+                    translation:glossary($tei, $request/@glossary-id, $translation:view-modes/m:view-mode[@id eq 'passage'], ())
                 else ()
             }
         

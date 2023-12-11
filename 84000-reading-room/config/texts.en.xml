@@ -1,46 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <texts xmlns="http://read.84000.co/ns/1.0" xml:lang="en">
-    
+
     <item key="glossary.term-empty-sa-ltn">—</item>
     <item key="glossary.term-empty-bo-ltn">—</item>
     <item key="glossary.term-empty-bo">—</item>
-    
+
     <item key="translation-status-group.published.label">Published</item>
     <item key="translation-status-group.translated.label">Translated</item>
     <item key="translation-status-group.in-translation.label">In translation</item>
     <item key="translation-status-group.remaining.label">Not started</item>
-    
-    <item key="cumulative-glossary.disclaimer">Please bear in mind that we are constantly revising the glossaries and we will continue to
-        add more glossaries as we publish translations. To keep up to date please regularly download the latest version from the website. </item>
-    
+
+    <item key="cumulative-glossary.disclaimer">Please bear in mind that we are constantly revising the glossaries and we will continue to add more glossaries as we publish translations. To keep up to
+        date please regularly download the latest version from the website. </item>
+
     <item key="source.folio.ekangyur-description-title">About the eKangyur</item>
     <item key="source.folio.ekangyur-description-content">
-        <p>The Tibetan page displayed here is from the eKangyur, a digital input version made by the University of Virginia and the British
-            Library, with help from Esukhia, from scans of the Degé Kangyur held in the U.S. Library of Congress. This post <span class="text-wy">par phud</span> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
-                    W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William Rockhill in 1908-9.</p>
-        <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version
-            exactly. For details of the readings used in this translation, see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.</p>
+        <p>The Tibetan page displayed here is from the eKangyur, a digital input version made by the University of Virginia and the British Library, with help from Esukhia, from scans of the Degé
+            Kangyur held in the U.S. Library of Congress. This post <span class="text-wy">par phud</span> print (<a href="https://www.tbrc.org/#!rid=W4CZ5369" target="_blank">BDRC catalogue no.
+                W4CZ5369</a>) was purchased in Beijing and brought to the U.S. by William Rockhill in 1908-9.</p>
+        <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version exactly. For details of the readings used in this translation,
+            see Introduction and Notes; for the eKangyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan
+                Library</a>.</p>
     </item>
     <item key="source.folio.etengyur-description-title">About the eTengyur</item>
     <item key="source.folio.etengyur-description-content">
-        <p>The Tibetan page displayed here is from the eTengyur, a digital input version prepared by Esukhia and Barom Theksum Choling. It is based on scans of the Degé Tengyur from Sakya College, completed with the Degé Tengyur from Songtsen Library (<a href="https://library.bdrc.io/show/bdr:MW2KG209989" target="_blank">BDRC catalogue no. W2KG209989</a>).</p>
-        <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version exactly. For details of the readings used in this translation, see Introduction and Notes; for the eTengyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan Library</a>.</p>
+        <p>The Tibetan page displayed here is from the eTengyur, a digital input version prepared by Esukhia and Barom Theksum Choling. It is based on scans of the Degé Tengyur from Sakya College,
+            completed with the Degé Tengyur from Songtsen Library (<a href="https://library.bdrc.io/show/bdr:MW2KG209989" target="_blank">BDRC catalogue no. W2KG209989</a>).</p>
+        <p>Note that 84000 translations are made from a variety of sources, and readings may not always follow this particular version exactly. For details of the readings used in this translation,
+            see Introduction and Notes; for the eTengyur, see the <a href="http://www.thlib.org/encyclopedias/literary/canons/about/wiki/tibetan%20canons%20introduction.html#!essay=/stanley/tibcanons/s/b3/" target="_blank">Tibetan and Himalayan
+                Library</a>.</p>
     </item>
     <item key="source.folio.backlink-label">
-        <span>The English translation of this folio by <span class="title">84000 Translating the words of the Buddha</span> can be found
-            at:</span>
+        <span>The English translation of this folio by <span class="title">84000 Translating the words of the Buddha</span> can be found at:</span>
     </item>
-    
+
     <item key="translation.print-version">
-        <p>This print version was generated at #CurrentDateTime from the online version of the text available on that date. If some time has
-            elapsed since then, this version may have been superseded, as most of 84000’s published translations undergo significant updates
-            from time to time. For the latest online version, with bilingual display, interactive glossary entries and notes, and a variety
-            of further download options, please see <br/>
+        <p>This print version was generated at #CurrentDateTime from the online version of the text available on that date. If some time has elapsed since then, this version may have been superseded,
+            as most of 84000’s published translations undergo significant updates from time to time. For the latest online version, with bilingual display, interactive glossary entries and notes, and
+            a variety of further download options, please see <br/>
             <a href="#canonicalHTML" class="printable">#canonicalHTML</a>.</p>
     </item>
     <item key="translation.partial-text-warning">This rendering does not include the entire published text</item>
     <item key="translation.partial-text-link">The full text is available to download as pdf at:</item>
-    
+
+    <!-- Tantra warning -->
+    <item key="about.common.tantra-warning-title">Tantra Text Warning</item>
+    <item key="about.common.tantra-warning-body">
+        <p>Readers are reminded that according to Vajrayāna Buddhist tradition there are restrictions and commitments concerning tantra.</p>
+        <p>Practitioners who are not sure if they should read translations in this section are advised to consult the authorities of their lineage.</p>
+        <p>The responsibility for reading these texts or sharing them with others—and hence the consequences—lies in the hands of readers.</p>
+    </item>
+    <item key="about.common.tantra-warning-dismiss">Don't show this warning again for this text</item>
+    <item key="about.common.unrestricted-access-title">About unrestricted access</item>
+    <item key="about.common.unrestricted-access-body">
+        <p>The decision to publish tantra texts without restricted access has been considered carefully. First of all, it should be noted that all the original Tibetan texts of the Kangyur, including
+            those in this Tantra section, are in the public domain. Some of the texts in this section (but by no means all of them) are nevertheless, according to some traditions, only studied with
+            authorization and after suitable preliminaries.</p>
+        <p>It is true, of course, that a translation makes the content accessible to a far greater number of people; 84000 has therefore consulted many senior Buddhist teachers on this question, and
+            most of them felt that to publish the texts openly is, on balance, the best solution. The alternatives would be not to translate them at all (which would defeat the purposes of the whole
+            project), or to place some sort of restriction on their access. Restricted access has been tried by some Buddhist book publishers, and of course needs a system of administration, judgment,
+            and policing that is either a mere formality, or is very difficult to implement. It would be even harder to implement in the case of electronic texts—and even easier to circumvent. Indeed,
+            nowadays practically the whole range of traditionally restricted Tibetan Buddhist material is already available to anyone who looks for it, and is all too often misrepresented, taken out
+            of context, or its secret and esoteric nature deliberately vaunted.</p>
+        <p>84000’s policy is to present carefully authenticated translations in their proper setting of the whole body of Buddhist sacred literature, and to trust the good sense of the vast majority
+            of readers not to misuse or misunderstand them. Readers are reminded that according to Vajrayāna Buddhist tradition there are restrictions and commitments concerning tantra. Practitioners
+            who are not sure if they should read translations in this section are advised to consult the authorities of their lineage. The responsibility, and hence consequences, of reading these
+            texts and/or sharing them with others who may or may not fulfill the requirements lie in the hands of readers.</p>
+    </item>
+
     <!--<item key="section.ebook-help-title">Help for downloading eBooks</item>
     <item key="section.ebook-help-body">
         <p>There are many ways to get eBooks onto eReader devices. If you already have a reliable method for this, please simply download
@@ -76,11 +103,12 @@
     <!-- Progress -->
     <item key="about.progress.page-title">Translation Progress</item>
     <item key="about.progress.header-img-src">#feSiteUrl/imgs/about-headers/progress.jpg</item>
-    <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to
-        reach out with your translation…it’ll really make a difference in the world, and it already does."</item>
+    <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to reach out with your translation…it’ll really make a
+        difference in the world, and it already does."</item>
     <item key="about.progress.page-quote-author">Dzigar Kongtrül Rinpoche</item>
     <item key="about.progress.page-intro">
-        <p>In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. Working first on the Kangyur, we have raised that figure to almost 10%, and are on track to reach our 2035 target for the complete translation and publication of the Kangyur’s 70,000 pages.</p>
+        <p>In 2009, it was determined that only 5% of the Canon had ever been translated into a language spoken today. Working first on the Kangyur, we have raised that figure to almost 10%, and are
+            on track to reach our 2035 target for the complete translation and publication of the Kangyur’s 70,000 pages.</p>
     </item>
     <item key="about.progress.kangyur-summary-heading">Progress on our 25 year goal to translate the Kangyur</item>
     <item key="about.progress.combined-summary-heading">Progress on our 100 year goal to translate the Kangyur and Tengyur</item>
@@ -106,11 +134,13 @@
     <!-- Impact -->
     <item key="about.impact.page-title">Reader Engagement</item>
     <item key="about.impact.header-img-src">#feSiteUrl/imgs/about-headers/impact.jpg</item>
-    <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of
-        the world. The Kangyur and Tengyur will really contribute to the happiness, peace and freedom of all mankind.”</item>
+    <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of the world. The Kangyur and Tengyur will really contribute to
+        the happiness, peace and freedom of all mankind.”</item>
     <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>
     <item key="about.impact.page-intro">
-        <p>Canonical texts have been the source of Buddhist traditions over the centuries. To have the entire Tibetan Buddhist Canon in English has the potential to transform the way we view, study, reference, and practice Buddhist philosophy, history, and its teachings. Imagine if our understanding of the Bible was still mediated through the handful of people who could read Aramaic?</p>
+        <p>Canonical texts have been the source of Buddhist traditions over the centuries. To have the entire Tibetan Buddhist Canon in English has the potential to transform the way we view, study,
+            reference, and practice Buddhist philosophy, history, and its teachings. Imagine if our understanding of the Bible was still mediated through the handful of people who could read
+            Aramaic?</p>
         <p>By 2035, we will complete the translation and publication of the Kangyur. The last time this body of texts was translated into another language was an initiative that began in 900 AD.</p>
     </item>
     <item key="about.impact.visitors-per-week-stat">
@@ -173,63 +203,50 @@
     <!-- Sponsors -->
     <item key="about.sponsors.page-title">Sponsors</item>
     <item key="about.sponsors.header-img-src">#feSiteUrl/imgs/about-headers/sponsors.jpg</item>
-    <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators
-        will be able to perfect their two accumulations of virtue through their interdependent connection.”</item>
+    <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators will be able to perfect their two accumulations of virtue
+        through their interdependent connection.”</item>
     <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>
     <item key="about.sponsors.page-intro">
-        <p>84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/give-monthly">Give Monthly</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams,
-            as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an
+        <p>84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/give-monthly">Give Monthly</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an
             equally meritorious drop in in the ocean of our activity.</p>
     </item>
     <item key="about.sponsors.matching-funds-title">Matching Funds Sponsors</item>
     <item key="about.sponsors.sutras-title">Sūtra Sponsors</item>
     <item key="about.sponsors.founding-title">Founding Sponsors</item>
     <item key="about.sponsors.matching-funds-description">
-        <p>The Matching Funds Program is designed to incentivize small-dollar donors to give to 84000 on a recurring basis by offering to
-            match those donations dollar-for-dollar. We would like to thank the following Matching Funds sponsors for their gift to 84000
-            and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on the
-            progress of the translation of the Tibetan Buddhist canon.</p>
+        <p>The Matching Funds Program is designed to incentivize small-dollar donors to give to 84000 on a recurring basis by offering to match those donations dollar-for-dollar. We would like to
+            thank the following Matching Funds sponsors for their gift to 84000 and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on
+            the progress of the translation of the Tibetan Buddhist canon.</p>
     </item>
-    <item key="about.sponsors.matching-funds-list-title">
-        Our Matching Funds Sponsors
-    </item>
+    <item key="about.sponsors.matching-funds-list-title"> Our Matching Funds Sponsors </item>
     <item key="about.sponsors.sponsor-sutras-link">#readingRoomSiteUrl/about/sponsor-a-sutra.html</item>
     <item key="about.sponsors.sutras-description">
-        <p>Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a
-            sizeable amount of funding in order to see the translation process through to completion. We would like to thank our sponsors
-            for their generous support of the <a href="#readingRoomSiteUrl/about/sponsor-a-sutra.html">“Sponsor A Sūtra”</a> program.</p>
+        <p>Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation
+            process through to completion. We would like to thank our sponsors for their generous support of the <a href="#readingRoomSiteUrl/about/sponsor-a-sutra.html">“Sponsor A Sūtra”</a>
+            program.</p>
     </item>
-    <item key="about.sponsors.sutras-list-title">
-        Our Sūtra Sponsors
-    </item>
+    <item key="about.sponsors.sutras-list-title"> Our Sūtra Sponsors </item>
     <item key="about.sponsors.founding-description">
-        <p>We would like to thank the 108 Founding Sponsors who so generously provided the seed funding to help 84000 get started with its
-            task of translating the words of the Buddha. Each of these sponsors gave or pledged to give between $50,000-$250,000 to help us
-            begin our journey. In addition to providing the funding for the initial rounds of translations, the funds are being used or have
-            been used to: create the infrastructure for reviewing, editing, and pre-publication work; develop the tools and resources
-            necessary for translation work; train translators and editors; and offset both the costs of the initial planning, and the
-            current and ongoing administrative and operating costs.</p>
-        <p>With the vision and generosity of these Founding Sponsors, 84000 has been able to successfully launch and significantly progress
-            with the immense task of translating the words of the Buddha. We offer our heartfelt thanks to all our Founding Sponsors for
-            enabling us to safeguard this invaluable world heritage, and making it available for generations to come.</p>
-        <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="#commsSiteUrl/message-to-founding-sponsors">a message
-                addressed to all 108 Founding Sponsors</a>.</p>
+        <p>We would like to thank the 108 Founding Sponsors who so generously provided the seed funding to help 84000 get started with its task of translating the words of the Buddha. Each of these
+            sponsors gave or pledged to give between $50,000-$250,000 to help us begin our journey. In addition to providing the funding for the initial rounds of translations, the funds are being
+            used or have been used to: create the infrastructure for reviewing, editing, and pre-publication work; develop the tools and resources necessary for translation work; train translators and
+            editors; and offset both the costs of the initial planning, and the current and ongoing administrative and operating costs.</p>
+        <p>With the vision and generosity of these Founding Sponsors, 84000 has been able to successfully launch and significantly progress with the immense task of translating the words of the
+            Buddha. We offer our heartfelt thanks to all our Founding Sponsors for enabling us to safeguard this invaluable world heritage, and making it available for generations to come.</p>
+        <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="#commsSiteUrl/message-to-founding-sponsors">a message addressed to all 108 Founding Sponsors</a>.</p>
     </item>
-    <item key="about.sponsors.founding-list-title">
-        Our 108 Founding Sponsors
-    </item>
+    <item key="about.sponsors.founding-list-title"> Our 108 Founding Sponsors </item>
     <item key="about.sponsors.text-sponsorship-link-label">There are further sponsorship opportunities for this translation</item>
 
     <!-- Translators -->
     <item key="about.translators.page-title">Translation Teams</item>
     <item key="about.translators.header-img-src">#feSiteUrl/imgs/about-headers/translators.jpg</item>
-    <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the
-        work for the present time and also for future generations.”</item>
+    <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the work for the present time and also for future
+        generations.”</item>
     <item key="about.translators.page-quote-author">Dzigar Kongtrül Rinpoche</item>
     <item key="about.translators.page-intro">
-        <p>84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the
-            efficient translation of texts in the Tibetan Buddhist Canon. These teams are external grantees of 84000 whose work is
-            considered integral to the fulfillment of our vision.</p>
+        <p>84000 awards project-specific grants to teams of translators, editors, and consultants in order to facilitate the efficient translation of texts in the Tibetan Buddhist Canon. These teams
+            are external grantees of 84000 whose work is considered integral to the fulfillment of our vision.</p>
     </item>
     <item key="about.translators.lists-title">84000 Translators</item>
     <item key="about.translators.summary-title">Summary</item>
@@ -252,19 +269,22 @@
     <item key="about.sponsor-a-sutra.page-quote-author">Garchen Rinpoche</item>
     <item key="about.sponsor-a-sutra.page-intro">
         <p class="page-description">
-            <strong>Sponsor a Sūtra</strong> is an opportunity to support the <strong>complete translation</strong> of a major text into a modern language. Through your generous patronage, you are making an important <strong>investment</strong> in the <strong>future of the Buddhadharma</strong>.</p>
+            <strong>Sponsor a Sūtra</strong> is an opportunity to support the <strong>complete translation</strong> of a major text into a modern language. Through your generous patronage, you are
+            making an important <strong>investment</strong> in the <strong>future of the Buddhadharma</strong>.</p>
         <h2>How much does it cost to sponsor?</h2>
         <p>The length of the sūtras varies considerably, and sponsorship opportunities are available for texts of:</p>
         <ul>
-            <li>50 pages  (US$ 20,000)</li>
+            <li>50 pages (US$ 20,000)</li>
             <li>100 pages (US$ 40,000)</li>
             <li>150 pages (US$ 60,000)</li>
             <li>200 pages (US$ 80,000)</li>
             <li>Or more</li>
         </ul>
-        <p class="italic">Your sponsorship will provide the funding required for translation work, however, for administrative purposes all donations are considered unrestricted contributions, and where necessary some funds may be used in other areas of programmatic work including editorial research, digital markup, translation tool development, and project management. </p>
+        <p class="italic">Your sponsorship will provide the funding required for translation work, however, for administrative purposes all donations are considered unrestricted contributions, and
+            where necessary some funds may be used in other areas of programmatic work including editorial research, digital markup, translation tool development, and project management. </p>
         <h2>How are donors acknowledged?</h2>
-        <p>Sūtra sponsors are recognized in the “Acknowledgements” section of their sponsored publication, which is made freely available in the 84000 Reading Room. In appreciation of your generous support, all the names and dedication messages are also offered for prayers during the Dzongsar Mönlam prayer festivals held biennially in Bodhgaya, India.</p>
+        <p>Sūtra sponsors are recognized in the “Acknowledgements” section of their sponsored publication, which is made freely available in the 84000 Reading Room. In appreciation of your generous
+            support, all the names and dedication messages are also offered for prayers during the Dzongsar Mönlam prayer festivals held biennially in Bodhgaya, India.</p>
         <h2>Who can sponsor?</h2>
         <p>A sūtra can be sponsored by an individual, a family, or in the name of a group, such as a company, a sangha, or a temple.</p>
     </item>
@@ -284,17 +304,18 @@
         <p>For more information, please contact Huang Jing Rui, executive director, at: <a href="mailto:sutrasponsors@84000.co">sutrasponsors@84000.co</a>
         </p>
     </item>
-    
+
     <!-- Progress panel widget -->
     <item key="widget.progress-panel.support-label">Join Us</item>
     <item key="widget.progress-panel.support-description">
-        <p>With the help of our <a href="#readingRoomSiteUrl/about/sponsors.html">108 founding sponsors</a> and thousands of individual donors, we provide funding to the translators who are working to safeguard these important teachings for future generations.</p>
+        <p>With the help of our <a href="#readingRoomSiteUrl/about/sponsors.html">108 founding sponsors</a> and thousands of individual donors, we provide funding to the translators who are working to
+            safeguard these important teachings for future generations.</p>
     </item>
     <item key="widget.progress-panel.kangyur-count-after-label">Total Kangyur Pages</item>
     <item key="widget.progress-panel.translation-count-after-label">Pages in Translation</item>
     <item key="widget.progress-panel.translated-count-after-label">Pages Translated</item>
     <item key="widget.progress-panel.published-count-after-label">Pages Published</item>
-    
+
     <!-- Progress chart widget -->
     <item key="widget.progress-chart.tab-title-kangyur">25 Year Goal</item>
     <item key="widget.progress-chart.tab-description-kangyur">
@@ -320,19 +341,18 @@
     </item>
     <!--<item key="widget.progress-chart.tab-subtitle-combined">231,800 pages</item>-->
     <!--<item key="widget.progress-chart.tab-description-combined">Our <strong>100 year goal</strong> is the translation and free accessibility of all 231,800 pages of the Tibetan Buddhist Canon (Kangyur and Tengyur).</item>-->
-    
+
     <!-- Download dana -->
     <item key="widget.download-dana.widget-title">Download Dāna</item>
     <item key="widget.download-dana.icon-label">You are downloading:</item>
     <item key="widget.download-dana.dana-description">
         <p>This is a free publication from 84000: Translating the Words of the Buddha, a non-profit organization sharing the gift of Buddhist wisdom with the world.</p>
-        <p>The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to
-            be a fundamental Buddhist practice by all schools. The nature and quantity of the gift itself is often considered less
-            important.</p>
+        <p>The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to be a fundamental Buddhist practice by all schools. The nature
+            and quantity of the gift itself is often considered less important.</p>
     </item>
     <item key="widget.download-dana.donate-form-link">/give-monthly</item>
     <item key="widget.download-dana.donate-form-link-label">Click here to make a dāna donation</item>
-    
+
     <!-- Audio test -->
     <item key="about.audio-test.page-title">Audio test</item>
 

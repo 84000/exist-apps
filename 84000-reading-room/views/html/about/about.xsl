@@ -292,8 +292,8 @@
                                         <xsl:if test="m:publication/m:tantric-restriction/tei:p">
                                             <hr/>
                                             <xsl:call-template name="tantra-warning">
-                                                <xsl:with-param name="id" select="@resource-id"/>
-                                                <xsl:with-param name="node" select="m:publication/m:tantric-restriction/tei:p"/>
+                                                <xsl:with-param name="id" select="m:toh/@key"/>
+                                                <xsl:with-param name="modal-only" select="false()"/>
                                             </xsl:call-template>
                                         </xsl:if>
                                         

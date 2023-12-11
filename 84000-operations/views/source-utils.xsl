@@ -222,7 +222,7 @@
                                                             </span>
                                                         </li>
                                                         
-                                                        <xsl:variable name="folio-limiter" select="5"/>
+                                                        <xsl:variable name="folio-limiter" select="1"/>
                                                         <xsl:for-each select="$folio-indexes">
                                                             <xsl:variable name="folio-index" select="."/>
                                                             <xsl:choose>

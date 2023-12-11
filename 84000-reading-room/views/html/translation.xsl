@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -942,7 +942,6 @@
                             
                             <xsl:call-template name="tantra-warning">
                                 <xsl:with-param name="id" select="'tantric-restriction-modal'"/>
-                                <xsl:with-param name="node" select="m:translation/m:publication/m:tantric-restriction/tei:p"/>
                                 <xsl:with-param name="modal-only" select="true()"/>
                                 <xsl:with-param name="restricted-text-id" select="$toh-key"/>
                             </xsl:call-template>

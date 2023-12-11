@@ -1930,7 +1930,7 @@
                         <div class="rw-heading heading-section nested nested-1">
                             <header>
                                 <h3 class="section-title">
-                                    <xsl:value-of select="'Types of attestation for Sanskrit names and terms'"/>
+                                    <xsl:value-of select="'Types of attestation for names and terms of the corresponding source language'"/>
                                 </h3>
                             </header>
                         </div>
@@ -4673,75 +4673,6 @@
             </xsl:otherwise>
             
         </xsl:choose>
-        
-    </xsl:template>
-    
-    <!-- Tantra warning -->
-    <xsl:template name="tantra-warning">
-        
-        <xsl:param name="id"/>
-        <xsl:param name="node"/>
-        <xsl:param name="modal-only" as="xs:boolean" select="false()"/>
-        <xsl:param name="restricted-text-id" as="xs:string?"/>
-        
-        <div class="hidden-print">
-            
-            <xsl:if test="not($modal-only)">
-                <a data-toggle="modal" class="block-link warning">
-                    <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
-                    <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
-                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                    <xsl:value-of select="' Tantra Text Warning'"/>
-                </a>
-            </xsl:if>
-            
-            <div class="modal fade warning" tabindex="-1" role="dialog">
-                
-                <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
-                <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
-                
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">
-                                    <i class="fa fa-times"/>
-                                </span>
-                            </button>
-                            <h4 class="modal-title">
-                                <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
-                                <i class="fa fa-exclamation-circle" aria-hidden="true"/>
-                                <xsl:value-of select="' Tantra Text Warning'"/>
-                            </h4>
-                        </div>
-                        
-                        <div class="modal-body">
-                            <xsl:apply-templates select="$node"/>
-                        </div>
-                        
-                        <xsl:if test="$restricted-text-id">
-                            <div class="modal-footer">
-                                <div class="text-center">
-                                    <button type="button" class="btn btn-danger btn-sm" data-inhibit-restriction="{ $restricted-text-id }">
-                                        <xsl:value-of select="'Don''t show this warning again for this text'"/>
-                                    </button>
-                                </div>
-                            </div>
-                        </xsl:if>
-                        
-                    </div>
-                </div>
-                
-            </div>
-            
-        </div>
-        
-        <xsl:if test="not($modal-only)">
-            <div class="visible-print-block small">
-                <xsl:apply-templates select="$node"/>
-            </div>
-        </xsl:if>
         
     </xsl:template>
     

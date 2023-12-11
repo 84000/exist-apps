@@ -141,7 +141,7 @@ declare function translations:filtered-texts(
         or $pages-max lt $pages-upper 
         or $selected-sponsorship-group 
         or $selected-entities-group 
-        or $toh-min gt 0
+        or $toh-max gt 0
         or $status-date-start gt ''
         or $status-date-end gt ''
     
@@ -247,7 +247,7 @@ declare function translations:filtered-texts(
         
         (: Filter by Toh:)
         let $teis :=
-            if($toh-min gt 0) then
+            if($toh-max gt 0) then
                 for $tei in $teis
                     let $toh-in-range :=
                         for $toh-key in $tei//tei:sourceDesc/tei:bibl[tei:location[$work eq 'all' or @work eq $work]]/@key

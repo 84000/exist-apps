@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -782,7 +782,6 @@
                     <div class="top-margin">
                         <xsl:call-template name="tantra-warning">
                             <xsl:with-param name="id" select="'title'"/>
-                            <xsl:with-param name="node" select="$section/m:warning"/>
                         </xsl:call-template>
                     </div>
                 </xsl:if>
@@ -1187,11 +1186,10 @@
                                 </xsl:call-template>
                                 
                                 <!-- Tantric warning -->
-                                <xsl:if test="lower-case($section/@id) = 'all-translated' and $text/m:publication/m:tantric-restriction/tei:p">
+                                <xsl:if test="$text/m:publication/m:tantric-restriction/tei:p">
                                     <hr/>
                                     <xsl:call-template name="tantra-warning">
                                         <xsl:with-param name="id" select="@resource-id"/>
-                                        <xsl:with-param name="node" select="$text/m:publication/m:tantric-restriction/tei:p"/>
                                     </xsl:call-template>
                                 </xsl:if>
                                 
@@ -1559,7 +1557,6 @@
                                     <div class="sml-margin top">
                                         <xsl:call-template name="tantra-warning">
                                             <xsl:with-param name="id" select="$sub-section-id"/>
-                                            <xsl:with-param name="node" select="m:warning"/>
                                         </xsl:call-template>
                                     </div>
                                 </xsl:if>

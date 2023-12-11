@@ -440,8 +440,7 @@
         </xsl:for-each>
     </xsl:function>
     
-    <!-- 
-    Deprecated in favour of concat('folio-', @ref-index)
+    <!-- Deprecated in favour of concat('folio-', @ref-index)
     <xsl:function name="common:folio-id" as="xs:string">
         <xsl:param name="folio-str" as="xs:string"/>
         <xsl:value-of select="concat('ref-', lower-case(replace($folio-str, '\.', '-')))"/>
@@ -890,14 +889,13 @@
         </xsl:if>
         
     </xsl:template>
-    
     <xsl:template name="entity-types-list">
         
         <xsl:param name="entity" as="element(m:entity)?"/>
         <xsl:param name="warnings" as="xs:boolean?" select="true()"/>
         
         <xsl:if test="$entity">
-            <ul class="list-inline">
+            <ul xmlns="http://www.w3.org/1999/xhtml" class="list-inline">
                 
                 <xsl:if test="$warnings and /m:response/m:request/m:entity-types/m:type[@id = $entity/m:type/@type][@provisional]">
                     <li>
@@ -916,6 +914,118 @@
                 </xsl:for-each>
                 
             </ul>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <!-- Tantra warning -->
+    <xsl:template name="tantra-warning">
+        
+        <xsl:param name="id"/>
+        <xsl:param name="modal-only" as="xs:boolean" select="false()"/>
+        <xsl:param name="restricted-text-id" as="xs:string?"/>
+        
+        <div xmlns="http://www.w3.org/1999/xhtml" class="hidden-print">
+            
+            <xsl:if test="not($modal-only)">
+                <a data-toggle="modal" class="block-link warning">
+                    <xsl:attribute name="href" select="concat('#tantra-warning-', $id)"/>
+                    <xsl:attribute name="data-target" select="concat('#tantra-warning-', $id)"/>
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                    <xsl:value-of select="' '"/>
+                    <xsl:call-template name="local-text">
+                        <xsl:with-param name="local-key" select="'tantra-warning-title'"/>
+                    </xsl:call-template>
+                </a>
+            </xsl:if>
+            
+            <div class="modal fade warning" tabindex="-1" role="dialog">
+                
+                <xsl:attribute name="id" select="concat('tantra-warning-', $id)"/>
+                <xsl:attribute name="aria-labelledby" select="concat('tantra-warning-label-', $id)"/>
+                
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        
+                        <div class="modal-header">
+                            <div class="center-vertical full-width">
+                                <div class="center-vertical align-left">
+                                    <div class="large-icons">
+                                        <i class="fa fa-exclamation-circle" aria-hidden="true"/>
+                                    </div>
+                                    <div>
+                                        <h4 class="modal-title">
+                                            <xsl:attribute name="id" select="concat('tantra-warning-label-', $id)"/>
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'tantra-warning-title'"/>
+                                            </xsl:call-template>
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">
+                                            <i class="fa fa-times"/>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="modal-body">
+                            
+                            <xsl:call-template name="local-text">
+                                <xsl:with-param name="local-key" select="'tantra-warning-body'"/>
+                            </xsl:call-template>
+                            
+                            <div id="unrestricted-access" class="list-group accordion">
+                                <xsl:call-template name="expand-item">
+                                    <xsl:with-param name="id" select="'unrestricted-access'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#unrestricted-access'"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    <xsl:with-param name="title">
+                                        <h4 class="list-group-item-heading">
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'unrestricted-access-title'"/>
+                                            </xsl:call-template>
+                                        </h4>
+                                    </xsl:with-param>
+                                    <xsl:with-param name="content">
+                                        <div class="sml-margin top">
+                                            <xsl:call-template name="local-text">
+                                                <xsl:with-param name="local-key" select="'unrestricted-access-body'"/>
+                                            </xsl:call-template>
+                                        </div>
+                                    </xsl:with-param>
+                                </xsl:call-template>
+                            </div>
+                            
+                            <xsl:if test="$restricted-text-id">
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-danger btn-sm" data-inhibit-restriction="{ $restricted-text-id }">
+                                        <xsl:call-template name="local-text">
+                                            <xsl:with-param name="local-key" select="'tantra-warning-dismiss'"/>
+                                        </xsl:call-template>
+                                    </button>
+                                </div>
+                            </xsl:if>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+        
+        <xsl:if test="not($modal-only)">
+            <div class="visible-print-block small">
+                <xsl:call-template name="local-text">
+                    <xsl:with-param name="local-key" select="'tantra-warning-body'"/>
+                </xsl:call-template>
+            </div>
         </xsl:if>
         
     </xsl:template>
