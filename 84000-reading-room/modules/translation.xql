@@ -1981,6 +1981,7 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
             attribute resource-id { $quote-text-toh/@key },
             attribute resource-type { $quote-text-type },
             attribute part { $quote-part-id },
+            attribute ptr-index { functx:index-of-node($quote//tei:ptr[@type eq 'quote-ref'], $quote-ref) },
             
             (: Title of the quoting text :)
             element text-shortcode { ($quote-text-titles[@type eq 'shortcode']/text(), $quote-text-toh ! concat('t', @number, @letter) ! upper-case(.))[1] },
