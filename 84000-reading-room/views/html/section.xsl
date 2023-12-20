@@ -1501,6 +1501,8 @@
                         
                         <xsl:attribute name="class" select="normalize-space(string-join(($col-offset-2, $col-offset-3, $col-offset-4, 'print-centered-margins'), ' '))"/>
                         
+                        <xsl:variable name="sub-section" select="."/>
+                        
                         <div class="ornamental-panel section">
                             
                             <xsl:if test="@type eq 'pseudo-section'">
@@ -1511,49 +1513,58 @@
                                 
                                 <a target="_self" class="block-link printable">
                                     
-                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id/string(), '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
+                                    <xsl:attribute name="href" select="common:internal-link(concat('/section/', $sub-section/@id/string(), '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                     
                                     <h3 class="panel-row title main-title break">
-                                        <xsl:value-of select="m:titles/m:title[@xml:lang='en']/text()"/> 
+                                        <xsl:value-of select="$sub-section/m:titles/m:title[@xml:lang='en']/text()"/> 
                                     </h3>
                                     
-                                    <xsl:if test="m:titles/m:title[@xml:lang='bo']/text()">
+                                    <xsl:if test="$sub-section/m:titles/m:title[@xml:lang='bo']/text()">
                                         <div>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="'bo'"/>
                                                 <xsl:with-param name="base-classes" select="'panel-row title'"/>
                                             </xsl:call-template>
-                                            <xsl:value-of select="m:titles/m:title[@xml:lang='bo']/text()"/>
+                                            <xsl:value-of select="$sub-section/m:titles/m:title[@xml:lang='bo']/text()"/>
                                         </div>
                                     </xsl:if>
                                     
-                                    <xsl:if test="m:titles/m:title[@xml:lang='Bo-Ltn']/text()">
+                                    <xsl:if test="$sub-section/m:titles/m:title[@xml:lang='Bo-Ltn']/text()">
                                         <div>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="'Bo-Ltn'"/>
                                                 <xsl:with-param name="base-classes" select="'panel-row title'"/>
                                             </xsl:call-template>
-                                            <xsl:value-of select="m:titles/m:title[@xml:lang='Bo-Ltn']/text()"/>
+                                            <xsl:value-of select="$sub-section/m:titles/m:title[@xml:lang='Bo-Ltn']/text()"/>
                                         </div>
                                     </xsl:if>
                                     
-                                    <xsl:if test="m:titles/m:title[@xml:lang='Sa-Ltn']/text()">
+                                    <xsl:if test="$sub-section/m:titles/m:title[@xml:lang='Sa-Ltn']/text()">
                                         <div>
                                             <xsl:call-template name="class-attribute">
                                                 <xsl:with-param name="lang" select="'Sa-Ltn'"/>
                                                 <xsl:with-param name="base-classes" select="'panel-row title'"/>
                                             </xsl:call-template>
-                                            <xsl:value-of select="m:titles/m:title[@xml:lang='Sa-Ltn']/text()"/>
+                                            <xsl:value-of select="$sub-section/m:titles/m:title[@xml:lang='Sa-Ltn']/text()"/>
                                         </div>
                                     </xsl:if>
                                     
                                 </a>
                                 
-                                <div class="notes">
-                                    <xsl:apply-templates select="m:abstract/*"/>
+                                <div class="notes" data-match-height="abstract">
+                                    <xsl:apply-templates select="$sub-section/m:abstract/*"/>
                                 </div>
                                 
-                                <xsl:if test="m:warning/tei:p">
+                                <xsl:if test="$sub-section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $sub-section/m:page/@status]">
+                                    <div class="panel-row">
+                                        <a class="underline small">
+                                            <xsl:attribute name="href" select="concat('/knowledgebase/', $sub-section/m:page/@kb-id, '.html')"/>
+                                            <xsl:value-of select="'Read the knowledge base article'"/>
+                                        </a>
+                                    </div>
+                                </xsl:if>
+                                
+                                <xsl:if test="$sub-section/m:warning/tei:p">
                                     <div class="sml-margin top">
                                         <xsl:call-template name="tantra-warning">
                                             <xsl:with-param name="id" select="$sub-section-id"/>
