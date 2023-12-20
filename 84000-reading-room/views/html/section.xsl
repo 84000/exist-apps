@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -1552,7 +1552,15 @@
                                 </a>
                                 
                                 <div class="notes" data-match-height="abstract">
+                                    
                                     <xsl:apply-templates select="$sub-section/m:abstract/*"/>
+                                    
+                                    <xsl:if test="$sub-section/m:warning/tei:p">
+                                        <xsl:call-template name="tantra-warning">
+                                            <xsl:with-param name="id" select="$sub-section-id"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    
                                 </div>
                                 
                                 <xsl:if test="$sub-section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $sub-section/m:page/@status]">
@@ -1561,14 +1569,6 @@
                                             <xsl:attribute name="href" select="concat('/knowledgebase/', $sub-section/m:page/@kb-id, '.html')"/>
                                             <xsl:value-of select="'Read the knowledge base article'"/>
                                         </a>
-                                    </div>
-                                </xsl:if>
-                                
-                                <xsl:if test="$sub-section/m:warning/tei:p">
-                                    <div class="sml-margin top">
-                                        <xsl:call-template name="tantra-warning">
-                                            <xsl:with-param name="id" select="$sub-section-id"/>
-                                        </xsl:call-template>
                                     </div>
                                 </xsl:if>
                                 

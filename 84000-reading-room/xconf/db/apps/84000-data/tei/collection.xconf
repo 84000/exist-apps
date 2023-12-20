@@ -3,11 +3,11 @@
     
     <!-- /db/apps/84000-data/tei/ -->
     
-    <triggers>
+    <!--<triggers>
         <trigger event="create,update" class="org.exist.collections.triggers.XQueryTrigger">
             <parameter name="url" value="xmldb:exist:///db/apps/84000-reading-room/triggers.xql"/>
         </trigger>
-    </triggers>
+    </triggers>-->
     
     <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0">
         
@@ -26,14 +26,24 @@
                 <param name="inputMethod" type="java.lang.String" value="unicode"/>
                 <param name="stopFilename" type="java.lang.String" value=""/>
             </analyzer>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="5"/>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="3">
+            <analyzer id="sa" class="io.bdrc.lucene.sa.SanskritAnalyzer">
+                <param name="mode" type="java.lang.String" value="word"/>
+                <param name="inputEncoding" type="java.lang.String" value="roman"/>
+                <param name="mergePrepositions" type="boolean" value="false"/>
+                <param name="filterGeminates" type="boolean" value="true"/>
+                <param name="lenient" type="java.lang.String" value="query"/>
+            </analyzer>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="2">
+                <field name="bo-titles" if="@xml:lang='bo'" analyzer="bo"/>
+                <field name="sa-titles" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>
+            </text>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="1.5">
                 <inline qname="tei:ref"/>
                 <ignore qname="tei:biblScope"/>
             </text>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="2"/>
-            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="2"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="1.5"/>
+            <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="1.5"/>
             <text match="//tei:text//tei:p"/>
             <text match="//tei:text//tei:label"/>
             <text match="//tei:text//tei:table"/>
@@ -44,7 +54,8 @@
             <text match="//tei:text//tei:trailer"/>
             <text match="//tei:back//tei:bibl"/>
             <text match="//tei:back//tei:gloss/tei:term">
-                <field name="bo-term" if="@xml:lang='bo'" analyzer="bo"/>
+                <field name="bo-terms" if="@xml:lang='bo'" analyzer="bo"/>
+                <field name="sa-terms" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>
                 <field name="full-term" if="@xml:lang='en'" analyzer="no-stopwords"/>
             </text>
         </lucene>

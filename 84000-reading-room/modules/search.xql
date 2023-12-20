@@ -48,7 +48,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
         if($resource-id gt '') then
             tei-content:tei($resource-id, 'translation')
         else ()
-        
+    
     let $single-tei-type := 
         if($single-tei) then
             tei-content:type($single-tei)
@@ -92,7 +92,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
             )
             else ()
         )
-   
+    
     let $entities-definitions :=
         if(not($single-tei)) then
             $entities:entities//m:entity/m:content[@type eq 'glossary-definition']
@@ -109,6 +109,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     (: Check the request to see if it's a phrase :)
     let $search-is-phrase := matches($search, '^\s*["“].+["”]\s*$')
     let $search-no-quotes := replace($search, '("|“|”)', '')
+    let $search-is-bo := common:string-is-bo($search)
     
     let $query := local:search-query($search-no-quotes, $search-is-phrase)
     
@@ -116,7 +117,9 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     let $results := (
         if($data-types[@id = ('translations','knowledgebase')]) then (
             (: Header content :)
-            $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., $query, $options)]
+            $all/tei:teiHeader/tei:fileDesc//tei:title[not(@xml:lang = ('bo', 'Sa-Ltn'))][ft:query(., $query, $options)]
+            | $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., concat('bo-titles:(', $search-no-quotes, ')'), map { "fields": ("bo-titles") })]
+            | $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., concat('sa-titles:(', $search-no-quotes, ')'), map { "fields": ("sa-titles") })]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
             (: Text content :)
@@ -135,7 +138,9 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
         else ()
         ,
         if($data-types[@id = ('translations','glossary')]) then (
-            $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., $query, $options)][parent::tei:gloss[not(@mode eq 'surfeit')]]
+            $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[not(@xml:lang = ('bo', 'Sa-Ltn'))][ft:query(., $query, $options)][parent::tei:gloss[not(@mode eq 'surfeit')]]
+            | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., concat('bo-terms:(', $search-no-quotes, ')'), map { "fields": ("bo-terms") })][parent::tei:gloss[not(@mode eq 'surfeit')]]
+            | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., concat('sa-terms:(', $search-no-quotes, ')'), map { "fields": ("sa-terms") })][parent::tei:gloss[not(@mode eq 'surfeit')]]
             | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:note[ft:query(tei:p, $query, $options)][@type eq 'definition'][not(@rend eq 'override')][parent::tei:gloss[not(@mode eq 'surfeit')]]
         )
         else ()
@@ -147,7 +152,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     
     let $results-count := count($results)
     
-    let $max-matches := 1000
+    let $max-matches := 200
     
     let $results-triaged := 
         if($results-count gt $max-matches) then
