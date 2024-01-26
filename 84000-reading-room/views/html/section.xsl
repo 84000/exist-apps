@@ -429,18 +429,18 @@
                         <div class="col-md-offset-2 col-md-8">
                             <div class="row">
                                 <div class="col-sm-4 bottom-margin-xs">
-                                    <a class="text-success center-vertical">
+                                    <a class="text-success center-vertical align-center">
                                         <xsl:attribute name="href" select="common:internal-link('/search.html', (), '', /m:response/@lang)"/>
                                         <span class="btn-round green sml">
                                             <i class="fa fa-search"/>
                                         </span>
                                         <span class="btn-round-text">
-                                            <xsl:value-of select="'Search the Reading Room'"/>
+                                            <xsl:value-of select="'Search Our Translations'"/>
                                         </span>
                                     </a>
                                 </div>
                                 <div class="col-sm-4 bottom-margin-xs">
-                                    <a class="text-danger center-vertical">
+                                    <a class="text-danger center-vertical align-center">
                                         <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
                                         <span class="btn-round red sml">
                                             <i class="fa fa-list"/>
@@ -451,7 +451,7 @@
                                     </a>
                                 </div>
                                 <div class="col-sm-4 bottom-margin-xs">
-                                    <a href="http://84000.co/how-you-can-help/donate/#sap" class="center-vertical">
+                                    <a href="http://84000.co/how-you-can-help/donate/#sap" class="center-vertical align-center">
                                         <xsl:sequence select="common:override-href(/m:response/@lang, 'zh', 'http://84000.co/ch-howhelp/donate')"/>
                                         <span class="btn-round sml">
                                             <i class="fa fa-gift"/>
@@ -770,7 +770,7 @@
                 <xsl:if test="$section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $section/m:page/@status]">
                     <hr/>
                     <div>
-                        <xsl:value-of select="'Read the knowledge base article '"/>
+                        <xsl:value-of select="'Read more in the knowledge base article '"/>
                         <a class="underline">
                             <xsl:attribute name="href" select="concat('/knowledgebase/', $section/m:page/@kb-id, '.html')"/>
                             <xsl:value-of select="$section/m:page/m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
@@ -1551,9 +1551,22 @@
                                     
                                 </a>
                                 
-                                <div class="notes" data-match-height="abstract">
+                                <div class="notes">
                                     
-                                    <xsl:apply-templates select="$sub-section/m:abstract/*"/>
+                                    <xsl:for-each select="$sub-section/m:abstract/tei:p">
+                                        <p>
+                                            <xsl:apply-templates select="node()"/>
+                                        </p>
+                                    </xsl:for-each>
+                                    
+                                    <xsl:if test="$sub-section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $sub-section/m:page/@status]">
+                                        <p>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat('/knowledgebase/', $sub-section/m:page/@kb-id, '.html')"/>
+                                                <xsl:value-of select="'Read more in the knowledge base article'"/>
+                                            </a>
+                                        </p>
+                                    </xsl:if>
                                     
                                     <xsl:if test="$sub-section/m:warning/tei:p">
                                         <xsl:call-template name="tantra-warning">
@@ -1562,15 +1575,6 @@
                                     </xsl:if>
                                     
                                 </div>
-                                
-                                <xsl:if test="$sub-section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $sub-section/m:page/@status]">
-                                    <div class="panel-row">
-                                        <a class="underline small">
-                                            <xsl:attribute name="href" select="concat('/knowledgebase/', $sub-section/m:page/@kb-id, '.html')"/>
-                                            <xsl:value-of select="'Read the knowledge base article'"/>
-                                        </a>
-                                    </div>
-                                </xsl:if>
                                 
                             </div>
                             

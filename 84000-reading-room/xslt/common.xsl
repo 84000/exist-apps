@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -134,6 +134,11 @@
                 <xsl:value-of select="$string"/>
             </xsl:otherwise>
         </xsl:choose>
+    </xsl:function>
+    
+    <xsl:function name="common:small-caps" as="xs:string?">
+        <xsl:param name="string" as="xs:string?"/>
+        <xsl:value-of select="translate(lower-case($string), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
     </xsl:function>
     
     <xsl:function name="common:date-user-string" as="xs:string">
@@ -979,10 +984,10 @@
                                 <xsl:with-param name="local-key" select="'tantra-warning-body'"/>
                             </xsl:call-template>
                             
-                            <div id="unrestricted-access" class="list-group accordion">
+                            <div id="{ concat('unrestricted-access-', $id) }" class="list-group accordion">
                                 <xsl:call-template name="expand-item">
-                                    <xsl:with-param name="id" select="'unrestricted-access'"/>
-                                    <xsl:with-param name="accordion-selector" select="'#unrestricted-access'"/>
+                                    <xsl:with-param name="id" select="concat('unrestricted-access-', $id)"/>
+                                    <xsl:with-param name="accordion-selector" select="concat('#unrestricted-access-', $id)"/>
                                     <xsl:with-param name="title-opener" select="true()"/>
                                     <xsl:with-param name="title">
                                         <h4 class="list-group-item-heading">

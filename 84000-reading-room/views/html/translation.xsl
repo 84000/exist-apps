@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -425,8 +425,9 @@
                                 <xsl:value-of select="'Related links'"/>
                             </h4>
                             <ul>
+                                
                                 <!-- Add a link to other texts by this author -->
-                                <xsl:for-each select="m:translation/m:source/m:attribution[@role eq 'author'][@xml:id]">
+                                <xsl:for-each select="m:translation/m:source/m:attribution[@role = ('author', 'author-contested')][@xml:id]">
                                     
                                     <xsl:variable name="entity" select="key('entity-instance', @xml:id, $root)[1]/parent::m:entity" as="element(m:entity)?"/>
                                     <xsl:variable name="kb-page" select="key('related-pages', $entity/m:instance[@type eq 'knowledgebase-article'][1]/@id, $root)[1]" as="element(m:page)?"/>
@@ -476,6 +477,7 @@
                                         <xsl:value-of select="'84000 Homepage'"/>
                                     </a>
                                 </li>
+                                
                             </ul>
                             
                             <a class="btn btn-danger" target="84000-donate">
@@ -675,6 +677,9 @@
     
     <xsl:template name="front-matter">
         
+        <xsl:variable name="main-titles" select="m:translation/m:titles/m:title[normalize-space(text())]"/>
+        <xsl:variable name="long-titles" select="m:translation/m:long-titles/m:title[normalize-space(text())]"/>
+
         <div class="row">
             
             <section id="titles" class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
@@ -716,9 +721,6 @@
                     </div>
                 </xsl:if>
                 
-                <xsl:variable name="main-titles" select="m:translation/m:titles/m:title[normalize-space(text())]"/>
-                <xsl:variable name="long-titles" select="m:translation/m:long-titles/m:title[normalize-space(text())]"/>
-                
                 <!-- Main titles -->
                 <div>
                     
@@ -731,6 +733,7 @@
                         </xsl:with-param>
                     </xsl:call-template>
                     
+                    <!-- Main titles -->
                     <div id="main-titles" class="ornamental-panel">
                         
                         <xsl:if test="$main-titles[@xml:lang eq 'bo']">
@@ -765,83 +768,111 @@
                             </div>
                         </xsl:if>
                         
-                        <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role eq 'author'][@xml:id]"/>
+                        <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role = ('author','author-contested')][@xml:id]"/>
                         <xsl:if test="$sourceAuthors">
                             <div class="panel-row">
-                                <div class="small text-muted">
-                                    <xsl:value-of select="'by'"/>
+                                <div class="text-muted">
+                                    <xsl:choose>
+                                        <xsl:when test="$sourceAuthors[@role eq 'author-contested']">
+                                            <xsl:value-of select="common:small-caps('Attributed to')"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="common:small-caps('by')"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </div>
-                                <div>
-                                    <ul class="list-inline inline-dots">
-                                        <xsl:for-each select="$sourceAuthors">
-                                            <li>
-                                                <span>
-                                                    <xsl:call-template name="class-attribute">
-                                                        <xsl:with-param name="lang" select="@xml:lang"/>
-                                                    </xsl:call-template>
-                                                    <xsl:value-of select="normalize-space(text())"/> 
-                                                </span>
-                                            </li>
-                                        </xsl:for-each>
-                                    </ul>
+                                <div class="align-center">
+                                    <xsl:for-each select="$sourceAuthors">
+                                        <xsl:if test="position() gt 1">
+                                            <small>
+                                                <xsl:choose>
+                                                    <xsl:when test="$sourceAuthors[@role eq 'author-contested']">
+                                                        <xsl:value-of select="' or '"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="position() lt count($sourceAuthors)">
+                                                        <xsl:value-of select="', '"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="', and '"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </small>
+                                        </xsl:if>
+                                        <span>
+                                            <xsl:call-template name="class-attribute">
+                                                <xsl:with-param name="lang" select="@xml:lang"/>
+                                            </xsl:call-template>
+                                            <xsl:value-of select="normalize-space(text())"/> 
+                                        </span>
+                                    </xsl:for-each>
                                 </div>
                             </div>
                         </xsl:if>
                         
                     </div>
                     
-                    <xsl:if test="count($long-titles) eq 1 and $long-titles[@xml:lang eq 'Bo-Ltn'][text()]">
-                        <div id="long-titles">
-                            <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
-                        </div>
-                    </xsl:if>
-                    
-                    <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
-                    <xsl:for-each select="$supplementaryRoles">
-                        <xsl:variable name="supplementaryRole" select="."/>
-                        <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@xml:id]"/>
-                        <xsl:if test="$roleAttributions">
-                            <div class="top-margin">
-                                <div class="small text-muted">
-                                    <xsl:choose>
-                                        <xsl:when test="$supplementaryRole eq 'reviser'">
-                                            <xsl:value-of select="'Revision'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'Translated into Tibetan by'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </div>
-                                <div>
-                                    <ul class="list-inline inline-dots">
-                                        <xsl:for-each select="$roleAttributions">
-                                            <li>
-                                                <span>
-                                                    <xsl:call-template name="class-attribute">
-                                                        <xsl:with-param name="lang" select="@xml:lang"/>
-                                                    </xsl:call-template>
-                                                    <xsl:value-of select="normalize-space(text())"/> 
-                                                </span>
-                                            </li>
-                                        </xsl:for-each>
-                                    </ul>
-                                </div>
-                            </div>
-                        </xsl:if>
-                    </xsl:for-each>
-                    
                 </div>
                 
-                <!-- Long titles -->
-                <xsl:if test="count($long-titles) gt 1">
+                <!-- Long titles on a seperate page -->
+                <xsl:if test="$long-titles or m:translation[m:source]">
                     <div class="page">
                         
-                        <div id="long-titles">
-                            <xsl:apply-templates select="$long-titles[@xml:lang eq 'bo']"/>
-                            <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
-                            <xsl:apply-templates select="$long-titles[@xml:lang eq 'en']"/>
-                            <xsl:apply-templates select="$long-titles[@xml:lang eq 'Sa-Ltn']"/>
-                        </div>
+                        <xsl:if test="$long-titles">
+                            <div id="long-titles">
+                                <xsl:apply-templates select="$long-titles[@xml:lang eq 'bo']"/>
+                                <xsl:apply-templates select="$long-titles[@xml:lang eq 'Bo-Ltn']"/>
+                                <xsl:apply-templates select="$long-titles[@xml:lang eq 'en']"/>
+                                <xsl:apply-templates select="$long-titles[@xml:lang eq 'Sa-Ltn']"/>
+                            </div>
+                        </xsl:if>
+                        
+                        <xsl:if test="m:translation[m:source]">
+                            <div id="toh">
+                                
+                                <h3 class="dot-parenth">
+                                    <xsl:apply-templates select="m:translation/m:source/m:toh"/>
+                                </h3>
+                                
+                                <xsl:if test="m:translation/m:source[m:scope//text()]">
+                                    <p id="location">
+                                        <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
+                                    </p>
+                                </xsl:if>
+                                
+                                <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
+                                <xsl:for-each select="$supplementaryRoles">
+                                    <xsl:variable name="supplementaryRole" select="."/>
+                                    <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@xml:id]"/>
+                                    <xsl:if test="$roleAttributions">
+                                        <div class="text-muted">
+                                            <xsl:choose>
+                                                <xsl:when test="$supplementaryRole eq 'reviser'">
+                                                    <xsl:value-of select="common:small-caps('revision')"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="common:small-caps('Translated into Tibetan by')"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </div>
+                                        <div>
+                                            <ul class="list-inline inline-dots">
+                                                <xsl:for-each select="$roleAttributions">
+                                                    <li>
+                                                        <span>
+                                                            <xsl:call-template name="class-attribute">
+                                                                <xsl:with-param name="lang" select="@xml:lang"/>
+                                                            </xsl:call-template>
+                                                            <xsl:value-of select="normalize-space(text())"/> 
+                                                        </span>
+                                                    </li>
+                                                </xsl:for-each>
+                                            </ul>
+                                        </div>
+                                    </xsl:if>
+                                </xsl:for-each>
+                                
+                            </div>
+                        </xsl:if>
                         
                     </div>
                 </xsl:if>
@@ -852,7 +883,7 @@
                 
                 <div class="page page-force">
                     
-                    <xsl:if test="m:translation[m:source]">
+                    <xsl:if test="m:translation[m:publication]">
                         
                         <img class="logo">
                             <!-- Update to set image in CSS -->
@@ -860,46 +891,19 @@
                             <xsl:attribute name="alt" select="'84000 logo'"/>
                         </img>
                         
-                        <div id="toh">
-                            
-                            <h4>
-                                <xsl:apply-templates select="m:translation/m:source/m:toh"/>
-                            </h4>
-                            
-                            <xsl:if test="m:translation/m:source[m:scope//text()]">
-                                <p id="location">
-                                    <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
-                                </p>
-                            </xsl:if>
-                            
-                            <xsl:if test="m:translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
-                                <p>
-                                    <span class="label label-info">
-                                        <xsl:value-of select="'This is a partial publication only including completed chapters'"/>
-                                    </span>
-                                </p>
-                            </xsl:if>
-                            
-                        </div>
-                        
-                    </xsl:if>
-                    
-                    <xsl:if test="m:translation[m:publication]">
-                        
-                        <xsl:if test="m:translation/@status = $render-status">
-                            <xsl:if test="m:translation/m:publication/m:contributors/m:summary[node()]">
-                                <div class="well">
-                                    <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
-                                        <p id="authours-summary">
-                                            <xsl:apply-templates select="node()"/>
-                                        </p>
-                                    </xsl:for-each>
-                                </div>
-                            </xsl:if>
+                        <xsl:if test="m:translation[@status = $render-status] and m:translation/m:publication/m:contributors/m:summary[node()]">
+                            <div class="well">
+                                <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
+                                    <p id="authours-summary">
+                                        <xsl:apply-templates select="node()"/>
+                                    </p>
+                                </xsl:for-each>
+                            </div>
                         </xsl:if>
                         
-                        <div class="bottom-margin">
-                            <p id="edition">
+                        <div id="version">
+                            
+                            <p>
                                 <xsl:choose>
                                     <xsl:when test="m:translation/m:publication/m:publication-date castable as xs:date">
                                         <xsl:value-of select="concat('First published ', format-date(m:translation/m:publication/m:publication-date, '[Y]'))"/>
@@ -908,24 +912,36 @@
                                         <xsl:value-of select="'Not yet published'"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
-                                <br/>
+                            </p>
+                            
+                            <p id="edition">
                                 <xsl:choose>
                                     <xsl:when test="m:translation/m:publication/m:edition/tei:date[1] gt ''">
                                         <xsl:value-of select="concat('Current version ', m:translation/m:publication/m:edition/text()[1], '(', m:translation/m:publication/m:edition/tei:date[1], ')')"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:value-of select="'Invalid version'"/>
+                                        <xsl:value-of select="'[No version]'"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
-                                <br/>
-                                <span class="small">
-                                    <xsl:value-of select="concat('Generated by 84000 Reading Room v', /m:response/@app-version)"/>
-                                </span>
                             </p>
+                            
+                            <p class="small text-muted">
+                                <xsl:value-of select="concat('Generated by 84000 Reading Room v', /m:response/@app-version)"/>
+                            </p>
+                            
+                            <!-- Warning for part publications (Toh 8) -->
+                            <xsl:if test="m:translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
+                                <p>
+                                    <span class="label label-info">
+                                        <xsl:value-of select="'This is a partial publication, only including completed chapters'"/>
+                                    </span>
+                                </p>
+                            </xsl:if>
+                            
                         </div>
                         
-                        <div class="bottom-margin">
-                            <p id="publication-statement">
+                        <div id="publication-statement">
+                            <p>
                                 <xsl:apply-templates select="m:translation/m:publication/m:publication-statement"/>
                             </p>
                         </div>
@@ -949,7 +965,7 @@
                         </xsl:if>
                         
                         <xsl:if test="m:translation[@status = $render-status]">
-                            <div id="license" class="bottom-margin">
+                            <div id="license">
                                 <img>
                                     <!-- Update to set image in CSS -->
                                     <xsl:attribute name="src" select="replace(m:translation/m:publication/m:license/@img-url, '^http:', 'https:')"/>

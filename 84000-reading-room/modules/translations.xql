@@ -362,6 +362,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
         element { QName('http://read.84000.co/ns/1.0', 'text') } {
             attribute id { $text-id }, 
             attribute document-url { $document-url },
+            attribute resource-type { 'translation' },
             attribute file-name { $file-name },
             attribute archive-path { $archive-path },
             attribute last-modified { tei-content:last-modified($tei) },
@@ -502,13 +503,12 @@ declare function translations:recent-updates() as element(m:recent-updates) {
             let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
             let $changes := $fileDesc/tei:revisionDesc/tei:change
             let $publication-status := tei-content:publication-status($tei)
-            
             let $changes-in-span := $changes[xs:dateTime(@when) ge $start-time][xs:dateTime(@when) le $end-time]
             
             let $recent-update-type :=
-                if($publication-status = ('1', '1.a') and $changes-in-span[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]) then 
+                if($publication-status = $translation:published-status-ids and $changes-in-span[@type = ('translation-status', 'publication-status')][@status = $translation:published-status-ids]) then 
                     'new-publication'
-                else if($publication-status = ('1', '1.a') and $changes-in-span[@type eq 'text-version']) then 
+                else if($publication-status = $translation:published-status-ids and $changes-in-span[@type eq 'text-version']) then 
                     'new-version'
                 else ()
             
@@ -530,7 +530,7 @@ declare function translations:recent-updates() as element(m:recent-updates) {
                     
                     let $changes-in-span-display := (
                         if($recent-update-type eq 'new-publication') then
-                            $changes-in-span[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]
+                            $changes-in-span[@type = ('translation-status', 'publication-status')][@status = $translation:published-status-ids]
                         else if($recent-update-type eq 'new-version') then
                             $changes-in-span[@type eq 'text-version']
                         else()

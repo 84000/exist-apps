@@ -457,9 +457,12 @@ declare function update-entity:remove-instance($instance-id as xs:string) as ele
             common:update('entity-remove-instance', $instance, (), (), ())
         
         (: Otherwise delete the whole entity :)
-        else 
+        else (
+            (: Remove relations to the entity - Actually keep them :)
+            (:update delete $entities:entities/m:entity/m:relation[@id eq $entity/@xml:id],:)
+
             common:update('entity-remove', $entity, (), (), ())
-            
+        )
     )
         
 };

@@ -91,7 +91,12 @@ return
                 
                 let $article-entity := $entities:entities//m:entity[m:instance/@id = $knowledgebase-id]
                 let $attribution-ids := $knowledgebase-content/m:part[@type eq 'related-texts']//m:attribution/@xml:id
-                let $attribution-entities := $entities:entities//m:instance[@id = $attribution-ids]/parent::m:entity
+                let $attribution-id-chunks := common:ids-chunked($attribution-ids)
+                let $attribution-entities := 
+                    for $key in map:keys($attribution-id-chunks)
+                    let $attribution-ids-chunk := map:get($attribution-id-chunks, $key)
+                    return
+                        $entities:entities//m:instance[@id = $attribution-ids-chunk]/parent::m:entity
                 let $glossary-entities := $entities:entities//m:instance[@id = $glossary-ids]/parent::m:entity
                 let $entities-combined := $article-entity | $attribution-entities | $glossary-entities
                 let $related := entities:related($entities-combined, false(), ('glossary','knowledgebase'), $exclude-flagged, $exclude-status)

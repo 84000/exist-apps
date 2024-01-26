@@ -99,6 +99,7 @@ let $text := $tei !
     element { QName('http://read.84000.co/ns/1.0', 'text')} {
         attribute id { tei-content:id(.) },
         attribute document-url { base-uri($tei) },
+        attribute resource-type { tei-content:type($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
         attribute status { tei-content:publication-status(.) },
         attribute status-group { tei-content:publication-status-group(.) },

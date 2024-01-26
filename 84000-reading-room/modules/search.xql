@@ -108,7 +108,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     
     (: Check the request to see if it's a phrase :)
     let $search-is-phrase := matches($search, '^\s*["“].+["”]\s*$')
-    let $search-no-quotes := replace($search, '("|“|”)', '')
+    let $search-no-quotes := replace($search, '("|“|”|''|/)', '')
     let $search-is-bo := common:string-is-bo($search)
     
     let $query := local:search-query($search-no-quotes, $search-is-phrase)
@@ -122,8 +122,9 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
             | $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., concat('sa-titles:(', $search-no-quotes, ')'), map { "fields": ("sa-titles") })]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
+            ,
             (: Text content :)
-            | $published/tei:text//tei:p[ft:query(., $query, $options)][not(parent::tei:note[@type eq 'definition'])][not(@rend eq 'default-text')]
+            $published/tei:text//tei:p[ft:query(., $query, $options)][not(parent::tei:note[@type eq 'definition'])][not(@rend eq 'default-text')]
             | $published/tei:text//tei:label[ft:query(., $query, $options)]
             | $published/tei:text//tei:table[ft:query(., $query, $options)]
             | $published/tei:text//tei:head[ft:query(., $query, $options)]

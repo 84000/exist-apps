@@ -59,6 +59,7 @@ let $text :=
         
         attribute id { $text-id },
         attribute document-url { base-uri($tei) },
+        attribute resource-type { tei-content:type($tei) },
         attribute locked-by-user { tei-content:locked-by-user($tei) },
         attribute status { tei-content:publication-status($tei) },
         attribute status-group { tei-content:publication-status-group($tei) },

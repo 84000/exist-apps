@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="request" select="/m:response/m:request"/>
+    <xsl:variable name="text-statuses" select="/m:response/m:text-statuses"/>
     <xsl:variable name="selected-type" select="$request/m:article-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
     <xsl:variable name="page-url" select="concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(($selected-type ! concat('article-type[]=', @id), $request/@sort ! concat('sort=', .)), '&amp;')" as="xs:string"/>
     
@@ -129,6 +130,7 @@
     <xsl:template match="m:page[parent::m:knowledgebase]">
         
         <xsl:variable name="page-id" select="concat('page-', fn:encode-for-uri(@xml:id))"/>
+        <xsl:variable name="text-status" select="@status"/>
         
         <div class="item">
             
@@ -164,15 +166,15 @@
                         <xsl:choose>
                             <xsl:when test="@status-group eq 'published'">
                                 <xsl:attribute name="class" select="'label label-success'"/>
-                                <xsl:value-of select="concat(@status, ' / ', 'Published')"/>
+                                <xsl:value-of select="concat($text-status, ' / ', $text-statuses/m:status[@status-id eq $text-status]/text())"/>
                             </xsl:when>
                             <xsl:when test="@status-group eq 'in-progress'">
                                 <xsl:attribute name="class" select="'label label-warning'"/>
-                                <xsl:value-of select="concat(@status, ' / ', 'In-progress')"/>
+                                <xsl:value-of select="concat($text-status, ' / ', $text-statuses/m:status[@status-id eq $text-status]/text())"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:attribute name="class" select="'label label-default'"/>
-                                <xsl:value-of select="concat(@status, ' / ', 'Not published')"/>
+                                <xsl:value-of select="concat($text-status, ' / ', $text-statuses/m:status[@status-id eq $text-status]/text())"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </span>

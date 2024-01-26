@@ -33,10 +33,11 @@ declare variable $tei-content:text-statuses :=
         <!-- Article statuses -->
         <status type="article"      status-id="1"    group="published"      marked-up="true"                     >Published</status>
         <status type="article"      status-id="1.a"  group="published"      marked-up="true"                     >Published under revision</status>
-        <status type="article"      status-id="2"    group="in-progress"    marked-up="true"                     >Proofreading</status>
-        <status type="article"      status-id="2.a"  group="in-progress"    marked-up="true"                     >Final Review</status>
-        <status type="article"      status-id="2.b"  group="in-progress"    marked-up="true"                     >Copyediting</status>
-        <status type="article"      status-id="3"    group="not-started"    marked-up="true"                     >Stub</status>
+        <status type="article"      status-id="1.b"  group="published"      marked-up="true"                     >Published without content</status>
+        <status type="article"      status-id="2"    group="in-progress"    marked-up="true"                     >Copyediting</status>
+        <status type="article"      status-id="2.a"  group="in-progress"    marked-up="true"                     >In review</status>
+        <status type="article"      status-id="2.b"  group="in-progress"    marked-up="true"                     >In progress</status>
+        <status type="article"      status-id="3"    group="not-started"    marked-up="true"                     >Not started</status>
     </text-statuses>;
 
 declare variable $tei-content:title-types :=
@@ -296,6 +297,8 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                                 'translator'
                             else if($attribution[@role eq 'reviser']) then
                                 'reviser'
+                            else if($attribution[@role eq 'authorContested']) then
+                                'author-contested'
                             else 
                                 'author'
                         },

@@ -80,18 +80,15 @@ declare function file-upload:process-upload($text-id as xs:string) as element()?
         (: Check the text-id has an upload directory. If not create one and set permissions :)
         let $upload-directory as xs:string := concat($common:import-data-path, '/', upper-case($text-id))
         let $collection-exists := 
-            if (not(xmldb:collection-available($upload-directory))) then
-            (
+            if (not(xmldb:collection-available($upload-directory))) then (
                 xmldb:create-collection($common:import-data-path, upper-case($text-id)),
     		    sm:chgrp(xs:anyURI($upload-directory), $file-upload:app-user-group),
     		    sm:chmod(xs:anyURI($upload-directory), 'rwxrwxr--')
     		)
-            else
-                ()
+            else ()
         
         (: Store file and set permissions :)
-        let $stored-file := 
-        (
+        let $stored-file := (
             xmldb:store-as-binary(
                 $upload-directory, 
                 $upload-name-unique, 

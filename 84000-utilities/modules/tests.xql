@@ -363,22 +363,22 @@ declare function tests:outline-context($tei as element(tei:TEI), $resource-id as
 
 declare function tests:complete-source($toh-html as document-node()) as element(m:test) {
 
-    let $toh := $toh-html//*[@id eq 'toh']//xhtml:h4/text()
-    let $location := $toh-html//*[@id eq 'location']/text()
-    let $authours-summary := $toh-html//*[@id eq 'authours-summary']/text()
-    let $edition := $toh-html//*[@id eq 'edition']/text()
-    let $publication-statement := $toh-html//*[@id eq 'publication-statement']/text()
+    let $toh := $toh-html//*[@id eq 'toh']/descendant::text()
+    let $location := $toh-html//*[@id eq 'location']/descendant::text()
+    (:let $authours-summary := $toh-html//*[@id eq 'authours-summary']/descendant::text():)
+    let $edition := $toh-html//*[@id eq 'edition']/descendant::text()
+    let $publication-statement := $toh-html//*[@id eq 'publication-statement']/descendant::text()
     let $license := $toh-html//*[@id eq 'license']
     
     return
         <test xmlns="http://read.84000.co/ns/1.0"
             id="complete-source" 
-            pass="{ if($toh and $location and $authours-summary and $edition and $publication-statement and $license/xhtml:p and $license/xhtml:img/@src/string()) then 1 else 0 }">
+            pass="{ if($toh and $location and $edition and $publication-statement and $license/xhtml:p and $license/xhtml:img/@src/string()) then 1 else 0 }">
             <title>Source test: The text has complete documentation of the source.</title>
             <details>
                 <detail>Toh: {$toh}</detail>
                 <detail>Location: {$location}</detail>
-                <detail>Author summary: {$authours-summary}</detail>
+                <!--<detail>Author summary: {$authours-summary}</detail>-->
                 <detail>Publication statement: {$publication-statement}</detail>
                 <!--<detail>License: { count($license/xhtml:p) } paragraph(s).</detail>-->
                 <!--<detail>License image: {$license/xhtml:img}</detail>-->

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -172,7 +172,7 @@
                                     
                                     <xsl:if test="not($tei-editor) and (not($article/m:page[@status = $render-status]) or not($parts-with-content[@type eq 'section']))">
                                         <section id="disclaimer" class="tei-parser">
-                                            <p class="italic text-muted">This knowledge base page is incomplete; biographical, historical, and other details have yet to be added. In the meantime, it is provided to allow readers to see a list of all the works attributed to this attributed to this author.</p>
+                                            <p class="italic text-muted">This knowledge base page is incomplete; biographical, historical, and other details have yet to be added. In the meantime, it is provided to allow readers to see a list of all the works attributed to this author.</p>
                                         </section>
                                     </xsl:if>
                                     
@@ -191,7 +191,7 @@
                                                 <xsl:call-template name="expand-item">
                                                     <xsl:with-param name="id" select="concat('attributed-texts-', m:parent[1]/@id)"/>
                                                     <xsl:with-param name="accordion-selector" select="'#attributed-texts-list'"/>
-                                                    <xsl:with-param name="active" select="if(count($attributed-texts) le 5) then true() else false()"/>
+                                                    <xsl:with-param name="active" select="if(count(distinct-values($attributed-texts/m:parent/@id)) le 1) then true() else false()"/>
                                                     <xsl:with-param name="persist" select="true()"/>
                                                     <xsl:with-param name="title-opener" select="true()"/>
                                                     <xsl:with-param name="title">

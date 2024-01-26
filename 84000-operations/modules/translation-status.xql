@@ -153,6 +153,7 @@ declare function translation-status:file-type($file-name as xs:string) as xs:str
         switch($file-name-tokenized[last()])
             case ('xlsx') return 'spreadsheet'
             case ('docx') return 'document'
+            case ('pdf') return 'pdf'
             default return ''
 };
 
@@ -180,7 +181,7 @@ declare function translation-status:submissions($text as element(m:text)) as ele
                     xs:dateTime($submission/@date-time) 
                 else 
                     xs:dateTime('2000-01-01T00:00:00Z')
-            where $file-type = ('spreadsheet', 'document')
+            where $file-type = ('spreadsheet', 'document', 'pdf')
             order by $date-time descending, xs:string($file-name-normalized) descending
         return
             element { QName('http://read.84000.co/ns/1.0', 'submission') } {

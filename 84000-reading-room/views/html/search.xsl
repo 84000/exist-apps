@@ -254,7 +254,7 @@
                     
                     <xsl:if test="m:tei-search/m:results[@count-matches-processed lt @count-matches-all]">
                         <div class="alert alert-danger small top-margin no-bottom-margin" role="alert">
-                            <xsl:value-of select="concat('Please refine your search. This term is very common and only the first ', format-number(m:tei-search/m:results/@count-matches-processed, '#,###'), ' of ',  format-number(m:tei-search/m:results/@count-matches-all, '#,###'), ' matches have been processed.')"/>
+                            <xsl:value-of select="concat('Please refine your search. This is a common term. Only the first ', format-number(m:tei-search/m:results/@count-matches-processed, '#,###'), ' of ',  format-number(m:tei-search/m:results/@count-matches-all, '#,###'), ' matches have been processed.')"/>
                         </div>
                     </xsl:if>
                     
@@ -992,6 +992,9 @@
         <xsl:choose>
             <xsl:when test="local-name(.) eq 'author' and not(@role)">
                 <xsl:value-of select="'By '"/>
+            </xsl:when>
+            <xsl:when test="local-name(.) eq 'author' and @role eq 'author-contested'">
+                <xsl:value-of select="'Attributed to: '"/>
             </xsl:when>
             <xsl:when test="local-name(.) eq 'author'">
                 <xsl:value-of select="'Tibetan translation: '"/>

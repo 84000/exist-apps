@@ -163,7 +163,8 @@
                                                 <div class="small">
                                                     <xsl:choose>
                                                         <xsl:when test="$recent-update-type eq 'new-publication'">
-                                                            <xsl:for-each select="tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]">
+                                                            <xsl:variable name="published-statuses" select="/m:response/m:text-statuses/m:status[@type eq 'translation'][@group eq 'published']/@status-id" as="xs:string*"/>
+                                                            <xsl:for-each select="tei:change[@type = ('translation-status', 'publication-status')][@status = $published-statuses]">
                                                                 <xsl:sort select="@when"/>
                                                                 <span class="text-muted">
                                                                     <xsl:value-of select="common:date-user-string(concat('Status ', @status, ' set'), @when, @who)"/>

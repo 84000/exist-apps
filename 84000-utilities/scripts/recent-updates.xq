@@ -35,15 +35,14 @@ let $recent-notes :=
             $changes-in-span
         }
 
-
 return (
     'New publications:',
     '-----------------',
-    for $text in $recent-notes[tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]]
+    for $text in $recent-notes[tei:change[@type = ('translation-status', 'publication-status')][@status = $translation:published-status-ids]]
     return (
         '',
         'Toh ' || $text/@toh-str || ' (' || $text/@text-id || ')' ,
-        for $change in $text/tei:change[@type = ('translation-status', 'publication-status')][@status = ('1', '1.a')]
+        for $change in $text/tei:change[@type = ('translation-status', 'publication-status')][@status = $translation:published-status-ids]
         order by $change/@when ! xs:dateTime(.) ascending
         return
             '- ' || 'Status ' || $change/@status || ' set by ' || $change/@who || ' on ' || $change/@when ! format-dateTime(., '[Y0001]-[M01]-[D01]')
@@ -51,7 +50,7 @@ return (
     '',
     'New versions:',
     '-------------',
-    for $text in $recent-notes[@status = ('1', '1.a')][tei:change[@type eq 'text-version']]
+    for $text in $recent-notes[@status = $translation:published-status-ids][tei:change[@type eq 'text-version']]
     return (
         '',
         'Toh ' || $text/@toh-str || ' (' || $text/@text-id || ')' ,

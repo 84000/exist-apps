@@ -58,7 +58,7 @@ declare function update-tei:minor-version-increment($tei as element(tei:TEI), $n
         common:update('text-version', $tei//tei:fileDesc/tei:editionStmt, $editionStmt-new, (), $tei//tei:fileDesc/tei:titleStmt),
         
         (: Add a change :)
-        local:add-change($tei, 'text-version', $version-number-str-increment, $note),
+        update-tei:add-change($tei, 'text-version', $version-number-str-increment, $note),
         
         util:log('info', concat('update-tei-minor-version-increment:', $text-id))
         
@@ -92,7 +92,7 @@ declare function local:add-note($tei as element(tei:TEI), $update as xs:string, 
 
 };
 
-declare function local:add-change($tei as element(tei:TEI), $type as xs:string, $status as xs:string?, $note as xs:string?) as element()* {
+declare function update-tei:add-change($tei as element(tei:TEI), $type as xs:string, $status as xs:string?, $note as xs:string?) as element()* {
     
     let $change :=
         element {QName("http://www.tei-c.org/ns/1.0", "change")} {
@@ -155,7 +155,7 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
                     where $availability and not($request-status eq $existing-status/string())
                     return (
                         common:update('publication-status', $existing-status, $new-status, $availability, ()),
-                        local:add-change($tei, 'translation-status', $request-status, $request-status)
+                        update-tei:add-change($tei, 'translation-status', $request-status, $request-status)
                     )
                 else ()
              
@@ -626,6 +626,8 @@ declare function update-tei:source($tei as element(tei:TEI)) as element()* {
                                     attribute role {'translatorTib'}
                                 else if($attribution-role = ('reviser')) then
                                     attribute role {'reviser'}
+                                else if($attribution-role = ('author-contested')) then
+                                    attribute role {'authorContested'}
                                 else (),
                                 
                                 attribute xml:id { $attribution-id },
@@ -1220,7 +1222,7 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
                     common:update('knowledgebase-header', $fileDesc/tei:editionStmt, $editionStmt-new, $fileDesc, $fileDesc/tei:titleStmt),
                     
                     (: Log the version update :)
-                    local:add-change($tei, 'text-version', $request-version-number-str, ($version-note, $request-version-number-str)[. gt ''][1])
+                    update-tei:add-change($tei, 'text-version', $request-version-number-str, ($version-note, $request-version-number-str)[. gt ''][1])
                     
                 )
                 
@@ -1284,7 +1286,7 @@ declare function update-tei:knowledgebase-header($tei as element(tei:TEI)) as el
                     
                     (: Log the status update :)
                     if ($request-status ne $existing-status) then
-                        local:add-change($tei, 'publication-status', $request-status, $request-status)
+                        update-tei:add-change($tei, 'publication-status', $request-status, $request-status)
                     else ()
                     
                 )

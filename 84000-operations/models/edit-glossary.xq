@@ -193,6 +193,7 @@ return
                 attribute id { tei-content:id($tei) },
                 attribute tei-version { tei-content:version-str($tei) },
                 attribute document-url { base-uri($tei) },
+                attribute resource-type { $resource-type }, 
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 attribute status { tei-content:publication-status($tei) },
                 attribute status-group { tei-content:publication-status-group($tei) },

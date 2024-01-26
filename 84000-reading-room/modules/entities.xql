@@ -55,7 +55,8 @@ declare variable $entities:instance-types := ('glossary-item', 'knowledgebase-ar
 
 declare function entities:next-id() as xs:string {
     
-    let $max-id := max($entities:entities//@xml:id ! substring-after(., 'entity-') ! common:integer(.))
+    (: Ensure we don't use an existing relation/sameAs entity id :)
+    let $max-id := max(($entities:entities//@xml:id | $entities:entities//m:relation/@id) ! substring-after(., 'entity-') ! common:integer(.))
     return
         string-join(('entity', xs:string(sum(($max-id, 1)))), '-')
     

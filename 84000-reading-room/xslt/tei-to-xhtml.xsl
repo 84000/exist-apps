@@ -752,7 +752,7 @@
     </xsl:template>
     <xsl:template match="tei:hi[@rend eq 'small-caps']">
         <span>
-            <xsl:value-of select="translate(lower-case(text()), 'abcdefghijklmnopqrstuvwxyz', 'ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ')"/>
+            <xsl:value-of select="common:small-caps(text())"/>
         </span>
     </xsl:template>
     <xsl:template match="tei:hi">
@@ -4799,35 +4799,48 @@
         <xsl:param name="text" as="element(m:text)?"/>
         <xsl:param name="exclude-entity-ids" as="xs:string*" select="()"/>
         
-        <xsl:variable name="list-output" as="element(xhtml:li)*">
-            <xsl:for-each select="$text/m:source/m:attribution[@role eq 'author'][normalize-space(text())]">
-                
-                <xsl:variable name="attribution" select="."/>
-                <xsl:variable name="entity" select="$entities/m:instance[@id eq $attribution/@xml:id]/parent::m:entity[not(@xml:id = $exclude-entity-ids)]" as="element(m:entity)?"/>
-                <xsl:variable name="kb-instance" select="$entity/m:instance[@type eq 'knowledgebase-article'][1]" as="element(m:instance)?"/>
-                
-                <xsl:if test="$kb-instance">
-                    <li>
-                        <xsl:call-template name="attribution-label">
-                            <xsl:with-param name="attribution" select="."/>
-                            <xsl:with-param name="entity" select="$entity"/>
-                            <xsl:with-param name="page" select="key('related-pages', $kb-instance/@id, $root)[1]"/>
-                        </xsl:call-template>
-                    </li>
-                </xsl:if>
-                
-            </xsl:for-each>
-        </xsl:variable>
+        <xsl:variable name="attributions" select="$text/m:source/m:attribution[@role = ('author', 'author-contested')][normalize-space(text())]"/>
         
-        <xsl:if test="$list-output">
+        <xsl:if test="$attributions">
             <hr/>
             <div role="navigation" aria-label="The attributed authors of the source text" class="small">
-                <span class="text-muted">
-                    <xsl:value-of select="'by '"/>
-                </span>
-                <ul class="list-inline inline-dots">
-                    <xsl:sequence select="$list-output"/>
-                </ul>
+                
+                <xsl:choose>
+                    <xsl:when test="$attributions[@role eq 'author-contested']">
+                        <xsl:value-of select="'Attributed to '"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="'By '"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+                <xsl:for-each select="$attributions">
+                    
+                    <xsl:variable name="attribution" select="."/>
+                    <xsl:variable name="entity" select="$entities/m:instance[@id eq $attribution/@xml:id]/parent::m:entity[not(@xml:id = $exclude-entity-ids)]" as="element(m:entity)?"/>
+                    <xsl:variable name="kb-instance" select="$entity/m:instance[@type eq 'knowledgebase-article'][1]" as="element(m:instance)?"/>
+                    
+                    <xsl:if test="position() gt 1">
+                        <xsl:choose>
+                            <xsl:when test="$attributions[@role eq 'author-contested']">
+                                <xsl:value-of select="' or '"/>
+                            </xsl:when>
+                            <xsl:when test="position() lt count($attributions)">
+                                <xsl:value-of select="', '"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="', and '"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:if>
+                    
+                    <xsl:call-template name="attribution-label">
+                        <xsl:with-param name="attribution" select="$attribution"/>
+                        <xsl:with-param name="entity" select="$entity"/>
+                        <xsl:with-param name="page" select="key('related-pages', $kb-instance/@id, $root)[1]"/>
+                    </xsl:call-template>
+                    
+                </xsl:for-each>
             </div>
         </xsl:if>
         

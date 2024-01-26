@@ -96,15 +96,13 @@ declare function source:etext-volume($etext-id as xs:string) as element()* {
 
 declare function source:etext-full($location as element(m:location)) as element(m:source) {
     
-    let $work := $location/@work
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'source') } {
-            attribute work { $work },
-            for $volume in $location/m:volume
-                for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
-                return 
-                    source:etext-page($work, xs:integer($volume/@number), $page-in-volume, $page-index, false())
-        }
+    element { QName('http://read.84000.co/ns/1.0', 'source') } {
+        $location/@work,
+        for $volume in $location/m:volume
+            for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
+            return 
+                source:etext-page($location/@work, xs:integer($volume/@number), $page-in-volume, $page-index, false())
+    }
     
 };
 
@@ -139,6 +137,7 @@ declare function source:etext-page($location as element(m:location), $page-numbe
             attribute page-url { concat('https://read.84000.co/source/', $location/@key, '.html?page=', $page-volume/@page-number) },
             source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $page-number, $add-context)
         }
+        
 };
 
 declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $page-index as xs:integer, $add-context as xs:boolean) as element(m:page) {

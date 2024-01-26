@@ -97,6 +97,9 @@ h1, h2, h3, h4, .h1, .h2, .h3, .h4, header {
 small, .small {
     font-size: .75em;
 }
+.margin-top {
+    margin-bottom: 11pt;
+}
 .margin-bottom {
     margin-bottom: 11pt;
 }
@@ -120,6 +123,15 @@ small, .small {
 }
 .line-through {
     text-decoration: line-through;
+}
+.dot-parenth:before, .dot-parenth:after {
+    display: inline-block;
+}
+.dot-parenth:before {
+    content: "\00B7\00A0";
+}
+.dot-parenth:after {
+    content: "\00A0\00B7";
 }
 
 /* other scripts */
@@ -526,12 +538,12 @@ img.logo-84000 {
 #body-title h2, #body-title .h2 {
     font-size: 1em;
 }
-
-#titles .translator {
-    margin-top: 24pt;
-    padding: 10pt 15pt;
-    background-color: #eee;
-    margin-bottom: 0;
+#titles h3 {
+    font-weight: normal;
+    margin-bottom: 6pt;
+}
+#titles > section > div {
+    margin-top: 36pt;
     page-break-inside: avoid;
 }
 
@@ -541,6 +553,10 @@ img.logo-84000 {
     margin: 0 auto;
     margin-top: 5%;
     margin-bottom: 22px;
+}
+#imprint > section > div {
+    margin-top: 24pt;
+    page-break-inside: avoid;
 }
 
 /* contents */
@@ -628,7 +644,7 @@ img.logo-84000 {
 }
 
 .attestation-types {
-    border: 1px solid #888888;
+    /* border: 1px solid #888888; */
     margin-top: 14pt;
     padding-bottom: 14pt;
     border-radius: 2px;

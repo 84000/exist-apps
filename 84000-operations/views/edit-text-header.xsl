@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -67,8 +67,6 @@
                         
                     </div>
                     
-                    <hr class="sml-margin"/>
-                    
                     <!-- Due date -->
                     <xsl:variable name="next-target-date" select="$translation-status/m:text[@status-surpassable eq 'true']/m:target-date[@next eq 'true'][1]"/>
                     <xsl:if test="$next-target-date">
@@ -106,6 +104,8 @@
                     
                     <!-- Files -->
                     <xsl:if test="$text/@status-group eq 'published'">
+                        
+                        <hr class="sml-margin"/>
                         
                         <!-- Downloads -->
                         <div>
@@ -201,7 +201,8 @@
                         
                     </xsl:if>
                     
-                    <div class="list-group accordion accordion-bordered accordion-background" role="tablist" aria-multiselectable="true" id="forms-accordion">
+                    <!-- Forms accordion -->
+                    <div class="list-group accordion accordion-bordered accordion-background top-margin" role="tablist" aria-multiselectable="true" id="forms-accordion">
                         
                         <xsl:call-template name="titles-form-panel">
                             <xsl:with-param name="active" select="if(m:request/@form-expand eq 'titles') then true() else false()"/>
@@ -513,11 +514,11 @@
                                         </p>
                                     </xsl:for-each>
                                 </xsl:when>
-                                <xsl:otherwise>
+                                <!--<xsl:otherwise>
                                     <p class="text-muted italic">
                                         <xsl:value-of select="'No attribution text in the TEI'"/>
                                     </p>
-                                </xsl:otherwise>
+                                </xsl:otherwise>-->
                             </xsl:choose>
                             
                             <hr class="sml-margin"/>
@@ -1165,7 +1166,7 @@
                                     </xsl:choose>
                                     <i class="fa fa-check"/>
                                 </xsl:if>
-                                <xsl:value-of select="'Generate TEI'"/>
+                                <xsl:value-of select="' Generate TEI'"/>
                             </span>
                             
                         </div>
@@ -1187,7 +1188,7 @@
                     
                     <div class="form-group">
                         <div class="col-sm-10">
-                            <input type="file" name="submit-translation-file" id="submit-translation-file" required="required" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+                            <input type="file" name="submit-translation-file" id="submit-translation-file" required="required" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf"/>
                         </div>
                         <div class="col-sm-2">
                             <button type="submit" class="btn btn-primary pull-right">
@@ -1524,6 +1525,13 @@
                     <xsl:attribute name="selected" select="'selected'"/>
                 </xsl:if>
                 <xsl:value-of select="'Author'"/>
+            </option>
+            
+            <option value="author-contested">
+                <xsl:if test="$selected-value eq 'author-contested'">
+                    <xsl:attribute name="selected" select="'selected'"/>
+                </xsl:if>
+                <xsl:value-of select="'Author (contested)'"/>
             </option>
             
             <option value="translator">
