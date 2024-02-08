@@ -101,6 +101,41 @@ declare function local:redirect($url as xs:string){
     </dispatch>
 };
 
+declare function local:redirect-purl(){
+    
+    if($common:environment/m:url[@id eq 'reading-room']) then
+        
+        (: Check for toh key :)
+        if(matches($exist:resource,  'toh[0-9]+(\-[0-9]+)?[a-zA-Z]?$', 'i')) then
+        
+            (: Check it's published :)
+            let $toh-key := replace($exist:resource, '.*(toh[0-9]+(\-[0-9]+)?[a-zA-Z]?)$', '$1', 'i') ! lower-case(.)
+            let $tei := tei-content:tei($toh-key, 'translation')
+            let $tei-publication-status := tei-content:publication-status-group($tei)
+            
+            where $tei
+            return 
+                if(matches($exist:resource,  '^wae', 'i') and $tei-publication-status eq 'published') then
+                    local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/translation/' || $toh-key || '.html')
+                else
+                    let $tei := tei-content:tei($toh-key, 'translation')
+                    let $bibl := tei-content:source-bibl($tei, $toh-key)
+                    let $parent-id := $bibl/tei:idno[@parent-id][1]/@parent-id/string()
+                    where $parent-id gt ''
+                    return
+                        local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/section/' || $parent-id || '.html#' || $toh-key)
+        
+        (: Check for UT number :)
+        else if (matches($exist:resource,  '^UT.+', 'i')) then
+            local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/passage/' || $exist:resource || '.json')
+            
+        (: Exit :)
+        else ()
+        
+    else ()
+    
+};
+
 declare function local:has-access($model) as xs:boolean {
     sm:has-access(xs:anyURI(concat($common:app-path, $model)), 'r-x')
 };
@@ -208,32 +243,32 @@ return
             local:redirect($common:environment/m:url[@id eq 'communications-site'] || '/mobile')
         
         (: These are URIs redirected from purl.84000.co :)
-        else if ($path eq "/resource/core/") then 
-            let $toh-key := replace(lower-case($exist:resource), '.+(toh[a-z0-9\-]+).*', '$1')
-            where $toh-key and $common:environment/m:url[@id eq 'reading-room']
-            return 
-                if(matches(lower-case($exist:resource), '^wae')) then
-                    local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/translation/' || $toh-key || '.html')
-                else
-                    let $tei := tei-content:tei($toh-key, 'translation')
-                    let $bibl := tei-content:source-bibl($tei, $toh-key)
-                    let $parent-id := $bibl/tei:idno[@parent-id][1]/@parent-id/string()
-                    where $parent-id gt ''
-                    return
-                        local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/section/' || $parent-id || '.html#' || $toh-key)
-        
+        else if ($path = ('/resource/core/')) then
+            local:redirect-purl()
+            
         (: Translation :)
         else if ($collection-path eq "translation") then
             (: xml model -> json view :)
-            if ($resource-suffix eq 'json') then (: placeholder - this is incomplete :)
-                local:dispatch("/models/translation.xq", "/views/json/translation.xq",
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
-                        <add-parameter name="resource-suffix" value="json"/>
-                        <set-header name="Content-Type" value="application/pdf"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
-                    </parameters>
-                )
+            if ($resource-suffix eq 'json') then 
+                
+                if(request:get-parameter('api-version', '') eq '0.2.0') then
+                    local:dispatch("/models/translation.xq", "/views/json/0.2.0/translation.xq",
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-suffix" value="json"/>
+                            <set-header name="Content-Type" value="application/json"/>
+                        </parameters>
+                    )
+                else
+                    local:dispatch("/models/translation.xq", "/views/json/translation.xq",
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-suffix" value="json"/>
+                            <set-header name="Content-Type" value="application/json"/>
+                            <set-header name="Content-Disposition" value="attachment"/>
+                        </parameters>
+                    )
+                    
             (: xml model -> pdf view :)
             else if ($resource-suffix eq 'pdf') then (: placeholder - this is incomplete :)
                 local:dispatch("/models/translation.xq", "/views/pdf/translation-fo.xq",
@@ -293,6 +328,13 @@ return
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    </parameters>
+                )
+            else if ($resource-suffix eq 'json') then
+                local:dispatch("/models/passage.xq", "/views/json/passage.xq",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
             (: default to html view :)

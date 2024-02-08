@@ -18,7 +18,7 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $passage-id := request:get-parameter('passage-id', 'none')
+let $passage-id := request:get-parameter('passage-id', upper-case($resource-id))
 let $view-mode := request:get-parameter('view-mode', 'passage')
 let $view-mode := if($view-mode = ('editor','editor-passage')) then 'editor-passage' else 'passage'
 let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,40}$')]
@@ -43,12 +43,13 @@ let $request :=
         attribute resource-id { $source/@key },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
+        attribute doc-type { $resource-suffix },
         attribute passage-id { if($passage) then $passage-id else () },
         attribute view-mode { $view-mode/@id },
         attribute archive-path { $archive-path },
         
-        $view-mode,
-        $passage
+        $view-mode
+        (:,$passage:)
         
     }
 
@@ -79,6 +80,7 @@ let $translation-data :=
         translation:titles($tei, $source/@key),
         $source,
         translation:toh($tei, $source/@key),
+        translation:publication($tei),
         tei-content:ancestors($tei, $source/@key, 1),
         $merged-parts
         
@@ -108,13 +110,13 @@ let $xml-response :=
             $strings
         )
     )
-    
+
 return
     
     (: html :)
     if($request/@resource-suffix = ('html')) then 
         common:html($xml-response, concat($common:app-path, "/views/html/passage.xsl"), ())
     
-    (: xml :)
+    (: xml - also returned for json :)
     else 
         common:serialize-xml($xml-response)

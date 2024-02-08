@@ -253,7 +253,7 @@
                     </xsl:if>
                     
                     <xsl:if test="m:tei-search/m:results[@count-matches-processed lt @count-matches-all]">
-                        <div class="alert alert-danger small top-margin no-bottom-margin" role="alert">
+                        <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
                             <xsl:value-of select="concat('Please refine your search. This is a common term. Only the first ', format-number(m:tei-search/m:results/@count-matches-processed, '#,###'), ' of ',  format-number(m:tei-search/m:results/@count-matches-all, '#,###'), ' matches have been processed.')"/>
                         </div>
                     </xsl:if>

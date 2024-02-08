@@ -247,8 +247,8 @@ declare function section:ancestors($tei as element(tei:TEI), $nest as xs:integer
 
     (: Returns an ancestor tree for the tei file :)
     
-    let $source-bibl := $tei//tei:sourceDesc/tei:bibl
-    let $parent-id := $source-bibl/tei:idno/@parent-id
+    (:let $source-bibl := $tei//tei:sourceDesc/tei:bibl:)
+    let $parent-id := ($tei//tei:sourceDesc/tei:bibl/tei:idno/@parent-id)[1]
     let $parent-tei := tei-content:tei($parent-id, 'section')
     
     where $parent-tei
@@ -315,7 +315,7 @@ declare function section:all-translated($apply-filters as element(m:filter)*) as
                 let $texts := 
                     for $tei in $section:texts//tei:TEI[tei:teiHeader/tei:fileDesc[tei:publicationStmt/tei:availability[@status = $translation:published-status-ids]]]
                     return
-                        $tei//tei:sourceDesc/tei:bibl ! section:text($tei, @key)
+                        $tei//tei:sourceDesc/tei:bibl[@key] ! section:text($tei, @key)
                 
                 for $text in $texts
                 where (

@@ -42,10 +42,10 @@ declare function eft-json:tei-to-escaped-xhtml($tei as element()*, $xsl as docum
         )
 };
 
-declare function eft-json:copy-nodes($nodes as node()*) as element()* {
+declare function eft-json:copy-nodes($nodes as node()*) as node()* {
     for $node in $nodes
     return
-        if($node[self::text()]) then
+        if(functx:node-kind($node) eq 'text') then
             $node
         else
             element { local-name($node) } {
@@ -59,6 +59,6 @@ declare function eft-json:copy-nodes($nodes as node()*) as element()* {
                         $attr/string()
                     }
                 ,
-                eft-json:copy-nodes($node/*)
+                eft-json:copy-nodes($node/node())
             }
 };

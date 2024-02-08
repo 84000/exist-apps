@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -380,6 +380,11 @@
                                     <div class="input-group">
                                         
                                         <input type="search" name="search" class="form-control" placeholder="Search..." size="60">
+                                            <!--<xsl:choose>
+                                                <xsl:when test="$selected-term-lang/@id eq 'bo' and $search-text">
+                                                    <xsl:attribute name="class" select="'form-control text-bo'"/>
+                                                </xsl:when>
+                                            </xsl:choose>-->
                                             <xsl:attribute name="value" select="$search-text"/>
                                         </input>
                                         
@@ -486,7 +491,6 @@
                                                                         
                                                                     </xsl:for-each>
                                                                 </ul>
-                                                                
                                                                 
                                                                 <xsl:for-each select="('bo','Sa-Ltn')[not(. = $selected-term-lang/@id)]">
                                                                     <xsl:variable name="title-lang" select="."/>
@@ -659,6 +663,9 @@
         <!-- Sanitise the term -->
         <xsl:variable name="match-term" as="xs:string">
             <xsl:choose>
+                <!--<xsl:when test="$selected-term-lang/@id eq 'bo'">
+                    <xsl:value-of select="string-join(tokenize($term, '\s+') ! normalize-unicode(.) ! replace(.,'་?།$', '', 'i'), ' ')"/>
+                </xsl:when>-->
                 <xsl:when test="$selected-term-lang/@id eq 'en'">
                     <xsl:value-of select="string-join(tokenize($term, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i'), ' ')"/>
                 </xsl:when>
@@ -687,7 +694,7 @@
                     <xsl:value-of select="$selected-letter/@regex"/>
                 </xsl:when>
                 <xsl:when test="$selected-term-lang/@id eq 'bo' and $search-text-bo">
-                    <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text-bo, '\s+') ! common:escape-for-regex(.), '|'), ')')"/>
+                    <xsl:value-of select="concat('(^|\s*|་)(', string-join(tokenize($search-text-bo, '\s+') ! replace(.,'་?།$', '', 'i') ! common:escape-for-regex(.), '|'), ')')"/>
                 </xsl:when>
                 <xsl:when test="$selected-term-lang/@id eq 'en'">
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! common:escape-for-regex(.), '|'), ')')"/>

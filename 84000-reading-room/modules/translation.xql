@@ -628,7 +628,7 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
         else if($chapter-part/@type eq 'bibliography') then
             translation:bibliography($tei, $passage-id, $view-mode)
         else if($chapter-part/@type eq 'glossary') then
-            translation:glossary($tei, $passage-id, $view-mode, ())
+            translation:glossary($tei, $passage-id, $view-mode, $passage//@xml:id)
         else 
             translation:body($tei, $passage-id, $view-mode, $chapter-part/@xml:id)
         ,
@@ -825,6 +825,8 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             attribute ref { $part/@ref }
         else (),
         
+        (:$output-ids ! element output-id {},:)
+        
         let $chapter-titles := $part/tei:head[@type eq 'chapterTitle'][text()]
         let $section-titles := $part/tei:head[@type eq $part/@type][text()]
         return
@@ -929,11 +931,11 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                                 | $node/descendant::*[@xml:id = $output-ids]
                                 | $node/descendant::*[range:eq(@tid, $output-nums)]
                             ) then
-                                local:part($node, $content-directive, $node/@type, (), (), $output-ids, $nesting, $section-index, ())
+                                local:part($node, $content-directive, $node/@type, $node/@prefix, (), $output-ids, $nesting, $section-index, ())
                             else ()
                         
                         else
-                            local:part($node, $content-directive, $node/@type, (), (), $output-ids, $nesting, $section-index, $preview)
+                            local:part($node, $content-directive, $node/@type, $node/@prefix, (), $output-ids, $nesting, $section-index, $preview)
                     )
                 
                 (: Head already included this in section-titles - so skip it :)
@@ -1393,9 +1395,9 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
         else if($passage-id = ('glossary', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($glossary, $passage-id, true())) then
+            (:if(local:passage-in-content($glossary, $passage-id, true())) then
                 'passage'
-            else
+            else:)
                 'passage'
         else if($view-mode[@parts eq 'outline']) then
             'empty'
@@ -1411,12 +1413,9 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     
     (: Get based on location-ids :)
     let $location-cache-gloss := 
-        if($content-directive = ('preview', 'passage')) then
+        if($content-directive = ('preview', 'passage') and not($view-mode[@id eq 'outline'])) then
+            let $glossary-locations-cache := glossary:glossary-cache($tei, (), false())
             let $location-id-chunks := common:ids-chunked($location-ids)
-            let $glossary-locations-cache := 
-                if(not($view-mode[@id eq 'outline'])) then
-                    glossary:glossary-cache($tei, (), false())
-                else ()
             for $key in map:keys($location-id-chunks)
             return
                 $glossary-locations-cache/m:gloss[m:location/@id = map:get($location-id-chunks, $key)]/@id

@@ -54,6 +54,10 @@
     <xsl:variable name="ref-prologue-container" select="$ref-1-validated/ancestor::tei:*[self::tei:p | self::tei:lg | self::tei:q][1]"/>
     <xsl:variable name="ref-prologue-parent" select="$ref-1-validated/parent::tei:*"/>
     
+    <xsl:template match="/m:response">
+        <xsl:apply-templates select="m:part[@type eq 'apply-templates']/node()"/>
+    </xsl:template>
+    
     <!-- Normalize text and check if it needs glossarizing -->
     <xsl:template match="text()">
         
@@ -2411,7 +2415,7 @@
         <div>
             
             <xsl:choose>
-                <xsl:when test="($translation | $article)">
+                <xsl:when test="($translation | $article) and not($doc-type eq 'json')">
                     
                     <!-- Find adjacent milestone -->
                     <xsl:variable name="milestone" select="($element/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][1][self::tei:milestone] | $element/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]] | $element/parent::tei:seg/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][1][self::tei:milestone] | $element/parent::tei:seg/preceding-sibling::tei:*[not(@key) or @key eq $toh-key][2][self::tei:milestone[following-sibling::tei:*[1][self::tei:lb]]])[1]"/>
@@ -4186,7 +4190,7 @@
         
         <xsl:choose>
             
-            <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))] or not($view-mode)">
+            <xsl:when test="($view-mode[not(@client = ('ebook', 'app'))] or not($view-mode)) and not($doc-type eq 'json')">
                 <a>
                     
                     <xsl:call-template name="href-attribute">

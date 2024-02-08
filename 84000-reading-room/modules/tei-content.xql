@@ -98,7 +98,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     
     (: Fallback to UT number :)
     let $resource-id-uppercase := upper-case($resource-id)
-    let $tei := $collection/id($resource-id-uppercase)[self::tei:idno][1]/ancestor::tei:TEI
+    let $tei := $collection/id($resource-id-uppercase)(:[self::tei:idno][1]:)/ancestor::tei:TEI
     
     (: Lookup key :)
     let $resource-id-lowercase := lower-case($resource-id)

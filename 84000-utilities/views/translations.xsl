@@ -79,7 +79,7 @@
                                     
                                 </select>
                                 <div class="input-group-btn">
-                                    <button class="btn btn-default" type="submit">
+                                    <button class="btn btn-primary" type="submit">
                                         <xsl:attribute name="title" select="'reload'"/>
                                         <i class="fa fa-refresh"/>
                                     </button>
@@ -126,16 +126,27 @@
                     
                     <xsl:when test="$page-filter eq 'search'">
                         <form action="/translations.html" method="post" class="form-inline bottom-margin">
+                            
                             <input type="hidden" name="page-filter" value="search"/>
+                            
                             <div class="form-group">
-                                <label for="toh-min">Tohoku:</label>
+                                
+                                <label for="toh-min">
+                                    <xsl:value-of select="'Tohoku:'"/>
+                                </label>
+                                
                                 <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
                                     <xsl:attribute name="value" select="$toh-min"/>
                                 </input>
+                                
                                 <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
                                     <xsl:attribute name="value" select="$toh-max"/>
                                 </input>
-                                <button type="submit" class="btn btn-primary">Search</button>
+                                
+                                <button type="submit" class="btn btn-warning">
+                                    <xsl:value-of select="'Search'"/>
+                                </button>
+                                
                             </div>
                         </form>
                     </xsl:when>
@@ -143,11 +154,17 @@
                     <xsl:when test="$page-filter eq 'new-version-placeholders' and m:texts[m:text]">
                         <form action="/translations.html" method="post" class="form-inline bottom-margin">
                             <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
+                            
                             <input type="hidden" name="page-filter" value="new-version-placeholders"/>
+                            
                             <xsl:for-each-group select="m:texts/m:text" group-by="@id">
                                 <input type="hidden" name="store[]" value="{ concat(@id, '.all') }"/>
                             </xsl:for-each-group>
-                            <button type="submit" class="btn btn-danger btn-sml">Get all updated placeholder files</button>                            
+                            
+                            <button type="submit" class="btn btn-danger btn-sml">
+                                <xsl:value-of select="'Get all updated placeholder files'"/>
+                            </button>          
+                            
                         </form>
                     </xsl:when>
                     

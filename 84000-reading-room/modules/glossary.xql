@@ -92,7 +92,7 @@ declare variable $glossary:attestation-types :=
             <migrate id="semanticReconstruction"/>
         </attestation-type>
         <attestation-type id="sourceUnspecified" code="SU">
-            <label>Source Unspecified</label>
+            <label>Source unspecified</label>
             <description>This term has been supplied from an unspecified source, which most often is a widely trusted dictionary.</description>
             <appliesToLang xml:lang="Sa-Ltn" default="true"/>
             <appliesToLang xml:lang="Pi-Ltn" default="true"/>

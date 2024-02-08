@@ -1084,14 +1084,26 @@
                                 
                                 <xsl:if test="$main-title">
                                     <div class="h1 break">
+                                        <xsl:if test="$sub-title[following-sibling::tei:head[1][@type eq 'titleHon']]">
+                                            <small>
+                                                <xsl:apply-templates select="$sub-title[1]/node()"/>
+                                            </small>
+                                            <br/>
+                                        </xsl:if>
                                         <xsl:if test="$honoration">
                                             <small>
                                                 <xsl:apply-templates select="$honoration[1]/node()"/>
                                             </small>
                                             <br/>
                                         </xsl:if>
+                                        <xsl:if test="$sub-title[following-sibling::tei:head[1][@type eq 'titleMain']]">
+                                            <small>
+                                                <xsl:apply-templates select="$sub-title[1]/node()"/>
+                                            </small>
+                                            <br/>
+                                        </xsl:if>
                                         <xsl:apply-templates select="$main-title[1]/node()"/>
-                                        <xsl:if test="$sub-title">
+                                        <xsl:if test="$sub-title[not(following-sibling::tei:head[1][@type = ('titleHon', 'titleMain')])]">
                                             <br/>
                                             <small>
                                                 <xsl:apply-templates select="$sub-title[1]/node()"/>

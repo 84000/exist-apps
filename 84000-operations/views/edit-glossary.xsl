@@ -53,7 +53,7 @@
                     </h3>
                     
                     <!-- Title / status -->
-                    <div class="center-vertical full-width sml-margin bottom">
+                    <div class="top-vertical full-width sml-margin bottom">
                         
                         <div class="h3">
                             <a target="_blank">
@@ -1695,7 +1695,7 @@
                     <xsl:with-param name="label" select="'Equivalent(s):'"/>
                     <xsl:with-param name="term-text" select="($source-terms[$index]/text(), $term-text-default)[1]"/>
                     <xsl:with-param name="lang" select="$element-lang"/>
-                    <xsl:with-param name="type" select="($source-terms[$index]/@type, $root//m:attestation-types/m:attestation-type[@default][1]/@id)[1]"/>
+                    <xsl:with-param name="type" select="($source-terms[$index]/@type, $root//m:attestation-types/m:attestation-type[m:appliesToLang[@xml:lang eq $element-lang][@default]][1]/@id)[1]"/>
                     <xsl:with-param name="status" select="($source-terms[$index]/@status, if($request-resource-type eq 'translation') then 'unverified' else ())[1]"/>
                     <xsl:with-param name="language-options" select="('en-alt', 'Bo-Ltn', 'Sa-Ltn', 'zh', 'Pi-Ltn')"/>
                     <xsl:with-param name="type-options" select="$root//m:attestation-types/m:attestation-type[m:appliesToLang/@xml:lang = $element-lang]"/>

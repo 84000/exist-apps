@@ -13,7 +13,6 @@ declare function local:authors-contested(){
     let $sourceBibls := $tei/descendant::tei:bibl[tei:author[@xml:id][not(@role)][@key eq 'alternate']]
     let $toh-number := ($sourceBibls/@key)[1] ! replace(., '^toh([0-9]+)\-?([0-9]+)?.*', '$1.$2') ! xs:double(.)
     order by $toh-number
-    (:where $toh-number eq 1127:)
     
     return (
         
@@ -53,7 +52,6 @@ declare function local:publish-author-stubs(){
     let $author-pages := knowledgebase:pages('authors', false(), ())
     for $tei in $knowledgebase:tei/id($author-pages/@xml:id)/ancestor::tei:TEI[descendant::tei:publicationStmt/tei:availability/@status = '3']
     let $text-id := tei-content:id($tei)
-    (:where $text-id eq 'EFT-KB-ABHAYAKARA':)
     
     return (
     
@@ -79,6 +77,6 @@ return
         <warning>{ 'DISABLE TRIGGERS BEFORE UPDATING TEI' }</warning>
         
     else (
-        local:authors-contested(),
-        local:publish-author-stubs()
+        (:local:authors-contested():)
+        (:local:publish-author-stubs():)
     )

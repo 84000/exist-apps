@@ -1,13 +1,12 @@
 xquery version "3.1";
 declare namespace eft = "http://read.84000.co/ns/1.0";
 
-(:
-    Notes:
+(:  Notes:
     
-    Script must be “setGID DBA” or “setUID admin” to run with sufficient permissions in cron.
+    Script must be "setGID DBA" or "setUID admin" to run with sufficient permissions in as scheduled job
     
     Format of config in environment.xml
-    <backup-conf data-collection="/db/apps/84000-data" target-path="/home/existdb/exist-backup" exist-path="/home/existdb">
+    <backup-conf data-collection="/db/apps/84000-data" target-path="/home/existdb/exist-backup" exist-path="/home/existdb" prefix="collab">
         <backup collection="/db/apps/84000-reading-room"/>
         <backup collection="/db/apps/84000-utilities"/>
         <backup collection="/db/apps/84000-operations"/>

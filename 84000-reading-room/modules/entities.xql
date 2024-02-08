@@ -99,14 +99,26 @@ declare function entities:similar($entity as element(m:entity)?, $search-terms a
     let $exclude-gloss := $glossary:tei//tei:back//tei:gloss/id($exclude-ids)
     let $exclude-page := $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno/id($exclude-ids)
     
-    let $matching-instance-ids := (
-        $glossary:tei//tei:back//tei:gloss[tei:term[ft:query(., $search-query)][@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]] except $exclude-gloss,
-        $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc[tei:titleStmt/tei:title[ft:query(., $search-query)]]/tei:publicationStmt/tei:idno except $exclude-page,
-        $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:author[ft:query(., $search-query)][@xml:id],
-        $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:editor[ft:query(., $search-query)][@xml:id]
-    )/@xml:id/string()
+    let $matching-instances := 
+        if($search-query/*) then (
+            $glossary:tei//tei:back//tei:gloss[tei:term[ft:query(., $search-query)][@xml:lang = ('Bo-Ltn', 'Sa-Ltn')]] except $exclude-gloss,
+            $knowledgebase:tei-render//tei:teiHeader/tei:fileDesc[tei:titleStmt/tei:title[ft:query(., $search-query)]]/tei:publicationStmt/tei:idno except $exclude-page,
+            $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:author[ft:query(., $search-query)][@xml:id],
+            $glossary:tei//tei:teiHeader//tei:sourceDesc/tei:bibl/tei:editor[ft:query(., $search-query)][@xml:id]
+        )
+        else 
+            let $search-query :=
+                <query>
+                {
+                    for $term in distinct-values(($instance-entries/m:term/data())[. gt ''][not(. = $glossary:empty-term-placeholders)] ! lower-case(.) ! common:normalized-chars(.))
+                    return
+                        <phrase slop="0">{ $term }</phrase>
+                }
+                </query>
+            return
+                $glossary:tei//tei:back//tei:gloss[tei:term[ft:query(., $search-query)]] except $exclude-gloss
     
-    let $matching-instance-ids := distinct-values($matching-instance-ids)
+    let $matching-instance-ids := distinct-values($matching-instances/@xml:id)
     let $matching-instance-ids := subsequence($matching-instance-ids, 1, 1024)
     
     let $similar-entities := 
