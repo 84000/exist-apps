@@ -1165,7 +1165,7 @@
                 
                 <xsl:variable name="end-note" select="."/>
                 <xsl:variable name="end-notes-pre-processed" select="key('end-notes-pre-processed', @xml:id, $root)[@source-key eq $toh-key][1]" as="element(m:end-note)?"/>
-                <xsl:variable name="part" select="key('text-parts', $end-notes-pre-processed/@part-id, $root)[1]" as="element(m:part)?"/>
+                <xsl:variable name="target-part" select="key('text-parts', $end-notes-pre-processed/@part-id, $root)[1]" as="element(m:part)?"/>
                 
                 <!-- Filter out notes with a different source key -->
                 <xsl:if test="$end-notes-pre-processed">
@@ -1196,7 +1196,7 @@
                                         
                                         <xsl:call-template name="href-attribute">
                                             <xsl:with-param name="fragment-id" select="$end-note/@xml:id"/>
-                                            <xsl:with-param name="part-id" select="$part/@id"/>
+                                            <xsl:with-param name="part-id" select="$target-part/@id"/>
                                         </xsl:call-template>
                                         
                                         <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf')]">

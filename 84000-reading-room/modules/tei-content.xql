@@ -564,7 +564,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                 return
                     element { QName('http://read.84000.co/ns/1.0', $element-name) } {
                         attribute id { $element/@xml:id },
-                        attribute part-id { $part-id },
+                        attribute part-id { ($element/parent::tei:div[@prefix][1]/@xml:id, $part-id)[1] (:$part-id:) },
                         attribute index { $index },
                         if($element[@n gt '']) then
                             attribute label { $element/@n }
