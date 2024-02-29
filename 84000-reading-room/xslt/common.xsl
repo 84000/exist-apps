@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -537,11 +537,11 @@
         
         <xsl:choose>
             <xsl:when test="$lang eq 'bo'">
-                <xsl:value-of select="concat('(^|[^\p{L}­])(', $strings-combined, ')(ར|ས|འི)?([^\p{L}­]|$)')"/>
+                <xsl:value-of select="concat('(^|[^\p{L}\p{N}­])(', $strings-combined, ')(ར|ས|འི)?([^\p{L}\p{N}­]|$)')"/>
             </xsl:when>
             <xsl:otherwise>
                 <!-- The word bounded by non-word characters, start or end -->
-                <xsl:value-of select="concat('(^|[^\p{L}­])(', $strings-combined, ')(s|es|''s)?([^\p{L}­]|$)')"/>
+                <xsl:value-of select="concat('(^|[^\p{L}\p{N}­])(', $strings-combined, ')(s|es|''s)?([^\p{L}\p{N}­]|$)')"/>
             </xsl:otherwise>
         </xsl:choose>
         

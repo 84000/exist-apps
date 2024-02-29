@@ -34,8 +34,8 @@ declare variable $common:import-data-path := concat('/db/apps', $common:import-d
 declare variable $common:environment-path := '/db/system/config/db/system/environment.xml';
 declare variable $common:environment := doc($common:environment-path)/m:environment;
 
-declare variable $common:diacritic-letters := 'āḍéḥīḷḹṃṇñṅņṛṝṣśṭūṁ';
-declare variable $common:diacritic-letters-without := 'adehillmnnnnrrsstum';
+declare variable $common:diacritic-letters := 'āḍéḥīḷḹṃṇñṅņöṛṝṣśṭūüṁ';
+declare variable $common:diacritic-letters-without := 'adehillmnnnnorrsstuum';
 declare variable $common:chr-nl := '&#10;';
 declare variable $common:chr-tab := '&#32;&#32;&#32;&#32;';
 declare variable $common:node-ws := $common:chr-nl || $common:chr-tab;
@@ -493,7 +493,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Tokenise the input (applying mode) :)
     let $find-tokenized :=
         if($mode = ('words')) then
-             $find ! tokenize(., (:'(\s|&#8203;)+':)'[^\p{L}]+')
+             $find ! tokenize(., (:'(\s|&#8203;)+':)'[^\p{L}\p{N}]+')
              
         else if($mode = ('tibetan')) then
              $find ! tokenize(., '\s+') ! replace(., '(་|།)$', '')
@@ -504,7 +504,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: A list of words with diacritics that are equivalent to a search term, so we can look for those too :)
     let $find-diacritics := 
         if($mode = ('words')) then
-            for $word in tokenize($text, (:'(\s|&#8203;)+':)'[^\p{L}]+')
+            for $word in tokenize($text, (:'(\s|&#8203;)+':)'[^\p{L}\p{N}]+')
             let $word-standardised := $word ! lower-case(.) ! normalize-unicode(.)
             let $word-normalized := $word-standardised ! common:normalized-chars(.) ! functx:escape-for-regex(.)
             
@@ -520,9 +520,9 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     (: Construct the regex :)
     let $regex := 
         if($mode = ('tibetan')) then
-            concat('(', string-join($find-tokenized[matches(., '\p{L}+')](:[not(. = ('།'))]:) ! functx:escape-for-regex(.), '|'),')')
+            concat('(', string-join($find-tokenized[matches(., '[\p{L}\p{N}]+')](:[not(. = ('།'))]:) ! functx:escape-for-regex(.), '|'),')')
         else
-            let $find-escaped := ($find-tokenized, $find-diacritics)[matches(., '\p{L}+')] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
+            let $find-escaped := ($find-tokenized, $find-diacritics)[matches(., '[\p{L}\p{N}]+')] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
             return
                 concat('\b(', string-join($find-escaped, '|'),')\b')
     

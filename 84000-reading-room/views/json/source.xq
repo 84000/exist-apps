@@ -34,7 +34,7 @@ element source {
     for $title in ($local:translation/m:titles/m:title, $local:translation/m:long-titles/m:title, $local:translation/m:source/m:toh)
     return
         element title { 
-            attribute xml:lang { ($title/@xml:lang, 'en')[1] }, 
+            attribute lang { ($title/@xml:lang, 'en')[1] }, 
             $title/text()
         }
     ,

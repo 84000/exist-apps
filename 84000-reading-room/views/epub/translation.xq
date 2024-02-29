@@ -59,7 +59,7 @@ let $entries := (
                 <item id="imprint" href="imprint.xhtml" media-type="application/xhtml+xml"/>
                 <item id="contents" href="contents.xhtml" media-type="application/xhtml+xml" properties="nav"/>
                 {
-                    for $part in $data/m:response/m:translation/m:part
+                    for $part in $data/m:response/m:translation/m:part[not(@type eq 'citation-index')]
                     return (
                     
                         <item id="{ $part/@id }" href="{ $part/@id }.xhtml" media-type="application/xhtml+xml"/>,
@@ -79,7 +79,7 @@ let $entries := (
                 <itemref idref="imprint"/>
                 <itemref idref="contents"/>
                 {
-                    for $part in $data/m:response/m:translation/m:part
+                    for $part in $data/m:response/m:translation/m:part[not(@type eq 'citation-index')]
                     return (
                     
                         <itemref idref="{ $part/@id }"/>,

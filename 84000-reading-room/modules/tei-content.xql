@@ -56,7 +56,7 @@ declare function tei-content:id($tei as element(tei:TEI)) as xs:string {
 
 declare function tei-content:type($tei as element(tei:TEI)) as xs:string {
 
-    if($tei//tei:fileDesc[@type = ('section','grouping','pseudo-section')]) then 
+    if($tei//tei:fileDesc/@type = ('section','grouping','pseudo-section')) then 
         'section'
     
     else if($tei//tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']) then
@@ -564,7 +564,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                 return
                     element { QName('http://read.84000.co/ns/1.0', $element-name) } {
                         attribute id { $element/@xml:id },
-                        attribute part-id { ($element/parent::tei:div[@prefix][1]/@xml:id, $part-id)[1] (:$part-id:) },
+                        attribute part-id { ($element/ancestor::tei:div[@prefix][1]/@xml:id, $part-id)[1] (:$part-id:) },
                         attribute index { $index },
                         if($element[@n gt '']) then
                             attribute label { $element/@n }
@@ -574,6 +574,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                         else ()
                     }
             )
+    
     let $keys := ($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key, $tei/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@type eq 'eft-kb-id']/text())
     
     let $elements :=

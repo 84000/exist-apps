@@ -1,7 +1,8 @@
 xquery version "3.0";
 
-declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
+declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace json="http://www.json.org";
 
@@ -15,23 +16,69 @@ declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
 declare variable $local:api-version := '0.1.0';
-declare variable $local:response := request:get-data()/m:response;
-declare variable $local:translation := $local:response/m:translation;
-declare variable $local:text-id := $local:response/m:translation/@id;
-declare variable $local:toh-key := $local:translation/m:source/@key;
-declare variable $local:passage-id := $local:response/m:request/@passage-id;
-declare variable $local:xslt := doc(concat($common:app-path, "/xslt/tei-to-xhtml.xsl"));
+declare variable $local:response := request:get-data()/eft:response;
+declare variable $local:translation := $local:response/eft:translation;
+declare variable $local:text-id := $local:response/eft:translation/@id;
+declare variable $local:toh-key := $local:translation/eft:source/@key;
+declare variable $local:passage-id := $local:response/eft:request/@passage-id;
+declare variable $local:text-outline := $local:response/eft:text-outline[@text-id eq $local:text-id];
+declare variable $local:xslt := doc(concat($common:app-path, "/views/html/passage.xsl"));
+declare variable $local:xhtml := transform:transform($local:response, $local:xslt, <parameters/>);
 
-declare function local:parse-nodes($nodes as node()*) as node()* {
+declare function local:parse-response() as element()* {
+    
+    for $location in ($local:translation/descendant::eft:part[@content-status eq 'passage'][not(@id = ('end-notes','glossary'))][not(eft:part[@content-status eq 'passage'])] | $local:translation/eft:part[@id eq 'end-notes']/tei:note | $local:translation/eft:part[@id eq 'glossary']/tei:gloss)
+    let $location-id := ($location/@xml:id, $location/descendant::tei:milestone/@xml:id)[1]
+    let $location-pre-processed := $local:text-outline/eft:pre-processed/eft:*[@id eq $location-id]
+    return
+    element content {
+        
+        (: id :)
+        $location-id ! attribute location-id { . },
+        
+        (: TEI -> JSON :)
+        if($location[self::tei:note]) then (
+            $local:text-outline//eft:part[@id eq 'end-notes'][1][@prefix] ! attribute label { concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) },
+            local:content-nodes($location)
+        )
+        else if($location[self::tei:gloss]) then (
+            $local:text-outline//eft:part[@id eq 'glossary'][1][@prefix] ! attribute label { concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) },
+            local:content-nodes($location)
+        )
+        else 
+            $local:text-outline//eft:part[@id eq $location-pre-processed/@part-id][1][@prefix] ! attribute label { concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) },
+            $location/* ! local:content-nodes(.)
+        ,
+        
+        (: TEI -> HTML -> JSON :)
+        element html {
+            $local:xhtml/descendant-or-self::xhtml:*[@data-location-id eq $location-id] ! local:content-nodes(.)
+        }
+        
+    }
+
+};
+
+declare function local:content-nodes($nodes as node()*) as node()* {
+
     for $node in $nodes
-    return (
+    return
     
         if(functx:node-kind($node) eq 'text') then
             $node[normalize-space(.) gt ''] ! element value { . }
+            
+        else if($node[self::tei:head][@type eq parent::eft:part/@type]) then
+            ()
+        
+        else if($node[self::tei:milestone]) then
+            ()
         
         else
-            element { local-name($node) } {
-                for $attr in $node/@*
+            element element {
+            
+                attribute type { local-name($node) },
+                
+                for $attr in $node/@*[not(local-name() eq 'tid')]
                 return
                     element { local-name($attr) } {
                         if(functx:is-a-number($attr/string())) then
@@ -41,61 +88,44 @@ declare function local:parse-nodes($nodes as node()*) as node()* {
                         $attr/string()
                     }
                 ,
-                if($node[node()]) then
-                    if($node[node()[not(functx:node-kind(.) eq 'text')]]) then
-                        local:parse-nodes($node/node())
-                    else
-                        string-join($node/node()) ! normalize-space(.) ! element value { . }
-                else ()
+                
+                (: If there are text nodes then serialize the content and return :)
+                if($node/node()[functx:node-kind(.) eq 'text'][normalize-space(.)]) then
+                    string-join($node/node() ! serialize(.)) ! normalize-space(.) ! element mixed { . }
+                
+                (: If there's just elements the move down the tree :)
+                else if($node/node()) then
+                    local:content-nodes($node/node())
+                    
+                else
+                    text { "empty" }
+                    
             }
-        ,
-        
-        let $parse-nodes :=
-            if($node[parent::tei:note[@type eq 'definition'][not(@rend eq 'override')]]) then
-                $node[node()]
-            else ()
-        
-        let $parse-xml :=
-            if($parse-nodes) then
-                element { node-name($local:response) } {
-                    $local:response/@*,
-                    element part {
-                        attribute id { $node/ancestor-or-self::*[@xml:id][1]/@xml:id },
-                        attribute type { 'apply-templates' },
-                        attribute glossarize { 'mark' },
-                        $parse-nodes
-                    },
-                    $local:response/*
-                }
-            else ()
-        
-        where $parse-xml
-        return (
-            (:$parse-xml,:)
-            (:$parse-xml/m:part[@type eq 'apply-templates'],:)
-            (:$parse-xml/m:translation/m:part[@type eq 'glossary'],:)
-            transform:transform($parse-xml, $local:xslt, <parameters/>) ! element html-content {serialize(.)}
-        )
-        
-    )
+                
 };
 
-declare function local:parse-passage() {
+declare function local:persistent-location($node as node()) as element() {
+    
+    if($node[@xml:id]) then
+        $node
+    else if($node[ancestor-or-self::tei:*/preceding-sibling::tei:milestone[@xml:id]]) then
+        $node/ancestor-or-self::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]
+    else 
+        $node/ancestor-or-self::eft:part[@id][1]
 
-    element response {
-
-        attribute api-version { $local:api-version },
-        attribute url { concat('/passage/', $local:translation/m:source/@key,'.json?passage-id=', $local:passage-id, '&amp;api-version=', $local:api-version) },
-        attribute text-id { $local:translation/@id },
-        attribute toh-key { $local:toh-key },
-        attribute text-version { tei-content:strip-version-number($local:translation/m:publication/m:edition/text()[1]) },
-        attribute html { concat('/passage/', $local:translation/m:source/@key,'.html?passage-id=', $local:passage-id) },
-        
-        (:$local:response/m:request,:)
-        
-        $local:translation/id($local:passage-id) ! local:parse-nodes(.)
-        
-    }
 };
 
-local:parse-passage()
+element response {
+
+    attribute api-version { $local:api-version },
+    attribute url { concat('/passage/', $local:translation/eft:source/@key,'.json?passage-id=', $local:passage-id, '&amp;api-version=', $local:api-version) },
+    attribute text-id { $local:translation/@id },
+    attribute toh-key { $local:toh-key },
+    attribute text-version { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },
+    attribute html { concat('/passage/', $local:translation/eft:source/@key,'.html?passage-id=', $local:passage-id) },
+    
+    (:$local:response/eft:request,:)
+    
+    $local:translation/id($local:passage-id) ! local:parse-response()
+    
+}

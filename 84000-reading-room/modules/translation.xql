@@ -19,19 +19,20 @@ import module namespace functx = "http://www.functx.com";
 (: view-modes hold attributes that determine the display :)
 declare variable $translation:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections" annotation="none" />
-      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"            annotation="editor" />
-      <view-mode id="passage"           client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"        annotation="none" />
-      <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"        annotation="editor" />
-      <view-mode id="outline"           client="browser"  cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"        annotation="none" />
-      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"            annotation="web" />
-      <view-mode id="txt"               client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
-      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            annotation="none" />
-      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
-      <view-mode id="app"               client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"            annotation="none" />
-      <view-mode id="tests"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"            annotation="none" />
-      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"       annotation="none" />
-      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"            annotation="none" />
+      <view-mode id="default"          client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections"  annotation="none" />
+      <view-mode id="editor"           client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"             annotation="editor" />
+      <view-mode id="passage"          client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none" />
+      <view-mode id="editor-passage"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"         annotation="editor" />
+      <view-mode id="json-passage"     client="none"     cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none" />
+      <view-mode id="outline"          client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"         annotation="none" />
+      <view-mode id="annotation"       client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"             annotation="web" />
+      <view-mode id="txt"              client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
+      <view-mode id="ebook"            client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none" />
+      <view-mode id="pdf"              client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
+      <view-mode id="app"              client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none" />
+      <view-mode id="raw"              client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
+      <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none" />
+      <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none" />
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
@@ -40,38 +41,21 @@ declare variable $translation:translated-status-ids := $translation:status-statu
 declare variable $translation:in-translation-status-ids := $translation:status-statuses[@group = ('in-translation')]/@status-id;
 declare variable $translation:in-progress-status-ids := $translation:translated-status-ids | $translation:in-translation-status-ids;
 declare variable $translation:marked-up-status-ids := $translation:status-statuses[@marked-up = 'true']/@status-id;
-(: These maps should be merged? :)
-declare variable $translation:type-prefixes := map {
-        'summary':        's',
-        'acknowledgment': 'ac',
-        'preface':        'pf',
-        'introduction':   'i',
-        'translation':    'tr',
-        'prologue':       'p',
-        'colophon':       'c',
-        'homage':         'h',
-        'appendix':       'ap',
-        'abbreviations':  'ab',
-        'end-notes':      'n',
-        'bibliography':   'b',
-        'glossary':       'g',
-        'citation-index': 'ci'
-};
 declare variable $translation:type-labels := map {
-        'summary':        'Summary',
-        'acknowledgment': 'Acknowledgements',
-        'preface':        'Preface',
-        'introduction':   'Introduction',
-        'translation':    'The Translation',
-        'prologue':       'Prologue',
-        'colophon':       'Colophon',
-        'homage':         'Homage',
-        'appendix':       'Appendix',
-        'abbreviations':  'Abbreviations',
-        'end-notes':      'Notes',
-        'bibliography':   'Bibliography',
-        'glossary':       'Glossary',
-        'citation-index': 'Citation Index'
+    'summary':        map {'prefix':'s', 'label':'Summary'},
+    'acknowledgment': map {'prefix':'ac','label':'Acknowledgements'},
+    'preface':        map {'prefix':'pf','label':'Preface'},
+    'introduction':   map {'prefix':'i', 'label':'Introduction'},
+    'translation':    map {'prefix':'tr','label':'The Translation'},
+    'prologue':       map {'prefix':'p', 'label':'Prologue'},
+    'colophon':       map {'prefix':'c', 'label':'Colophon'},
+    'homage':         map {'prefix':'h', 'label':'Homage'},
+    'appendix':       map {'prefix':'ap','label':'Appendix'},
+    'abbreviations':  map {'prefix':'ab','label':'Abbreviations'},
+    'end-notes':      map {'prefix':'n', 'label':'Notes'},
+    'bibliography':   map {'prefix':'b', 'label':'Bibliography'},
+    'glossary':       map {'prefix':'g', 'label':'Glossary'},
+    'citation-index': map {'prefix':'ci','label':'Citation Index'}
 };
 
 (: Exclude any very common words from being single tokens :)
@@ -608,9 +592,7 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
     (:let $chapter-prefix := translation:chapter-prefix($chapter-part):)
     (:let $root-part := $chapter-part/ancestor-or-self::tei:div[@type][last()]:)
     
-    where $chapter-part
-    return (
-    
+    let $part:=
         if($chapter-part/@type eq 'summary') then
             translation:summary($tei, $passage-id, $view-mode, '')
         else if($chapter-part/@type eq 'acknowledgment') then
@@ -628,29 +610,32 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
         else if($chapter-part/@type eq 'bibliography') then
             translation:bibliography($tei, $passage-id, $view-mode)
         else if($chapter-part/@type eq 'glossary') then
-            translation:glossary($tei, $passage-id, $view-mode, $passage//@xml:id)
+            translation:glossary($tei, $passage-id, $view-mode, ())
         else 
             translation:body($tei, $passage-id, $view-mode, $chapter-part/@xml:id)
-        ,
-        
-        (: Include relevant notes :)
-        if(not($chapter-part/@type eq 'end-notes')) then
-            translation:end-notes($tei, $passage-id, $view-mode, $passage//tei:note[@place eq "end"]/@xml:id)
+    
+    (: Include relevant notes :)
+    let $notes := 
+        if(not($chapter-part/@type eq 'end-notes')) then 
+            translation:end-notes($tei, $passage-id, $view-mode, $part//tei:note[@place eq "end"]/@xml:id)
         else ()
-        ,
-        
-        (: Include relevant glossary entries :)
+    
+    (: Include relevant glossary entries :)
+    let $glosses :=
         if(not($chapter-part/@type eq 'glossary')) then
             if($view-mode[@glossary eq 'no-cache']) then
                 translation:glossary($tei, $passage-id, $view-mode, ())
             else if($view-mode[@glossary eq 'use-cache']) then
-                translation:glossary($tei, $passage-id, $view-mode, $passage//@xml:id)
+                translation:glossary($tei, $passage-id, $view-mode, $part//@xml:id)
             else ()
         else ()
-        ,
-        
+    
+    where $chapter-part
+    return (
+        $part,
+        $notes,
+        $glosses,
         translation:citation-index($passage-id, $view-mode)
-        
     )
 
 };
@@ -825,7 +810,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             attribute ref { $part/@ref }
         else (),
         
-        (:$output-ids ! element output-id {},:)
+        (:$output-ids ! element output-id { . },:)
         
         let $chapter-titles := $part/tei:head[@type eq 'chapterTitle'][text()]
         let $section-titles := $part/tei:head[@type eq $part/@type][text()]
@@ -875,7 +860,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             
             (: Return all :)
             else if($content-directive eq 'complete') then
-                $part
+                $part/*
             
             else ()
         
@@ -888,7 +873,7 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
             
             (: Return all :)
             else if($content-directive eq 'complete') then
-                $part
+                $part/*
             
             else ()
             
@@ -957,7 +942,11 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                     else if($node[self::tei:milestone][@xml:id = $output-ids]) then (
                         $node,
                         (: And the trailing content :)
-                        $node/following-sibling::*[not(self::tei:milestone)][preceding-sibling::tei:*[1][@xml:id = $output-ids]]
+                        for $following-sibling in $node/following-sibling::*[not(self::tei:milestone)]
+                        let $preceding-milestone := $following-sibling/preceding-sibling::tei:*[self::tei:milestone][1]
+                        where count($preceding-milestone | $node) eq 1
+                        return
+                            $following-sibling
                     )
                     
                     (: Test for @tid :)
@@ -1012,7 +1001,8 @@ declare function translation:chapter-prefix($chapter as element(tei:div)) as xs:
     
     let $root-prefix :=
         if($root-part/@type = ('appendix')) then
-            map:get($translation:type-prefixes, $root-part/@type)
+            $translation:type-labels($root-part/@type)('prefix')
+            (:map:get($translation:type-prefixes, $root-part/@type):)
         else ()
     
     let $chapter-prefix :=
@@ -1020,7 +1010,8 @@ declare function translation:chapter-prefix($chapter as element(tei:div)) as xs:
         if ($chapter/@prefix gt '') then 
             $chapter/@prefix
         else if ($chapter/@type = ('prologue', 'colophon', 'homage')) then 
-            map:get($translation:type-prefixes, $chapter/@type)
+            $translation:type-labels($chapter/@type)('prefix')
+            (:map:get($translation:type-prefixes, $chapter/@type):)
         else 
             functx:index-of-node($root-part/tei:div[not(@type = ('prologue', 'colophon', 'homage'))], $chapter)
     
@@ -1061,7 +1052,7 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
             'complete'
     
     return
-        translation:part($summary, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
+        translation:part($summary, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
 
 };
 
@@ -1089,7 +1080,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
             'complete'
     
     return
-        translation:part($acknowledgment, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
+        translation:part($acknowledgment, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
 };
 
 declare function translation:preface($tei as element(tei:TEI)) as element(m:part)? {
@@ -1116,7 +1107,7 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
             'preview'
 
     return
-        translation:part($preface, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
+        translation:part($preface, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
 };
 
 declare function translation:introduction($tei as element(tei:TEI)) as element(m:part)? {
@@ -1143,7 +1134,7 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
             'preview'
 
     return
-        translation:part($introduction, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, $passage-id)
+        translation:part($introduction, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
 };
 
 declare function translation:body($tei as element(tei:TEI)) as element(m:part)? {
@@ -1164,7 +1155,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute glossarize { 'mark' },
-            attribute prefix { map:get($translation:type-prefixes, $translation/@type) },
+            attribute prefix { $translation:type-labels($translation/@type)('prefix') },
             
             $translation/tei:head[@type = ('translation', 'titleHon', 'titleMain', 'sub')],
             
@@ -1176,7 +1167,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                 (: If there's no section header derive one :)
                 let $part-title :=
                     if ($part/@type = ('prologue', 'colophon', 'homage') and not($part/tei:head[@type = $part/@type])) then
-                        text { map:get($translation:type-labels, $part/@type) }
+                        text { $translation:type-labels($part/@type)('label') }
                     
                     else ()
                 
@@ -1228,7 +1219,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
         else
             'preview'
     
-    let $prefix := map:get($translation:type-prefixes, 'appendix')
+    let $prefix := $translation:type-labels('appendix')('prefix')
     
     where $appendix
     return
@@ -1246,7 +1237,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
             $appendix/tei:head[@type eq 'titleMain'],
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                 attribute type { 'supplementary' },
-                map:get($translation:type-labels, 'appendix')
+                $translation:type-labels('appendix')('label')
             },
             
             for $chapter at $chapter-index in $appendix/tei:div[@type = ('section', 'chapter', 'prologue')]
@@ -1272,7 +1263,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
             
             element { QName('http://www.tei-c.org/ns/1.0', 'head') } {
                 attribute type { $type },
-                text { map:get($translation:type-labels, $type) }
+                text { $translation:type-labels($type)('label')}
             },
             
             if($tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq $type]) then
@@ -1300,7 +1291,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
     
     where $abbreviations[descendant::tei:list[@type eq $type]]
     return
-        translation:part($abbreviations, $content-directive, $type, map:get($translation:type-prefixes, $type), (), ())
+        translation:part($abbreviations, $content-directive, $type, $translation:type-labels($type)('prefix'), (), ())
 
 };
 
@@ -1319,10 +1310,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         if($passage-id = ('end-notes', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            if(local:passage-in-content($end-notes, $passage-id, false())) then
-                'passage'
-            else
-                'passage'
+            'passage'
         else if($view-mode[@parts eq 'outline']) then
             'empty'
         else
@@ -1340,8 +1328,8 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
             $note-ids
         else ()
     
-    return
-        translation:part($end-notes, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ($passage-id, $top-note-ids, $preview-note-ids))
+    return 
+        translation:part($end-notes, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, distinct-values(($passage-id, $top-note-ids, $preview-note-ids)))
 
 };
 
@@ -1369,7 +1357,7 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
             'complete'
     
     return
-        translation:part($bibliography, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type)}, ())
+        translation:part($bibliography, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, ())
 
 };
 
@@ -1395,10 +1383,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
         else if($passage-id = ('glossary', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            (:if(local:passage-in-content($glossary, $passage-id, true())) then
-                'passage'
-            else:)
-                'passage'
+             'passage'
         else if($view-mode[@parts eq 'outline']) then
             'empty'
         else
@@ -1407,24 +1392,43 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     (: Get first 3 for preview :)
     let $top-gloss := 
         (: Ensure we don't call for outline-cached for view-mode=outline as it leads to recursion :)
-        if($content-directive eq 'preview' and not($view-mode[@id eq 'outline'])) then
+        if($content-directive eq 'preview' and not($view-mode[@parts eq 'outline'])) then
             translation:outline-cached($tei)/m:pre-processed[@type eq 'glossary']/m:gloss[@index = ('1','2','3')]/@id
         else ()
     
     (: Get based on location-ids :)
     let $location-cache-gloss := 
-        if($content-directive = ('preview', 'passage') and not($view-mode[@id eq 'outline'])) then
+        if($content-directive = ('preview', 'passage') and not($view-mode[@parts eq 'outline'])) then
             let $glossary-locations-cache := glossary:glossary-cache($tei, (), false())
-            let $location-id-chunks := common:ids-chunked($location-ids)
-            for $key in map:keys($location-id-chunks)
+            where $glossary-locations-cache
             return
-                $glossary-locations-cache/m:gloss[m:location/@id = map:get($location-id-chunks, $key)]/@id
+                local:related-glossary-ids(distinct-values(($passage-id, $location-ids)), $glossary-locations-cache)
         else ()
     
     where $glossary[tei:gloss]
     return 
-        translation:part($glossary, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
+        translation:part($glossary, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
         
+};
+
+declare function local:related-glossary-ids($location-ids as xs:string*, $glossary-locations-cache as element(m:glossary-cache)) as xs:string* {
+    
+    (: Get glossary entries referenced in locations :)
+    let $related-glossary-ids := 
+        let $location-id-chunks := common:ids-chunked(distinct-values($location-ids))
+        for $key in map:keys($location-id-chunks)
+        return
+            ($glossary-locations-cache/m:gloss[m:location/@id = $location-id-chunks($key)]/@id)
+    
+    return 
+        (: Check for more glossaries referenced in these glossaries :)
+        if($related-glossary-ids[not(. = $location-ids)]) then
+            local:related-glossary-ids(($location-ids, $related-glossary-ids), $glossary-locations-cache)
+        
+        (: Return glossary ids :)
+        else 
+            $related-glossary-ids
+    
 };
 
 declare function translation:citation-index($passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
@@ -1448,7 +1452,7 @@ declare function translation:citation-index($passage-id as xs:string?, $view-mod
     
     where not($content-directive eq 'none') (: and false() Disable this while incomplete :)
     return
-        translation:part($citation-index, $content-directive, $type, map:get($translation:type-prefixes, $type), text { map:get($translation:type-labels, $type) }, ())
+        translation:part($citation-index, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, ())
 
 };
 
@@ -2040,7 +2044,7 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                         element { QName('http://read.84000.co/ns/1.0', 'highlight') } { 
                         
                             (: Build the target regex, remove occurrence, split by word, escape and rejoin enforcing a word break :)
-                            attribute target { string-join($ellipsis-text-stripped ! tokenize(., '[^\p{L}]+')[normalize-space(.) gt ''] ! functx:escape-for-regex(.), '[^\p{L}]+') },
+                            attribute target { string-join($ellipsis-text-stripped ! tokenize(., '[^\p{L}\p{N}]+')[normalize-space(.) gt ''] ! functx:escape-for-regex(.), '[^\p{L}\p{N}]+') },
                             
                             (: Test if it's been split by an ellipsis :)
                             if($index lt $count-ellipsis-texts) then
@@ -2082,7 +2086,7 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                                         if($highlight[@ellipsis]) then () else '^',
                                         
                                         (: Ensure there's a word break, or it's the start :)
-                                        '(^|[^\p{L}]+)'
+                                        '(^|[^\p{L}\p{N}]+)'
                                         
                                     )
                                     (: Add subsequent strings :)
@@ -2091,12 +2095,12 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                                         $highlight/@target,
                                         
                                         (: Ensure there's a word break, or it's the end :)
-                                        '([^\p{L}]+|$)',
+                                        '([^\p{L}\p{N}]+|$)',
                                         
                                         (: If it has an ellipsis so allow any other text in between, unless it's the last string :)
                                         if($index lt $count-highlights) then (
                                         
-                                            if($highlight[@ellipsis]) then '(.*([^\p{L}]+|$))?' else ()
+                                            if($highlight[@ellipsis]) then '(.*([^\p{L}\p{N}]+|$))?' else ()
                                             
                                         )
                                         else ()
@@ -2138,7 +2142,7 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                                     (: Ensure there's a word break, or it's the start :)
                                     if($index eq 1) then(
                                         
-                                        '(^|[^\p{L}]+)'
+                                        '(^|[^\p{L}\p{N}]+)'
                                         
                                     )
                                     else ()
@@ -2150,10 +2154,10 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                                         $highlight/@target,
                                         
                                         (: Ensure there's a word break, or it's the end :)
-                                        '([^\p{L}]+|$)',
+                                        '([^\p{L}\p{N}]+|$)',
                                         
                                         (: It has an ellipsis so allow any other text in between :)
-                                        if($highlight[@ellipsis]) then '(.*([^\p{L}]+|$))?' else ()
+                                        if($highlight[@ellipsis]) then '(.*([^\p{L}\p{N}]+|$))?' else ()
                                         
                                     )
                                     else ()

@@ -20,7 +20,7 @@ let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $passage-id := request:get-parameter('passage-id', upper-case($resource-id))
 let $view-mode := request:get-parameter('view-mode', 'passage')
-let $view-mode := if($view-mode = ('editor','editor-passage')) then 'editor-passage' else 'passage'
+let $view-mode := if($resource-suffix eq 'json') then 'json-passage' else if($view-mode = ('editor','editor-passage')) then 'editor-passage' else 'passage'
 let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,40}$')]
 
 (: Validate the resource-id :)

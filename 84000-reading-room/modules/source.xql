@@ -109,24 +109,29 @@ declare function source:etext-full($location as element(m:location)) as element(
 declare function source:etext-page($location as element(m:location), $page-number as xs:integer, $add-context as xs:boolean) as element(m:source)? {
     
     let $work := $location/@work
+    
+    let $offset-in-work-volume := 
+        if($work eq $source:tengyur-work) then 2
+        else 0
+    
+    (: Loop through $location/m:volume in the TEI and establish the volume and page in volume for this $page-number (page index) :)
     let $page-volume := 
         for $volume in $location/m:volume
-            let $volume-number := xs:integer($volume/@number)
-            let $pages-in-preceding-volumes := sum($location/m:volume[xs:integer(@number) lt $volume-number] ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
-            let $start-page-in-volume := $pages-in-preceding-volumes + 1
-            let $end-page-in-volume := $pages-in-preceding-volumes + (xs:integer($volume/@end-page) - (xs:integer($volume/@start-page) - 1))
-            let $page-in-volume := ($page-number - $pages-in-preceding-volumes) + (xs:integer($volume/@start-page) - 1)
-            where $page-number ge $start-page-in-volume and $page-number le $end-page-in-volume
+        let $volume-number := xs:integer($volume/@number)
+        let $pages-in-preceding-volumes := sum($location/m:volume[xs:integer(@number) lt $volume-number] ! (xs:integer(@end-page) - (xs:integer(@start-page) - 1)))
+        let $start-page-in-volume := $pages-in-preceding-volumes + 1
+        let $end-page-in-volume := $pages-in-preceding-volumes + (xs:integer($volume/@end-page) - (xs:integer($volume/@start-page) - 1))
+        where $page-number ge $start-page-in-volume and $page-number le $end-page-in-volume
         return
             element { QName('http://read.84000.co/ns/1.0','page-volume') } {
                 attribute page-number { $page-number },
                 attribute volume-number { $volume-number },
-                attribute text-start-page { $volume/@start-page },
+                (:attribute text-start-page { $volume/@start-page },
                 attribute text-end-page { $volume/@end-page },
                 attribute pages-in-preceding-volumes { $pages-in-preceding-volumes },
                 attribute start-page-in-volume { $start-page-in-volume },
-                attribute end-page-in-volume  { $end-page-in-volume  },
-                attribute page-in-volume { $page-in-volume }
+                attribute end-page-in-volume  { $end-page-in-volume  },:)
+                attribute page-in-volume { ($page-number - $pages-in-preceding-volumes) + ((xs:integer($volume/@start-page) + $offset-in-work-volume) - 1) }
             }
     
     let $page-volume := $page-volume[1]

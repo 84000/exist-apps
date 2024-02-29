@@ -16,12 +16,17 @@ declare option exist:serialize "method=xml indent=no";
 let $store-conf := $common:environment/m:store-conf
 let $utilities-url := $common:environment/m:url[@id eq 'utilities']
 
-(: Get requested status :)
-let $request-page-filter :=  request:get-parameter('page-filter', 'recent-updates')
+let $request := 
+    utilities:request(
+        element { QName('http://read.84000.co/ns/1.0', 'request')} {
+            element parameter { 
+                attribute name { 'page-filter' },
+                request:get-parameter('page-filter', 'recent-updates')
+            }
+        }
+    )
 
-(: Get search parameters :)
-let $request-toh-min := request:get-parameter('toh-min', '')
-let $request-toh-max := request:get-parameter('toh-max', '')
+let $request-page-filter := $request/m:parameter[@name eq 'page-filter']/text()
 
 (: Validate the status :)
 let $texts-status := 
@@ -83,10 +88,10 @@ let $translations-local :=
                     $local-text
             }
             
-    else if($request-page-filter = ('search') and ($request-toh-min gt '' or $request-toh-max gt '')) then
+    else if($request-page-filter = ('search') and ($request/m:parameter[@name eq 'toh-min']/text() gt '' or $request/m:parameter[@name eq 'toh-max']/text() gt '')) then
         
         (: Search Toh range :)
-        translations:filtered-texts('all', (), '', '', '', '', $request-toh-min, $request-toh-max, 'toh', '', '')
+        translations:filtered-texts('all', (), '', '', '', '', ($request/m:parameter[@name eq 'toh-min']/text(), '')[1], ($request/m:parameter[@name eq 'toh-max']/text(), '')[1], 'toh', '', '')
     
     else if($request-page-filter = ('recent-updates')) then
     
@@ -117,7 +122,7 @@ return
         'utilities/translations',
         'utilities',
         (
-            utilities:request(),
+            $request,
             $translations-local,
             $translations-master,
             tei-content:text-statuses-sorted('translation'),

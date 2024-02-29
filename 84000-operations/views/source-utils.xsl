@@ -397,9 +397,7 @@
                                             
                                             <div id="{ @xml:id }" class="tei-parser">
                                                 <div class="glossary-item">
-                                                    <xsl:call-template name="glossary-item">
-                                                        <xsl:with-param name="glossary-item" select="."/>
-                                                    </xsl:call-template>
+                                                    <xsl:apply-templates select="."/>
                                                 </div>
                                             </div>
                                             

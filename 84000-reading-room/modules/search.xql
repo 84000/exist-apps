@@ -556,18 +556,17 @@ declare function local:search-query($request as xs:string, $search-as-phrase as 
                     <phrase slop="1" occur="must">{ $request-normalized }</phrase>
                 
                 else (
-                    (:<near slop="100" ordered="no">{ $request-tokenized ! <term>{ . }</term> }</near>,:)
+                
                     <bool slop="100" min="{ if(count($request-tokenized) ge 2) then 2 else 1 }">{ $request-tokenized ! <term occur="should">{ . }</term>  }</bool>,
-                    (:<bool slop="100">{ $request-tokenized ! <regex occur="must">{ concat(., '.*') }</regex> }</bool>,:)
-                    for $request-token in $request-tokenized
-                    return (
                     
-                        for $synonym in $synonyms//eft:synonym[eft:term/text() = $request-token]/eft:term[not(text() = $request-token)]
-                        let $request-synonym := replace($request-normalized, $request-token, $synonym)
+                    for $synonym-term in $synonyms//eft:synonym[eft:term/text() = $request-tokenized]/eft:term[not(text() = $request-tokenized)]
+                    let $synonym-terms := $synonym-term/parent::eft:synonym/eft:term/text()
+                    return
+                        for $synonym-token in $request-tokenized[. = $synonym-terms]
+                        let $request-normalized-synonymous := replace($request-normalized, concat('(^|\s+)(', $synonym-token, ')(\s+|$)'), concat('$1', $synonym-term, '$3'), 'i')
+                        let $request-normalized-synonymous-tokenized := tokenize($request-normalized-synonymous, '\s')[normalize-space(.)]
                         return 
-                            <wildcard occur="should">{ concat($request-synonym,'*') }</wildcard>
-                        
-                    )
+                            <bool slop="100" min="{ if(count($request-normalized-synonymous-tokenized) ge 2) then 2 else 1 }">{ $request-normalized-synonymous-tokenized ! <term occur="should">{ . }</term>  }</bool>
                 )
             }   
         </query>

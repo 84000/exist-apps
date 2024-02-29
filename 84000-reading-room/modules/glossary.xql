@@ -185,12 +185,15 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
                 {
                     (: wildcard is not ignoring stopwords :)
                     for $term in tokenize($normalized-search, '\s+')[not(. = $glossary:stopwords-en)]
+                    where normalize-space($term) gt ''
                     return
                         <wildcard occur="must">{ $term }*</wildcard>
                 }
                 </bool>
         }
         </query>
+    
+    (:return if(true()) then element tei:term { $query } else :)
     
     let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = $exclude-status)]
     
@@ -241,17 +244,23 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
     (: Return flagged entries :)
     
     let $flag := $entities:flags//m:flag[@id eq $flag-type]
-    
-    let $flagged-instances := 
-        if($flag[@id eq 'entity-definition']) then
-            $entities:entities//m:content[@type eq 'glossary-definition']/parent::m:entity/m:instance
-        else
-            $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
-    
     let $valid-glossary-type := local:valid-type($glossary-type)
     
-    return $glossary:tei//tei:gloss/id($flagged-instances/@id)[not(@mode eq 'surfeit')][@type = $valid-glossary-type]
-    
+    where $flag
+    return 
+        if($flag[@id eq 'entity-definition']) then
+            
+            for $entity in $entities:entities//m:content[@type eq 'glossary-definition']/parent::m:entity
+            let $glosses := $glossary:tei//tei:gloss/id($entity/m:instance/@id)[not(@mode eq 'surfeit')][@type = $valid-glossary-type]
+            let $entity-count-glosses := count($glosses)
+            order by $entity-count-glosses descending
+            return
+                $glosses
+        
+        else
+            let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
+            return
+                $glossary:tei//tei:gloss/id($flagged-instances/@id)[not(@mode eq 'surfeit')][@type = $valid-glossary-type]
 };
 
 declare function glossary:entries($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:entry)* {

@@ -53,8 +53,10 @@ let $part :=
 let $view-mode-validated :=
     if($resource-suffix eq 'epub') then
         $translation:view-modes/m:view-mode[@id eq 'ebook']
-    else if($resource-suffix = ('txt', 'plain.txt', 'json')) then
+    else if($resource-suffix = ('txt', 'plain.txt')) then
         $translation:view-modes/m:view-mode[@id eq 'txt']
+    else if($resource-suffix = ('json')) then
+        $translation:view-modes/m:view-mode[@id eq 'raw']
     else if($translation:view-modes/m:view-mode[@id eq $view-mode]) then
         $translation:view-modes/m:view-mode[@id eq $view-mode]
     else

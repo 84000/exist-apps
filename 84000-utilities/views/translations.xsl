@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -22,30 +22,169 @@
             
             <div class="container">
                 
+                <form action="/translations.html" method="post" class="form-inline bottom-margin">
+                    
+                    <xsl:attribute name="data-loading" select="'Loading...'"/>
+                    
+                    <input type="hidden" name="page-filter" value="search"/>
+                    
+                    <fieldset>
+                        
+                        <legend>
+                            <xsl:value-of select="'Search for a Tohoku number'"/>
+                        </legend>
+                        
+                        <div class="form-group bottom-margin">
+                            
+                            <label for="toh-min">
+                                <xsl:value-of select="'Tohoku:'"/>
+                            </label>
+                            
+                            <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
+                                <xsl:attribute name="value" select="$toh-min"/>
+                            </input>
+                            
+                            <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
+                                <xsl:attribute name="value" select="$toh-max"/>
+                            </input>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <xsl:value-of select="'Search'"/>
+                            </button>
+                            
+                        </div>
+                        
+                    </fieldset>
+                    
+                </form>
+                
+                <!-- Actions -->
+                <xsl:choose>
+                    
+                    <xsl:when test="$page-filter eq 'new-version-placeholders' and m:texts[m:text]">
+                        
+                        <form action="/translations.html" method="post" class="form-inline bottom-margin">
+                            
+                            <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
+                            
+                            <input type="hidden" name="page-filter" value="new-version-placeholders"/>
+                            
+                            <fieldset>
+                                
+                                <legend>
+                                    <xsl:value-of select="'Get all updated placeholder files'"/>
+                                </legend>
+                                
+                                <xsl:for-each-group select="m:texts/m:text" group-by="@id">
+                                    <input type="hidden" name="store[]" value="{ concat(@id, '.all') }"/>
+                                </xsl:for-each-group>
+                                
+                                <button type="submit" class="btn btn-danger btn-sml">
+                                    <xsl:value-of select="'Get all updated files'"/>
+                                </button>
+                                
+                            </fieldset>
+                            
+                        </form>
+                            
+                    </xsl:when>
+                    
+                    <xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
+                        
+                        <form method="post" class="form-horizontal bottom-margin">
+                            
+                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
+                            <xsl:attribute name="data-loading" select="'Getting shared data files...'"/>
+                            
+                            <input type="hidden" name="form-action" value="pull-data-operations"/>
+                            
+                            <fieldset>
+                                
+                                <legend>
+                                    <xsl:value-of select="'Get updated shared data files e.g. entities, sponsorship, contributors...'"/>
+                                </legend>
+                                
+                                <div class="form-group">
+                                    
+                                    <div class="col-sm-3">
+                                        <input type="password" name="deploy-password" class="form-control" id="deploy-password" placeholder="Deployment password"/>
+                                    </div>
+                                    
+                                    <div class="col-sm-4">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <xsl:value-of select="'Get updates to shared data'"/>
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+                                
+                            </fieldset>
+                            
+                        </form>
+                            
+                    </xsl:when>
+                    
+                    <xsl:when test="$page-filter = ('1', 'recent-updates') and $environment/m:store-conf[@type eq 'master'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
+                        
+                        <form method="post" class="form-horizontal bottom-margin">
+                            
+                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
+                            <xsl:attribute name="data-loading" select="'Pushing shared data files...'"/>
+                            
+                            <input type="hidden" name="form-action" value="push-data-operations"/>
+                            
+                            <fieldset>
+                                
+                                <legend>
+                                    <xsl:value-of select="'Publish updates to shared data files e.g. entities, sponsorship, contributors...'"/>
+                                </legend>
+                                
+                                <div class="form-group">
+                                    
+                                    <div class="col-sm-2">
+                                        <input type="password" name="deploy-password" class="form-control" id="deploy-password" placeholder="Deployment password"/>
+                                    </div>
+                                    
+                                    <div class="col-sm-4">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <xsl:value-of select="'Publish updates to shared data'"/>
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+                                
+                            </fieldset>
+                            
+                        </form>
+                        
+                    </xsl:when>
+                    
+                </xsl:choose>
+                
                 <!-- Form to specify status -->
                 <form action="/translations.html" method="get" class="form-horizontal filter-form clearfix">
                     
                     <xsl:attribute name="data-loading" select="'Loading...'"/>
                     
-                    <div class="row bottom-margin">
+                    <div class="center-vertical full-width bottom-margin">
                         
-                        <!-- Select a status -->
-                        <div class="col-sm-9">
+                        <div class="text-muted">
+                            <xsl:value-of select="'Select a filter:'"/>
+                        </div>
+                        
+                        <div>
                             <div class="input-group">
                                 <select name="page-filter" id="page-filter" class="form-control">
                                     
+                                    <option>
+                                        <xsl:value-of select="'[Choose a filter]'"/>
+                                    </option>
+                                    
                                     <option value="recent-updates">
-                                        <xsl:if test="not($page-filter) or $page-filter eq 'recent-updates'">
+                                        <xsl:if test="$page-filter eq 'recent-updates'">
                                             <xsl:attribute name="selected" select="'selected'"/>
                                         </xsl:if>
                                         <xsl:value-of select="'Recent updates to published texts'"/>
-                                    </option>
-                                    
-                                    <option value="search">
-                                        <xsl:if test="$page-filter eq 'search'">
-                                            <xsl:attribute name="selected" select="'selected'"/>
-                                        </xsl:if>
-                                        <xsl:value-of select="'Search for a text'"/>
                                     </option>
                                     
                                     <xsl:if test="$environment/m:store-conf[@type eq 'client']">
@@ -87,154 +226,25 @@
                             </div>
                         </div>
                         
-                        <div class="col-sm-3">
-                            <div class="center-vertical full-width">
-                                
-                                <!-- Show count of texts -->
-                                <div>
-                                    <div class="sml-margin top">
-                                        <span class="badge badge-notification">
-                                            <xsl:value-of select="fn:format-number(count(distinct-values(m:texts/m:text/@id | m:recent-updates/m:text/@id)),'#,##0')"/>
-                                        </span>
-                                        <xsl:value-of select="' results'"/>
-                                    </div>
-                                </div>
-                                
-                                <!-- Download button -->
-                                <xsl:if test="m:recent-updates[m:text]">
-                                    <div>
-                                        <a>
-                                            <xsl:attribute name="href" select="'translations.xlsx?page-filter=recent-updates'"/>
-                                            <xsl:attribute name="title" select="'Download as spreadsheet'"/>
-                                            <xsl:attribute name="class" select="'btn btn-default'"/>
-                                            <i class="fa fa-cloud-download"/>
-                                            <xsl:value-of select="' download'"/>
-                                        </a>
-                                    </div>
-                                </xsl:if>
-                                
-                            </div>
-                            
+                        <!-- Show count of texts -->
+                        <div class="text-right">
+                            <xsl:variable name="count-results" select="count(distinct-values(m:texts/m:text/@id | m:recent-updates/m:text/@id))"/>
+                            <span class="badge badge-notification">
+                                <xsl:value-of select="fn:format-number($count-results,'#,##0')"/>
+                            </span>
+                            <xsl:choose>
+                                <xsl:when test="$count-results eq 1">
+                                    <xsl:value-of select="' result'"/>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="' results'"/>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </div>
                         
                     </div>
                 
                 </form>
-                
-                <!-- Further forms to filter / update -->
-                <xsl:choose>
-                    
-                    <xsl:when test="$page-filter eq 'search'">
-                        <form action="/translations.html" method="post" class="form-inline bottom-margin">
-                            
-                            <input type="hidden" name="page-filter" value="search"/>
-                            
-                            <div class="form-group">
-                                
-                                <label for="toh-min">
-                                    <xsl:value-of select="'Tohoku:'"/>
-                                </label>
-                                
-                                <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
-                                    <xsl:attribute name="value" select="$toh-min"/>
-                                </input>
-                                
-                                <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
-                                    <xsl:attribute name="value" select="$toh-max"/>
-                                </input>
-                                
-                                <button type="submit" class="btn btn-warning">
-                                    <xsl:value-of select="'Search'"/>
-                                </button>
-                                
-                            </div>
-                        </form>
-                    </xsl:when>
-                    
-                    <xsl:when test="$page-filter eq 'new-version-placeholders' and m:texts[m:text]">
-                        <form action="/translations.html" method="post" class="form-inline bottom-margin">
-                            <xsl:attribute name="data-loading" select="'Getting updated files...'"/>
-                            
-                            <input type="hidden" name="page-filter" value="new-version-placeholders"/>
-                            
-                            <xsl:for-each-group select="m:texts/m:text" group-by="@id">
-                                <input type="hidden" name="store[]" value="{ concat(@id, '.all') }"/>
-                            </xsl:for-each-group>
-                            
-                            <button type="submit" class="btn btn-danger btn-sml">
-                                <xsl:value-of select="'Get all updated placeholder files'"/>
-                            </button>          
-                            
-                        </form>
-                    </xsl:when>
-                    
-                    <xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
-                        
-                        <form method="post" class="form-horizontal sml-margin bottom">
-                            
-                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
-                            <xsl:attribute name="data-loading" select="'Getting shared data files...'"/>
-                            
-                            <input type="hidden" name="form-action" value="pull-data-operations"/>
-                            
-                            <p class="text-muted italic small">
-                                <xsl:value-of select="'Update this server with the latest shared data files e.g. entities, sponsorship, contributors...'"/>
-                            </p>
-                            
-                            <div class="form-group">
-                                
-                                <div class="col-sm-2">
-                                    <input type="password" name="deploy-password" class="form-control" id="deploy-password" placeholder="Deployment password"/>
-                                </div>
-                                
-                                <div class="col-sm-4">
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <xsl:value-of select="'Get updates to shared data'"/>
-                                    </button>
-                                </div>
-                                
-                            </div>
-                            
-                        </form>
-                        
-                        <hr/>
-                        
-                    </xsl:when>
-                    
-                    <xsl:when test="$page-filter = ('1', 'recent-updates') and $environment/m:store-conf[@type eq 'master'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
-                        
-                        <form method="post" class="form-horizontal sml-margin bottom">
-                            
-                            <xsl:attribute name="action" select="concat('translations.html', '?page-filter=', $page-filter)"/>
-                            <xsl:attribute name="data-loading" select="'Pushing shared data files...'"/>
-                            
-                            <input type="hidden" name="form-action" value="push-data-operations"/>
-                            
-                            <p class="text-muted italic small">
-                                <xsl:value-of select="'Publish the latest shared data files e.g. entities, sponsorship, contributors...'"/>
-                            </p>
-                            
-                            <div class="form-group">
-                                
-                                <div class="col-sm-2">
-                                    <input type="password" name="deploy-password" class="form-control" id="deploy-password" placeholder="Deployment password"/>
-                                </div>
-                                
-                                <div class="col-sm-4">
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <xsl:value-of select="'Publish updates to shared data'"/>
-                                    </button>
-                                </div>
-                                
-                            </div>
-                            
-                        </form>
-                        
-                        <hr/>
-                        
-                    </xsl:when>
-                
-                </xsl:choose>
                 
                 <!-- List of texts -->
                 <xsl:choose>
@@ -855,16 +865,35 @@
                             
                             <xsl:variable name="recent-update-type" select="."/>
                             
-                            <h3 class="no-top-margin">
-                                <xsl:choose>
-                                    <xsl:when test="$recent-update-type eq 'new-publication'">
-                                        <xsl:value-of select="'New Publications'"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="'New Versions'"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </h3>
+                            <div class="center-vertical full-width">
+                                
+                                <div>
+                                    <h3 class="no-top-margin">
+                                        <xsl:choose>
+                                            <xsl:when test="$recent-update-type eq 'new-publication'">
+                                                <xsl:value-of select="'New Publications'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="'New Versions'"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </h3>
+                                </div>
+                                
+                                <!-- Download button -->
+                                <xsl:if test="position() eq 1">
+                                    <div class="text-right">
+                                        <a>
+                                            <xsl:attribute name="href" select="'translations.xlsx?page-filter=recent-updates'"/>
+                                            <xsl:attribute name="title" select="'Download as spreadsheet'"/>
+                                            <xsl:attribute name="class" select="'btn btn-warning'"/>
+                                            <i class="fa fa-cloud-download"/>
+                                            <xsl:value-of select="' download'"/>
+                                        </a>
+                                    </div>
+                                </xsl:if>
+                                
+                            </div>
                             
                             <xsl:choose>
                                 
@@ -952,8 +981,8 @@
                     </xsl:when>
                     
                     <xsl:otherwise>
-                        <p class="text-muted italic">
-                            <xsl:value-of select="'No matching texts'"/>
+                        <p class="text-muted italic text-center">
+                            <xsl:value-of select="'~ No matching texts ~'"/>
                         </p>
                     </xsl:otherwise>
                     

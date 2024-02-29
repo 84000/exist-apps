@@ -243,7 +243,7 @@ return
             local:redirect($common:environment/m:url[@id eq 'communications-site'] || '/mobile')
         
         (: These are URIs redirected from purl.84000.co :)
-        else if ($path = ('/resource/core/')) then
+        else if ($path = ('/resource/core/', '/resource/id/')) then
             local:redirect-purl()
             
         (: Translation :)

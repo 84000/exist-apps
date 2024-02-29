@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -1339,18 +1339,21 @@
                                             </xsl:otherwise>
                                         </xsl:choose>
                                         
-                                        <hr class="visible-xs visible-sm sml-margin"/>
-                                        
-                                        <ul class="translation-links">
-                                            <xsl:variable name="title-en" select="$text/m:titles/m:title[@xml:lang eq 'en'][not(@type)]/text()" as="xs:string"/>
-                                            <li>
-                                                <a>
-                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, '/source/', $text/@resource-id, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                    <xsl:attribute name="target" select="concat($text/@resource-id, '.source')"/>
-                                                    <xsl:value-of select="'View the Tibetan source'"/>
-                                                </a>
-                                            </li>
-                                        </ul>
+                                        <xsl:if test="$environment/m:enable[@type eq 'unpublished-source-links']">
+                                            
+                                            <hr class="visible-xs visible-sm sml-margin"/>
+                                            
+                                            <ul class="translation-links">
+                                                <xsl:variable name="title-en" select="$text/m:titles/m:title[@xml:lang eq 'en'][not(@type)]/text()" as="xs:string"/>
+                                                <li>
+                                                    <a>
+                                                        <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, '/source/', $text/@resource-id, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
+                                                        <xsl:attribute name="target" select="concat($text/@resource-id, '.source')"/>
+                                                        <xsl:value-of select="'View the Tibetan source'"/>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </xsl:if>
                                         
                                     </xsl:otherwise>
                                 </xsl:choose>

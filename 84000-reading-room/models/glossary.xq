@@ -96,8 +96,9 @@ let $request :=
         attribute view-mode { $view-mode/@id },
         attribute flagged { $flag/@id },
         attribute letter { $alphabet/m:letter[@selected]/@index },
+        attribute sort { request:get-parameter('sort', 'term')[. = ('term','frequency')] },
         attribute first-record { $first-record },
-        attribute records-per-page { 50 },
+        attribute records-per-page { 20 },
         
         element search { if(not($flag) and not($resource-id eq 'downloads') and $search gt '') then $search else '' },
         if($term-lang/@id eq 'bo') then
@@ -205,7 +206,11 @@ return
             let $instances-entity := $instances/parent::m:entity
             let $instances-entity-id := $instances-entity[1]/@xml:id
             group by $instances-entity-id
-            order by min($index)
+            let $instances-count := count($glossary:tei/id(($instances-entity/m:instance except $instances-exclude)/@id))
+            order by 
+                if($request[@sort eq 'frequency']) then -$instances-count else (),
+                min($index)
+                
             return
                 $instances-entity[1]
         
@@ -224,7 +229,7 @@ return
             common:response(
                 $request/@model, 
                 $common:app-id, 
-                (
+                ($term-matches,
                     $request,
                     element { QName('http://read.84000.co/ns/1.0', 'entities')} {
                         attribute count-entities { count($matched-entities) },

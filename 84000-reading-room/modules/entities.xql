@@ -49,6 +49,9 @@ declare variable $entities:flags :=
         <flag id="entity-definition" type="computed">
             <label>entity definitions</label>
         </flag>
+        <flag id="vinaya">
+            <label>Vinaya</label>
+        </flag>
     </entity-flags>;
 
 declare variable $entities:instance-types := ('glossary-item', 'knowledgebase-article');

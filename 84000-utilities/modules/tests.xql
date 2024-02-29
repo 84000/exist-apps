@@ -52,7 +52,7 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
             
                 let $start-time := util:system-dateTime()
                 
-                let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=tests')
+                let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=raw')
                 
                 let $request := 
                     if(count($credentials) eq 2) then 

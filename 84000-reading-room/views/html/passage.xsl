@@ -62,7 +62,7 @@
                         <div class="row">
                             <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override ">
                                 
-                                <xsl:for-each select="m:translation//m:part[not(@type eq 'translation')][@nesting eq '0'][descendant-or-self::*/@content-status = ('passage','complete','preview')]">
+                                <xsl:for-each select="(m:translation/m:part[@type eq 'translation']/m:part | m:translation/m:part[not(@type eq 'translation')])[descendant-or-self::*/@content-status = ('passage','complete','preview')]">
                                     <xsl:choose>
                                         
                                         <xsl:when test="@type eq 'end-notes'">
