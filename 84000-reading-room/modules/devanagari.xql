@@ -59,7 +59,7 @@ function devanagari:toIast($devanagari as xs:string) (:as xs:string?:) {
     (:return $dev-letters-merged-keys ! $dev-letters-merged(.) :)
      
     return 
-        local:dev-char-to-iast(normalize-unicode($devanagari), 1, $dev-letters-merged-keys-max-len, $dev-letters-merged-keys-max-len, "", $dev-letters-merged)
+        local:dev-char-to-iast(normalize-unicode($devanagari), 1, $dev-letters-merged-keys-max-len, $dev-letters-merged-keys-max-len, "", $dev-letters-merged) ! normalize-unicode()
         
 };
 

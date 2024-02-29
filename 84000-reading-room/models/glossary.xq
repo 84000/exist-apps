@@ -229,7 +229,7 @@ return
             common:response(
                 $request/@model, 
                 $common:app-id, 
-                ($term-matches,
+                (
                     $request,
                     element { QName('http://read.84000.co/ns/1.0', 'entities')} {
                         attribute count-entities { count($matched-entities) },
