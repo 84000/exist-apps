@@ -169,7 +169,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
         else
             $results
     
-    let $results-grouped := local:result-groups($results-triaged,(), $data-types, $first-record, $max-records, $max-matches, $search)
+    let $results-grouped := local:result-groups($results-triaged,(), $data-types, $first-record, $max-records, $max-matches, $search-no-quotes)
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'tei-search') } { 
