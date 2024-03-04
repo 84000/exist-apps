@@ -10,6 +10,7 @@
     <xsl:variable name="selected-letter" select="/m:response/m:request/m:alphabet/m:letter[@selected eq 'selected'][1]" as="element(m:letter)?"/>
     <xsl:variable name="search-text" select="/m:response/m:request/m:search/data()" as="xs:string?"/>
     <xsl:variable name="search-text-bo" select="/m:response/m:request/m:search-bo/data()" as="xs:string?"/>
+    <xsl:variable name="search-text-sa" select="/m:response/m:request/m:search-sa/data()" as="xs:string?"/>
     <xsl:variable name="selected-sort" select="/m:response/m:request/@sort" as="xs:string?"/>
     <xsl:variable name="flagged" select="/m:response/m:request/@flagged" as="xs:string?"/>
     <xsl:variable name="entities-list" select="/m:response/m:entities/m:entity" as="element(m:entity)*"/>
@@ -720,8 +721,8 @@
                 <xsl:when test="$selected-term-lang/@id eq 'en'">
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! common:escape-for-regex(.), '|'), ')')"/>
                 </xsl:when>
-                <xsl:when test="$selected-term-lang/@id eq 'Sa-Ltn'">
-                    <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! replace(., '­','') ! common:escape-for-regex(.), '|'), ')')"/>
+                <xsl:when test="$selected-term-lang/@id eq 'Sa-Ltn' and $search-text-sa">
+                    <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text-sa, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! replace(., '­','') ! common:escape-for-regex(.), '|'), ')')"/>
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! common:escape-for-regex(.), '|'), ')')"/>

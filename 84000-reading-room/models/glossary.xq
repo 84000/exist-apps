@@ -14,6 +14,7 @@ import module namespace common="http://read.84000.co/common" at "../modules/comm
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace devanagari="http://read.84000.co/devanagari" at "devanagari.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
@@ -108,6 +109,13 @@ let $request :=
                 else
                     $search
             }
+        else if($term-lang/@id eq 'Sa-Ltn') then
+            element search-sa { 
+                if(devanagari:string-is-dev($search)) then
+                    $search ! devanagari:to-iast($search)
+                else
+                    $search
+            }
         else ()
         ,
         $entity-types,
@@ -165,7 +173,7 @@ return
                     for $term in $term-matches
                     
                     let $sort-term := 
-                        if(not($term/@xml:lang)) then
+                        if(not($term/@xml:lang) or $term/@xml:lang eq 'en') then
                             $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i')
                         else if($term/@xml:lang eq 'bo') then
                             $term/text() ! normalize-space(.) ! common:wylie-from-bo(.) ! common:alphanumeric(.)
@@ -179,10 +187,12 @@ return
                             $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i') ! functx:escape-for-regex(.)
                         else if($term/@xml:lang eq 'bo') then 
                             $request/m:search ! common:wylie-from-bo(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
-                        else 
+                        else if(common:alphanumeric($request/m:search) gt '') then
                             $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
+                        else 
+                            $request/m:search ! common:normalized-chars(.) ! functx:escape-for-regex(.)
                     
-                    let $sort-index := functx:index-of-match-first($sort-term, $sort-regex)
+                    let $sort-index := $sort-regex ! functx:index-of-match-first($sort-term, .)
                     
                     order by if($sort-index eq 1) then 0 else 1, $sort-term
                     return $term
@@ -227,7 +237,7 @@ return
         
         let $xml-response :=
             common:response(
-                $request/@model, 
+                $request/@model,
                 $common:app-id, 
                 (
                     $request,

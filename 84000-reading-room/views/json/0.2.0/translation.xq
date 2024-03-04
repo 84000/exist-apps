@@ -53,21 +53,17 @@ declare function local:parse-translation() {
         ,
         
         element translation {
-            for $part in $local:translation/m:part
+            for $part at $index in $local:translation/m:part
             return
-                local:parse-parts($part)
+                local:parse-parts($part, $index)
         }
         
     }
 };
 
-declare function local:parse-parts($part as element(m:part)) {
+declare function local:parse-parts($part as element(m:part), $index as xs:integer) {
 
-    element section {
-    
-        attribute xmlId { $part/@id },
-        attribute type { $part/@type },
-        $part/@prefix ! attribute label { string() },
+    let $content := (
         
         (: Headings :)
         $part/tei:head ! element heading { 
@@ -77,31 +73,31 @@ declare function local:parse-parts($part as element(m:part)) {
         
         let $elements := $part/*[not(self::tei:head)][descendant::text()[normalize-space(.)] or descendant::tei:ref[@cRef]][not(@key) or @key eq $local:toh-key]
         return
-        for $element in $elements
-        let $location := local:persistent-location($element)
-        let $location-id := ($location/@xml:id, $location/@id)[. gt ''][1]
-        let $location-milestone-pre-processed := $local:text-outline/m:pre-processed[@type eq 'milestones']/m:milestone[@id eq $location-id]
-        let $location-milestone-part := $local:text-outline/m:pre-processed[@type eq 'parts']//m:part[@id eq ($location-milestone-pre-processed/@part-id, $location-id)[1]]
-        let $location-index := functx:index-of-node($elements, $element)
-        group by $location-id
-        order by min($location-index)
-        return
-            if($element[self::m:note][not(parent::m:part[@id eq 'end-notes'])]) then
-                ()
-            else if($element[self::m:orig]) then
-                ()
-            else if($element[self::m:part]) then
-                (: Recurse through the tree :)
-                local:parse-parts($element)
-            else 
-                (: group elements by location and provide a uri :)
-                element content {
-                    attribute xmlId { $location-id },
-                    attribute uri { 'http://purl.84000.co/resource/id/' || $location-id },
-                    $location-milestone-part[1][@prefix] ! attribute label { concat(@prefix, $location-milestone-pre-processed[1] ! concat('.', (@label, @index)[1])) }
-                }
-        
-    }
+            for $element in $elements
+            let $location := local:persistent-location($element)
+            let $location-id := ($location/@xml:id, $location/@id)[. gt ''][1]
+            let $location-index := functx:index-of-node($elements, $element)
+            group by $location-id
+            let $label := eft-json:label($location[1], $location-id, $local:text-outline)
+            order by min($location-index)
+            return
+                if($element[self::m:note][not(parent::m:part[@id eq 'end-notes'])]) then ()
+                else if($element[self::m:orig]) then ()
+                else if($element[self::m:part]) then
+                    (: Recurse through the tree :)
+                    local:parse-parts($element, $location-index)
+                else 
+                    (: group elements by location and provide a uri :)
+                    element passage {
+                        attribute xmlId { $location-id },
+                        attribute uri { 'http://purl.84000.co/resource/id/' || $location-id },
+                        $label ! attribute label { $label }
+                    }
+    )
+    
+    return
+        eft-json:element-node('part', $index, $part/@id, $part/@prefix/string(), $content)
+    
 };
 
 local:parse-translation()

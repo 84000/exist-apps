@@ -16,6 +16,7 @@ import module namespace translation="http://read.84000.co/translation" at "trans
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "knowledgebase.xql";
 import module namespace entities="http://read.84000.co/entities" at "entities.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "contributors.xql";
+import module namespace devanagari="http://read.84000.co/devanagari" at "devanagari.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
@@ -160,6 +161,8 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
             common:wylie-from-bo($search)
         else if($valid-lang eq 'bo' and not(common:string-is-bo($search))) then
             common:bo-from-wylie($search)
+        else if($valid-lang eq 'Sa-Ltn' and devanagari:string-is-dev($search)) then
+            devanagari:to-iast($search)
         else
             $search
     

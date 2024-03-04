@@ -1,15 +1,21 @@
 xquery version "3.1";
 
+(: 
+    Transliterates Devanāgarī and IAST
+:)
+
 module namespace devanagari="http://read.84000.co/devanagari";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+
+import module namespace functx="http://www.functx.com";
 
 declare variable $devanagari:dev-to-iast-vowels-and-numbers := map {
   "अ": "a","आ": "ā","इ": "i","ई": "ī",
   "उ": "u","ऊ": "ū","ऋ": "ṛ","ॠ": "ṝ",
   "ऌ": "ḷ","ॡ": "ḹ","ए": "e","ऐ": "ai",
   "ओ": "o","औ": "au","अं": "ṃ","अः": "ḥ",
-  "ऽ": "'",'\u0902': "ṃ",'\u0903': "ḥ",
+  "ऽ": "'",'&#x902;': "ṃ",'&#x903;': "ḥ",
   "१": "1","२": "2","३": "3","४": "4","५": "5",
   "६": "6","७": "7","८": "8","९": "9","०": "0"
 };
@@ -23,19 +29,19 @@ declare variable $devanagari:dev-to-iast-consonants := map {
   "श": "ś","ष": "ṣ","स": "s","ह": "h"
 };
 
-declare variable $devanagari:dev-to-iast-consonant-ending := '\u094D';
+declare variable $devanagari:dev-to-iast-consonant-ending := '&#x94D;';
 
 declare variable $devanagari:dev-to-iast-vowel-ending := map {
   "": "a",
-  '\u093E': "ā",'\u093F': "i",'\u0940': "ī",'\u0941': "u",'\u0942': "ū",
-  '\u0943': "ṛ",'\u0944': "ṝ",'\u0962': "ḷ",'\u0963': "ḹ",'\u0947': "e",
-  '\u0948': "ai",'\u094B': "o",'\u094C': "au",'\u0902': "ṃ",'\u0903': "ḥ"
+  '&#x93E;': "ā",'&#x93F;': "i",'&#x940;': "ī",'&#x941;': "u",'&#x942;': "ū",
+  '&#x943;': "ṛ",'&#x944;': "ṝ",'&#x962;': "ḷ",'&#x963;': "ḹ",'&#x947;': "e",
+  '&#x948;': "ai",'&#x94B;': "o",'&#x94C;': "au",'&#x902;': "ṃ",'&#x903;': "ḥ"
 };
 
 declare 
     %test:args('घटिका ब्रह्म') 
     %test:assertEquals("ghaṭikā brahma")
-function devanagari:toIast($devanagari as xs:string) (:as xs:string?:) {
+function devanagari:to-iast($devanagari as xs:string) as xs:string? {
 
     let $consonant-keys := map:keys($devanagari:dev-to-iast-consonants)
     let $vowel-ending-keys := map:keys($devanagari:dev-to-iast-vowel-ending)
@@ -56,10 +62,10 @@ function devanagari:toIast($devanagari as xs:string) (:as xs:string?:) {
     let $dev-letters-merged-keys-max-len := max($dev-letters-merged-keys ! string-length(.))
     
     (:return $dev-letters-merged-keys-max-len:)
-    (:return $dev-letters-merged-keys ! $dev-letters-merged(.) :)
-     
+    (:return $dev-letters-merged-keys :)
+    
     return 
-        local:dev-char-to-iast(normalize-unicode($devanagari), 1, $dev-letters-merged-keys-max-len, $dev-letters-merged-keys-max-len, "", $dev-letters-merged) ! normalize-unicode()
+        local:dev-char-to-iast(normalize-unicode($devanagari), 1, $dev-letters-merged-keys-max-len, $dev-letters-merged-keys-max-len, "", $dev-letters-merged) ! normalize-unicode(.)
         
 };
 
@@ -91,3 +97,11 @@ declare function local:dev-char-to-iast($str as xs:string, $start as xs:integer,
                 local:dev-char-to-iast($str, $start, $chunk-size - 1, $max-chunk-size, $result, $dev-letters-merged)
 };
 
+declare 
+    %test:args('घटिका ब्रह्म') 
+    %test:assertTrue
+    %test:args('Some English')
+    %test:assertFalse
+function devanagari:string-is-dev($string as xs:string) as xs:boolean {
+    functx:between-inclusive(min(string-to-codepoints(replace($string, '\W', ''))), 2304, 2431)
+};

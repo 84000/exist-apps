@@ -27,81 +27,67 @@ declare variable $local:xhtml := transform:transform($local:response, $local:xsl
 
 declare function local:parse-response() as element()* {
     
-    for $location in ($local:translation/descendant::eft:part[@content-status eq 'passage'][not(@id = ('end-notes','glossary'))][not(eft:part[@content-status eq 'passage'])] | $local:translation/eft:part[@id eq 'end-notes']/tei:note | $local:translation/eft:part[@id eq 'glossary']/tei:gloss)
+    for $location at $index in ($local:translation/descendant::eft:part[@content-status eq 'passage'][not(@id = ('end-notes','glossary'))][not(eft:part[@content-status eq 'passage'])] | $local:translation/eft:part[@id eq 'end-notes']/tei:note | $local:translation/eft:part[@id eq 'glossary']/tei:gloss)
+    
     let $location-id := ($location/@xml:id, $location/descendant::tei:milestone/@xml:id)[1]
-    let $location-pre-processed := $local:text-outline/eft:pre-processed/eft:*[@id eq $location-id]
-    return
-    element content {
-        
-        (: id :)
-        $location-id ! attribute location-id { . },
-        
+    
+    let $label := eft-json:label($location, $location-id, $local:text-outline)
+    
+    let $content := (
         (: TEI -> JSON :)
-        if($location[self::tei:note]) then (
-            $local:text-outline//eft:part[@id eq 'end-notes'][1][@prefix] ! attribute label { concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) },
-            local:content-nodes($location)
-        )
-        else if($location[self::tei:gloss]) then (
-            $local:text-outline//eft:part[@id eq 'glossary'][1][@prefix] ! attribute label { concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) },
-            local:content-nodes($location)
-        )
-        else 
-            $local:text-outline//eft:part[@id eq $location-pre-processed/@part-id][1][@prefix] ! attribute label { concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) },
-            $location/* ! local:content-nodes(.)
-        ,
-        
+        element tei { 
+            if($location[self::tei:note]) then 
+                local:content-nodes($location)
+            else if($location[self::tei:gloss]) then 
+                local:content-nodes($location)
+            else 
+                $location/* ! local:content-nodes(.)
+        },
         (: TEI -> HTML -> JSON :)
-        element html {
-            $local:xhtml/descendant-or-self::xhtml:*[@data-location-id eq $location-id] ! local:content-nodes(.)
+        element html { 
+            string-join($local:xhtml/descendant-or-self::xhtml:*[@data-location-id eq $location-id] ! serialize(.) ! replace(., '\s+xmlns=[^\s|>]*', '')) ! normalize-space(.)
         }
-        
-    }
+    )
+    
+    return
+        eft-json:element-node(local-name($location), $index, $location-id, $label, $content)
 
 };
 
 declare function local:content-nodes($nodes as node()*) as node()* {
 
-    for $node in $nodes
+    for $node at $index in $nodes
     return
     
         if(functx:node-kind($node) eq 'text') then
-            $node[normalize-space(.) gt ''] ! element value { . }
-            
-        else if($node[self::tei:head][@type eq parent::eft:part/@type]) then
-            ()
+            $node[normalize-space(.) gt ''] ! eft-json:text-node('text', $index, .)
         
-        else if($node[self::tei:milestone]) then
-            ()
+        else if($node[self::tei:head][@type eq parent::eft:part/@type]) then ()
+        
+        else if($node[self::tei:milestone]) then ()
         
         else
-            element element {
+            let $content := (
             
-                attribute type { local-name($node) },
-                
                 for $attr in $node/@*[not(local-name() eq 'tid')]
                 return
-                    element { local-name($attr) } {
-                        if(functx:is-a-number($attr/string())) then
-                            attribute json:literal {'true'}
-                        else ()
-                        ,
-                        $attr/string()
-                    }
+                    eft-json:attribute-node(local-name($attr), $attr/string())
                 ,
                 
                 (: If there are text nodes then serialize the content and return :)
                 if($node/node()[functx:node-kind(.) eq 'text'][normalize-space(.)]) then
-                    string-join($node/node() ! serialize(.)) ! normalize-space(.) ! element mixed { . }
+                    string-join($node/node() ! serialize(.)) ! normalize-space(.) ! eft-json:text-node('markup', $index, element markup { . })
                 
                 (: If there's just elements the move down the tree :)
                 else if($node/node()) then
                     local:content-nodes($node/node())
                     
-                else
-                    text { "empty" }
-                    
-            }
+                else ()(: element value { "empty" } :)
                 
+            )
+            return
+                eft-json:element-node(local-name($node), $index, (), (), $content)
+            
 };
 
 declare function local:persistent-location($node as node()) as element() {

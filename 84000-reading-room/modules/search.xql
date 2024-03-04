@@ -18,6 +18,7 @@ import module namespace tei-content="http://read.84000.co/tei-content" at "tei-c
 import module namespace translation="http://read.84000.co/translation" at "translation.xql";
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "knowledgebase.xql";
 import module namespace entities="http://read.84000.co/entities" at "entities.xql";
+import module namespace devanagari="http://read.84000.co/devanagari" at "devanagari.xql";
 import module namespace kwic="http://exist-db.org/xquery/kwic";
 import module namespace functx="http://www.functx.com";
 
@@ -109,7 +110,12 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     (: Check the request to see if it's a phrase :)
     let $search-is-phrase := matches($search, '^\s*["“].+["”]\s*$')
     let $search-no-quotes := replace($search, '("|“|”|''|/)', '')
-    let $search-is-bo := common:string-is-bo($search)
+    (:let $search-is-bo := common:string-is-bo($search):)
+    let $search-no-quotes :=
+        if(devanagari:string-is-dev($search)) then
+            devanagari:to-iast($search)
+        else
+            $search-no-quotes
     
     let $query := local:search-query($search-no-quotes, $search-is-phrase)
     
@@ -328,6 +334,8 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
     let $search := 
         if(lower-case($search-lang) = ('bo', 'bo-ltn') and not(common:string-is-bo($search))) then
             common:bo-from-wylie($search)
+        else if(devanagari:string-is-dev($search)) then
+            devanagari:to-iast($search)
         else
             $search
     
