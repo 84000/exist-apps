@@ -240,22 +240,20 @@ declare function local:titles-from-request() as element(tei:title)* {
     let $title-type := request:get-parameter(concat('title-type-', $title-index), '')
     let $title-key := request:get-parameter(concat('title-key-', $title-index), '')
     let $title-lang := request:get-parameter(concat('title-lang-', $title-index), '')
-    let $valid-lang := common:valid-lang(replace($title-lang, '\-rc$', ''))
+    let $valid-lang := common:valid-lang(replace($title-lang, '\-r[ps]$', ''))
     
     where $title-text gt ''
     return
         element { QName("http://www.tei-c.org/ns/1.0", "title") } {
             attribute type { $title-type },
+            attribute xml:lang { $valid-lang },
             if(lower-case($title-lang) eq 'sa-ltn-rp') then (
-                attribute xml:lang { 'Sa-Ltn' },
                 attribute rend { 'reconstructedPhonetic' }
             )
             else if(lower-case($title-lang) eq 'sa-ltn-rs') then (
-                attribute xml:lang { 'Sa-Ltn' },
                 attribute rend { 'reconstructedSemantic' }
             )
-            else 
-                attribute xml:lang { $valid-lang }
+            else ()
             ,
             if($title-key gt '') then
                 attribute key { $title-key }
