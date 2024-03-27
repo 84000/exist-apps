@@ -27,7 +27,11 @@ declare variable $local:xhtml := transform:transform($local:response, $local:xsl
 
 declare function local:parse-response() as element()* {
     
-    for $location at $index in ($local:translation/descendant::eft:part[@content-status eq 'passage'][not(@id = ('end-notes','glossary'))][not(eft:part[@content-status eq 'passage'])] | $local:translation/eft:part[@id eq 'end-notes']/tei:note | $local:translation/eft:part[@id eq 'glossary']/tei:gloss)
+    for $location at $index in (
+        $local:translation/descendant::eft:part[@content-status eq 'passage'][not(@id = ('end-notes','glossary'))][not(eft:part[@content-status eq 'passage'])] 
+        | $local:translation/eft:part[@id eq 'end-notes']/tei:note 
+        | $local:translation/eft:part[@id eq 'glossary']/tei:gloss
+    )
     
     let $location-id := ($location/@xml:id, $location/descendant::tei:milestone/@xml:id)[1]
     
@@ -37,11 +41,11 @@ declare function local:parse-response() as element()* {
         (: TEI -> JSON :)
         element tei { 
             if($location[self::tei:note]) then 
-                local:content-nodes($location)
+                eft-json:content-nodes($location)
             else if($location[self::tei:gloss]) then 
-                local:content-nodes($location)
+                eft-json:content-nodes($location)
             else 
-                $location/* ! local:content-nodes(.)
+                $location/* ! eft-json:content-nodes(.)
         },
         (: TEI -> HTML -> JSON :)
         element html { 
@@ -54,64 +58,14 @@ declare function local:parse-response() as element()* {
 
 };
 
-declare function local:content-nodes($nodes as node()*) as node()* {
-
-    for $node at $index in $nodes
-    return
-    
-        if(functx:node-kind($node) eq 'text') then
-            $node[normalize-space(.) gt ''] ! eft-json:text-node('text', $index, .)
-        
-        else if($node[self::tei:head][@type eq parent::eft:part/@type]) then ()
-        
-        else if($node[self::tei:milestone]) then ()
-        
-        else
-            let $content := (
-            
-                for $attr in $node/@*[not(local-name() eq 'tid')]
-                return
-                    eft-json:attribute-node(local-name($attr), $attr/string())
-                ,
-                
-                (: If there are text nodes then serialize the content and return :)
-                if($node/node()[functx:node-kind(.) eq 'text'][normalize-space(.)]) then
-                    string-join($node/node() ! serialize(.)) ! normalize-space(.) ! eft-json:text-node('markup', $index, element markup { . })
-                
-                (: If there's just elements the move down the tree :)
-                else if($node/node()) then
-                    local:content-nodes($node/node())
-                    
-                else ()(: element value { "empty" } :)
-                
-            )
-            return
-                eft-json:element-node(local-name($node), $index, (), (), $content)
-            
-};
-
-declare function local:persistent-location($node as node()) as element() {
-    
-    if($node[@xml:id]) then
-        $node
-    else if($node[ancestor-or-self::tei:*/preceding-sibling::tei:milestone[@xml:id]]) then
-        $node/ancestor-or-self::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]
-    else 
-        $node/ancestor-or-self::eft:part[@id][1]
-
-};
-
-element response {
-
-    attribute api-version { $local:api-version },
-    attribute url { concat('/passage/', $local:translation/eft:source/@key,'.json?passage-id=', $local:passage-id, '&amp;api-version=', $local:api-version) },
-    attribute text-id { $local:translation/@id },
-    attribute toh-key { $local:toh-key },
-    attribute text-version { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },
-    attribute html { concat('/passage/', $local:translation/eft:source/@key,'.html?passage-id=', $local:passage-id) },
-    
-    (:$local:response/eft:request,:)
-    
+eft-json:response(
+    $local:api-version,
+    concat('/passage/', $local:translation/eft:source/@key,'.json?passage-id=', $local:passage-id, '&amp;api-version=', $local:api-version),
+    concat('/passage/', $local:translation/eft:source/@key,'.html?passage-id=', $local:passage-id),
+    $local:translation/@id,
+    $local:toh-key,
+    tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]),
+    $local:translation/@status,
+    $local:translation/@cache-key,
     $local:translation/id($local:passage-id) ! local:parse-response()
-    
-}
+)

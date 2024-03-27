@@ -84,7 +84,7 @@
     </item>-->
     
     <!-- About -->
-    <item key="about.common.sponsor-button-label">贊助一頁佛經</item>
+    <item key="about.common.sponsor-button-label">護持84000</item>
     <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-give-monthly</item>
     <item key="about.common.donate-instructions-link">#commsSiteUrl/media/ch_donate_instructions.pdf</item>
     <item key="about.common.donate-instructions-label">幫助</item>

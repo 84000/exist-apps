@@ -259,6 +259,13 @@ return
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
                     )
+                else if(request:get-parameter('api-version', '') eq '0.3.0') then
+                    local:dispatch("/views/json/0.3.0/translation.xq", "",
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <set-header name="Content-Type" value="application/json"/>
+                        </parameters>
+                    )
                 else
                     local:dispatch("/models/translation.xq", "/views/json/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
@@ -345,7 +352,15 @@ return
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
-                
+        
+        (: Sections :)
+        else if ($resource-id eq "sections" and $resource-suffix eq 'json' and request:get-parameter('api-version', '') eq '0.3.0') then
+            local:dispatch("/views/json/0.3.0/sections.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <set-header name="Content-Type" value="application/json"/>
+                </parameters>
+            )
+            
         (: Section :)
         else if ($collection-path eq "section") then
             (: xml model -> json view :)

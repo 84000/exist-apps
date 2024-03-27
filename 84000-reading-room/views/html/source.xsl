@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
+    <xsl:variable name="source" select="/m:response/m:source" as="element(m:source)?"/>
     <xsl:variable name="text-id" select="$translation/@id" as="xs:string?"/>
     <xsl:variable name="toh-key" select="$translation/m:source/@key" as="xs:string?"/>
     <xsl:variable name="toh-number" select="$translation/m:toh/@key ! replace(., '^toh', '')" as="xs:string?"/>
+    <xsl:variable name="back-link" select="$source/m:back-link[@url]"/>
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="work" select="m:source/@work"/>
+        <xsl:variable name="work" select="$source/@work"/>
         
         <xsl:variable name="work-string" as="xs:string">
             <xsl:choose>
@@ -47,7 +49,7 @@
                 <!-- Output folios -->
                 <div>
                     
-                    <xsl:for-each select="m:source/m:page">
+                    <xsl:for-each select="$source/m:page">
                         <div>
                             
                             <xsl:variable name="folio-string" as="xs:string">
@@ -199,7 +201,7 @@
                     <div class="container footer text-center" id="source-footer">
                         
                         <p class="text-muted">
-                            <xsl:value-of select="concat(if($work eq 'UT23703') then 'eTengyur' else 'eKangyur', ', ', m:source/m:page[1]/@etext-id, ', page ', m:source/m:page[1]/@page-in-volume, ' (', m:source/m:page[1]/@folio-in-etext, ').')"/>
+                            <xsl:value-of select="concat(if($work eq 'UT23703') then 'eTengyur' else 'eKangyur', ', ', $source/m:page[1]/@etext-id, ', page ', $source/m:page[1]/@page-in-volume, ' (', $source/m:page[1]/@folio-in-etext, ').')"/>
                             <br/>
                             <a href="#etext-description" role="button" data-toggle="collapse" class="small text-muted">
                                 <i class="fa fa-info-circle"/>
@@ -221,7 +223,7 @@
                 </div>
                 
                 <!-- Link to translation - keep outside of ajax data -->
-                <xsl:if test="m:back-link[@url]">
+                <xsl:if test="$back-link">
                     <div class="hidden-iframe">
                         <hr class="no-margin"/>
                         <div class="container top-margin bottom-margin">
@@ -231,9 +233,9 @@
                                 </xsl:call-template>
                                 <br/>
                                 <a>
-                                    <xsl:attribute name="href" select="m:back-link/@url"/>
+                                    <xsl:attribute name="href" select="$back-link/@url"/>
                                     <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
-                                    <xsl:value-of select="m:back-link/@url"/>
+                                    <xsl:value-of select="$back-link/@url"/>
                                 </a>
                             </p>
                         </div>
@@ -242,12 +244,14 @@
                 
             </main>
             
+            <xsl:call-template name="dualview-popup"/>
+            
         </xsl:variable>
         
         <xsl:call-template name="reading-room-page">
-            <xsl:with-param name="page-url" select="(m:source/@page-url, '')[1]"/>
+            <xsl:with-param name="page-url" select="($source/@canonical-html, '')[1]"/>
             <xsl:with-param name="page-class" select="'reading-room source'"/>
-            <xsl:with-param name="page-title" select="string-join((concat(m:translation/m:toh/m:full, ' Vol.', m:source/m:page[1]/@volume, ' F.', m:source/m:page[1]/@folio-in-volume), 'Tibetan Source', '84000 Reading Room'), ' | ')"/>
+            <xsl:with-param name="page-title" select="string-join((concat(m:translation/m:toh/m:full, ' Vol.', $source/m:page[1]/@volume, ' F.', $source/m:page[1]/@folio-in-volume), 'Tibetan Source', '84000 Reading Room'), ' | ')"/>
             <xsl:with-param name="page-description" select="normalize-space(m:section/m:abstract/tei:p[1]/text())"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>
@@ -304,8 +308,8 @@
             </p>
             
             <!-- If editor the overlay with marked content -->
-            <xsl:if test="$glossary-prioritised[@xml:id eq $request/@glossary-id]">
-                <p class="tei-parser source text continuous text-bo" aria-hidden="true">
+            <xsl:if test="$glossary-prioritised">
+                <p class="source text continuous text-bo" aria-hidden="true">
                     
                     <xsl:variable name="text-normalized" as="text()">
                         <xsl:value-of select="string-join($text-content ! descendant-or-self::text())"/>
@@ -329,13 +333,17 @@
                         </xsl:for-each>
                     </xsl:variable>
                     
-                    <xsl:call-template name="glossary-scan-text">
-                        <xsl:with-param name="match-glossary-items" select="$match-glossary-items"/>
-                        <xsl:with-param name="match-glossary-index" select="1"/>
-                        <xsl:with-param name="location-id" select="'source'"/>
-                        <xsl:with-param name="text" select="$text-normalized"/>
-                        <xsl:with-param name="lang" select="'bo'"/>
-                    </xsl:call-template>
+                    <xsl:variable name="glossarized-text" as="node()*">
+                        <xsl:call-template name="glossary-scan-text">
+                            <xsl:with-param name="match-glossary-items" select="$match-glossary-items"/>
+                            <xsl:with-param name="match-glossary-index" select="1"/>
+                            <xsl:with-param name="location-id" select="$translation/m:folio-content/m:location/@id"/>
+                            <xsl:with-param name="text" select="$text-normalized"/>
+                            <xsl:with-param name="lang" select="'bo'"/>
+                        </xsl:call-template>
+                    </xsl:variable>
+                    
+                    <xsl:apply-templates select="$glossarized-text"/>
                     
                 </p>
             </xsl:if>
@@ -352,6 +360,32 @@
         <xsl:if test="@n ne '1'">
             <!-- <br/> -->
         </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="xhtml:a[@data-glossary-id]">
+        <xsl:choose>
+            <xsl:when test="@data-glossary-location-id">
+                <a>
+                    <xsl:variable name="page" select="concat('/translation/', $translation/m:source/@key, '.html')"/>
+                    <xsl:variable name="fragment-id" select="concat('#', @data-glossary-location-id, '/',  @data-glossary-id ! concat('[data-glossary-id=&#34;', ., '&#34;]') ! encode-for-uri(.))"/>
+                    <xsl:attribute name="href" select="$page || $fragment-id"/>
+                    <xsl:attribute name="target" select="concat('translation-', $translation/m:source/@key)"/>
+                    <xsl:attribute name="data-dualview-href" select="$page || $fragment-id"/>
+                    <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh,' (translation)')"/>
+                    <xsl:attribute name="data-mark" select="concat('[data-glossary-id=&#34;', @data-glossary-id, '&#34;]')"/>
+                    <xsl:attribute name="data-loading" select="'Loading translation...'"/>
+                    <xsl:sequence select="@*[not(local-name(.) = ('href', 'target', 'class'))]"/>
+                    <xsl:sequence select="node()"/>
+                </a>
+            </xsl:when>
+            <xsl:otherwise>
+                <span>
+                    <xsl:sequence select="@*[not(local-name(.) = ('href', 'target', 'class'))]"/>
+                    <xsl:sequence select="node()"/>
+                </span>
+            </xsl:otherwise>
+        </xsl:choose>
+        
     </xsl:template>
     
 </xsl:stylesheet>

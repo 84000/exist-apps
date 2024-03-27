@@ -168,33 +168,31 @@ declare function glossary:glossary-search($type as xs:string*, $lang as xs:strin
     
     let $normalized-search := 
         if($valid-lang = ('en', '')) then
-            replace(common:normalized-chars(lower-case($search)), '\-', ' ')
+            lower-case($search) ! common:normalized-chars(.) ! replace(., '\-', ' ')
         else if($valid-lang eq 'Sa-Ltn') then
-            common:alphanumeric(common:normalized-chars(lower-case($search)))
+            lower-case($search) ! replace(., 'sh', 'ś', 'i') ! common:normalized-chars(.) ! common:alphanumeric(.)
         else if($valid-lang eq 'Bo-Ltn') then
-            common:normalized-chars(lower-case($search))
+            lower-case($search) ! common:normalized-chars(.)
         else
             common:normalized-chars($search)
     
     where $normalized-search gt ''
     
     let $query :=
-        <query>
-        {
+        <query>{
             if($valid-lang = ('Bo-Ltn', 'bo')) then
                 <phrase>{ $normalized-search }</phrase>
-            else
-                <bool>
-                {
+                
+            else 
+                <bool>{
                     (: wildcard is not ignoring stopwords :)
                     for $term in tokenize($normalized-search, '\s+')[not(. = $glossary:stopwords-en)]
                     where normalize-space($term) gt ''
                     return
                         <wildcard occur="must">{ $term }*</wildcard>
-                }
-                </bool>
-        }
-        </query>
+                }</bool>
+                
+        }</query>
     
     (:return if(true()) then element tei:term { $query } else :)
     
@@ -254,11 +252,13 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
         if($flag[@id eq 'entity-definition']) then
             
             for $entity in $entities:entities//m:content[@type eq 'glossary-definition']/parent::m:entity
-            let $glosses := $glossary:tei//tei:gloss/id($entity/m:instance/@id)[not(@mode eq 'surfeit')][@type = $valid-glossary-type]
+            let $glosses := $glossary:tei//tei:gloss/id($entity/m:instance/@id)
+                [not(@mode eq 'surfeit')][@type = $valid-glossary-type]
+                [not(tei:note/tei:p) or tei:note[@rend = ('both','append','prepend','override')]/tei:p]
             let $entity-count-glosses := count($glosses)
             order by $entity-count-glosses descending
             return
-                $glosses
+                $glosses[1]
         
         else
             let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
@@ -793,8 +793,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         
         
         (: Blank form - no records required :)
-        else if($filter eq 'blank-form') then
-            ()
+        else if($filter eq 'blank-form') then ()
         
         (: Default to all :)
         else

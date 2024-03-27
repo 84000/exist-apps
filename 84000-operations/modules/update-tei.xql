@@ -246,9 +246,13 @@ declare function local:titles-from-request() as element(tei:title)* {
     return
         element { QName("http://www.tei-c.org/ns/1.0", "title") } {
             attribute type { $title-type },
-            if(lower-case($title-lang) eq 'sa-ltn-rc') then (
+            if(lower-case($title-lang) eq 'sa-ltn-rp') then (
                 attribute xml:lang { 'Sa-Ltn' },
-                attribute rend { 'reconstruction' }
+                attribute rend { 'reconstructedPhonetic' }
+            )
+            else if(lower-case($title-lang) eq 'sa-ltn-rs') then (
+                attribute xml:lang { 'Sa-Ltn' },
+                attribute rend { 'reconstructedSemantic' }
             )
             else 
                 attribute xml:lang { $valid-lang }

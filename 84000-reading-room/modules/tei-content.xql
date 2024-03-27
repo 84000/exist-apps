@@ -149,6 +149,15 @@ declare function tei-content:titles-all($tei as element(tei:TEI)) as element(m:t
                 $title/text() ! normalize-space(.)
             }
         ,
+        (:for $bibl in $tei//tei:sourceDesc/tei:bibl[tei:ref/text()]
+        return
+            element title {
+                attribute type { 'toh' },
+                attribute xml:lang { 'en' },
+                attribute key { $bibl/@key },
+                string-join($bibl/tei:ref//text())
+            }
+        ,:)
         for $note in $tei//tei:fileDesc/tei:notesStmt/tei:note[@type = ('title','title-internal')]
         return
             element note {
@@ -350,7 +359,8 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                 return
                     element isCommentaryOf {
                         attribute toh-key { tei-content:source-bibl($link-tei, $link/@target)/@key },
-                        attribute text-id { tei-content:id($link-tei) }
+                        attribute text-id { tei-content:id($link-tei) },
+                        tei-content:titles-all($link-tei)
                     }
                 
             }
@@ -370,22 +380,23 @@ declare function tei-content:location($bibl as element(tei:bibl)?) as element(m:
     </location>
 };
 
-declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as xs:string, $nest as xs:integer) as element(m:parent)? {
+declare function tei-content:ancestors($tei as element(tei:TEI), $resource-id as xs:string?, $nest as xs:integer) as element(m:parent)? {
     
     (: Returns an ancestor tree for the tei file :)
     
     let $source-bibl := tei-content:source-bibl($tei, $resource-id)
-    let $parent-id := $source-bibl/tei:idno/@parent-id
+    let $parent-id := ($source-bibl/tei:idno/@parent-id)[1]
     let $parent-tei := tei-content:tei($parent-id, 'section')
     
     return
         if($parent-tei) then
             element { QName('http://read.84000.co/ns/1.0', 'parent') } {
                 attribute id { $parent-id },
+                $resource-id ! attribute resource-id { . },
                 attribute nesting { $nest },
                 attribute type {  $parent-tei//tei:teiHeader/tei:fileDesc/@type  },
                 tei-content:title-set($parent-tei, 'mainTitle'),
-                tei-content:ancestors($parent-tei, '', $nest + 1)
+                tei-content:ancestors($parent-tei, (), $nest + 1)
             }
          else ()
 };

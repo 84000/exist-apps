@@ -15,7 +15,8 @@ import module namespace glossary="http://read.84000.co/glossary" at "glossary.xq
 import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "knowledgebase.xql";
 import module namespace functx="http://www.functx.com";
 
-declare variable $entities:entities := doc(concat($common:data-path, '/operations/entities.xml'))/m:entities;
+declare variable $entities:doc := doc(concat($common:data-path, '/operations/entities.xml'));
+declare variable $entities:entities := $entities:doc/m:entities;
 declare variable $entities:predicates := doc(concat($common:data-path, '/config/entity-predicates.xml'));
 declare variable $entities:types := 
     <entity-types xmlns="http://read.84000.co/ns/1.0">
@@ -55,6 +56,10 @@ declare variable $entities:flags :=
     </entity-flags>;
 
 declare variable $entities:instance-types := ('glossary-item', 'knowledgebase-article');
+
+declare function entities:last-modified() as xs:dateTime {
+    xmldb:last-modified(util:collection-name($entities:doc), util:document-name($entities:doc))
+};
 
 declare function entities:next-id() as xs:string {
     

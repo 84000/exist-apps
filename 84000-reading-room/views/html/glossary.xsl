@@ -300,6 +300,7 @@
                                 
                                 <xsl:if test="$view-mode[@id eq 'editor']">
                                     <input type="hidden" name="view-mode" value="editor"/>
+                                    <input type="hidden" name="flagged" value="{ $flagged }"/>
                                 </xsl:if>
                                 
                                 <!-- Form options -->
@@ -327,12 +328,24 @@
                                     <!-- Sort options -->
                                     <div>
                                         <select name="sort" class="form-control">
-                                            <option value="term">
-                                                <xsl:if test="$selected-sort eq 'term'">
-                                                    <xsl:attribute name="selected" select="'selected'"/>
-                                                </xsl:if>
-                                                <xsl:value-of select="'Sort alphabetically'"/>
-                                            </option>
+                                            <xsl:choose>
+                                                <xsl:when test="$flagged eq 'entity-definition'">
+                                                    <option value="usage">
+                                                        <xsl:if test="$selected-sort eq 'usage'">
+                                                            <xsl:attribute name="selected" select="'selected'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="'Sort by usage'"/>
+                                                    </option>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <option value="term">
+                                                        <xsl:if test="$selected-sort eq 'term'">
+                                                            <xsl:attribute name="selected" select="'selected'"/>
+                                                        </xsl:if>
+                                                        <xsl:value-of select="'Sort alphabetically'"/>
+                                                    </option>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                             <option value="frequency">
                                                 <xsl:if test="$selected-sort eq 'frequency'">
                                                     <xsl:attribute name="selected" select="'selected'"/>
@@ -461,8 +474,18 @@
                                                                 </label>
                                                                 
                                                                 <ul class="list-inline inline-dots term-list">
-                                                                    <xsl:for-each select="$entity-data/m:term[@xml:lang eq $selected-term-lang/@id][m:search-match(text())]">
-                                                                        
+                                                                    <xsl:variable name="search-matches" select="$entity-data/m:term[@xml:lang eq $selected-term-lang/@id][m:search-match(text())]"/>
+                                                                    <xsl:variable name="search-matches" as="element(m:term)*">
+                                                                        <xsl:choose>
+                                                                            <xsl:when test="$search-matches">
+                                                                                <xsl:sequence select="$search-matches"/>
+                                                                            </xsl:when>
+                                                                            <xsl:otherwise>
+                                                                                <xsl:sequence select="$entity-data/m:term[@xml:lang eq $selected-term-lang/@id]"/>
+                                                                            </xsl:otherwise>
+                                                                        </xsl:choose>
+                                                                    </xsl:variable>
+                                                                    <xsl:for-each select="$search-matches">
                                                                         <xsl:sort>
                                                                             <xsl:choose>
                                                                                 <xsl:when test="@xml:lang eq 'en'">

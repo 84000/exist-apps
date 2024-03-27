@@ -150,15 +150,17 @@ return
         
         (: Get matching terms :)
         let $term-matches := 
-            if($flag) then
-                ()
+            if($flag) then ()
             
             else if($request/m:search[text() gt '']) then
                 glossary:glossary-search($glossary-types, $term-lang/@id, $request/m:search, $exclude-status)
                 
             else if($alphabet/m:letter[@selected]) then
                 glossary:glossary-startletter($glossary-types, $term-lang/@id, $alphabet/m:letter[@selected]/@regex, $exclude-status)
-                
+            
+            else if($view-mode[@id eq 'editor'] and count($glossary-types) eq 1) then
+                glossary:glossary-startletter($glossary-types, $term-lang/@id, '.*', $exclude-status)
+            
             else ()
         
         (: Convert terms to entries :)
@@ -177,8 +179,9 @@ return
                             $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! replace(., '^\s*(The\s+|A\s+|An\s+)', '', 'i')
                         else if($term/@xml:lang eq 'bo') then
                             $term/text() ! normalize-space(.) ! common:wylie-from-bo(.) ! common:alphanumeric(.)
-                        else
+                        else if($term/text() gt '') then
                             $term/text() ! normalize-space(.) ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.)
+                        else ()
                     
                     let $sort-regex := 
                         if($alphabet/m:letter[@selected]) then 
@@ -189,10 +192,11 @@ return
                             $request/m:search ! common:wylie-from-bo(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
                         else if(common:alphanumeric($request/m:search) gt '') then
                             $request/m:search ! lower-case(.) ! common:normalized-chars(.) ! common:alphanumeric(.) ! functx:escape-for-regex(.)
-                        else 
+                        else if($request/m:search gt '') then
                             $request/m:search ! common:normalized-chars(.) ! functx:escape-for-regex(.)
+                        else ()
                     
-                    let $sort-index := $sort-regex ! functx:index-of-match-first($sort-term, .)
+                    let $sort-index := $sort-term[. gt ''] ! $sort-regex[. gt ''] ! functx:index-of-match-first($sort-term, $sort-regex)
                     
                     order by if($sort-index eq 1) then 0 else 1, $sort-term
                     return $term
@@ -218,9 +222,10 @@ return
             group by $instances-entity-id
             let $instances-count := count($glossary:tei/id(($instances-entity/m:instance except $instances-exclude)/@id))
             order by 
-                if($request[@sort eq 'frequency']) then -$instances-count else (),
+                if($request[@sort eq 'frequency']) then -$instances-count 
+                else if($request[@sort eq 'usage']) then min($index)
+                else min($index),
                 min($index)
-                
             return
                 $instances-entity[1]
         

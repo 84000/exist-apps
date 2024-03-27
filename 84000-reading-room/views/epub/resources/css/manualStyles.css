@@ -112,7 +112,7 @@ small, .small {
 .ref {
     font-style: normal !important;
 }
-.hidden-ebook {
+.hidden, .hidden-ebook {
     display: none;
 }
 .break {

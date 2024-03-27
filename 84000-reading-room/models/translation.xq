@@ -23,7 +23,7 @@ let $resource-id := request:get-parameter('resource-id', '')
 let $part-id := request:get-parameter('part', 'none') ! replace(., '^(end\-notes|end\-note\-[a-zA-Z0-9\-]+)$', 'end-notes')
 let $commentary-key := request:get-parameter('commentary', '')[. gt ''][1]
 let $view-mode := request:get-parameter('view-mode', 'default')
-let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,40}$')]
+let $archive-path := request:get-parameter('archive-path', ())[matches(., '^[a-zA-Z0-9\-/_]{10,100}$')]
 
 (: Validate the resource-id :)
 let $tei := tei-content:tei($resource-id, 'translation', $archive-path)
@@ -56,7 +56,7 @@ let $view-mode-validated :=
     else if($resource-suffix = ('txt', 'plain.txt')) then
         $translation:view-modes/m:view-mode[@id eq 'txt']
     else if($resource-suffix = ('json')) then
-        $translation:view-modes/m:view-mode[@id eq 'raw']
+        $translation:view-modes/m:view-mode[@id eq 'json']
     else if($translation:view-modes/m:view-mode[@id eq $view-mode]) then
         $translation:view-modes/m:view-mode[@id eq $view-mode]
     else
@@ -77,24 +77,15 @@ let $request :=
         $view-mode-validated
     }
 
+(: String for cache invalidation :)
+let $cache-key := translation:cache-key($tei, $request/@archive-path)
+
 (: Suppress cache for some view modes :)
 (: Don't accept archive-path parameter in cache requests, regardless of the view-mode - don't cache parameters that aren't sanitized!! :)
-let $cache-key := 
+let $cached := 
     if($view-mode-validated[@cache eq 'use-cache'] and $request[not(@archive-path gt '')]) then
-        let $tei-timestamp := tei-content:last-modified($tei)
-        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
-        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
-        return 
-            lower-case(
-                string-join((
-                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $common:app-version ! replace(., '\.', '-')
-                ),'-')
-            )
+        common:cache-get($request, $cache-key)
     else ()
-
-let $cached := common:cache-get($request, $cache-key)
 
 return 
     (: Cached html :)
@@ -135,6 +126,7 @@ return
                 attribute status-group { tei-content:publication-status-group($tei) },
                 attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
                 attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
+                attribute cache-key { $cache-key },
                 
                 $source,
                 translation:toh($tei, $source/@key),

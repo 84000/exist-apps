@@ -19,7 +19,6 @@ declare variable $local:source := $local:response/m:source;
 declare variable $local:translation := $local:response/m:translation;
 declare variable $local:toh-key := $local:response/m:translation/m:toh[1]/@key;
 declare variable $local:toh-number := $local:toh-key ! replace(., '^toh', '');
-declare variable $local:back-link := $local:response/m:back-link;
 
 element source {
 
@@ -28,8 +27,8 @@ element source {
     attribute work { $local:source/@work },
     attribute text-id { $local:translation/@id },
     attribute toh-key { $local:translation/m:source/@key },
-    $local:source/@page-url ! attribute source-html { . },
-    $local:response/m:back-link/text() ! attribute translation-html { . },
+    $local:source/@canonical-html ! attribute source-html { . },
+    $local:source/m:back-link/@url ! attribute translation-html { . },
     
     for $title in ($local:translation/m:titles/m:title, $local:translation/m:long-titles/m:title, $local:translation/m:source/m:toh)
     return

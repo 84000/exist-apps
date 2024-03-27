@@ -229,8 +229,8 @@ declare function store:create($file-name as xs:string) as element() {
                 (: Loop through one or more Toh keys :)
                 for $toh-key in $toh-keys
                 
-                    (: Get document version in data store :)
-                    let $store-version := download:stored-version-str($toh-key, $file-type)
+                (: Get document version in data store :)
+                let $store-version := download:stored-version-str($toh-key, $file-type)
                 
                 return
                     if(compare($store-version, $tei-version) ne 0)then

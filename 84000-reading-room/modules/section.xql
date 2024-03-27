@@ -160,7 +160,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
     (: Get child-sections recursively so we end up with whole tree :)
     let $child-sections :=
         for $child-section in $section:sections//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
-            order by $child-section/tei:teiHeader//tei:sourceDesc/@sort-index ! xs:integer(.) ascending
+        order by $child-section/tei:teiHeader//tei:sourceDesc/@sort-index ! xs:integer(.) ascending
         return
             section:child-sections($child-section, $include-texts, $nest + 1)
     

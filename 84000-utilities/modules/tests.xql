@@ -35,51 +35,51 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
     let $credentials := $test-config/m:credentials/data() ! tokenize(., ':')
     
     return
-        <results xmlns="http://read.84000.co/ns/1.0">
-        {
-        for $tei in $selected-translations
-        
-        let $text-id := tei-content:id($tei)
-        let $text-status := tei-content:publication-status($tei)
-        let $text-status-group := tei-content:publication-status-group($tei)
-        let $test-validate-schema := tests:validate-schema($tei, $schema)
-        let $test-duplicate-ids := tests:duplicate-ids($tei)
-        let $test-scoped-ids := tests:scoped-ids($tei)
-        let $test-valid-pointers := tests:valid-pointers($tei)
-        
-        return
-            for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+        element { QName('http://read.84000.co/ns/1.0', 'results') } {
+            for $tei in $selected-translations
             
-                let $start-time := util:system-dateTime()
-                
-                let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=raw')
-                
-                let $request := 
-                    if(count($credentials) eq 2) then 
-                        <hc:request method="GET" href="{ $html-url }" auth-method="basic" username="{ $credentials[1] }" password="{ $credentials[2] }"/>
-                    else if($test-config) then 
-                        <hc:request method="GET" href="{ $html-url }"/>
-                    else ()
-                 
-                let $response := if($request) then hc:send-request($request) else ()
-                
-                let $toh-html := $response[2]
-                
-                let $end-time := util:system-dateTime()
-                
+            let $text-id := tei-content:id($tei)
+            let $text-status := tei-content:publication-status($tei)
+            let $text-status-group := tei-content:publication-status-group($tei)
+            let $test-validate-schema := tests:validate-schema($tei, $schema)
+            let $test-duplicate-ids := tests:duplicate-ids($tei)
+            let $test-scoped-ids := tests:scoped-ids($tei)
+            let $test-valid-pointers := tests:valid-pointers($tei)
+            
             return
-                <translation 
-                    id="{ $text-id }" 
-                    test-domain="{ $test-config/m:path/text() }" 
-                    status="{ $text-status }"
-                    status-group="{ $text-status-group }"
-                    duration="{ functx:total-seconds-from-duration($end-time - $start-time) }">
-                    { 
+                for $toh-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                
+                    let $start-time := util:system-dateTime()
+                    
+                    let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=tests')
+                    
+                    let $request := 
+                        if(count($credentials) eq 2) then 
+                            <hc:request method="GET" href="{ $html-url }" auth-method="basic" username="{ $credentials[1] }" password="{ $credentials[2] }"/>
+                        else if($test-config) then 
+                            <hc:request method="GET" href="{ $html-url }"/>
+                        else ()
+                     
+                    let $response := if($request) then hc:send-request($request) else ()
+                    
+                    let $toh-html := $response[2]
+                    
+                    let $end-time := util:system-dateTime()
+                    
+                return
+                    element translation { 
+                    
+                        attribute id { $text-id },
+                        attribute test-domain { $test-config/m:path/text() }, 
+                        attribute status { $text-status },
+                        attribute status-group { $text-status-group },
+                        attribute duration { functx:total-seconds-from-duration($end-time - $start-time) },
                     
                         translation:title-element($tei, $toh-key),
                         translation:toh($tei, $toh-key),
                         
                         element tests {
+                        
                             $test-validate-schema,
                             $test-duplicate-ids,
                             $test-scoped-ids,
@@ -133,13 +133,12 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                             tests:bibliography($tei, $toh-html),
                             tests:glossary($tei, $toh-html),
                             tests:refs($tei, $toh-html, $toh-key)
+                            
                         }
-                        
+                    
                     }
-                </translation>
                 
         }
-        </results>
 };
 
 declare function tests:sections($section-id as xs:string) as element(m:results) {
@@ -154,8 +153,7 @@ declare function tests:sections($section-id as xs:string) as element(m:results) 
     let $test-config := $common:environment//m:test-conf
     
     return
-        <results xmlns="http://read.84000.co/ns/1.0">
-        {
+        element { QName('http://read.84000.co/ns/1.0', 'results') } {
             for $tei at $pos in $selected-tei
             
                 let $start-time := util:system-dateTime()
@@ -200,7 +198,6 @@ declare function tests:sections($section-id as xs:string) as element(m:results) 
                     </tests>
                 </section>
         }
-        </results>
 };
 
 declare function tests:validate-schema($tei as element(tei:TEI), $schema as document-node()) as element(m:test) {

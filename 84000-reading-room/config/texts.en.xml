@@ -87,7 +87,7 @@
     </item>-->
 
     <!-- About -->
-    <item key="about.common.sponsor-button-label">Sponsor a page now </item>
+    <item key="about.common.sponsor-button-label">Support Our Work</item>
     <item key="about.common.sponsor-button-link">#commsSiteUrl/give-monthly</item>
     <item key="about.common.sharing-label">Share this page:</item>
     <item key="about.common.summary-label">Summary</item>

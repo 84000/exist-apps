@@ -365,7 +365,7 @@ declare
     %test:assertEquals("ar mo nig lta bu'i rdo leb/")
 function common:wylie-from-bo($bo as xs:string) as xs:string {
     if ($bo gt "") then
-        ewts:toWylie($bo)
+        ewts:toWylie($bo) ! replace(., '&#39;', '&#8217;')
     else
         ""
 };

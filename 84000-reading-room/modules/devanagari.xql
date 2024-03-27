@@ -15,7 +15,9 @@ declare variable $devanagari:dev-to-iast-vowels-and-numbers := map {
   "उ": "u","ऊ": "ū","ऋ": "ṛ","ॠ": "ṝ",
   "ऌ": "ḷ","ॡ": "ḹ","ए": "e","ऐ": "ai",
   "ओ": "o","औ": "au","अं": "ṃ","अः": "ḥ",
-  "ऽ": "'",'&#x902;': "ṃ",'&#x903;': "ḥ",
+  "ॐ":"oṃ",
+  "ऽ": "'",
+  '&#x902;': "ṃ",'&#x903;': "ḥ",
   "१": "1","२": "2","३": "3","४": "4","५": "5",
   "६": "6","७": "7","८": "8","९": "9","०": "0"
 };
@@ -32,7 +34,7 @@ declare variable $devanagari:dev-to-iast-consonants := map {
 declare variable $devanagari:dev-to-iast-consonant-ending := '&#x94D;';
 
 declare variable $devanagari:dev-to-iast-vowel-ending := map {
-  "": "a",
+  '': "a",
   '&#x93E;': "ā",'&#x93F;': "i",'&#x940;': "ī",'&#x941;': "u",'&#x942;': "ū",
   '&#x943;': "ṛ",'&#x944;': "ṝ",'&#x962;': "ḷ",'&#x963;': "ḹ",'&#x947;': "e",
   '&#x948;': "ai",'&#x94B;': "o",'&#x94C;': "au",'&#x902;': "ṃ",'&#x903;': "ḥ"
@@ -63,6 +65,9 @@ function devanagari:to-iast($devanagari as xs:string) as xs:string? {
     
     (:return $dev-letters-merged-keys-max-len:)
     (:return $dev-letters-merged-keys :)
+    (:for $dev-letters-merged-key in $dev-letters-merged-keys
+    return
+        $dev-letters-merged-key || ' -> ' || $dev-letters-merged($dev-letters-merged-key):)
     
     return 
         local:dev-char-to-iast(normalize-unicode($devanagari), 1, $dev-letters-merged-keys-max-len, $dev-letters-merged-keys-max-len, "", $dev-letters-merged) ! normalize-unicode(.)

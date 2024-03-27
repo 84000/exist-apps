@@ -20,7 +20,6 @@ declare option exist:serialize "method=xml indent=no";
 let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 let $tei := tei-content:tei($resource-id, 'translation')
-let $tei-location := translation:location($tei, $resource-id)
 
 (: Prefer ref-index parameter :)
 (: Pass a page index to get a page, or zero to get all pages :)
@@ -36,11 +35,16 @@ let $ref-index :=
     else if (request:get-parameter('folio', '')[matches(., '^[a-zA-Z0-9\.]{3,12}$', 'i')]) then
         source:folio-to-page($tei, $resource-id, request:get-parameter('folio', ''))
     
-    else if (lower-case($resource-suffix) eq 'html') then
-        1
+    (: Accept xml:id of folio ref :)
+    else if (request:get-parameter('ref-id', '')[matches(., '^UT[a-zA-Z0-9\-]{15,50}$', 'i')]) then
+        source:ref-id-to-page($tei, $resource-id, request:get-parameter('ref-id', ''))
+    
+    else if (lower-case($resource-suffix) eq 'html') then 1
     
     else 0
 
+(: Validate  :)
+let $tei-location := translation:location($tei, $resource-id)
 let $count-pages := translation:count-volume-pages($tei-location)
 let $ref-index := ($ref-index[. le $count-pages], 1)[1]
 
@@ -58,21 +62,22 @@ let $request :=
 (: Suppress cache if there's a highlight :)
 (: Update the cache-key string to invalidate existing cache :)
 let $cache-key := 
-    if($request[not(@glossary-id)]) then
-        let $tei-timestamp := tei-content:last-modified($tei)
-        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
-        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
-        return 
-            lower-case(
-                string-join((
-                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $common:app-version ! replace(., '\.', '-')
-                ),'-')
-            )
-    else ()
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+    where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
+    return 
+        lower-case(
+            string-join((
+                $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $common:app-version ! replace(., '\.', '-')
+            ),'-')
+        )
 
-let $cached := common:cache-get($request, $cache-key)
+let $cached := 
+    if($request[not(@glossary-id)]) then
+        common:cache-get($request, $cache-key)
+    else ()
 
 where $tei
 return 
@@ -85,6 +90,8 @@ return
     (: Not cached :)
     else
     
+        let $folio-translation := translation:folio-content($tei, $request/@resource-id, $ref-index)
+    
         let $translation := 
             element { QName('http://read.84000.co/ns/1.0', 'translation')} {
                 attribute id { tei-content:id($tei) },
@@ -94,10 +101,8 @@ return
                 tei-content:ancestors($tei, $request/@resource-id, 1),
                 tei-content:source($tei, $request/@resource-id),
                 translation:toh($tei, $request/@resource-id),
-                translation:folio-content($tei, $request/@resource-id, $ref-index),
-                if($request[@glossary-id]) then
-                    translation:glossary($tei, $request/@glossary-id, $translation:view-modes/m:view-mode[@id eq 'passage'], ())
-                else ()
+                $folio-translation,
+                translation:glossary($tei, $request/@glossary-id, $translation:view-modes/m:view-mode[@id eq 'passage'], $folio-translation/m:location/@id)
             }
         
         (: Check the sort index in the translation :)
@@ -109,21 +114,31 @@ return
         let $source := 
             if($ref-index gt 0) then (
                 
-                (: Get a page of text :)
-                source:etext-page($tei-location, $ref-sort-index, true()),
+                element { QName('http://read.84000.co/ns/1.0', 'source') } {
                 
-                (: Include back link to the passage in the text :)
-                let $ref-1 := $translation/m:folio-content//tei:ref[@xml:id][1]
-                where $ref-1
-                return
-                    element { QName('http://read.84000.co/ns/1.0', 'back-link') } {
-                        attribute url { concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $request/@resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }
-                    }
-                
+                    attribute work { $tei-location/@work },
+                    attribute canonical-html { concat('https://read.84000.co/source/', $tei-location/@key, '.html?ref-index=', $ref-index) },
+                    attribute cache-key { $cache-key },
+                    
+                    (: Get a page of text :)
+                    source:etext-page($tei-location, $ref-sort-index, true()),
+                    
+                    (: Include back link to the passage in the text :)
+                    let $ref-1 := $translation/m:folio-content//tei:ref[@xml:id][1]
+                    where $ref-1
+                    return
+                        element { QName('http://read.84000.co/ns/1.0', 'back-link') } {
+                            attribute url { concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $request/@resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }
+                        }
+                        
+                }
             )
             (: Get the whole text :)
             else 
                 source:etext-full($tei-location)
+                
+        (: Get glossary cache :)
+        let $glossary-cache := glossary:glossary-cache($tei, (), false())
         
         let $xml-response := 
             common:response(
@@ -132,7 +147,8 @@ return
                 (
                     $request,
                     $source,
-                    $translation
+                    $translation,
+                    $glossary-cache
                 )
             )
         

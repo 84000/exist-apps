@@ -1094,8 +1094,8 @@
                                             <xsl:choose>
                                                 <xsl:when test="@status-group = 'published'">
                                                     <a>
-                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text/m:source/@key, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                        <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
+                                                        <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text/@resource-id, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
+                                                        <xsl:attribute name="target" select="concat('translation-', $text/@resource-id)"/>
                                                         <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
                                                     </a>
                                                 </xsl:when>
@@ -1125,7 +1125,7 @@
                                                         <xsl:when test="@status-group = 'published'">
                                                             <a>
                                                                 <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                                <xsl:attribute name="target" select="concat(@id, '.html')"/>
+                                                                <xsl:attribute name="target" select="concat('translation-', m:source/@key)"/>
                                                                 <xsl:value-of select="normalize-space(m:source/m:toh)"/> 
                                                             </a>
                                                         </xsl:when>
@@ -1274,7 +1274,7 @@
                                                         <xsl:choose>
                                                             <xsl:when test="@type eq 'html'">
                                                                 <xsl:attribute name="href" select="common:internal-link(@url, (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                                <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
+                                                                <xsl:attribute name="target" select="concat('translation-', $text/@resource-id)"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
                                                                 <xsl:attribute name="href" select="@download-url"/>
@@ -1348,7 +1348,7 @@
                                                 <li>
                                                     <a>
                                                         <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, '/source/', $text/@resource-id, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                        <xsl:attribute name="target" select="concat($text/@resource-id, '.source')"/>
+                                                        <xsl:attribute name="target" select="concat('source-', $text/@resource-id)"/>
                                                         <xsl:value-of select="'View the Tibetan source'"/>
                                                     </a>
                                                 </li>

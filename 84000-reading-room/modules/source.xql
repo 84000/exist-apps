@@ -36,8 +36,7 @@ declare function source:etext-path($work as xs:string) as xs:string {
         ''
 };
 
-(:
-    Converts a volume number to a volume number in the ekangyur or etengyur
+(: Converts a volume number to a volume number in the ekangyur or etengyur
     e.g. Kangyur Volume 1 = eKangyur volume 127
 :)
 declare function source:etext-volume-number($work as xs:string, $volume as xs:integer) as xs:integer {
@@ -49,8 +48,7 @@ declare function source:etext-volume-number($work as xs:string, $volume as xs:in
         $volume
 };
 
-(: 
-    Supports a numeric comparison of folio refs
+(: Supports a numeric comparison of folio refs
     i.e. translates 1.a -> 1.0 -> 2 -> 1 and 1.b -> 1.5 -> 3 -> 2
 :)
 declare function source:folio-to-number($folio as xs:string) as xs:integer {
@@ -81,6 +79,20 @@ declare function source:page-to-folio($page as xs:integer) as xs:string {
     concat(xs:string(xs:integer(($page + 1) div 2)), '.', if(($page + 1) mod 2 gt 0) then 'b' else 'a')
 };
 
+declare function source:ref-id-to-page($tei as element(tei:TEI), $resource-id as xs:string, $ref-id as xs:string) as xs:integer {
+    
+    let $ref-id := upper-case($ref-id)
+    let $folio-refs := translation:folio-refs($tei, $resource-id)
+    let $folio-ref := $folio-refs[@xml:id eq $ref-id]
+    
+    return
+        if($folio-ref) then
+            functx:index-of-node($folio-refs, $folio-ref)
+        else
+            1
+    
+};
+
 declare function source:etext-id($work as xs:string, $etext-volume-number as xs:string) as xs:string {
     if($work eq $source:kangyur-work) then
         concat($source:kangyur-work, '-I1KG9', xs:string($etext-volume-number), '-0000')
@@ -101,7 +113,7 @@ declare function source:etext-full($location as element(m:location)) as element(
         for $volume in $location/m:volume
             for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
             return 
-                source:etext-page($location/@work, xs:integer($volume/@number), $page-in-volume, $page-index, false())
+                local:etext-page($location/@work, xs:integer($volume/@number), $page-in-volume, $page-index, false())
     }
     
 };
@@ -137,15 +149,11 @@ declare function source:etext-page($location as element(m:location), $page-numbe
     let $page-volume := $page-volume[1]
     where $page-volume
     return
-        element { QName('http://read.84000.co/ns/1.0', 'source') } {
-            attribute work { $work },
-            attribute page-url { concat('https://read.84000.co/source/', $location/@key, '.html?page=', $page-volume/@page-number) },
-            source:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $page-number, $add-context)
-        }
+        local:etext-page($work, $page-volume/@volume-number, $page-volume/@page-in-volume, $page-number, $add-context)
         
 };
 
-declare function source:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $page-index as xs:integer, $add-context as xs:boolean) as element(m:page) {
+declare function local:etext-page($work as xs:string, $volume-number as xs:integer, $page-number as xs:integer, $page-index as xs:integer, $add-context as xs:boolean) as element(m:page) {
     
     let $etext-volume-number := source:etext-volume-number($work, $volume-number)
     let $etext-id := source:etext-id($work, $etext-volume-number)

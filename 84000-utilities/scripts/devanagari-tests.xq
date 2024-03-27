@@ -1,0 +1,70 @@
+import module namespace devanagari="http://read.84000.co/devanagari" at "/db/apps/84000-reading-room/modules/devanagari.xql";
+let $test-cases := map{}
+
+let $test-cases := map:put($test-cases, 'animitta',  'अनिमित्त')
+let $test-cases := map:put($test-cases, 'ṛddhipāda',  'ऋद्धिपाद')
+let $test-cases := map:put($test-cases, 'dīpaṅkara','दीपङ्कर')
+let $test-cases := map:put($test-cases, 'pratisaṃvid','प्रतिसंविद्')
+let $test-cases := map:put($test-cases, 'anulomikakṣānti','अनुलोमिकक्षान्ति')
+let $test-cases := map:put($test-cases, 'aṣṭādaśāveṇikabuddhadharma','अष्टादशावेणिकबुद्धधर्म')
+let $test-cases := map:put($test-cases, 'karmavipāka','कर्मविपाक')
+let $test-cases := map:put($test-cases, 'prajñā','प्रज्ञा')
+let $test-cases := map:put($test-cases, 'jambudvīpa','जम्बुद्वीप')
+let $test-cases := map:put($test-cases, 'bhūtakoṭi','भूतकोटि')
+let $test-cases := map:put($test-cases, 'aḍakavatī','अडकवती')
+let $test-cases := map:put($test-cases, 'airāvaṇa','ऐरावण')
+let $test-cases := map:put($test-cases, 'ājñāta­kauṇḍinya','आज्ञात­कौण्डिन्य')
+let $test-cases := map:put($test-cases, 'aśleṣā','अश्लेषा')
+let $test-cases := map:put($test-cases, 'bhṛgu','भृगु')
+let $test-cases := map:put($test-cases, 'daṇḍapāṇi','दण्डपाणि')
+let $test-cases := map:put($test-cases, 'datṛmadaṇḍika','दतृमदण्डिक')
+let $test-cases := map:put($test-cases, 'dhaniṣṭhā','धनिष्ठा')
+let $test-cases := map:put($test-cases, 'dhṛtarāṣṭra','धृतराष्ट्र')
+let $test-cases := map:put($test-cases, 'nānā­ratna­vyūha','नाना­रत्न­व्यूह')
+let $test-cases := map:put($test-cases, 'dṛḍhavīryatā','दृढवीर्यता')
+let $test-cases := map:put($test-cases, 'aṣṭādaśāveṇika­buddha­dharma','अष्टादशावेणिक­बुद्ध­धर्म')
+let $test-cases := map:put($test-cases, 'īrṣyā','ईर्ष्या')
+let $test-cases := map:put($test-cases, 'guṅāgradhāri','गुङाग्रधारि')
+let $test-cases := map:put($test-cases, 'śubhakṛtsna','शुभकृत्स्न')
+let $test-cases := map:put($test-cases, 'hṛdeva','हृदेव')
+let $test-cases := map:put($test-cases, 'kṛṣṇabandhu','कृष्णबन्धु')
+let $test-cases := map:put($test-cases, 'mātaṅga','मातङ्ग')
+let $test-cases := map:put($test-cases, 'megha­kūṭābhigarjitasvara','मेघ­कूटाभिगर्जितस्वर')
+let $test-cases := map:put($test-cases, 'bhaṭṭārikā','भट्टारिका')
+let $test-cases := map:put($test-cases, 'pauṣṭika','पौष्टिक')
+let $test-cases := map:put($test-cases, 'khaṭvāṅga','खट्वाङ्ग')
+let $test-cases := map:put($test-cases, 'pūrṇāhuti','पूर्णाहुति')
+let $test-cases := map:put($test-cases, 'yakṣiṇī','यक्षिणी')
+let $test-cases := map:put($test-cases, 'kalaviṅka','कलविङ्क')
+let $test-cases := map:put($test-cases, 'oṁ namo bhagavate sarvatrailokyaprativiśiṣṭāya buddhāya te namaḥ','ॐ नमो भगवते सर्वत्रैलोक्यप्रतिविशिष्टाय बुद्धाय ते नमः')
+let $test-cases := map:put($test-cases, 'oṃ ehy ehi mahābhūtadevagaṇaṛṣidvijasattama gṛhītvā āhuti','ओं एह्य् एहि महाभूतदेवगणऋषिद्विजसत्तम गृहीत्वा आहुति')
+let $test-cases := map:put($test-cases, 'oṃ vattāli vadāli varāli varāhamukhi sarvaduṣṭām me vaśam ānaya svāhā','ओं वत्तालि वदालि वरालि वराहमुखि सर्वदुष्टाम् मे वशम् आनय स्वाहा')
+let $test-cases := map:put($test-cases, 'oṃ mārīcyai devatāyai antasannihito me bhava anurakto me bhava sutoṣyo me bhava sarvasiddhiṃ me bhava prayaccha','ओं मारीच्यै देवतायै अन्तसन्निहितो मे भव अनुरक्तो मे भव सुतोष्यो मे भव सर्वसिद्धिं मे भव प्रयच्छ')
+let $test-cases := map:put($test-cases, 'devaḥ', 'देवः')
+let $test-cases := map:put($test-cases, 'kathāḥ', 'कथाः')
+let $test-cases := map:put($test-cases, 'kathābhiḥ', 'कथाभिः')
+let $test-cases := map:put($test-cases, 'kathābhyaḥ', 'कथाभ्यः')
+let $test-cases := map:put($test-cases, 'devaiḥ','देवैः')
+let $test-cases := map:put($test-cases, 'devayoḥ','देवयोः')
+let $test-cases := map:put($test-cases, 'vaḥ','वः ')
+let $test-cases := map:put($test-cases, 'saṃsāra','संसार')
+let $test-cases := map:put($test-cases, 'saṃgrahavastu','संग्रहवस्तु')
+let $test-cases := map:put($test-cases, 'oṃ','ॐ')
+(:let $test-cases := map:put($test-cases, 'oṁ','ॐ'):)
+(:let $test-cases := map:put($test-cases, 'oṃ','ओं'):)
+(:let $test-cases := map:put($test-cases, 'oṁ','ओं'):)
+let $test-cases := map:put($test-cases, 'drūṃ','द्रूं')
+(:let $test-cases := map:put($test-cases, 'drūṁ','द्रूं'):)
+
+let $test-case-keys := map:keys($test-cases)
+for $test-case-key in $test-case-keys
+let $iast := devanagari:to-iast($test-cases($test-case-key))
+let $result := if($iast eq $test-case-key) then 'PASS' else 'FAIL'
+order by $result
+return 
+    string-join((
+        $result,
+        $test-cases($test-case-key),
+        $test-case-key,
+        $iast
+    ),' -> ')

@@ -52,6 +52,20 @@ let $request :=
         (:,$passage:)
         
     }
+    
+(: String for cache invalidation :)
+let $cache-key := 
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+    where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
+    return 
+        lower-case(
+            string-join((
+                $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $common:app-version ! replace(., '\.', '-')
+            ),'-')
+        )
 
 let $canonical-id := (
     $request/@archive-path ! concat('id=', .), 
@@ -76,6 +90,7 @@ let $translation-data :=
         attribute status-group { tei-content:publication-status-group($tei) },
         attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
         attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
+        attribute cache-key { $cache-key },
         
         translation:titles($tei, $source/@key),
         $source,

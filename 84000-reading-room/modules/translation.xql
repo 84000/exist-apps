@@ -21,6 +21,7 @@ declare variable $translation:view-modes :=
     <view-modes xmlns="http://read.84000.co/ns/1.0">
       <view-mode id="default"          client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections"  annotation="none" />
       <view-mode id="editor"           client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"             annotation="editor" />
+      <view-mode id="json"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
       <view-mode id="passage"          client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none" />
       <view-mode id="editor-passage"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"         annotation="editor" />
       <view-mode id="json-passage"     client="none"     cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none" />
@@ -30,7 +31,7 @@ declare variable $translation:view-modes :=
       <view-mode id="ebook"            client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none" />
       <view-mode id="pdf"              client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
       <view-mode id="app"              client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none" />
-      <view-mode id="raw"              client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
+      <view-mode id="tests"            client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
       <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none" />
       <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none" />
     </view-modes>;
@@ -126,7 +127,7 @@ declare function local:title-set($tei as element(tei:TEI), $type as xs:string, $
             $sa-ltn/@*[not(name(.) = ('xml:lang', 'type'))],
             $sa-ltn/text() ! normalize-space(.)
         },
-        if($source-bibl[@type eq 'chapter']) then
+        if($source-bibl[@type eq 'chapter'] and $type eq 'mainTitle') then
             let $parent-tei := $source-bibl/tei:idno/@parent-id ! tei-content:tei(., 'section')
             where $parent-tei
             return
@@ -1417,8 +1418,9 @@ declare function local:related-glossary-ids($location-ids as xs:string*, $glossa
     let $related-glossary-ids := 
         let $location-id-chunks := common:ids-chunked(distinct-values($location-ids))
         for $key in map:keys($location-id-chunks)
+        let $location-ids := $location-id-chunks($key)
         return
-            ($glossary-locations-cache/m:gloss[m:location/@id = $location-id-chunks($key)]/@id)
+            $glossary-locations-cache/m:gloss[range:eq(m:location/@id, $location-ids)]/@id
     
     return 
         (: Check for more glossaries referenced in these glossaries :)
@@ -1747,6 +1749,19 @@ declare function translation:folio-content($tei as element(tei:TEI), $source-key
             attribute count-refs { count($refs) },
             attribute start-ref { $start-ref/@cRef },
             attribute end-ref { $end-ref/@cRef },
+            
+            (: Collect relevant locations :)
+            for $paragraph in $folio-paragraphs
+            let $location-ids := (
+                if($paragraph[ancestor-or-self::tei:*/preceding-sibling::tei:milestone[@xml:id]]) then
+                    $paragraph/ancestor-or-self::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id
+                else 
+                    $paragraph/ancestor-or-self::m:part[@id][1]/@id
+                | $paragraph/descendant::tei:milestone/@xml:id
+            )
+            return
+                $location-ids ! element location { attribute id { . } }
+            ,
             
             (: Convert the content to text and <ref/>s only :)
             for $node in 
@@ -2180,4 +2195,19 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
                 else ()
             )
         }
+};
+
+declare function translation:cache-key($tei as element(tei:TEI), $archive-path as xs:string?){
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $entities-timestamp := entities:last-modified()
+    where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
+    return 
+        lower-case(
+            string-join((
+                $archive-path[. gt ''] ! replace(., '[^a-zA-Z0-9]', '-'),
+                $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $common:app-version ! replace(., '\.', '-')
+            ),'-')
+        )
 };

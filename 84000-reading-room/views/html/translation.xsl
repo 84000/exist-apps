@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -33,7 +33,7 @@
             
             <!-- Breadcrumbs -->
             <xsl:if test="m:translation[m:parent]">
-                <div class="title-band hidden-print">
+                <div class="title-band hidden-print hidden-iframe">
                     <div class="container">
                         <div class="center-vertical center-aligned text-center">
                             <nav role="navigation" aria-label="Breadcrumbs">
@@ -183,6 +183,9 @@
                     
                 </nav>
                 
+                <!-- Dual-view pop-up -->
+                <xsl:call-template name="dualview-popup"/>
+                
                 <!-- General pop-up for notes and glossary -->
                 <div id="popup-footer-text" class="fixed-footer collapse hidden-print">
                     <div class="fix-height">
@@ -226,9 +229,6 @@
                         </button>
                     </div>
                 </div>
-                
-                <!-- Dual-view pop-up -->
-                <xsl:call-template name="dualview-popup"/>
                 
                 <!-- Contents fly-out -->
                 <div id="contents-sidebar" class="fixed-sidebar collapse width hidden-print">
@@ -401,22 +401,32 @@
                                     <xsl:value-of select="'The following is an example of how to correctly cite this publication. '"/>
                                     <xsl:value-of select="'Links to specific passages can be derived by right-clicking on the milestones markers in the left-hand margin (e.g. s.1). The copied link address can replace the url below.'"/>
                                 </p>
-                                <p class="small break">
-                                    <xsl:value-of select="concat(m:translation/m:publication/m:team[1]/m:label[1], ' (tr.). ')"/>
-                                    <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
-                                    <xsl:value-of select="'('"/>
-                                    <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], m:translation/m:titles/m:title[@xml:lang eq 'bo'][text()])[1]">
-                                        <span>
-                                            <xsl:call-template name="class-attribute">
-                                                <xsl:with-param name="lang" select="@xml:lang"/>
-                                            </xsl:call-template>
-                                            <xsl:value-of select="."/>
+                                <p id="eft-citation">
+                                    <span class="content">
+                                        <xsl:value-of select="concat('84000: Translating the Words of the Buddha.', ' ')"/>
+                                        <span class="italic">
+                                            <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
                                         </span>
-                                    </xsl:for-each>
-                                    <xsl:value-of select="concat(', ', m:translation/m:toh/m:full, '). ')"/>
-                                    <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', m:translation/m:publication/m:edition/tei:date[1], ': ')"/>
-                                    <br/>
-                                    <xsl:value-of select="m:translation/@canonical-html"/>
+                                        <xsl:value-of select="'('"/>
+                                        <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], m:translation/m:titles/m:title[@xml:lang eq 'bo'][text()])[1]">
+                                            <span>
+                                                <xsl:call-template name="class-attribute">
+                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                </xsl:call-template>
+                                                <xsl:value-of select="."/>
+                                            </span>
+                                        </xsl:for-each>
+                                        <xsl:value-of select="concat(', ', m:translation/m:toh/m:full, '). ')"/>
+                                        <xsl:value-of select="concat('Translated by ', m:translation/m:publication/m:team[1]/m:label[1], '. ')"/>
+                                        <xsl:value-of select="concat('Online publication.', ' ')"/>
+                                        <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', m:translation/m:publication/m:edition/tei:date[1], '. ')"/>
+                                        <span class="break">
+                                            <xsl:value-of select="m:translation/@canonical-html"/>
+                                        </span>
+                                    </span>
+                                    <a href="#" data-clipboard="#eft-citation .content">
+                                        <xsl:value-of select="'Copy'"/>
+                                    </a>
                                 </p>
                                 <hr/>
                             </xsl:if>
@@ -733,7 +743,6 @@
                         </xsl:with-param>
                     </xsl:call-template>
                     
-                    <!-- Main titles -->
                     <div id="main-titles" class="ornamental-panel">
                         
                         <xsl:if test="$main-titles[@xml:lang eq 'bo']">
@@ -829,14 +838,39 @@
                         <xsl:if test="m:translation[m:source]">
                             <div id="toh">
                                 
-                                <h3 class="dot-parenth">
-                                    <xsl:apply-templates select="m:translation/m:source/m:toh"/>
-                                </h3>
+                                <div>
+                                    <h3 class="dot-parenth">
+                                        <xsl:apply-templates select="m:translation/m:source/m:toh"/>
+                                    </h3>
+                                    <xsl:if test="m:translation/m:source[m:scope//text()]">
+                                        <p id="location">
+                                            <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
+                                        </p>
+                                    </xsl:if>
+                                </div>
                                 
-                                <xsl:if test="m:translation/m:source[m:scope//text()]">
-                                    <p id="location">
-                                        <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
-                                    </p>
+                                <xsl:if test="m:translation/m:source/m:isCommentaryOf">
+                                    <div class="top-margin">
+                                        <div class="text-muted">
+                                            <xsl:value-of select="common:small-caps('A commentary on')"/>
+                                        </div>
+                                        <div>
+                                            <ul class="list-inline inline-dots dot-parenth">
+                                                <xsl:for-each select="m:translation/m:source/m:isCommentaryOf">
+                                                    <xsl:variable name="commentary-title" select="(m:titles/m:title[@type eq 'toh'])[1]"/>
+                                                    <li>
+                                                        <a>
+                                                            <xsl:attribute name="href" select="concat('/translation/', @toh-key,'.html?commentary=', $toh-key)"/>
+                                                            <xsl:attribute name="data-dualview-href" select="concat('/translation/', @toh-key, '.html?commentary=', $toh-key, '#titles')"/>
+                                                            <xsl:attribute name="data-dualview-title" select="$commentary-title || ' (root text)'"/>
+                                                            <xsl:attribute name="target" select="concat('translation-', @toh-key)"/>
+                                                            <xsl:value-of select="$commentary-title"/>
+                                                        </a>
+                                                    </li>
+                                                </xsl:for-each>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </xsl:if>
                                 
                                 <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
@@ -844,29 +878,31 @@
                                     <xsl:variable name="supplementaryRole" select="."/>
                                     <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@xml:id]"/>
                                     <xsl:if test="$roleAttributions">
-                                        <div class="text-muted">
-                                            <xsl:choose>
-                                                <xsl:when test="$supplementaryRole eq 'reviser'">
-                                                    <xsl:value-of select="common:small-caps('revision')"/>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <xsl:value-of select="common:small-caps('Translated into Tibetan by')"/>
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </div>
-                                        <div>
-                                            <ul class="list-inline inline-dots">
-                                                <xsl:for-each select="$roleAttributions">
-                                                    <li>
-                                                        <span>
-                                                            <xsl:call-template name="class-attribute">
-                                                                <xsl:with-param name="lang" select="@xml:lang"/>
-                                                            </xsl:call-template>
-                                                            <xsl:value-of select="normalize-space(text())"/> 
-                                                        </span>
-                                                    </li>
-                                                </xsl:for-each>
-                                            </ul>
+                                        <div class="top-margin">
+                                            <div class="text-muted">
+                                                <xsl:choose>
+                                                    <xsl:when test="$supplementaryRole eq 'reviser'">
+                                                        <xsl:value-of select="common:small-caps('revision')"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="common:small-caps('Translated into Tibetan by')"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </div>
+                                            <div>
+                                                <ul class="list-inline inline-dots dot-parenth">
+                                                    <xsl:for-each select="$roleAttributions">
+                                                        <li>
+                                                            <span>
+                                                                <xsl:call-template name="class-attribute">
+                                                                    <xsl:with-param name="lang" select="@xml:lang"/>
+                                                                </xsl:call-template>
+                                                                <xsl:value-of select="normalize-space(text())"/> 
+                                                            </span>
+                                                        </li>
+                                                    </xsl:for-each>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </xsl:if>
                                 </xsl:for-each>

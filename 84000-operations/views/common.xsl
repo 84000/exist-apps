@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -638,11 +638,14 @@
             <!-- Could we use text-input-with-lang or select-language templates here? -->
             <div class="col-sm-2">
                 <xsl:call-template name="select-language">
-                    <xsl:with-param name="language-options" select="('en','bo','Bo-Ltn','Sa-Ltn', 'Sa-Ltn-rc', 'zh', 'Pi-Ltn')"/>
+                    <xsl:with-param name="language-options" select="('en','bo','Bo-Ltn','Sa-Ltn', 'Sa-Ltn-rs', 'Sa-Ltn-rp', 'zh', 'Pi-Ltn')"/>
                     <xsl:with-param name="selected-language">
                         <xsl:choose>
-                            <xsl:when test="$title[@xml:lang eq 'Sa-Ltn'][@rend eq 'reconstruction']">
-                                <xsl:value-of select="'Sa-Ltn-rc'"/>
+                            <xsl:when test="$title[@xml:lang eq 'Sa-Ltn'][@rend = ('reconstruction', 'reconstructedSemantic')]">
+                                <xsl:value-of select="'Sa-Ltn-rs'"/>
+                            </xsl:when>
+                            <xsl:when test="$title[@xml:lang eq 'Sa-Ltn'][@rend eq 'reconstructedPhonetic']">
+                                <xsl:value-of select="'Sa-Ltn-rp'"/>
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="$title/@xml:lang"/>
@@ -1380,12 +1383,28 @@
                     <xsl:value-of select="'Sanskrit*'"/>
                 </option>
             </xsl:if>
-            <xsl:if test="$language-options = 'Sa-Ltn-rc'">
+            <!--<xsl:if test="$language-options = 'Sa-Ltn-rc'">
                 <option value="sa-ltn-rc">
                     <xsl:if test="$selected-language eq 'Sa-Ltn-rc'">
                         <xsl:attribute name="selected" select="'selected'"/>
                     </xsl:if>
                     <xsl:value-of select="'Sanskrit* / Reconstructed'"/>
+                </option>
+            </xsl:if>-->
+            <xsl:if test="$language-options = 'Sa-Ltn-rp'">
+                <option value="sa-ltn-rp">
+                    <xsl:if test="$selected-language eq 'Sa-Ltn-rp'">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="'Sanskrit* / Phonetic reconstruction'"/>
+                </option>
+            </xsl:if>
+            <xsl:if test="$language-options = 'Sa-Ltn-rs'">
+                <option value="sa-ltn-rs">
+                    <xsl:if test="$selected-language eq 'Sa-Ltn-rs'">
+                        <xsl:attribute name="selected" select="'selected'"/>
+                    </xsl:if>
+                    <xsl:value-of select="'Sanskrit* / Semantic reconstruction'"/>
                 </option>
             </xsl:if>
             <xsl:if test="$language-options = 'zh'">
@@ -1404,7 +1423,7 @@
                     <xsl:value-of select="'Pali'"/>
                 </option>
             </xsl:if>
-            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rc','zh','Pi-Ltn'))">
+            <xsl:if test="not($selected-language = ('','en','bo','Bo-Ltn','Sa-Ltn','Sa-Ltn-rs','Sa-Ltn-rp','zh','Pi-Ltn'))">
                 <option>
                     <xsl:attribute name="value" select="$selected-language"/>
                     <xsl:attribute name="selected" select="'selected'"/>

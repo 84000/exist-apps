@@ -61,6 +61,16 @@ declare function local:authors-without-pages() {
         
 };
 
+declare function local:pages-without-authors() {
+    
+    for $kb-instance in $entities:entities//m:instance[@type eq 'knowledgebase-article']
+    let $kb-tei := tei-content:tei($kb-instance/@id, 'knowledgebase')
+    where not($kb-tei)
+    return
+        $kb-instance
+        
+};
+
 (: Contribution instances without contributions :)
 declare function local:contribution-instances-orphaned() {
     
@@ -76,5 +86,5 @@ declare function local:contribution-instances-orphaned() {
 (:local:texts-with-issues():)
 (:local:entities-with-issues():)
 (:local:authors-without-pages():)
-local:contribution-instances-orphaned()
-
+(:local:contribution-instances-orphaned():)
+local:pages-without-authors()
