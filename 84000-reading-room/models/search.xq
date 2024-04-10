@@ -1,6 +1,7 @@
 xquery version "3.0" encoding "UTF-8";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace json = "http://www.json.org";
 
@@ -60,6 +61,7 @@ let $results :=
 let $entities :=
     element { QName('http://read.84000.co/ns/1.0', 'entities')} {
         $results//m:header/m:entity,
+        $entities:entities//m:entity[m:instance/@id = $results//m:match/tei:gloss/@xml:id],
         element related {
             entities:related($results//m:header/m:entity, false(), ('glossary','knowledgebase'), ('requires-attention'), ('excluded'))
         }

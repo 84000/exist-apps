@@ -245,7 +245,7 @@ return
         (: These are URIs redirected from purl.84000.co :)
         else if ($path = ('/resource/core/', '/resource/id/')) then
             local:redirect-purl()
-            
+        
         (: Translation :)
         else if ($collection-path eq "translation") then
             (: xml model -> json view :)
@@ -327,7 +327,7 @@ return
                     </parameters>
                 )
         
-        (: Translation :)
+        (: Passage :)
         else if ($collection-path eq "passage") then
             (: xml model -> model sets view :)
             if ($resource-suffix = ('xml', 'html')) then
@@ -352,6 +352,14 @@ return
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
+        
+        (: Translations :)
+        else if ($resource-id eq "translations" and $resource-suffix eq 'json') then
+            local:dispatch("/views/json/0.3.0/translations.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <set-header name="Content-Type" value="application/json"/>
+                </parameters>
+            )
         
         (: Sections :)
         else if ($resource-id eq "sections" and $resource-suffix eq 'json' and request:get-parameter('api-version', '') eq '0.3.0') then

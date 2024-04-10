@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -21,6 +21,10 @@
     
     <!-- language [en|zh] -->
     <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
+    
+    <!-- Tei Editor -->
+    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor','editor-passage')]"/>
+    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor','editor-passage')])"/>
     
     <!-- view-mode [default|editor|annotation|txt|ebook|pdf|app|tests|glossary-editor|glossary-check] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/m:view-mode" as="element(m:view-mode)?"/>
@@ -51,10 +55,6 @@
     <xsl:function name="m:archive-path-parameter" as="xs:string">
         <xsl:value-of select="if($archive-path gt '') then concat('&amp;archive-path=', $archive-path)  else ''"/>
     </xsl:function>
-    
-    <!-- Tei Editor -->
-    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor','editor-passage')]"/>
-    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor','editor-passage')])"/>
     
     <!-- doc-type [html|epub|ncx] -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>

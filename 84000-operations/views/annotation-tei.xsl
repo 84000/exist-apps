@@ -85,7 +85,7 @@
                                         
                                         <div>
                                             <a class="small">
-                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', m:toh/@key[1], '.html?archive-path=', @archive-path, '&amp;view-mode=annotation')"/>
+                                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', @id, '.html?archive-path=', @archive-path, '&amp;view-mode=annotation')"/>
                                                 <xsl:attribute name="target" select="concat(@id, '.html')"/>
                                                 <xsl:value-of select="'Open in annotation mode'"/>
                                             </a>                                            

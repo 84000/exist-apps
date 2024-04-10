@@ -19,6 +19,7 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 declare variable $local:api-version := '0.3.0';
 declare variable $resource-id := request:get-parameter('resource-id', '');
 declare variable $local:tei := tei-content:tei($resource-id, 'translation');
+
 (: Convert resource id to UT number :)
 declare variable $local:text-id := tei-content:id($local:tei);
 declare variable $local:translation :=
@@ -44,6 +45,9 @@ declare variable $local:translation :=
         
     };
 
+declare variable $local:contributors := doc(concat($common:data-path, '/operations/contributors.xml'));
+declare variable $local:sponsors := doc(concat($common:data-path, '/operations/sponsors.xml'));
+
 declare function local:parse-translation() {
 
     (:
@@ -52,9 +56,11 @@ declare function local:parse-translation() {
         - eft:isCommentaryOf:               /translation/UT23703-093-001.json?api-version=0.3.0
     :)
     
-    $local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation-link('eft:isCatalogueSectionChapter', eft-json:id('catalogueSectionId', . )),
+    $local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation('eft:isCatalogueSectionChapter'),
     
-    $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('sourceId', @target)),
+    $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target)),
+    
+    local:translation-project(),
     
     local:titles()
     
@@ -72,60 +78,110 @@ declare function local:titles(){
     
     for $title in (
         $local:tei//tei:titleStmt/tei:title,
-        $local:tei//tei:sourceDesc/tei:bibl/tei:ref,
-        $local:tei//tei:sourceDesc/tei:bibl/tei:biblScope
+        $local:tei//tei:sourceDesc/tei:bibl/tei:ref
     )[normalize-space()]
 
     let $title-type := (
         $title[self::tei:title]/@type/string() ! concat('eft:', .), 
-        $title[self::tei:ref] ! 'eft:biblRef', 
-        $title[self::tei:biblScope] ! 'eft:biblScope'
+        $title[self::tei:ref] ! 'eft:toh'
     )[1]
     
     let $title-key := ($title/@key, $title/parent::tei:bibl/@key, '_any')[1]
-
+    
+    let $chapter-bibl := ($local:translation/tei:bibl[@type eq 'chapter'][@key eq $title-key], $local:translation/tei:bibl[@type eq 'chapter'])[1]
+    
+    let $section-title := $local:translation/eft:parent/eft:titles/eft:title[not(@xml:lang) or @xml:lang eq 'en'][text()]
+    
     group by $title-type, $title-key
     
-    return
+    return (
         element title {
         
-            attribute type { $title-type },
+            attribute titleType { $title-type },
             
-            $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('sourceId', .)),
+            $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),
             
             for $title-single in $title
-            
-            let $title-lang := ($title-single/@xml:lang, 'en')[1]
-            
-            let $parent-title := ($local:translation/eft:parent[@resource-id eq $title-key]/eft:titles/eft:title[@xml:lang eq $title-lang][text()], $local:translation/eft:parent/eft:titles/eft:title[@xml:lang eq $title-lang][text()])[1]
-            
-            let $chapter-bibl := 
-                if($parent-title and $title-type eq 'mainTitle') then
-                    ($local:translation/tei:bibl[@type eq 'chapter'][@key eq $title-key], $local:translation/tei:bibl[@type eq 'chapter'])[1]
-                else ()
-            
             return
                 element label {
                     
-                    attribute xmlLang { $title-lang },
-                    element {'value'} { string-join($title-single/text()) ! normalize-space(.) },
+                    attribute language { ($title-single/@xml:lang, 'en')[1] },
+                    
+                    element {'content'} { string-join($title-single/text()) ! normalize-space(.) },
                     
                     $title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),
-                    
-                    $chapter-bibl/tei:idno/@parent-id ! eft-json:annotation('eft:prependCatalogueSectionTitle'),
                     
                     $title-single/@*[not(name(.) = ('xml:lang','type','rend','key'))] ! element { name(.) } { . }
                     
                 }
+                
+        },
+        
+        if($title-type eq 'eft:mainTitle' and $chapter-bibl and $section-title) then 
+            
+            element title {
+            
+                attribute titleType { 'eft:mainTitleOutsideCatalogueSection' },
+            
+                $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),
+            
+                element label {
                     
-        }
+                    attribute language { 'en' },
+                    
+                    element {'content'} { string-join(($section-title/text(), $title[not(@xml:lang) or @xml:lang eq 'en']/text()), ', ') ! normalize-space(.) }
+                    
+                }
+                
+            }
+        else ()
+    )
+    
+};
+
+declare function local:translation-project(){
+
+    $local:contributors//eft:instance[@type eq "translation-contribution"][@id = $local:tei//tei:titleStmt/tei:author[@role eq 'translatorMain']/@xml:id]/parent::eft:team !  eft-json:annotation-link('eft:translationTeam', eft-json:id('xmlId', @xml:id)),
+    
+    for $attribution in $local:tei//tei:titleStmt/tei:author[@role eq 'translatorEng']
+    let $person := $local:contributors//eft:instance[@type eq "translation-contribution"][@id = $attribution/@xml:id]/parent::eft:person
+    return
+        eft-json:annotation(concat('eft:author', functx:capitalize-first($attribution/@role)), eft-json:id('xmlId', $person/@xml:id), (), (), string-join($attribution/text()))
+    ,
+    
+    for $attribution in $local:tei//tei:titleStmt/tei:consultant
+    let $person := $local:contributors//eft:instance[@type eq "translation-contribution"][@id = $attribution/@xml:id]/parent::eft:person
+    return
+        eft-json:annotation(concat('eft:consultant', functx:capitalize-first($attribution/@role)), eft-json:id('xmlId', $person/@xml:id), (), (), string-join($attribution/text()))
+    ,
+    
+    for $attribution in $local:tei//tei:titleStmt/tei:editor
+    let $person := $local:contributors//eft:instance[@type eq "translation-contribution"][@id = $attribution/@xml:id]/parent::eft:person
+    return
+        eft-json:annotation(concat('eft:editor', functx:capitalize-first($attribution/@role)), eft-json:id('xmlId', $person/@xml:id), (), (), string-join($attribution/text()))
+    ,
+    
+    for $sponsorship in $local:tei//tei:titleStmt/tei:sponsor
+    let $sponsor := $local:sponsors//eft:instance[@type eq "translation-sponsor"][@id = $sponsorship/@xml:id]/parent::eft:sponsor
+    return
+        eft-json:annotation('eft:translationSponsor', eft-json:id('xmlId', $sponsor/@xml:id), (), (), string-join($sponsorship/text()))
+    ,
+    
+    $local:tei//tei:publicationStmt/tei:date ! eft-json:annotation('eft:publicationDate', (), (), (), .),
+    $local:tei//tei:editionStmt/tei:edition/tei:date ! eft-json:annotation('eft:editionDate', (), (), (), .)
     
 };
 
 declare function local:passages(){
 
     let $xslt := doc(concat($common:app-path, "/views/html/translation.xsl"))
-    let $xhtml := transform:transform($local:response, $xslt, <parameters/>)
+    let $xml-response :=
+        common:response(
+            'translation',
+            $common:app-id,
+            $local:translation
+        )
+    let $xhtml := transform:transform($xml-response, $xslt, <parameters/>)
     let $text-outline := translation:outline-cached($local:tei)
     
     for $node at $text-node-index in (
@@ -196,14 +252,14 @@ declare function local:passages(){
 };
 
 element translation {
-    attribute type { 'translation' },
+    attribute modelType { 'translation' },
     attribute apiVersion { $local:api-version },
     attribute url { concat('/translation/', $local:text-id,'.json?api-version=', $local:api-version) },
-    attribute textId { $local:text-id },
+    attribute xmlId { $local:text-id },
     attribute publicationVersion { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },
-    attribute publicationStatus { $local:translation/@status},
-    attribute cacheKey { $local:translation/@cache-key },
-    attribute htmlUrl { concat('https://read.84000.co', '/translation/', $local:text-id,'.html') },
+    element publicationStatus { attribute json:literal {'true'}, $local:translation/@status/number()},
+    element cacheKey { $local:translation/@cache-key/string() },
+    element htmlUrl { concat('https://read.84000.co', '/translation/', $local:text-id,'.html') },
     
     local:parse-translation()
 

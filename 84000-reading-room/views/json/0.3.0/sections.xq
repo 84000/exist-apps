@@ -117,13 +117,17 @@ declare function local:text($text-tei as element(tei:TEI), $source-id as xs:stri
     let $child-text-start-volume-number := min($text-bibl/tei:location/tei:volume/@number ! xs:integer(.))
     let $child-text-start-volume := $text-bibl/tei:location/tei:volume[@number ! xs:integer(.) eq $child-text-start-volume-number]
     return
-        element catalogueText {
-            attribute sourceId { $source-id },
-            attribute textId { $text-id },
+        element catalogueWork {
+            attribute catalogueWorkId { $source-id },
+            attribute workId { $text-id },
+            attribute workType { 'eft:translation' },
             attribute url { concat('/translation/', $text-id,'.json?api-version=', $local:api-version) },
             attribute htmlUrl { concat('https://read.84000.co', '/translation/', $source-id,'.html') },
             attribute startVolumeNumber { $child-text-start-volume-number },
-            attribute startVolumeStartPageNumber { min($child-text-start-volume/@start-page ! xs:integer(.)) }
+            attribute startVolumeStartPageNumber { min($child-text-start-volume/@start-page ! xs:integer(.)) },
+            (: Add toh specific TEI header information :)
+            $text-bibl/tei:location ! element bibliographicScope { ./@*, ./*, element description { string-join($text-bibl/tei:biblScope/text()) } },
+            $text-bibl/tei:idno[@source-id] ! eft-json:annotation-link('eft:catalogueId', eft-json:id(concat('eft:id', @work), @source-id))
         }
 };
 

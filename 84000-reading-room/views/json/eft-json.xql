@@ -168,25 +168,49 @@ declare function eft-json:persistent-location($node as node()) as element() {
 };
 
 declare function eft-json:annotation($type as xs:string) as element(eft:annotation) {
-    eft-json:annotation-substring((), (), $type, ())
+    eft-json:annotation($type, (), (), (), ())
 };
 
 declare function eft-json:annotation-link($type as xs:string, $resourceId as element(id)?) as element(eft:annotation) {
-    eft-json:annotation-substring((), (), $type, $resourceId)
+    eft-json:annotation($type, $resourceId, (), (), ())
 };
 
 declare function eft-json:annotation-substring($substring-text as xs:string?, $substring-occurrence as xs:integer?, $type as xs:string, $resourceId as element(id)?) as element(eft:annotation) {
+    eft-json:annotation($type, $resourceId, $substring-text, $substring-occurrence, ())
+};
+
+declare function eft-json:annotation($type as xs:string, $resourceId as element(id)?, $substring-text as xs:string?, $substring-occurrence as xs:integer?, $body-text as xs:string?) as element(eft:annotation) {
     element annotation { 
-        element {'type'} { $type },
-        $resourceId ! element {'linksToId'} { ./* },
-        $substring-text ! element {'substring'} { . },
-        $substring-occurrence ! element {'substringOccurrence'} { attribute json:literal {'true'}, . }
+    
+        element {'annotationType'} { $type },
+        
+        if($resourceId or $body-text) then
+            element body {
+                $resourceId ! (
+                    attribute {'id'} { $resourceId/content },
+                    attribute {'type'} { $resourceId/idType }
+                ),
+                $body-text ! element value { . }
+            }
+        else ()
+        ,
+        
+        if($substring-text) then
+            element target {
+                element selector {
+                    attribute { 'type' } { 'TextQuoteSelector' },
+                    element {'exact'} { $substring-text },
+                    $substring-occurrence ! element {'substringOccurrence'} { attribute json:literal {'true'}, . }
+                }
+            }
+        else ()
+        
     }
 };
 
 declare function eft-json:id($type as xs:string, $resourceId as xs:string) as element(id) {
     element id { 
-        element {'type'} { $type },
-        element {'value'} { $resourceId }
+        element {'idType'} { $type },
+        element {'content'} { $resourceId }
     }
 };

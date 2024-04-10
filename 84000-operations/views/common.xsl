@@ -1947,7 +1947,7 @@
             <xsl:if test="not($exclude-links[. eq 'editor-mode']) and $text[m:toh] and $text-status[@marked-up eq 'true']">
                 <li>
                     <a target="{ $text/@id }-html">
-                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text/m:toh[1]/@key, '.html?view-mode=editor')"/>
+                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', ($text/m:toh)[1]/@key, '.html?view-mode=editor')"/>
                         <xsl:value-of select="'Editor mode'"/>
                     </a>
                 </li>
@@ -1956,8 +1956,8 @@
             <xsl:if test="not($exclude-links[. eq 'source-folios']) and $text[m:toh]">
                 <li>
                     <a target="check-folios">
-                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', $text/m:toh[1]/@key, '.html')"/>
-                        <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/source/', $text/m:toh[1]/@key, '.html?page=1')"/>
+                        <xsl:attribute name="href" select="concat($reading-room-path, '/source/', ($text/m:toh)[1]/@key, '.html')"/>
+                        <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/source/', ($text/m:toh)[1]/@key, '.html?page=1')"/>
                         <xsl:attribute name="data-dualview-title" select="'Folio view'"/>
                         <xsl:value-of select="'Folio view'"/>
                     </a>

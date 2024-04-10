@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -560,11 +560,29 @@
                                                         
                                                         <xsl:if test="$match[@link gt '']">
                                                             <div>
-                                                                <a>
-                                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $match/@link), (), '', /m:response/@lang)"/>
-                                                                    <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
-                                                                    <xsl:value-of select="'read...'"/>
-                                                                </a>
+                                                                <ul class="list-inline inline-dots">
+                                                                    
+                                                                    <li>
+                                                                        <a>
+                                                                            <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $match/@link), (), '', /m:response/@lang)"/>
+                                                                            <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
+                                                                            <xsl:attribute name="class" select="'underline'"/>
+                                                                            <xsl:value-of select="'Open the translation...'"/>
+                                                                        </a>
+                                                                    </li>
+                                                                    
+                                                                    <xsl:variable name="match-gloss-entity" select="/m:response/m:entities/m:entity[m:instance/@id = $match/tei:gloss/@xml:id]"/>
+                                                                    <xsl:if test="$match-gloss-entity">
+                                                                        <li>
+                                                                            <a>
+                                                                                <xsl:attribute name="target" select="'84000-glossary'"/>
+                                                                                <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, '/glossary/', $match-gloss-entity/@xml:id, '.html'), (), '', /m:response/@lang)"/>
+                                                                                <xsl:attribute name="class" select="'underline'"/>
+                                                                                <xsl:value-of select="'View in the glossary...'"/>
+                                                                            </a>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                </ul>
                                                             </div>
                                                         </xsl:if>
                                                         

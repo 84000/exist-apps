@@ -123,9 +123,9 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     let $results := (
         if($data-types[@id = ('translations','knowledgebase')]) then (
             (: Header content :)
-            $all/tei:teiHeader/tei:fileDesc//tei:title[not(@xml:lang = ('bo', 'Sa-Ltn'))][ft:query(., $query, $options)]
+            $all/tei:teiHeader/tei:fileDesc//tei:title[not(@xml:lang = ('bo'(:, 'Sa-Ltn':)))][ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., concat('bo-titles:(', $search-no-quotes, ')'), map { "fields": ("bo-titles") })]
-            | $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., concat('sa-titles:(', $search-no-quotes, ')'), map { "fields": ("sa-titles") })]
+            (:| $all/tei:teiHeader/tei:fileDesc//tei:title[ft:query(., concat('sa-titles:(', $search-no-quotes, ')'), map { "fields": ("sa-titles") })]:)
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][ft:query(., $query, $options)]
             | $all/tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope[ft:query(., $query, $options)]
             ,
@@ -145,9 +145,9 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
         else ()
         ,
         if($data-types[@id = ('translations','glossary')]) then (
-            $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[not(@xml:lang = ('bo', 'Sa-Ltn'))][ft:query(., $query, $options)][parent::tei:gloss[not(@mode eq 'surfeit')]]
+            $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[not(@xml:lang = ('bo'(:, 'Sa-Ltn':)))][ft:query(., $query, $options)][parent::tei:gloss[not(@mode eq 'surfeit')]]
             | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., concat('bo-terms:(', $search-no-quotes, ')'), map { "fields": ("bo-terms") })][parent::tei:gloss[not(@mode eq 'surfeit')]]
-            | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., concat('sa-terms:(', $search-no-quotes, ')'), map { "fields": ("sa-terms") })][parent::tei:gloss[not(@mode eq 'surfeit')]]
+            (:| $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:term[ft:query(., concat('sa-terms:(', $search-no-quotes, ')'), map { "fields": ("sa-terms") })][parent::tei:gloss[not(@mode eq 'surfeit')]]:)
             | $published//tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss/tei:note[ft:query(tei:p, $query, $options)][@type eq 'definition'][not(@rend eq 'override')][parent::tei:gloss[not(@mode eq 'surfeit')]]
         )
         else ()

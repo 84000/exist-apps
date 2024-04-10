@@ -35,7 +35,7 @@
             </analyzer>
             <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="2">
                 <field name="bo-titles" if="@xml:lang='bo'" analyzer="bo"/>
-                <field name="sa-titles" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>
+                <!--<field name="sa-titles" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>-->
             </text>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="1.5">
                 <inline qname="tei:ref"/>
@@ -55,7 +55,7 @@
             <text match="//tei:back//tei:bibl"/>
             <text match="//tei:back//tei:gloss/tei:term">
                 <field name="bo-terms" if="@xml:lang='bo'" analyzer="bo"/>
-                <field name="sa-terms" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>
+                <!--<field name="sa-terms" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>-->
                 <field name="full-term" if="@xml:lang='en'" analyzer="no-stopwords"/>
             </text>
         </lucene>

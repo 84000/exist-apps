@@ -420,7 +420,14 @@
                                                     <xsl:attribute name="class" select="'form-control text-bo'"/>
                                                 </xsl:when>
                                             </xsl:choose>-->
-                                            <xsl:attribute name="value" select="$search-text"/>
+                                            <xsl:choose>
+                                                <xsl:when test="$selected-term-lang/@id eq 'Sa-Ltn' and $search-text-sa">
+                                                    <xsl:attribute name="value" select="$search-text-sa"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:attribute name="value" select="$search-text"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                         </input>
                                         
                                         <div class="input-group-btn">
@@ -738,11 +745,11 @@
                 <xsl:when test="$selected-letter">
                     <xsl:value-of select="$selected-letter/@regex"/>
                 </xsl:when>
-                <xsl:when test="$selected-term-lang/@id eq 'bo' and $search-text-bo">
-                    <xsl:value-of select="concat('(^|\s*|་)(', string-join(tokenize($search-text-bo, '\s+') ! replace(.,'(་$|་?།$)', '', 'i') ! common:escape-for-regex(.), '|'), ')')"/>
-                </xsl:when>
                 <xsl:when test="$selected-term-lang/@id eq 'en'">
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! common:escape-for-regex(.), '|'), ')')"/>
+                </xsl:when>
+                <xsl:when test="$selected-term-lang/@id eq 'bo' and $search-text-bo">
+                    <xsl:value-of select="concat('(^|\s*|་)(', string-join(tokenize($search-text-bo, '\s+') ! replace(.,'(་$|་?།$)', '', 'i') ! common:escape-for-regex(.), '|'), ')')"/>
                 </xsl:when>
                 <xsl:when test="$selected-term-lang/@id eq 'Sa-Ltn' and $search-text-sa">
                     <xsl:value-of select="concat('(^|\s*)(', string-join(tokenize($search-text-sa, '\s+') ! lower-case(.) ! normalize-unicode(.) ! common:standardized-sa(.) ! replace(., '­','') ! common:escape-for-regex(.), '|'), ')')"/>

@@ -139,6 +139,8 @@ return
                 
         (: Get glossary cache :)
         let $glossary-cache := glossary:glossary-cache($tei, (), false())
+        (: Get tei outline :)
+        let $outline := translation:outline-cached($tei)
         
         let $xml-response := 
             common:response(
@@ -148,6 +150,7 @@ return
                     $request,
                     $source,
                     $translation,
+                    $outline,
                     $glossary-cache
                 )
             )

@@ -102,6 +102,7 @@ let $request :=
         attribute records-per-page { 20 },
         
         element search { if(not($flag) and not($resource-id eq 'downloads') and $search gt '') then $search else '' },
+        
         if($term-lang/@id eq 'bo') then
             element search-bo { 
                 if(not(common:string-is-bo($search))) then
@@ -109,6 +110,7 @@ let $request :=
                 else
                     $search
             }
+        
         else if($term-lang/@id eq 'Sa-Ltn') then
             element search-sa { 
                 if(devanagari:string-is-dev($search)) then
@@ -116,6 +118,7 @@ let $request :=
                 else
                     $search
             }
+        
         else ()
         ,
         $entity-types,

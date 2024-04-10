@@ -9,6 +9,7 @@
     <xsl:variable name="text-id" select="$translation/@id" as="xs:string?"/>
     <xsl:variable name="toh-key" select="$translation/m:source/@key" as="xs:string?"/>
     <xsl:variable name="toh-number" select="$translation/m:toh/@key ! replace(., '^toh', '')" as="xs:string?"/>
+    <xsl:variable name="request-glossary-id" select="$request/@glossary-id" as="xs:string?"/>
     <xsl:variable name="back-link" select="$source/m:back-link[@url]"/>
     
     <xsl:template match="/m:response">
@@ -362,7 +363,7 @@
         </xsl:if>
     </xsl:template>
     
-    <xsl:template match="xhtml:a[@data-glossary-id]">
+    <xsl:template match="xhtml:a[@data-glossary-id] | xhtml:span[@data-glossary-id]">
         <xsl:choose>
             <xsl:when test="@data-glossary-location-id">
                 <a>
@@ -372,11 +373,21 @@
                     <xsl:attribute name="target" select="concat('translation-', $translation/m:source/@key)"/>
                     <xsl:attribute name="data-dualview-href" select="$page || $fragment-id"/>
                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh,' (translation)')"/>
+                    <xsl:attribute name="data-alt-pathname" select="concat('/translation/', $text-id, '.html')"/>
                     <xsl:attribute name="data-mark" select="concat('[data-glossary-id=&#34;', @data-glossary-id, '&#34;]')"/>
                     <xsl:attribute name="data-loading" select="'Loading translation...'"/>
+                    <xsl:if test="@data-glossary-id eq $request-glossary-id">
+                        <xsl:attribute name="class" select="'mark'"/>
+                    </xsl:if>
                     <xsl:sequence select="@*[not(local-name(.) = ('href', 'target', 'class'))]"/>
                     <xsl:sequence select="node()"/>
                 </a>
+            </xsl:when>
+            <xsl:when test="@data-glossary-id eq $request-glossary-id">
+                <span class="mark">
+                    <xsl:sequence select="@*[not(local-name(.) = ('href', 'target', 'class'))]"/>
+                    <xsl:sequence select="node()"/>
+                </span>
             </xsl:when>
             <xsl:otherwise>
                 <span>

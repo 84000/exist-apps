@@ -537,7 +537,8 @@
         
         <xsl:choose>
             <xsl:when test="$lang eq 'bo'">
-                <xsl:value-of select="concat('(^|[^\p{L}\p{N}­])(', $strings-combined, ')(ར|ས|འི)?([^\p{L}\p{N}­]|$)')"/>
+                <!--<xsl:value-of select="concat('(^|[^\p{L}\p{N}­])(', $strings-combined, ')(ར|ས|འི)?([^\p{L}\p{N}­]|$)')"/>-->
+                <xsl:value-of select="concat('(^|་|།|\s)(', $strings-combined, ')(ར|ས|འི)?(་|།|\s|$)')"/>
             </xsl:when>
             <xsl:otherwise>
                 <!-- The word bounded by non-word characters, start or end -->
