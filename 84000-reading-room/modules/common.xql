@@ -488,7 +488,11 @@ declare function common:mark-nodes($nodes as node()*, $strings as xs:string*, $m
 declare function common:mark-text($text as xs:string, $find as xs:string*, $mode as xs:string) as node()* {
     
     (: Standardise the input :)
-    let $find := $find ! lower-case(.) ! normalize-unicode(.) ! common:normalized-chars(.) ! normalize-space(.)
+    let $find := 
+        if($mode = ('words')) then
+            $find ! lower-case(.) ! normalize-unicode(.) ! common:normalized-chars(.) ! normalize-space(.)
+        else
+            $find ! lower-case(.) ! normalize-unicode(.) ! normalize-space(.)
     
     (: Tokenise the input (applying mode) :)
     let $find-tokenized :=
@@ -521,13 +525,17 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     let $regex := 
         if($mode = ('tibetan')) then
             concat('(', string-join($find-tokenized[matches(., '[\p{L}\p{N}]+')](:[not(. = ('།'))]:) ! functx:escape-for-regex(.), '|'),')')
-        else
-            let $find-escaped := ($find-tokenized, $find-diacritics)[matches(., '[\p{L}\p{N}]+')] ! functx:escape-for-regex(.) ! replace(., '\s+', '\\s+')
+        else if($mode = ('words')) then
+            let $find-escaped := ($find-tokenized, $find-diacritics)[matches(., '[\p{L}\p{N}]+')] ! replace(., '\s+', ' ') ! functx:escape-for-regex(.)
             return
                 concat('\b(', string-join($find-escaped, '|'),')\b')
+        else
+            let $find-escaped := $find-tokenized ! string-join(tokenize(., '[^\p{L}\p{N}]+') ! functx:escape-for-regex(.), '[^\p{L}\p{N}]+')
+            return
+                concat('(', string-join($find-escaped, '|'),')')
     
     (: double spaces to support the regex :)
-    let $text := replace($text, '\s+', '  ') (:! common:normalized-chars(.):)
+    let $text := replace($text, '\s+', ' ') (:! common:normalized-chars(.):)
     
     (: Look for matches :)
     let $analyze-result := analyze-string($text, $regex, 'i;j')
@@ -536,7 +544,7 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     return (
     
         (:element debug {
-            element find { $find },
+            element find { string-join($find, ',') },
             element regex {$regex},
             element search-text {$text},
             $analyze-result

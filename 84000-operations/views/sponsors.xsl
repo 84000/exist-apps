@@ -18,25 +18,10 @@
                         </span>
                         
                         <div>
-                            <form method="post" action="/sponsors.html" class="form-inline filter-form pull-right">
-                                
-                                <div class="checkbox hidden"><!-- Hide this for now -->
-                                    <label class="small">
-                                        <input type="checkbox" name="include-acknowledgements" value="1">
-                                            <xsl:if test="m:request/@include-acknowledgements eq 'true'">
-                                                <xsl:attribute name="checked" select="'checked'"/>
-                                            </xsl:if>
-                                        </input>
-                                        <xsl:value-of select="'List all acknowledgements'"/>
-                                    </label>
-                                </div>
-                                
-                                <a class="btn btn-primary btn-sml">
-                                    <xsl:attribute name="href" select="'/edit-sponsor.html'"/>
-                                    <xsl:value-of select="'Add a sponsor'"/>
-                                </a>
-                                
-                            </form>
+                            <a class="btn btn-primary btn-sml pull-right">
+                                <xsl:attribute name="href" select="'/edit-sponsor.html'"/>
+                                <xsl:value-of select="'Add a sponsor'"/>
+                            </a>
                         </div>
                         
                     </div>
@@ -100,17 +85,6 @@
                                                     </xsl:if>
                                                 </div>
                                             </div>
-                                            
-                                            <xsl:if test="m:acknowledgement">
-                                                <div class="row">
-                                                    <xsl:call-template name="acknowledgements">
-                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                        <xsl:with-param name="group" select="''"/>
-                                                        <xsl:with-param name="css-class" select="'col-sm-12'"/>
-                                                        <xsl:with-param name="link-href" select="'/edit-text-sponsors.html?id=@translation-id'"/>
-                                                    </xsl:call-template>
-                                                </div>
-                                            </xsl:if>
                                             
                                         </div>
                                         

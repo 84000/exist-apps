@@ -20,7 +20,7 @@ let $cache-key := format-dateTime(current-dateTime(), "[Y0001]-[M01]-[D01]") || 
 let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
-let $contributors-teams := contributors:teams(false(), false(), true())
+let $contributors-teams := contributors:teams(false(), true())
 let $contributors-regions := contributors:regions(true())
 
 let $xml-response :=

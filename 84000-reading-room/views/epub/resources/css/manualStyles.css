@@ -638,21 +638,21 @@ img.logo-84000 {
 /* title pages */
 #titles,
 #imprint,
-#body-title {
+.body-title {
     text-align: center;
 }
 
 #titles p,
 #imprint p,
-#body-title p {
+.body-title p {
     text-align: center;
 }
 
 #titles h1, #titles .h1,
 #titles h2, #titles .h2,
 #titles p,
-#body-title h1, #body-title .h1,
-#body-title h2, #body-title .h2 {
+.body-title h1, .body-title .h1,
+.body-title h2, .body-title .h2 {
     font-weight: normal;
 }
 
@@ -665,7 +665,7 @@ img.logo-84000 {
 #titles h2, #titles .h2,
 #titles h3, #titles .h3,
 #titles p,
-#body-title h2, #body-title .h2 {
+.body-title h2, .body-title .h2 {
     font-size: 1em;
 }
 #titles h3 {

@@ -116,8 +116,8 @@ let $text :=
     }
 
 let $text-statuses-selected := tei-content:text-statuses-selected($publication-status, 'translation')
-let $persons := contributors:persons(false())
-let $teams := contributors:teams(true(), false(), false())
+let $persons := contributors:persons()
+let $teams := contributors:teams(true(), false())
 let $glossary-cache := glossary:glossary-cache($tei, (), false())
 let $submission-checklist := doc('../config/submission-checklist.xml')
 let $translation-statuses :=

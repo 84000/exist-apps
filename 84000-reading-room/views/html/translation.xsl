@@ -9,8 +9,8 @@
     <xsl:variable name="render-status" select="$environment/m:render/m:status[@type eq 'translation']/@status-id"/>
     
     <xsl:variable name="page-title" as="node()*">
-        <xsl:sequence select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>
-        <xsl:sequence select="/m:response/m:translation//m:part[@content-status eq 'complete'][@id eq $requested-part][1]/tei:head[@type eq parent::m:part/@type]"/>
+        <xsl:sequence select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
+        <xsl:sequence select="$translation//m:part[@content-status eq 'complete'][@id eq $requested-part][1]/tei:head[@type eq parent::m:part/@type]"/>
     </xsl:variable>
     
     <xsl:template match="/m:response">
@@ -19,7 +19,7 @@
         <xsl:variable name="content">
             
             <!-- Un-published alert -->
-            <xsl:if test="not(m:translation/@status-group eq 'published')">
+            <xsl:if test="not($translation/@status-group eq 'published')">
                 <div class="title-band warning">
                     <div class="container">
                         <div class="center-vertical center-aligned">
@@ -32,13 +32,13 @@
             </xsl:if>
             
             <!-- Breadcrumbs -->
-            <xsl:if test="m:translation[m:parent]">
+            <xsl:if test="$translation[m:parent]">
                 <div class="title-band hidden-print hidden-iframe">
                     <div class="container">
                         <div class="center-vertical center-aligned text-center">
                             <nav role="navigation" aria-label="Breadcrumbs">
                                 <ul id="outline" class="breadcrumb">
-                                    <xsl:sequence select="common:breadcrumb-items(m:translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
+                                    <xsl:sequence select="common:breadcrumb-items($translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                 </ul>
                             </nav>
                         </div>
@@ -54,7 +54,7 @@
                     <xsl:call-template name="front-matter"/>
                     
                     <!-- Table of Contents -->
-                    <xsl:if test="m:translation/@status = $render-status">
+                    <xsl:if test="$translation/@status = $render-status">
                         <div class="row">
                             <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
                                 <xsl:call-template name="table-of-contents"/>
@@ -66,35 +66,48 @@
                         
                         <!-- Summary -->
                         <xsl:call-template name="part">
-                            <xsl:with-param name="part" select="m:translation/m:part[@type eq 'summary']"/>
+                            <xsl:with-param name="part" select="$translation/m:part[@type eq 'summary']"/>
                             <xsl:with-param name="css-classes" select="'page page-force text'"/>
                         </xsl:call-template>
                         
-                        <xsl:if test="m:translation/@status = $render-status">
+                        <xsl:if test="$translation/@status = $render-status">
                             
                             <!-- Acknowledgment -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'acknowledgment']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'acknowledgment']"/>
                                 <xsl:with-param name="css-classes" select="'page text'"/>
                             </xsl:call-template>
                             
                             <!-- Preface -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'preface']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'preface']"/>
                                 <xsl:with-param name="css-classes" select="'page text'"/>
                             </xsl:call-template>
                             
                             <!-- Introduction -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'introduction']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'introduction']"/>
                                 <xsl:with-param name="css-classes" select="'page text'"/>
                             </xsl:call-template>
                             
-                            <!-- Main title -->
+                            <!-- Prelude -->
+                            <xsl:if test="$translation/m:part[@type eq 'translation']/m:part[@type eq 'prelude']">
+                                
+                                <!-- Translation title -->
+                                <xsl:call-template name="prelude-title"/>
+                                
+                                <xsl:call-template name="part">
+                                    <xsl:with-param name="part" select="$translation/m:part[@type eq 'translation']/m:part[@type eq 'prelude']"/>
+                                    <xsl:with-param name="css-classes" select="'text page'"/>
+                                </xsl:call-template>
+                                
+                            </xsl:if>
+                            
+                            <!-- Translation title -->
                             <xsl:call-template name="body-title"/>
                             
                             <!-- The Chapters -->
-                            <xsl:for-each select="m:translation/m:part[@type eq 'translation']/m:part">
+                            <xsl:for-each select="$translation/m:part[@type eq 'translation']/m:part[not(@type eq 'prelude')]">
                                 
                                 <xsl:call-template name="part">
                                     <xsl:with-param name="part" select="."/>
@@ -105,38 +118,38 @@
                             
                             <!-- Appendix -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'appendix']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'appendix']"/>
                                 <xsl:with-param name="css-classes" select="'page text'"/>
                             </xsl:call-template>
                             
                             <!-- Abbreviations -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'abbreviations']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'abbreviations']"/>
                                 <xsl:with-param name="css-classes" select="'page'"/>
                             </xsl:call-template>
                             
                             <!-- Notes -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'end-notes']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'end-notes']"/>
                                 <xsl:with-param name="css-classes" select="'page'"/>
                             </xsl:call-template>
                             
                             <!-- Bilbiography -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'bibliography']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'bibliography']"/>
                                 <xsl:with-param name="css-classes" select="'page'"/>
                             </xsl:call-template>
                             
                             <!-- Glossary -->
                             <xsl:call-template name="part">
-                                <xsl:with-param name="part" select="m:translation/m:part[@type eq 'glossary']"/>
+                                <xsl:with-param name="part" select="$translation/m:part[@type eq 'glossary']"/>
                                 <xsl:with-param name="css-classes" select="'page'"/>
                             </xsl:call-template>
                             
                             <!-- Citation Index -->
                             <xsl:if test="$quotes-inbound">
                                 <xsl:call-template name="part">
-                                    <xsl:with-param name="part" select="m:translation/m:part[@type eq 'citation-index']"/>
+                                    <xsl:with-param name="part" select="$translation/m:part[@type eq 'citation-index']"/>
                                     <xsl:with-param name="css-classes" select="'page'"/>
                                 </xsl:call-template>
                             </xsl:if>
@@ -233,16 +246,16 @@
                 <!-- Contents fly-out -->
                 <div id="contents-sidebar" class="fixed-sidebar collapse width hidden-print">
                     
-                    <xsl:variable name="text-id" select="m:translation/@id"/>
+                    <xsl:variable name="text-id" select="$translation/@id"/>
                     
                     <div class="fix-width">
                         <div class="sidebar-content">
                             
                             <!--<h3>
-                                <xsl:value-of select="m:translation/m:titles/m:title[text()][@xml:lang eq 'en'][1]"/>
+                                <xsl:value-of select="$translation/m:titles/m:title[text()][@xml:lang eq 'en'][1]"/>
                             </h3>-->
                             
-                            <xsl:if test="m:translation/@status = $render-status">
+                            <xsl:if test="$translation/@status = $render-status">
                                 
                                 <h4>
                                     <xsl:value-of select="'Table of Contents'"/>
@@ -266,7 +279,7 @@
                                 </form>
                                 <hr/>
                                 
-                                <xsl:if test="m:translation/m:downloads/m:download[@type = ('pdf','epub')]">
+                                <xsl:if test="$translation/m:downloads/m:download[@type = ('pdf','epub')]">
                                     
                                     <h4>
                                         <xsl:value-of select="'Other ways to read'"/>
@@ -292,7 +305,7 @@
                                                 </tr>
                                             </xsl:if>
                                             
-                                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub')]">
+                                            <xsl:for-each select="$translation/m:downloads/m:download[@type = ('pdf','epub')]">
                                                 <tr>
                                                     <td class="icon">
                                                         <a target="_blank">
@@ -331,7 +344,7 @@
                                                 </tr>
                                             </xsl:for-each>
                                             
-                                            <xsl:if test="m:translation[@status eq '1'] and $app-path">
+                                            <xsl:if test="$translation[@status eq '1'] and $app-path">
                                                 <xsl:variable name="app-href" select="concat($app-path, '/translation/', $toh-key, '.html')"/>
                                                 <tr>
                                                     <td class="icon">
@@ -385,7 +398,7 @@
                                 <p class="small text-muted">
                                     <xsl:value-of select="'Please use the contact form provided to '"/>
                                     <a target="84000-comms">
-                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', m:translation/m:source/m:toh[1] ,'#suggest-a-correction-section')"/>
+                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', $translation/m:source/m:toh[1] ,'#suggest-a-correction-section')"/>
                                         <xsl:value-of select="'suggest a correction'"/>
                                     </a>
                                     <xsl:value-of select="'.'"/>
@@ -393,41 +406,146 @@
                                 <hr/>
                             </xsl:if>
                             
-                            <xsl:if test="m:translation/@status = $render-status">
+                            <xsl:if test="$translation/@status = $render-status">
                                 <h4>
                                     <xsl:value-of select="'How to cite this text'"/>
                                 </h4>
                                 <p class="small text-muted">
-                                    <xsl:value-of select="'The following is an example of how to correctly cite this publication. '"/>
+                                    <xsl:value-of select="'The following are examples of how to correctly cite this publication. '"/>
                                     <xsl:value-of select="'Links to specific passages can be derived by right-clicking on the milestones markers in the left-hand margin (e.g. s.1). The copied link address can replace the url below.'"/>
                                 </p>
-                                <p id="eft-citation">
-                                    <span class="content">
-                                        <xsl:value-of select="concat('84000: Translating the Words of the Buddha.', ' ')"/>
-                                        <span class="italic">
-                                            <xsl:value-of select="concat(m:translation/m:titles/m:title[@xml:lang eq 'en'],' ')"/>
-                                        </span>
-                                        <xsl:value-of select="'('"/>
-                                        <xsl:for-each select="(m:translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], m:translation/m:titles/m:title[@xml:lang eq 'bo'][text()])[1]">
-                                            <span>
-                                                <xsl:call-template name="class-attribute">
-                                                    <xsl:with-param name="lang" select="@xml:lang"/>
-                                                </xsl:call-template>
-                                                <xsl:value-of select="."/>
+                                
+                                <div class="citation-tabs">
+                                    
+                                    <ul class="nav nav-tabs sml-tabs" role="tablist">
+                                        <li role="presentation" class="active">
+                                            <a href="#eft-citation-cms" aria-controls="eft-citation-cms" role="tab" data-toggle="tab">
+                                                <xsl:attribute name="title" select="'Chicago Manual style'"/>
+                                                <xsl:value-of select="'Chicago'"/>
+                                            </a>
+                                        </li>
+                                        <li role="presentation">
+                                            <a href="#eft-citation-mla" aria-controls="eft-citation-mla" role="tab" data-toggle="tab">
+                                                <xsl:attribute name="title" select="'Modern Language Association style'"/>
+                                                <xsl:value-of select="'MLA'"/>
+                                            </a>
+                                        </li>
+                                        <li role="presentation">
+                                            <a href="#eft-citation-apa" aria-controls="eft-citation-apa" role="tab" data-toggle="tab">
+                                                <xsl:attribute name="title" select="'American Psychological Association style'"/>
+                                                <xsl:value-of select="'APA'"/>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="tab-content">
+                                        
+                                        <!-- CMS -->
+                                        <div role="tabpanel" class="tab-pane active eft-citation" id="eft-citation-cms">
+                                            <span class="content">
+                                                <xsl:value-of select="concat('84000.', ' ')"/>
+                                                <a class="italic underline">
+                                                    <xsl:attribute name="href" select="$translation/@canonical-html"/>
+                                                    <xsl:value-of select="string-join($translation/m:titles/m:title[@xml:lang eq 'en']/text())"/>
+                                                </a>
+                                                <xsl:value-of select="' ('"/>
+                                                <xsl:for-each select="(($translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()][1]), ($translation/m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1], $translation/m:toh/m:full)">
+                                                    <xsl:if test="position() gt 1">
+                                                        <xsl:value-of select="', '"/>
+                                                    </xsl:if>
+                                                    <span>
+                                                        <xsl:call-template name="class-attribute">
+                                                            <xsl:with-param name="lang" select="@xml:lang"/>
+                                                        </xsl:call-template>
+                                                        <xsl:value-of select="string-join(text())"/>
+                                                    </span>
+                                                </xsl:for-each>
+                                                <xsl:value-of select="'). '"/>
+                                                <xsl:value-of select="concat('Translated by ', $translation/m:publication/m:team[1]/m:label[1], '. ')"/>
+                                                <xsl:value-of select="concat('Online publication.', ' ')"/>
+                                                <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', $translation/m:publication/m:edition/tei:date[1], '. ')"/>
+                                                <span class="break">
+                                                    <xsl:value-of select="$translation/@canonical-html"/>
+                                                </span>
+                                                <xsl:value-of select="'.'"/>
                                             </span>
-                                        </xsl:for-each>
-                                        <xsl:value-of select="concat(', ', m:translation/m:toh/m:full, '). ')"/>
-                                        <xsl:value-of select="concat('Translated by ', m:translation/m:publication/m:team[1]/m:label[1], '. ')"/>
-                                        <xsl:value-of select="concat('Online publication.', ' ')"/>
-                                        <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', m:translation/m:publication/m:edition/tei:date[1], '. ')"/>
-                                        <span class="break">
-                                            <xsl:value-of select="m:translation/@canonical-html"/>
-                                        </span>
-                                    </span>
-                                    <a href="#" data-clipboard="#eft-citation .content">
-                                        <xsl:value-of select="'Copy'"/>
-                                    </a>
-                                </p>
+                                            <a href="#" data-clipboard="#eft-citation-cms .content">
+                                                <xsl:value-of select="'Copy'"/>
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- MLA -->
+                                        <div role="tabpanel" class="tab-pane eft-citation" id="eft-citation-mla">
+                                            <span class="content">
+                                                <xsl:value-of select="concat('84000.', ' ')"/>
+                                                <a class="italic underline">
+                                                    <xsl:attribute name="href" select="$translation/@canonical-html"/>
+                                                    <xsl:value-of select="string-join($translation/m:titles/m:title[@xml:lang eq 'en']/text())"/>
+                                                </a>
+                                                <xsl:value-of select="' ('"/>
+                                                <xsl:for-each select="(($translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()][1]), ($translation/m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1], $translation/m:toh/m:full)">
+                                                    <xsl:if test="position() gt 1">
+                                                        <xsl:value-of select="', '"/>
+                                                    </xsl:if>
+                                                    <span>
+                                                        <xsl:call-template name="class-attribute">
+                                                            <xsl:with-param name="lang" select="@xml:lang"/>
+                                                        </xsl:call-template>
+                                                        <xsl:value-of select="string-join(text())"/>
+                                                    </span>
+                                                </xsl:for-each>
+                                                <xsl:value-of select="'). '"/>
+                                                <xsl:value-of select="concat('Translated by ', $translation/m:publication/m:team[1]/m:label[1], ', ')"/>
+                                                <xsl:value-of select="concat('online publication,', ' ')"/>
+                                                <xsl:value-of select="concat('84000: Translating the Words of the Buddha, ', $translation/m:publication/m:edition/tei:date[1], ', ')"/>
+                                                <span class="break">
+                                                    <xsl:value-of select="replace($translation/@canonical-html, '^https://', '')"/>
+                                                </span>
+                                                <xsl:value-of select="'.'"/>
+                                            </span>
+                                            <a href="#" data-clipboard="#eft-citation-mla .content">
+                                                <xsl:value-of select="'Copy'"/>
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- APA -->
+                                        <div role="tabpanel" class="tab-pane eft-citation" id="eft-citation-apa">
+                                            <span class="content">
+                                                <xsl:value-of select="concat('84000.', $translation/m:publication/m:edition/tei:date[1] ! concat(' (',.,')'), ' ')"/>
+                                                <a class="italic underline">
+                                                    <xsl:attribute name="href" select="$translation/@canonical-html"/>
+                                                    <xsl:value-of select="string-join($translation/m:titles/m:title[@xml:lang eq 'en']/text())"/>
+                                                </a>
+                                                <xsl:value-of select="' ('"/>
+                                                <xsl:for-each select="(($translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()][1]), ($translation/m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1], $translation/m:toh/m:full)">
+                                                    <xsl:if test="position() gt 1">
+                                                        <xsl:value-of select="', '"/>
+                                                    </xsl:if>
+                                                    <span>
+                                                        <xsl:call-template name="class-attribute">
+                                                            <xsl:with-param name="lang" select="@xml:lang"/>
+                                                        </xsl:call-template>
+                                                        <xsl:value-of select="string-join(text())"/>
+                                                    </span>
+                                                </xsl:for-each>
+                                                <xsl:value-of select="'). '"/>
+                                                <xsl:value-of select="concat('(', $translation/m:publication/m:team[1]/m:label[1], ', Trans.). ')"/>
+                                                <xsl:value-of select="'Online publication. '"/>
+                                                <xsl:value-of select="'84000: Translating the Words of the Buddha. '"/>
+                                                <span class="break">
+                                                    <xsl:value-of select="$translation/@canonical-html"/>
+                                                </span>
+                                                <xsl:value-of select="'.'"/>
+                                            </span>
+                                            <a href="#" data-clipboard="#eft-citation-apa .content">
+                                                <xsl:value-of select="'Copy'"/>
+                                            </a>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                
+                                
                                 <hr/>
                             </xsl:if>
                             
@@ -437,7 +555,7 @@
                             <ul>
                                 
                                 <!-- Add a link to other texts by this author -->
-                                <xsl:for-each select="m:translation/m:source/m:attribution[@role = ('author', 'author-contested')][@xml:id]">
+                                <xsl:for-each select="$translation/m:source/m:attribution[@role = ('author', 'author-contested')][@xml:id]">
                                     
                                     <xsl:variable name="entity" select="key('entity-instance', @xml:id, $root)[1]/parent::m:entity" as="element(m:entity)?"/>
                                     <xsl:variable name="kb-page" select="key('related-pages', $entity/m:instance[@type eq 'knowledgebase-article'][1]/@id, $root)[1]" as="element(m:page)?"/>
@@ -526,7 +644,7 @@
  
         <!-- Pass the content to the page -->
         <xsl:call-template name="reading-room-page">
-            <xsl:with-param name="page-url" select="(m:translation/@canonical-html, '')[1]"/>
+            <xsl:with-param name="page-url" select="($translation/@canonical-html, '')[1]"/>
             <xsl:with-param name="page-class">
                 <xsl:value-of select="'reading-room'"/>
                 <xsl:value-of select="' translation'"/>
@@ -536,12 +654,12 @@
                 </xsl:if>
             </xsl:with-param>
             <xsl:with-param name="page-title" select="string-join(($page-title/data(), '84000 Reading Room'), ' / ')"/>
-            <xsl:with-param name="page-description" select="normalize-space(data(m:translation/m:part[@type eq 'summary']/tei:p[1]))"/>
+            <xsl:with-param name="page-description" select="normalize-space(data($translation/m:part[@type eq 'summary']/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
             <xsl:with-param name="additional-links">
                 
                 <!-- Add OPDS auto-discovery links for other formats -->
-                <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('epub', 'pdf')]">
+                <xsl:for-each select="$translation/m:downloads/m:download[@type = ('epub', 'pdf')]">
                     <link rel="alternate">
                         <xsl:attribute name="href" select="@url"/>
                         <xsl:choose>
@@ -560,7 +678,7 @@
                 <link rel="related" type="application/atom+xml;profile=opds-catalog;kind=acquisition" href="/section/all-translated.acquisition.atom" title="84000: All Translated Texts"/>
                 
             </xsl:with-param>
-            <xsl:with-param name="text-id" select="m:translation/@id"/>
+            <xsl:with-param name="text-id" select="$translation/@id"/>
         </xsl:call-template>
         
     </xsl:template>
@@ -687,8 +805,8 @@
     
     <xsl:template name="front-matter">
         
-        <xsl:variable name="main-titles" select="m:translation/m:titles/m:title[normalize-space(text())]"/>
-        <xsl:variable name="long-titles" select="m:translation/m:long-titles/m:title[normalize-space(text())]"/>
+        <xsl:variable name="main-titles" select="$translation/m:titles/m:title[normalize-space(text())]"/>
+        <xsl:variable name="long-titles" select="$translation/m:long-titles/m:title[normalize-space(text())]"/>
 
         <div class="row">
             
@@ -705,7 +823,7 @@
                                 </xsl:call-template>
                             </p>
                             
-                            <xsl:variable name="pdf-download" select="m:translation/m:downloads/m:download[@type eq 'pdf']"/>
+                            <xsl:variable name="pdf-download" select="$translation/m:downloads/m:download[@type eq 'pdf']"/>
                             <xsl:if test="$pdf-download">
                                 <p>
                                     <xsl:call-template name="text">
@@ -777,7 +895,7 @@
                             </div>
                         </xsl:if>
                         
-                        <xsl:variable name="sourceAuthors" select="m:translation/m:source/m:attribution[@role = ('author','author-contested')][@xml:id]"/>
+                        <xsl:variable name="sourceAuthors" select="$translation/m:source/m:attribution[@role = ('author','author-contested')][@xml:id]"/>
                         <xsl:if test="$sourceAuthors">
                             <div class="panel-row">
                                 <div class="text-muted">
@@ -823,7 +941,7 @@
                 </div>
                 
                 <!-- Long titles on a seperate page -->
-                <xsl:if test="$long-titles or m:translation[m:source]">
+                <xsl:if test="$long-titles or $translation[m:source]">
                     <div class="page">
                         
                         <xsl:if test="$long-titles">
@@ -835,28 +953,28 @@
                             </div>
                         </xsl:if>
                         
-                        <xsl:if test="m:translation[m:source]">
+                        <xsl:if test="$translation[m:source]">
                             <div id="toh">
                                 
                                 <div>
                                     <h3 class="dot-parenth">
-                                        <xsl:apply-templates select="m:translation/m:source/m:toh"/>
+                                        <xsl:apply-templates select="$translation/m:source/m:toh"/>
                                     </h3>
-                                    <xsl:if test="m:translation/m:source[m:scope//text()]">
+                                    <xsl:if test="$translation/m:source[m:scope//text()]">
                                         <p id="location">
-                                            <xsl:apply-templates select="m:translation/m:source/m:scope/node()"/>
+                                            <xsl:apply-templates select="$translation/m:source/m:scope/node()"/>
                                         </p>
                                     </xsl:if>
                                 </div>
                                 
-                                <xsl:if test="m:translation/m:source/m:isCommentaryOf">
+                                <xsl:if test="$translation/m:source/m:isCommentaryOf">
                                     <div class="top-margin">
                                         <div class="text-muted">
                                             <xsl:value-of select="common:small-caps('A commentary on')"/>
                                         </div>
                                         <div>
                                             <ul class="list-inline inline-dots dot-parenth">
-                                                <xsl:for-each select="m:translation/m:source/m:isCommentaryOf">
+                                                <xsl:for-each select="$translation/m:source/m:isCommentaryOf">
                                                     <xsl:variable name="commentary-title" select="(m:titles/m:title[@type eq 'toh'])[1]"/>
                                                     <li>
                                                         <a>
@@ -876,7 +994,7 @@
                                 <xsl:variable name="supplementaryRoles" select="('translator', 'reviser')"/>
                                 <xsl:for-each select="$supplementaryRoles">
                                     <xsl:variable name="supplementaryRole" select="."/>
-                                    <xsl:variable name="roleAttributions" select="$root//m:translation/m:source/m:attribution[@role eq $supplementaryRole][@xml:id]"/>
+                                    <xsl:variable name="roleAttributions" select="$translation/m:source/m:attribution[@role eq $supplementaryRole][@xml:id]"/>
                                     <xsl:if test="$roleAttributions">
                                         <div class="top-margin">
                                             <div class="text-muted">
@@ -919,7 +1037,7 @@
                 
                 <div class="page page-force">
                     
-                    <xsl:if test="m:translation[m:publication]">
+                    <xsl:if test="$translation[m:publication]">
                         
                         <img class="logo">
                             <!-- Update to set image in CSS -->
@@ -927,9 +1045,9 @@
                             <xsl:attribute name="alt" select="'84000 logo'"/>
                         </img>
                         
-                        <xsl:if test="m:translation[@status = $render-status] and m:translation/m:publication/m:contributors/m:summary[node()]">
+                        <xsl:if test="$translation[@status = $render-status] and $translation/m:publication/m:contributors/m:summary[node()]">
                             <div class="well">
-                                <xsl:for-each select="m:translation/m:publication/m:contributors/m:summary">
+                                <xsl:for-each select="$translation/m:publication/m:contributors/m:summary">
                                     <p id="authours-summary">
                                         <xsl:apply-templates select="node()"/>
                                     </p>
@@ -941,8 +1059,8 @@
                             
                             <p>
                                 <xsl:choose>
-                                    <xsl:when test="m:translation/m:publication/m:publication-date castable as xs:date">
-                                        <xsl:value-of select="concat('First published ', format-date(m:translation/m:publication/m:publication-date, '[Y]'))"/>
+                                    <xsl:when test="$translation/m:publication/m:publication-date castable as xs:date">
+                                        <xsl:value-of select="concat('First published ', format-date($translation/m:publication/m:publication-date, '[Y]'))"/>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:value-of select="'Not yet published'"/>
@@ -952,8 +1070,8 @@
                             
                             <p id="edition">
                                 <xsl:choose>
-                                    <xsl:when test="m:translation/m:publication/m:edition/tei:date[1] gt ''">
-                                        <xsl:value-of select="concat('Current version ', m:translation/m:publication/m:edition/text()[1], '(', m:translation/m:publication/m:edition/tei:date[1], ')')"/>
+                                    <xsl:when test="$translation/m:publication/m:edition/tei:date[1] gt ''">
+                                        <xsl:value-of select="concat('Current version ', $translation/m:publication/m:edition/text()[1], '(', $translation/m:publication/m:edition/tei:date[1], ')')"/>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:value-of select="'[No version]'"/>
@@ -966,7 +1084,7 @@
                             </p>
                             
                             <!-- Warning for part publications (Toh 8) -->
-                            <xsl:if test="m:translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
+                            <xsl:if test="$translation/m:part[@type eq 'translation']/m:part[@content-status eq 'unpublished']">
                                 <p>
                                     <span class="label label-info">
                                         <xsl:value-of select="'This is a partial publication, only including completed chapters'"/>
@@ -978,14 +1096,14 @@
                         
                         <div id="publication-statement">
                             <p>
-                                <xsl:apply-templates select="m:translation/m:publication/m:publication-statement"/>
+                                <xsl:apply-templates select="$translation/m:publication/m:publication-statement"/>
                             </p>
                         </div>
                         
-                        <xsl:if test="m:translation/m:publication/m:tantric-restriction[tei:p]">
+                        <xsl:if test="$translation/m:publication/m:tantric-restriction[tei:p]">
                             
                             <div id="tantric-warning" class="well well-danger">
-                                <xsl:for-each select="m:translation/m:publication/m:tantric-restriction/tei:p">
+                                <xsl:for-each select="$translation/m:publication/m:tantric-restriction/tei:p">
                                     <p>
                                         <xsl:apply-templates select="node()"/>
                                     </p>
@@ -1000,14 +1118,14 @@
                             
                         </xsl:if>
                         
-                        <xsl:if test="m:translation[@status = $render-status]">
+                        <xsl:if test="$translation[@status = $render-status]">
                             <div id="license">
                                 <img>
                                     <!-- Update to set image in CSS -->
-                                    <xsl:attribute name="src" select="replace(m:translation/m:publication/m:license/@img-url, '^http:', 'https:')"/>
+                                    <xsl:attribute name="src" select="replace($translation/m:publication/m:license/@img-url, '^http:', 'https:')"/>
                                     <xsl:attribute name="alt" select="'Logo for the license'"/>
                                 </img>
-                                <xsl:for-each select="m:translation/m:publication/m:license/tei:p">
+                                <xsl:for-each select="$translation/m:publication/m:license/tei:p">
                                     <p class="text-muted small">
                                         <xsl:apply-templates select="node()"/>
                                     </p>
@@ -1018,7 +1136,7 @@
                     </xsl:if>
                     
                     <!-- Additional front-matter -->
-                    <xsl:if test="m:translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf','epub')]]">
+                    <xsl:if test="$translation[@status = $render-status]/m:downloads[m:download[@type = ('pdf','epub')]]">
                         
                         <!-- Download options -->
                         <nav class="download-options hidden-print text-center bottom-margin" aria-label="download-options-header">
@@ -1027,7 +1145,7 @@
                                 <xsl:value-of select="'Options for downloading this publication'"/>
                             </header>
                             
-                            <xsl:for-each select="m:translation/m:downloads/m:download[@type = ('pdf','epub')]">
+                            <xsl:for-each select="$translation/m:downloads/m:download[@type = ('pdf','epub')]">
                                 <a target="_blank">
                                     <xsl:attribute name="title">
                                         <xsl:call-template name="download-label">
@@ -1046,7 +1164,7 @@
                                 </a>
                             </xsl:for-each>
                             
-                            <xsl:if test="m:translation[@status eq '1'] and $app-path">
+                            <xsl:if test="$translation[@status eq '1'] and $app-path">
                                 <a target="_blank">
                                     <xsl:attribute name="title">
                                         <xsl:call-template name="download-label">
@@ -1082,13 +1200,16 @@
     
     <xsl:template name="body-title">
         
-        <xsl:if test="m:translation/m:part[@type eq 'translation'] and $view-mode[not(@layout eq 'part-only')]">
+        <xsl:if test="$translation/m:part[@type eq 'translation'] and $view-mode[not(@layout eq 'part-only')]">
             <div class="row">
                 <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
                     
                     <section id="body-title">
                         
                         <xsl:call-template name="class-attribute">
+                            <xsl:with-param name="base-classes">
+                                <xsl:value-of select="'body-title'"/>
+                            </xsl:with-param>
                             <xsl:with-param name="html-classes" as="xs:string*">
                                 <xsl:value-of select="'part-type-translation'"/>
                                 <xsl:if test="$view-mode[not(@parts = ('part', 'passage'))] or $requested-part = ('all', 'body', 'body-title')">
@@ -1101,18 +1222,19 @@
                         
                         <div class="rw rw-section-head">
                             
-                            <xsl:attribute name="id" select="m:translation/m:part[@type eq 'translation']/@id"/>
+                            <xsl:attribute name="id" select="$translation/m:part[@type eq 'translation']/@id"/>
                             
                             <div class="rw-heading heading-section chapter">
                                 
-                                <xsl:variable name="translation-head" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
-                                <xsl:variable name="honoration" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'titleHon'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
-                                <xsl:variable name="main-title" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'titleMain'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
-                                <xsl:variable name="sub-title" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'sub'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
-                                <xsl:variable name="first-part-head" select="m:translation/m:part[@type eq 'translation']/m:part[1]/tei:head[@type eq parent::m:part/@type][normalize-space(text())][1]" as="element(tei:head)?"/>
+                                <xsl:variable name="translation-head" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+                                <xsl:variable name="honoration" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'titleHon'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+                                <xsl:variable name="main-title" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'titleMain'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+                                <xsl:variable name="sub-title" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'sub'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+                                <xsl:variable name="first-part-head" select="$translation/m:part[@type eq 'translation']/m:part[1]/tei:head[@type eq parent::m:part/@type][normalize-space(text())][1]" as="element(tei:head)?"/>
+                                <xsl:variable name="prelude" select="$translation/m:part[@type eq 'translation']/m:part[@type eq 'prelude']"/>
                                 
                                 <!-- If the first parent head is the same as the main title we want to use the translation part head in the first chapter, so not here -->
-                                <xsl:if test="$translation-head and data($first-part-head) and not(data($first-part-head) eq data($main-title))">
+                                <xsl:if test="$translation-head and data($first-part-head) and not(data($first-part-head) eq data($main-title)) and not($prelude)">
                                     <div class="h3">
                                         <xsl:value-of select="$translation-head[1]/node()"/>
                                     </div>
@@ -1147,6 +1269,59 @@
                                         </xsl:if>
                                     </div>
                                 </xsl:if>
+                                
+                            </div>
+                            
+                        </div>
+                        
+                    </section>
+                    
+                </div>
+            </div>
+        </xsl:if>
+        
+    </xsl:template>
+    
+    <xsl:template name="prelude-title">
+        
+        <xsl:if test="$translation/m:part[@type eq 'translation'] and $view-mode[not(@layout eq 'part-only')]">
+            <div class="row">
+                <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
+                    
+                    <section id="prelude-title">
+                        
+                        <xsl:call-template name="class-attribute">
+                            <xsl:with-param name="base-classes">
+                                <xsl:value-of select="'body-title'"/>
+                            </xsl:with-param>
+                            <xsl:with-param name="html-classes" as="xs:string*">
+                                <xsl:value-of select="'part-type-prelude'"/>
+                                <xsl:if test="$view-mode[not(@parts = ('part', 'passage'))] or $requested-part = ('all', 'body')">
+                                    <xsl:value-of select="'page'"/>
+                                </xsl:if>
+                            </xsl:with-param>
+                        </xsl:call-template>
+                        
+                        <hr class="hidden-print"/>
+                        
+                        <div class="rw rw-section-head">
+                            
+                            <xsl:attribute name="id" select="$translation/m:part[@type eq 'translation']/@id"/>
+                            
+                            <div class="rw-heading heading-section chapter">
+                                
+                                <xsl:variable name="translation-head" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'translation'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+                                <xsl:variable name="section-title" select="$translation/m:part[@type eq 'translation']/tei:head[@type eq 'titleCatalogueSection'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
+                                
+                                <xsl:if test="$translation-head">
+                                    <div class="h3">
+                                        <xsl:value-of select="$translation-head[1]/node()"/>
+                                    </div>
+                                </xsl:if>
+                                
+                                <div class="h1 break">
+                                    <xsl:apply-templates select="$section-title[1]/node()"/>
+                                </div>
                                 
                             </div>
                             

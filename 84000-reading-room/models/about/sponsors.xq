@@ -23,7 +23,7 @@ let $cached := common:cache-get($request, $cache-key)
 return if($cached) then $cached else
 
 let $sponsor-ids := $sponsors:sponsors/m:sponsors/m:sponsor[m:type/@id = ('founding', 'matching-funds')]/@xml:id
-let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
+let $sponsors := sponsors:sponsors($sponsor-ids, false())
 let $sponsored-texts := translations:sponsored-texts()
 
 let $entities := 

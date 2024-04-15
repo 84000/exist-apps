@@ -48,6 +48,7 @@ declare variable $translation:type-labels := map {
     'preface':        map {'prefix':'pf','label':'Preface'},
     'introduction':   map {'prefix':'i', 'label':'Introduction'},
     'translation':    map {'prefix':'tr','label':'The Translation'},
+    'prelude':        map {'prefix':'pl','label':'Prelude'},
     'prologue':       map {'prefix':'p', 'label':'Prologue'},
     'colophon':       map {'prefix':'c', 'label':'Colophon'},
     'homage':         map {'prefix':'h', 'label':'Homage'},
@@ -1145,7 +1146,7 @@ declare function translation:body($tei as element(tei:TEI)) as element(m:part)? 
 declare function translation:body($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $chapter-id as xs:string?) as element(m:part)? {
     
     let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
-    let $parts := $translation/tei:div[@type = ('section', 'chapter', 'prologue', 'colophon', 'homage')]
+    let $parts := $translation/tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'colophon', 'homage')]
     let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
     
     where $translation
@@ -1158,7 +1159,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute glossarize { 'mark' },
             attribute prefix { $translation:type-labels($translation/@type)('prefix') },
             
-            $translation/tei:head[@type = ('translation', 'titleHon', 'titleMain', 'sub')],
+            $translation/tei:head[@type = ('translation', 'titleHon', 'titleMain', 'titleCatalogueSection', 'sub')],
             
             for $part at $section-index in $parts
                 
@@ -1167,7 +1168,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                 
                 (: If there's no section header derive one :)
                 let $part-title :=
-                    if ($part/@type = ('prologue', 'colophon', 'homage') and not($part/tei:head[@type = $part/@type])) then
+                    if ($part/@type = ('prologue', 'prelude', 'colophon', 'homage') and not($part/tei:head[@type = $part/@type])) then
                         text { $translation:type-labels($part/@type)('label') }
                     
                     else ()
@@ -1784,20 +1785,21 @@ declare function translation:folio-content($tei as element(tei:TEI), $source-key
 
 declare function translation:sponsors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element(m:sponsors) {
     
-    let $translation-sponsors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor
-    
-    let $sponsor-ids := $sponsors:sponsors//m:instance[@id = $translation-sponsors/@xml:id]/parent::m:sponsor/@xml:id
-    
-    let $sponsors := sponsors:sponsors($sponsor-ids, false(), false())
-    
-    let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
+    (: Get sponsors for text :)
+    let $sponsorship := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor
+    let $sponsors := $sponsors:sponsors//m:instance[@id = $sponsorship/@xml:id]/parent::m:sponsor
     
     return
-        element {QName('http://read.84000.co/ns/1.0', 'sponsors')} {
-            $sponsors/m:sponsor,
+        element { QName('http://read.84000.co/ns/1.0', 'sponsors') } {
+            
+            $sponsors ! sponsors:sponsor(@xml:id, false(), false()),
+            
             if ($include-acknowledgements) then
                 
-                (: Use the label from the entities file unless it's specified in the tei :)
+                (: Get acknowledgement for this text only :)
+                sponsors:acknowledgement($sponsors, $tei)
+                
+                (:(\: Use the label from the entities file unless it's specified in the tei :\)
                 let $sponsor-strings :=
                     for $translation-sponsor in $translation-sponsors
                         let $translation-sponsor-text := $translation-sponsor
@@ -1846,7 +1848,7 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
                                 }
                             )
                             else ()
-                    }
+                    }:)
             else ()
         
         }
@@ -1854,11 +1856,9 @@ declare function translation:sponsors($tei as element(tei:TEI), $include-acknowl
 
 declare function translation:contributors($tei as element(tei:TEI), $include-acknowledgements as xs:boolean) as element(m:contributors) {
     
-    let $translation-contributors := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[local-name(.) = ('author','editor','consultant')](:[not(@role eq 'translatorMain')]:)
+    let $contributions := $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:*[local-name(.) = ('author','editor','consultant')](:[not(@role eq 'translatorMain')]:)
     
-    let $contributors := $contributors:contributors//m:instance[@id = $translation-contributors/@xml:id]/parent::*[self::m:person | self::m:team]
-    
-    let $acknowledgment := $tei/tei:text/tei:front/tei:div[@type eq "acknowledgment"]
+    let $contributors := $contributors:contributors//m:instance[@id = $contributions/@xml:id]/parent::*[self::m:person | self::m:team]
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'contributors')} {(
@@ -1867,28 +1867,8 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
             
             if ($include-acknowledgements) then
                 
-                (: Use the label from the entities file unless it's specified in the tei :)
-                let $contributor-strings :=
-                    for $translation-contributor in $translation-contributors
-                    return
-                        if ($translation-contributor[text()]) then
-                            $translation-contributor/text()
-                        else 
-                            $contributors[m:instance/@id = $translation-contributor/@xml:id]/m:label/text()
+                contributors:acknowledgement($contributors, $tei)
                 
-                let $marked-paragraphs :=
-                    if ($acknowledgment/tei:p and $contributor-strings) then
-                        let $mark-contributor-strings := $contributor-strings ! normalize-space(lower-case(replace(., $contributors:person-prefixes, '')))
-                        return
-                            common:mark-nodes($acknowledgment/tei:p, $mark-contributor-strings, 'phrase')
-                    else ()
-                
-                return
-                    element tei:div {
-                        attribute type {'acknowledgment'},
-                        $marked-paragraphs[exist:match]
-                    }
-            
             else ()
                 
         )}

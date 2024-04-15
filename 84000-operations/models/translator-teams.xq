@@ -10,7 +10,6 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $include-acknowledgements := (request:get-parameter('include-acknowledgements', '1') gt '0')
 let $delete-team-id := request:get-parameter('delete', '')
 
 let $delete-team := 
@@ -23,8 +22,8 @@ let $xml-response :=
         'operations/translator-teams', 
         'operations', 
         (
-            <request xmlns="http://read.84000.co/ns/1.0" include-acknowledgements="{ $include-acknowledgements }"/>,
-            contributors:teams(true(), $include-acknowledgements, true())
+            <request xmlns="http://read.84000.co/ns/1.0"/>,
+            contributors:teams(true(), true())
         )
     )
 

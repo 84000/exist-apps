@@ -65,6 +65,7 @@
     <xsl:template name="text-sponsors-form">
         <form method="post" class="form-horizontal form-update" data-loading="Updating sponsors...">
             <xsl:attribute name="action" select="'edit-text-sponsors.html'"/>
+            
             <input type="hidden" name="form-action" value="update-sponsorship"/>
             <input type="hidden" name="post-id">
                 <xsl:attribute name="value" select="$text/@id"/>
@@ -72,8 +73,10 @@
             <input type="hidden" name="sponsorship-project-id">
                 <xsl:attribute name="value" select="m:sponsorship-status/@project-id"/>
             </input>
+            
             <div class="row">
                 <div class="col-sm-8">
+                    
                     <fieldset>
                         <legend>
                             <xsl:value-of select="'Project'"/>
@@ -126,6 +129,7 @@
                             </div>
                         </div>
                     </fieldset>
+                    
                     <fieldset class="tests">
                         
                         <legend>
@@ -274,26 +278,27 @@
                     
                 </div>
                 <div class="col-sm-4">
-                    <div class="text-bold">
+                    <h3>
                         <xsl:value-of select="'Acknowledgment'"/>
-                    </div>
-                    <xsl:if test="$text/m:sponsors/tei:div[@type eq 'acknowledgment']/@generated">
-                        <div class="alert alert-warning small sml-margin bottom">
-                            <p>Text auto-generated from the list. No acknowledgment found in the TEI.</p>
-                        </div>
-                    </xsl:if>
-                    <xsl:if test="$text/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p">
-                        <xsl:apply-templates select="$text/m:sponsors/tei:div[@type eq 'acknowledgment']/tei:p"/>
-                        <hr/>
-                    </xsl:if>
-                    <p class="small text-muted">
-                        <xsl:value-of select="'If a sponsor is not automatically recognised in the acknowledgement text then please specify what they are &#34;expressed as&#34;. If a sponsor is already highlighted then you can leave this field blank.'"/>
-                    </p>
+                    </h3>
+                    <xsl:choose>
+                        <xsl:when test="$text/m:sponsors/m:acknowledgement[tei:p]">
+                            <xsl:apply-templates select="$text/m:sponsors/m:acknowledgement/tei:p"/>
+                            <hr/>
+                            <p class="small text-muted">
+                                <xsl:value-of select="'If a sponsor is not automatically recognised in the acknowledgement text then please specify what they are &#34;expressed as&#34;. If a sponsor is already highlighted then you can leave this field blank.'"/>
+                            </p>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <p class="small text-muted">
+                                <xsl:value-of select="'Not yet provided'"/>
+                            </p>
+                        </xsl:otherwise>
+                    </xsl:choose>
                 </div>
             </div>
             
             <hr class="sml-margin"/>
-            
             
             <div class="form-group">
                 <div class="col-sm-12">

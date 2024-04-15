@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -394,11 +394,11 @@
             <div class="fix-width">
                 <div class="sidebar-content">
                     
-                    <h4>
+                    <h4 class="hidden">
                         <xsl:value-of select="'84000 Project Management'"/>
                     </h4>
                     
-                    <table class="table table-hover">
+                    <table class="table table-hover no-border">
                         <tbody>
                             <tr>
                                 <xsl:if test="$active-tab eq 'operations/index'">
@@ -490,8 +490,6 @@
                                     </a>
                                 </td>
                             </tr>
-                        </tbody>
-                        <tfoot>
                             <tr>
                                 <td>
                                     <a target="reading-room">
@@ -500,7 +498,7 @@
                                     </a>
                                 </td>
                             </tr>
-                        </tfoot>
+                        </tbody>
                     </table>
                 
                 </div>
@@ -521,7 +519,7 @@
     <!-- Acknowledgements -->
     <xsl:template name="acknowledgements">
         
-        <xsl:param name="acknowledgements" required="yes"/>
+        <xsl:param name="acknowledgements" as="element(m:acknowledgement)*"/>
         <xsl:param name="group" as="xs:string" required="yes"/>
         <xsl:param name="css-class" as="xs:string" required="yes"/>
         <xsl:param name="link-href" as="xs:string" required="yes"/>
@@ -562,35 +560,35 @@
                                 </span>
                             </div>
                             
-                            <div class="small">
-                                
-                                <!-- Contributions -->
-                                <xsl:if test="m:contribution">
-                                    <div>
-                                        <ul class="list-inline inline-dots">
-                                            <xsl:for-each select="m:contribution">
-                                                <xsl:variable name="contribution" select="."/>
-                                                <li class="text-warning">
-                                                    <xsl:value-of select="/m:response/m:contributor-types/m:contributor-type[@node-name eq $contribution/@node-name][@role eq $contribution/@role]/m:label"/>
-                                                </li>
-                                            </xsl:for-each>
-                                        </ul>  
-                                    </div>
-                                </xsl:if>
-                                
-                                <!-- Acknowledgment statement -->
-                                <xsl:choose>
-                                    <xsl:when test="tei:div[@type eq 'acknowledgment'][descendant::text()[normalize-space()]]">
-                                        <xsl:apply-templates select="tei:div[@type eq 'acknowledgment']/node()"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <p class="text-muted italic">
-                                            <xsl:value-of select="'Not explicitly mentioned in the acknowledgment statement'"/>
-                                        </p>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                                
-                            </div>
+                            <!-- Contributions -->
+                            <xsl:if test="m:contribution[not(@role eq 'translatorMain')]">
+                                <div>
+                                    <ul class="list-inline inline-dots">
+                                        <xsl:for-each select="m:contribution">
+                                            <xsl:variable name="contribution" select="."/>
+                                            <li class="text-warning">
+                                                <xsl:value-of select="/m:response/m:contributor-types/m:contributor-type[@node-name eq $contribution/@node-name][@role eq $contribution/@role]/m:label"/>
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>  
+                                </div>
+                            </xsl:if>
+                            
+                            <!-- Acknowledgment statement -->
+                            <xsl:if test="not(tei:p[descendant::exist:match]) and @status-group eq 'published'">
+                                <p>
+                                    <span class="label label-danger">
+                                        <xsl:value-of select="'No explicit mention found in the acknowledgment statement'"/>
+                                    </span>
+                                </p>
+                            </xsl:if>
+                            
+                            <xsl:if test="tei:p">
+                                <div class="small sml-margin top">
+                                    <xsl:apply-templates select="tei:p"/>
+                                </div>
+                            </xsl:if>
+                        
                         </div>
                     </div>
                 </xsl:for-each>
@@ -1981,6 +1979,18 @@
             </ul>
         </xsl:if>
         
+    </xsl:template>
+    
+    <xsl:template match="tei:p">
+        <p>
+            <xsl:apply-templates select="node()"/>
+        </p>
+    </xsl:template>
+    
+    <xsl:template match="exist:match">
+        <span class="mark">
+            <xsl:apply-templates select="node()"/>
+        </span>
     </xsl:template>
     
 </xsl:stylesheet>

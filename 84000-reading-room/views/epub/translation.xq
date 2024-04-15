@@ -62,10 +62,19 @@ let $entries := (
                     for $part in $data/m:response/m:translation/m:part[not(@type eq 'citation-index')]
                     return (
                     
+                        if($part[@type eq 'translation'][m:part[@type eq 'prelude']]) then (
+                            <item id="prelude-title" href="prelude-title.xhtml" media-type="application/xhtml+xml"/>,
+                            for $chapter in $part/m:part[@type eq 'prelude']
+                            return
+                                <item id="{ $chapter/@id }" href="{ $chapter/@id }.xhtml" media-type="application/xhtml+xml"/>
+                        )
+                        else ()
+                        ,
+                    
                         <item id="{ $part/@id }" href="{ $part/@id }.xhtml" media-type="application/xhtml+xml"/>,
                         
                         if($part[@type = ('translation', 'appendix')]) then
-                            for $chapter in $part/m:part
+                            for $chapter in $part/m:part[not(@type eq 'prelude')]
                             return
                                 <item id="{ $chapter/@id }" href="{ $chapter/@id }.xhtml" media-type="application/xhtml+xml"/>
                         else ()
@@ -82,10 +91,19 @@ let $entries := (
                     for $part in $data/m:response/m:translation/m:part[not(@type eq 'citation-index')]
                     return (
                     
+                        if($part[@type eq 'translation'][m:part[@type eq 'prelude']]) then (
+                            <itemref idref="prelude-title"/>,
+                            for $chapter in $part/m:part[@type eq 'prelude']
+                            return
+                                <itemref idref="{ $chapter/@id }"/>
+                        )
+                        else ()
+                        ,
+                    
                         <itemref idref="{ $part/@id }"/>,
                         
                         if($part[@type = ('translation', 'appendix')]) then
-                            for $chapter in $part/m:part
+                            for $chapter in $part/m:part[not(@type eq 'prelude')]
                             return
                                 <itemref idref="{ $chapter/@id }"/>
                         else ()
@@ -115,15 +133,31 @@ let $entries := (
     <entry name="OEBPS/contents.xhtml" type="xml">{ transform:transform($data, doc('xslt/contents.xsl'), ()) }</entry>,
     for $part in $data/m:response/m:translation/m:part[not(@type eq 'citation-index')]
     return (
-    
+        
+        if($part[@type eq 'translation']/m:part[@type eq 'prelude']) then (
+            
+            <entry name="OEBPS/prelude-title.xhtml" type="xml">{ transform:transform($data, doc('xslt/prelude-title.xsl'), ()) }</entry>,
+        
+           for $chapter in $part/m:part[@type eq 'prelude']
+           let $parameters := 
+                <parameters>
+                    <param name="part-id" value="{ $chapter/@id }"/>
+                </parameters>
+            return
+                <entry name="OEBPS/{ $chapter/@id }.xhtml" type="xml">{transform:transform($data, doc('xslt/chapter.xsl'), $parameters)}</entry>
+                
+        )
+        else()
+        ,
+        
         <entry name="OEBPS/{ $part/@id }.xhtml" type="xml">{ transform:transform($data, doc(concat('xslt/', $part/@type, '.xsl')), ()) }</entry>,
         
         if($part[@type = ('translation', 'appendix')]) then
-            for $chapter in $part/m:part
-                let $parameters := 
-                    <parameters>
-                        <param name="part-id" value="{ $chapter/@id }"/>
-                    </parameters>
+            for $chapter in $part/m:part[not(@type eq 'prelude')]
+            let $parameters := 
+                <parameters>
+                    <param name="part-id" value="{ $chapter/@id }"/>
+                </parameters>
             return
                 <entry name="OEBPS/{ $chapter/@id }.xhtml" type="xml">{transform:transform($data, doc('xslt/chapter.xsl'), $parameters)}</entry>
         else ()

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xf="http://exist-db.org/xquery/file" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
@@ -150,11 +150,11 @@
             <div class="fix-width">
                 <div class="sidebar-content">
                     
-                    <h4>
+                    <h4 class="hidden">
                         <xsl:value-of select="'84000 Publishing Utilities'"/>
                     </h4>
                     
-                    <table class="table table-hover">
+                    <table class="table table-hover no-border">
                         <tbody>
                             <xsl:for-each select="$tabs//m:tab[@page]">
                                 <tr>
@@ -170,8 +170,6 @@
                                     </td>
                                 </tr>
                             </xsl:for-each>
-                        </tbody>
-                        <tfoot>
                             <tr>
                                 <td>
                                     <a target="reading-room">
@@ -180,8 +178,9 @@
                                     </a>
                                 </td>
                             </tr>
-                        </tfoot>
+                        </tbody>
                     </table>
+                    
                 </div>
             </div>
             

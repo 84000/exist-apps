@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -69,13 +69,7 @@
                                                     
                                                     <br/>
                                                     
-                                                    <a data-toggle="collapse">
-                                                        
-                                                        <xsl:attribute name="href" select="concat('#team-acknowledgements-', $team-id)"/>
-                                                        
-                                                        <xsl:if test="not(m:acknowledgement)">
-                                                            <xsl:attribute name="class" select="'disabled'"/>
-                                                        </xsl:if>
+                                                    <span>
                                                         
                                                         <span class="badge badge-notification">
                                                             <xsl:value-of select="count(m:instance)"/>
@@ -92,7 +86,7 @@
                                                             </xsl:choose>
                                                         </span>
                                                         
-                                                    </a>
+                                                    </span>
                                                     
                                                 </div>
                                                 
@@ -130,24 +124,7 @@
                                             
                                             </div>
                                             
-                                            <div class="collapse">
-                                                
-                                                <xsl:variable name="section-id" select="concat('team-acknowledgements-', $team-id)"/>
-                                                <xsl:attribute name="id" select="$section-id"/>
-                                                
-                                                <div class="top-margin">
-                                                    <xsl:call-template name="acknowledgements">
-                                                        <xsl:with-param name="acknowledgements" select="m:acknowledgement"/>
-                                                        <xsl:with-param name="group" select="''"/>
-                                                        <xsl:with-param name="css-class" select="''"/>
-                                                        <xsl:with-param name="link-href" select="'/edit-text-header.html?id=@translation-id'"/>
-                                                    </xsl:call-template>
-                                                </div>
-                                                
-                                            </div>
-                                            
                                         </div>
-                                        
                                         
                                     </xsl:for-each>
                                 </div>

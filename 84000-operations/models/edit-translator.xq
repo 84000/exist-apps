@@ -39,7 +39,7 @@ let $xml-response :=
                 { if($new-id) then <updated node="translator" update="insert"/> else () }
             </updates>,
             $contributor,
-            contributors:teams(true(), false(), false()),
+            contributors:teams(true(), false()),
             contributors:institutions(false()),
             $contributors:contributor-types
         )

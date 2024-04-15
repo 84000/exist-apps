@@ -22,7 +22,7 @@ declare function sponsors:sponsor-id($sponsor-uri as xs:string) as xs:string {
     lower-case(replace($sponsor-uri, '^eft:', '', 'i'))
 };
 
-declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
+declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-internal-names as xs:boolean) as element() {
 
     let $sponsors-ordered := 
         for $sponsor in 
@@ -34,13 +34,11 @@ declare function sponsors:sponsors($sponsor-ids as xs:string*, $include-acknowle
         return $sponsor
     
     return
-        <sponsors xmlns="http://read.84000.co/ns/1.0">
-        {
+        element { QName('http://read.84000.co/ns/1.0', 'sponsors') } {
             for $sponsor in $sponsors-ordered
             return
-                sponsors:sponsor($sponsor/@xml:id, $include-acknowledgements, $include-internal-names)
+                sponsors:sponsor($sponsor/@xml:id, false(), $include-internal-names)
          }
-         </sponsors>
 };
 
 declare function sponsors:sponsor($id as xs:string, $include-acknowledgements as xs:boolean, $include-internal-names as xs:boolean) as element() {
@@ -70,41 +68,38 @@ declare function sponsors:acknowledgements($uri as xs:string) as element()* {
     let $sponsor := $sponsors:sponsors/id($sponsor-id)[self::m:sponsor]
     
     for $tei in $sponsors:texts//tei:TEI[tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@xml:id = $sponsor/m:instance/@id]]
+    return
+        sponsors:acknowledgement($sponsor, $tei)
+        
+};
+
+declare function sponsors:acknowledgement($sponsors as element(m:sponsor)*, $tei as element(tei:TEI)) as element()* {
     
-        let $translation-sponsor := $tei//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:sponsor[@xml:id = $sponsor/m:instance/@id][1]
+    let $sponsorship := $tei/id($sponsors/m:instance/@id)[self::tei:sponsor]
+    
+    let $sponsor-names := distinct-values(($sponsorship ! string-join(text()), $sponsors/m:label ! string-join(text()) ! normalize-space(.) ! lower-case(.) ! replace(., $sponsors:prefixes, '') ! normalize-space(.)))
+    
+    let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]/tei:p ! element { QName('http://www.tei-c.org/ns/1.0', 'p') } { string-join(.) }
+    
+    let $marked-paragraphs := common:mark-nodes($acknowledgment, $sponsor-names, 'phrase')
+    
+    let $title := tei-content:title-any($tei)
+    let $translation-id := tei-content:id($tei)
+    let $status := tei-content:publication-status($tei)
+    let $status-group := tei-content:publication-status-group($tei)
+    
+    return
+        element { QName('http://read.84000.co/ns/1.0', 'acknowledgement') } {
+            attribute translation-id { $translation-id },
+            attribute status {$status},
+            attribute status-group { $status-group },
+            element m:title { text { $title } },
+            translation:toh($tei, ''),
+            (:$mark-sponsor-names ! element name { . },:)
+            $marked-paragraphs(:[exist:match]:),
+            sponsorship:text-status($translation-id, false())
+        }
         
-        let $sponsor-name := 
-            if($translation-sponsor/text() gt '') then
-                $translation-sponsor/text()
-            else
-                $sponsor/m:label/text()
-        
-        let $acknowledgment := $tei//tei:front/tei:div[@type eq "acknowledgment"]
-        
-        let $mark-sponsor-name := normalize-space(lower-case(replace($sponsor-name, $sponsors:prefixes, '')))
-        
-        let $marked-paragraphs := common:mark-nodes($acknowledgment/tei:p, $mark-sponsor-name, 'phrase')
-        
-        let $title := tei-content:title-any($tei)
-        let $translation-id := tei-content:id($tei)
-        let $status := tei-content:publication-status($tei)
-        let $status-group := tei-content:publication-status-group($tei)
-        
-        for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-            let $toh := translation:toh($tei, $toh-key)
-        return
-            element { QName('http://read.84000.co/ns/1.0', 'acknowledgement') } {
-                attribute translation-id { $translation-id },
-                attribute status {$status},
-                attribute status-group { $status-group },
-                element m:title { text { $title } },
-                $toh,
-                element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
-                    attribute type {'acknowledgment'},
-                    $marked-paragraphs[exist:match]
-                },
-                sponsorship:text-status($translation-id, false())
-            }
 };
 
 declare function sponsors:next-id() as xs:integer {

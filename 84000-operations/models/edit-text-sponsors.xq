@@ -85,7 +85,7 @@ let $xml-response :=
                 { $updated }
             </updates>,
             $text,
-            sponsors:sponsors('all', false(), true()),
+            sponsors:sponsors('all', true()),
             sponsorship:text-status($text-id, true()),
             tei-content:text-statuses-selected(tei-content:publication-status($tei), 'translation')
         )

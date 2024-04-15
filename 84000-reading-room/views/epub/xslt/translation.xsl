@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="epub-page.xsl"/>
@@ -14,15 +14,15 @@
         <xsl:variable name="main-title" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'titleMain'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
         <xsl:variable name="sub-title" select="m:translation/m:part[@type eq 'translation']/tei:head[@type eq 'sub'][not(@key) or @key eq $toh-key][normalize-space(text())]" as="element(tei:head)?"/>
         <xsl:variable name="first-part-head" select="m:translation/m:part[@type eq 'translation']/m:part[1]/tei:head[@type eq parent::m:part/@type][normalize-space(text())][1]" as="element(tei:head)?"/>
+        <xsl:variable name="prelude" select="m:translation/m:part[@type eq 'translation']/m:part[@type eq 'prelude']"/>
         
         <xsl:call-template name="epub-page">
             <xsl:with-param name="page-title" select="'The Translation'"/>
             <xsl:with-param name="content">
-                <section epub:type="halftitle" id="body-title" class="new-page heading-section">
-                    
+                <section epub:type="halftitle" id="body-title" class="new-page heading-section body-title">
                     
                     <!-- If the first parent head is the same as the main title we want to use the translation part head in the first chapter, so not here -->
-                    <xsl:if test="$translation-head and data($first-part-head) and not(data($first-part-head) eq data($main-title))">
+                    <xsl:if test="$translation-head and data($first-part-head) and not(data($first-part-head) eq data($main-title)) and not($prelude)">
                         <div class="h3">
                             <xsl:value-of select="$translation-head[1]/node()"/>
                         </div>

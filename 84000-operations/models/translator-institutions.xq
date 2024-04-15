@@ -10,7 +10,6 @@ declare namespace m="http://read.84000.co/ns/1.0";
 declare option exist:serialize "method=xml indent=no";
 
 let $resource-suffix := request:get-parameter('resource-suffix', '')
-let $include-contributors := (request:get-parameter('include-contributors', '') gt '0')
 let $delete-institution-id := request:get-parameter('delete', '')
 
 let $delete-institution := 
@@ -24,13 +23,10 @@ let $xml-response :=
         'operations/translator-institutions', 
         'operations', 
         (
-            <request xmlns="http://read.84000.co/ns/1.0" include-contributors="{ $include-contributors }"/>,
+            <request xmlns="http://read.84000.co/ns/1.0"/>,
             contributors:institutions(false()),
             contributors:regions(false()),
-            contributors:institution-types(false()),
-            if($include-contributors) then
-                contributors:persons(false())
-            else ()
+            contributors:institution-types(false())
         )
     )
     
