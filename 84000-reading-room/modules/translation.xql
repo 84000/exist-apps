@@ -1011,11 +1011,11 @@ declare function translation:chapter-prefix($chapter as element(tei:div)) as xs:
         (: If there's an @prefix then let it override the chapter index :)
         if ($chapter/@prefix gt '') then 
             $chapter/@prefix
-        else if ($chapter/@type = ('prologue', 'colophon', 'homage')) then 
+        else if ($chapter/@type = ('prelude', 'prologue', 'colophon', 'homage')) then 
             $translation:type-labels($chapter/@type)('prefix')
             (:map:get($translation:type-prefixes, $chapter/@type):)
         else 
-            functx:index-of-node($root-part/tei:div[not(@type = ('prologue', 'colophon', 'homage'))], $chapter)
+            functx:index-of-node($root-part/tei:div[not(@type = ('prelude', 'prologue', 'colophon', 'homage'))], $chapter)
     
     return
         concat($root-prefix, $chapter-prefix)

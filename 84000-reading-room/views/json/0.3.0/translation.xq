@@ -56,11 +56,11 @@ declare function local:parse-translation() {
         - eft:isCommentaryOf:               /translation/UT23703-093-001.json?api-version=0.3.0
     :)
     
-    $local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation('eft:isCatalogueSectionChapter'),
+    (:$local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation('eft:isCatalogueSectionChapter'),:)
     
-    $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target)),
+    (:$local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target)),:)
     
-    local:translation-project(),
+    (:local:translation-project(),:)
     
     local:titles()
     
@@ -99,7 +99,7 @@ declare function local:titles(){
         
             attribute titleType { $title-type },
             
-            $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),
+            (:$title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),:)
             
             for $title-single in $title
             return
@@ -107,11 +107,11 @@ declare function local:titles(){
                     
                     attribute language { ($title-single/@xml:lang, 'en')[1] },
                     
-                    element {'content'} { string-join($title-single/text()) ! normalize-space(.) },
+                    element {'content'} { string-join($title-single/text()) ! normalize-space(.) }(:,:)
                     
-                    $title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),
+                    (:$title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),:)
                     
-                    $title-single/@*[not(name(.) = ('xml:lang','type','rend','key'))] ! element { name(.) } { . }
+                    (:$title-single/@*[not(name(.) = ('xml:lang','type','rend','key'))] ! element { name(.) } { . }:)
                     
                 }
                 
@@ -123,7 +123,7 @@ declare function local:titles(){
             
                 attribute titleType { 'eft:mainTitleOutsideCatalogueSection' },
             
-                $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),
+                (:$title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),:)
             
                 element label {
                     

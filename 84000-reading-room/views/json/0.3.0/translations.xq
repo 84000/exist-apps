@@ -18,7 +18,7 @@ declare variable $local:api-version := '0.3.0';
 
 element translations {
 
-    attribute type { 'translations' },
+    attribute modelType { 'translations' },
     attribute apiVersion { $local:api-version },
     attribute url { concat('/translations.json?api-version=', $local:api-version) },
     
@@ -30,7 +30,8 @@ element translations {
             attribute workId { $text-id },
             attribute workType { 'eft:translation' },
             attribute url { concat('/translation/', $text-id,'.json?api-version=', $local:api-version) },
-            attribute htmlUrl { concat('https://read.84000.co', '/translation/', $text-id, '.html') }
+            attribute htmlUrl { concat('https://read.84000.co', '/translation/', $text-id, '.html') },
+            element catalogueWorkId { string-join($tei/tei:teiHeader//tei:sourceDesc/tei:bibl[@key]/@key, ',') }
         }
 
 }

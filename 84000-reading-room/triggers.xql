@@ -89,16 +89,16 @@ declare function local:permanent-ids($doc) {
         ,
         
         (: If any parts are missing a @xml:id then re-calculate all :)
-        let $part-missing-id := $tei//tei:text//tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')][not(@xml:id) or @xml:id eq '']
+        let $part-missing-id := $tei//tei:text//tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')][not(@xml:id) or @xml:id eq '']
         where $part-missing-id
-            for $part in $tei//tei:text//tei:div[@type][@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
+            for $part in $tei//tei:text//tei:div[@type][@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]
             
             (: Get the base type - except for translation :)
             let $base-type := $part/ancestor::tei:div[not(@type eq 'translation')][last()]/@type
             
             (: Get the index of this part in each ancestor part :)
             let $part-indexes := 
-                for $ancestor-or-self in $part/ancestor-or-self::tei:div[@type = ('section', 'chapter', 'prologue', 'homage', 'colophon')]
+                for $ancestor-or-self in $part/ancestor-or-self::tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]
                 return (
                     if($ancestor-or-self[@prefix]) then $ancestor-or-self/@prefix ! replace(., '\W', '-')
                     else if($ancestor-or-self/@type eq 'prologue') then if ($base-type) then 'p' else ()

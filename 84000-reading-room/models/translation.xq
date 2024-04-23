@@ -171,9 +171,9 @@ return
         return
             
             (: html :)
-            if($request/@resource-suffix = ('html')) then 
+            if($request/@resource-suffix = ('html','xhtml')) then 
                 common:html($xml-response, concat($common:app-path, "/views/html/translation.xsl"), $cache-key)
-            
+
             (: xml :)
             else 
                 common:serialize-xml($xml-response)

@@ -132,7 +132,7 @@ declare function local:text($text-tei as element(tei:TEI), $source-id as xs:stri
 };
 
 element sections {
-    attribute type { 'catalogueSections' },
+    attribute modelType { 'catalogueSections' },
     attribute apiVersion { $local:api-version },
     attribute url { concat('/sections.json?api-version=', $local:api-version) },
     
