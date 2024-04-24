@@ -187,7 +187,6 @@ element work {
     
     attribute workId { $local:text-id },
     attribute workType { 'eft:translation' },
-    attribute url { concat('/translation/', $local:text-id,'.json?api-version=', '0.3.0') },
     attribute htmlUrl { concat('https://read.84000.co', '/translation/', $local:text-id,'.html') },
     
     attribute publicationVersion { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },

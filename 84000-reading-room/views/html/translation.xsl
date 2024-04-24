@@ -36,7 +36,7 @@
                 <div class="title-band hidden-print hidden-iframe">
                     <div class="container">
                         <div class="center-vertical center-aligned text-center">
-                            <nav role="navigation" aria-label="Breadcrumbs">
+                            <nav aria-label="Breadcrumbs">
                                 <ul id="outline" class="breadcrumb">
                                     <xsl:sequence select="common:breadcrumb-items($translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
                                 </ul>
@@ -398,7 +398,7 @@
                                 <p class="small text-muted">
                                     <xsl:value-of select="'Please use the contact form provided to '"/>
                                     <a target="84000-comms">
-                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', $translation/m:source/m:toh[1] ,'#suggest-a-correction-section')"/>
+                                        <xsl:attribute name="href" select="concat($communications-site-path, '/about/contact/?toh=', encode-for-uri($translation/m:source/m:toh[1]) ,'#suggest-a-correction-section')"/>
                                         <xsl:value-of select="'suggest a correction'"/>
                                     </a>
                                     <xsl:value-of select="'.'"/>
@@ -1035,6 +1035,10 @@
             
             <section id="imprint" class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
                 
+                <h2 class="sr-only">
+                    <xsl:value-of select="'Imprint'"/>
+                </h2>
+                
                 <div class="page page-force">
                     
                     <xsl:if test="$translation[m:publication]">
@@ -1219,6 +1223,10 @@
                         </xsl:call-template>
                         
                         <hr class="hidden-print"/>
+                        
+                        <h2 class="sr-only">
+                            <xsl:value-of select="'Text Body'"/>
+                        </h2>
                         
                         <div class="rw rw-section-head">
                             

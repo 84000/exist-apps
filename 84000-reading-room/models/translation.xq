@@ -69,7 +69,7 @@ let $request :=
         attribute resource-id { $source/@key },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
-        attribute doc-type { if($resource-suffix = ('txt', 'plain.txt')) then 'txt' else $resource-suffix },
+        attribute doc-type { if($resource-suffix = ('txt', 'plain.txt')) then 'txt' else if($resource-suffix = ('html', 'xhtml')) then 'html' else $resource-suffix },
         attribute part { ($part/@xml:id, $part/@type, $part-id[. = ('end-notes','citation-index')])[1] },
         attribute commentary { $commentary-source/@key },
         attribute view-mode { $view-mode-validated/@id },

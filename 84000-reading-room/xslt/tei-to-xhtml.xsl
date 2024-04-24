@@ -199,6 +199,9 @@
                     </xsl:if>
                 </xsl:with-param>
             </xsl:call-template>
+            <xsl:if test="@rend = ('reconstruction','reconstructedPhonetic', 'reconstructedSemantic')">
+                <xsl:attribute name="data-reconstructed" select="@rend"/>
+            </xsl:if>
             <xsl:apply-templates select="node()"/>
         </cite>
     </xsl:template>
@@ -217,6 +220,9 @@
                         </xsl:if>
                     </xsl:with-param>
                 </xsl:call-template>
+                <xsl:if test="@rend = ('reconstruction','reconstructedPhonetic', 'reconstructedSemantic')">
+                    <xsl:attribute name="data-reconstructed" select="@rend"/>
+                </xsl:if>
                 <xsl:apply-templates select="node()"/>
             </div>
         </xsl:if>
@@ -258,7 +264,6 @@
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="lang" select="@xml:lang"/>
                 <xsl:with-param name="base-classes" as="xs:string*">
-                    <xsl:value-of select="'title'"/>
                     <xsl:if test="@xml:lang eq 'Sa-Ltn'">
                         <xsl:value-of select="'break'"/>
                     </xsl:if>
@@ -267,6 +272,9 @@
                     </xsl:if>
                 </xsl:with-param>
             </xsl:call-template>
+            <xsl:if test="@rend = ('reconstruction','reconstructedPhonetic', 'reconstructedSemantic')">
+                <xsl:attribute name="data-reconstructed" select="@rend"/>
+            </xsl:if>
             <xsl:apply-templates select="node()"/>
         </em>
     </xsl:template>
@@ -783,7 +791,7 @@
         </sup>
     </xsl:template>
     <xsl:template match="tei:hi[@rend eq 'small-caps']">
-        <span>
+        <span class="small-caps">
             <xsl:value-of select="common:small-caps(text())"/>
         </span>
     </xsl:template>
@@ -3537,7 +3545,7 @@
                                     </a>
                                     
                                     <!-- Expandable box -->
-                                    <div>
+                                    <div role="tabpanel">
                                         
                                         <xsl:attribute name="id" select="$expand-id"/>
                                         
@@ -3617,10 +3625,10 @@
                 <xsl:attribute name="lang" select="'bo'"/>
             </xsl:when>
             <xsl:when test="$lang-class eq 'text-sa'">
-                <xsl:attribute name="lang" select="'sa-LTN'"/>
+                <xsl:attribute name="lang" select="'sa-LATN'"/>
             </xsl:when>
             <xsl:when test="$lang-class eq 'text-wy'">
-                <xsl:attribute name="lang" select="'bo-LTN'"/>
+                <xsl:attribute name="lang" select="'bo-LATN'"/>
             </xsl:when>
             <xsl:when test="$lang-class eq 'text-zh'">
                 <xsl:attribute name="lang" select="'zh'"/>
