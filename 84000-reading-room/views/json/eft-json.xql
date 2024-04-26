@@ -13,7 +13,7 @@ import module namespace functx="http://www.functx.com";
 declare function eft-json:response($api-version as xs:string, $uri as xs:string, $html-url as xs:string, $text-id as xs:string, $toh-key as xs:string?, $publication-version as xs:string, $publication-status as xs:string, $cache-key as xs:string, $content as element()*) as element(eft:response) {
     
     (: Root node of json response object :)
-    element response {
+    element { QName('http://read.84000.co/ns/1.0', 'response') } {
         attribute api-version { $api-version },
         attribute uri { $uri },
         attribute html-url { $html-url },
@@ -32,7 +32,7 @@ declare function eft-json:response($api-version as xs:string, $uri as xs:string,
 declare function eft-json:titles($titles as element()*) {
     for $title in $titles
     return
-        element { 'title' } {
+        element { QName('http://read.84000.co/ns/1.0', 'title') } {
             element { $title/@xml:lang } {
                 text {$title/text() }
             }
@@ -41,7 +41,7 @@ declare function eft-json:titles($titles as element()*) {
 
 declare function eft-json:parent-sections($parent as element()?) as element()? {
     if($parent) then
-        element parent-section {
+        element { QName('http://read.84000.co/ns/1.0', 'parent-section') } {
             $parent/@id,
             attribute url { concat('/section/', $parent/@id, '.json') },
             eft-json:titles($parent/eft:titles/eft:title),
@@ -55,7 +55,7 @@ declare function eft-json:tei-to-escaped-xhtml($tei as element()*, $xsl as docum
     where $tei-primed
     return
         serialize(
-            element {QName('http://www.w3.org/1999/xhtml','div')} { 
+            element { QName('http://www.w3.org/1999/xhtml','div') } { 
                 transform:transform($tei-primed, $xsl, <parameters/>)
             }
         )
@@ -180,7 +180,7 @@ declare function eft-json:annotation-substring($substring-text as xs:string?, $s
 };
 
 declare function eft-json:annotation($type as xs:string, $resourceId as element(id)?, $substring-text as xs:string?, $substring-occurrence as xs:integer?, $body-text as xs:string?) as element(eft:annotation) {
-    element annotation { 
+    element { QName('http://read.84000.co/ns/1.0', 'annotation') } { 
     
         element {'annotationType'} { $type },
         

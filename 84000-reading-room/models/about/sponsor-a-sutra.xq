@@ -52,10 +52,6 @@ return
     if($request/@resource-suffix = ('html')) then 
         common:html($xml-response, concat($common:app-path, "/views/html/about/sponsor-a-sutra.xsl"), $cache-key)
     
-    (: return json data :)
-    else if($request/@resource-suffix = ('json')) then
-        common:serialize-json(transform:transform($xml-response, doc(concat($common:app-path, "/views/json/0.4.0/sponsorship.xsl")), <parameters/>))
-    
     (: return xml data :)
     else 
         common:serialize-xml($xml-response)

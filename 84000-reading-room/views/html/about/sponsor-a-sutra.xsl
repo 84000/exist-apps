@@ -184,6 +184,7 @@
                             
                         </xsl:with-param>
                     </xsl:call-template>
+                
                 </div>
                 
                 <xsl:call-template name="local-text">

@@ -43,6 +43,7 @@ declare variable $var-debug :=
         <var name="collection-path" value="{ $collection-path }"/>
         <var name="user-name" value="{ $user-name }"/>
         <var name="common:data-path" value="{ $common:data-path }"/>
+        <var name="api-version" value="{ $api-version }"/>
     </debug>;
 
 declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as element() {
@@ -475,15 +476,24 @@ return
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
-            
-        (: About :)
-        else if ($collection-path eq "about") then
-            local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
-                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'json', 'html')], 'html')[1] }"/>
-                </parameters>
-            )
         
+        (: About :)
+        else if ($collection-path eq "about") then 
+            if ($resource-suffix eq 'json') then
+                local:dispatch(concat("/models/about/",  $resource-id, ".xq"), string-join(("/views/json", ($api-version[. = ('0.4.0')], '0.4.0')[1], "about.xq"), '/'), 
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <set-header name="Content-Type" value="application/json"/>
+                    </parameters>
+                )
+            
+            else 
+                local:dispatch(concat("/models/about/",  $resource-id, ".xq"), "", 
+                   <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                       <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
+                   </parameters>
+               )
+               
         (: Widget :)
         else if ($collection-path eq "widget") then
             local:dispatch(concat("/models/widget/",  $resource-id, ".xq"), "", 
@@ -631,7 +641,7 @@ return
             else if ($resource-suffix eq 'json') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="application/rdf+xml"/>
+                        <set-header name="Content-Type" value="application/json"/>
                         <set-header name="Content-Disposition" value="attachment"/>
                     </forward>
                 </dispatch>

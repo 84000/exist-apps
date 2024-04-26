@@ -9,6 +9,7 @@ import module namespace common = "http://read.84000.co/common" at "../../../modu
 import module namespace section = "http://read.84000.co/section" at "../../../modules/section.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../../modules/tei-content.xql";
 import module namespace eft-json = "http://read.84000.co/json" at "../eft-json.xql";
+import module namespace json-types = "http://read.84000.co/json-types" at "types.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option output:method "json";
@@ -30,33 +31,34 @@ declare function local:parse-sections() {
 
 declare function local:section($section-id as xs:string, $index-in-parent as xs:integer) {
     
-    let $section-tei := tei-content:tei($section-id, 'section')
-    return
-        element section {
-            attribute catalogueSectionId { $section-id },
-            (:attribute uri { concat('/section/', $section-id,'.json?api-version=', $api-version) },:)
-            (:attribute cacheKey { $cache-key },:)
-            attribute htmlUrl { concat('https://read.84000.co', '/section/', $section-id,'.html') },
-            
-            $section-tei/tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno/@parent-id[not(. eq 'LOBBY')] ! (
-                attribute parentSectionId { . },
-                attribute indexInParentSection { $index-in-parent }
-            ),
-            
-            local:titles($section-tei),
-            
-            let $child-texts :=
-                for $child-text-tei in $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
-                let $text-id := tei-content:id($child-text-tei)
-                return
-                    for $child-text-tei-bibl in $child-text-tei/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $section-id]]
-                    let $source-id := $child-text-tei-bibl/@key
-                    return
-                        local:text($child-text-tei, $source-id)
+    let $tei := tei-content:tei($section-id, 'section')
+    
+    let $titles := local:titles($tei)
+    
+    let $child-texts :=
+        for $child-text-tei in $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
+        let $text-id := tei-content:id($child-text-tei)
+        return
+            for $child-text-tei-bibl in $child-text-tei/tei:teiHeader//tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $section-id]]
+            let $source-id := $child-text-tei-bibl/@key
             return
-                sort($child-texts, (), function($item) { $item/@startVolumeNumber  ! xs:integer(.), $item/@startVolumeStartPageNumber ! xs:integer(.) })
-            
-        }
+                local:text($child-text-tei, $source-id)
+    
+    let $child-texts-sorted :=
+        sort($child-texts, (), function($item) { $item/m:startVolumeNumber/data() ! xs:integer(.), $item/m:startVolumeStartPageNumber/data() ! xs:integer(.) })
+    
+    return
+        json-types:catalogue-section(
+            $section-id,
+            $tei/tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno/@parent-id[not(. eq 'LOBBY')],
+            $index-in-parent,
+            ($tei/tei:teiHeader/tei:fileDesc/@type/string(), 'section')[1],
+            $titles,
+            $child-texts-sorted,
+            (),
+            (),
+            ()
+        )
     ,
     
     let $child-sections-tei := 
@@ -72,7 +74,7 @@ declare function local:section($section-id as xs:string, $index-in-parent as xs:
     
 };
 
-declare function local:titles($section-tei as element(tei:TEI)){
+declare function local:titles($section-tei as element(tei:TEI)) as element()* {
 
     (:
         Edge cases:
@@ -85,50 +87,55 @@ declare function local:titles($section-tei as element(tei:TEI)){
     let $title-type := $title/@type/string() ! concat('eft:', .)
     
     group by $title-type
+    
+    let $labels :=
+        for $title-single in $title
+        let $title-lang := ($title-single/@xml:lang, 'en')[1]
+        let $title-string := string-join($title-single/text()) ! normalize-space(.)
+        let $annotations := (
+            $title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),
+            $title-single/@*[not(name(.) = ('xml:lang','type','rend'))] ! eft-json:annotation(concat('eft:', local-name(.)), (), (), (), .)
+        )
+        return (
+            
+            json-types:label($title-lang, $title-string, $annotations),
+            
+            if($title-lang eq 'Bo-Ltn' and not($title[@xml:lang eq 'bo'])) then
+                json-types:label('bo', common:bo-from-wylie($title-string), $annotations)
+            else()
+            
+        )
     return
-        element title {
-        
-            attribute type { $title-type },
-            
-            for $title-single in $title
-            
-            let $title-lang := ($title-single/@xml:lang, 'en')[1]
-            
-            return
-                element label {
-                    
-                    attribute xmlLang { $title-lang },
-                    element {'value'} { string-join($title-single/text()) ! normalize-space(.) },
-                    
-                    $title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),
-                    
-                    $title-single/@*[not(name(.) = ('xml:lang','type','rend'))] ! element { name(.) } { . }
-                    
-                }
-                    
-        }
+        json-types:title($title-type, (), $labels)
     
 };
 
-declare function local:text($text-tei as element(tei:TEI), $source-id as xs:string){
+declare function local:text($tei as element(tei:TEI), $source-id as xs:string) as element() {
     
-    let $text-id := tei-content:id($text-tei)
-    let $text-bibl := $text-tei/tei:teiHeader//tei:sourceDesc/tei:bibl[@key eq $source-id]
+    let $text-id := tei-content:id($tei)
+    
+    let $text-bibl := $tei/tei:teiHeader//tei:sourceDesc/tei:bibl[@key eq $source-id]
+    
     let $child-text-start-volume-number := min($text-bibl/tei:location/tei:volume/@number ! xs:integer(.))
     let $child-text-start-volume := $text-bibl/tei:location/tei:volume[@number ! xs:integer(.) eq $child-text-start-volume-number]
+    let $child-text-start-page-number := min($child-text-start-volume/@start-page ! xs:integer(.))
+    
+    let $bibliographic-scope := 
+        if($text-bibl/tei:location) then
+            element { QName('http://read.84000.co/ns/1.0', 'bibliographicScope') } { 
+                $text-bibl/tei:location/@*, 
+                $text-bibl/tei:location/*, 
+                element description { string-join($text-bibl/tei:biblScope/text()) ! normalize-space() } 
+            }
+        else ()
+    
+    let $annotations := (
+        $text-bibl/tei:idno[@source-id] ! eft-json:annotation-link('eft:catalogueId', eft-json:id(concat('eft:id', @work), @source-id))
+    )
+    
     return
-        element catalogueWork {
-            attribute catalogueWorkId { $source-id },
-            attribute workId { $text-id },
-            attribute workType { 'eft:translation' },
-            attribute url { concat('/translation/', $text-id,'.json?api-version=', $local:api-version) },
-            attribute htmlUrl { concat('https://read.84000.co', '/translation/', $source-id,'.html') },
-            attribute startVolumeNumber { $child-text-start-volume-number },
-            attribute startVolumeStartPageNumber { min($child-text-start-volume/@start-page ! xs:integer(.)) },
-            (: Add toh specific TEI header information :)
-            $text-bibl/tei:location ! element bibliographicScope { ./@*, ./*, element description { string-join($text-bibl/tei:biblScope/text()) } },
-            $text-bibl/tei:idno[@source-id] ! eft-json:annotation-link('eft:catalogueId', eft-json:id(concat('eft:id', @work), @source-id))
-        }
+        json-types:catalogue-work($source-id, $text-id, 'eft:translation', $child-text-start-volume-number, $child-text-start-page-number, $bibliographic-scope, $annotations)
+
 };
 
 element sections {

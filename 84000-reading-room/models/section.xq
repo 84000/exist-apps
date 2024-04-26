@@ -57,24 +57,25 @@ let $request :=
 
 (: Suppress cache if there's user input, or a view-mode :)
 let $cache-key := 
-    if($view-mode eq 'default' and $request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
-        let $section-tei := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $request/@resource-id]]
-        let $tei-timestamp := max(($tei ! tei-content:last-modified(.), $section-tei ! tei-content:last-modified(.)))
-        let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
-        where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
-        return 
-            lower-case(
-                string-join((
-                    $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
-                    (: If there are no child TEI files (e.g. all-translated) then invalidate daily :)
-                    if(not($section-tei)) then current-dateTime() ! format-dateTime(., "[Y0001]-[M01]-[D01]") else (), 
-                    $common:app-version ! replace(., '\.', '-')
-                ),'-')
-            )
-    else ()
+    let $section-tei := $section:texts//tei:TEI[tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $request/@resource-id]]
+    let $tei-timestamp := max(($tei ! tei-content:last-modified(.), $section-tei ! tei-content:last-modified(.)))
+    let $entities-timestamp := xmldb:last-modified(concat($common:data-path, '/operations'), 'entities.xml')
+    where $tei-timestamp instance of xs:dateTime and $entities-timestamp instance of xs:dateTime
+    return 
+        lower-case(
+            string-join((
+                $tei-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                $entities-timestamp ! format-dateTime(., "[Y0001]-[M01]-[D01]-[H01]-[m01]-[s01]"),
+                (: If there are no child TEI files (e.g. all-translated) then invalidate daily :)
+                if(not($section-tei)) then current-dateTime() ! format-dateTime(., "[Y0001]-[M01]-[D01]") else (), 
+                $common:app-version ! replace(., '\.', '-')
+            ),'-')
+        )
 
-let $cached := common:cache-get($request, $cache-key)
+let $cached := 
+    if($view-mode eq 'default' and $request[@filter-section-ids eq ''][@filter-max-pages eq '']) then
+        common:cache-get($request, $cache-key)
+    else ()
 
 return 
     if($cached) then $cached 
@@ -123,6 +124,13 @@ return
                 section:all-translated($apply-filters)
             else
                 section:section-tree($tei, true(), $include-texts)
+        
+        let $sections-data := 
+            element { node-name($sections-data) }{
+                $sections-data/@*,
+                attribute cache-key { $cache-key },
+                $sections-data/*
+            }
         
         (:let $attribution-entities := $entities:entities/idref($sections-data//m:attribution/@xml:id)/parent::m:entity:)
         let $attribution-id-chunks := common:ids-chunked($sections-data//m:attribution/@xml:id)

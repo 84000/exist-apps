@@ -19,6 +19,7 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 
 declare variable $local:api-version := '0.4.0';
 declare variable $resource-id := request:get-parameter('resource-id', '');
+declare variable $annotate := request:get-parameter('annotate', true());
 declare variable $local:tei := tei-content:tei($resource-id, 'translation');
 declare variable $local:html := request:get-data()/xhtml:html;
 declare variable $local:text-id := tei-content:id($local:tei);
@@ -175,8 +176,14 @@ declare function local:translation-project(){
 };
 
 declare function local:passages(){
-
-    transform:transform($local:html, doc("passages.xsl"), <parameters/>)
+    
+    let $parameters :=
+        <parameters>
+            <param name="annotate" value="{ $annotate }"/>
+        </parameters>
+    
+    return
+        transform:transform($local:html, doc("passages.xsl"), $parameters)
     
 };
 
