@@ -741,7 +741,7 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
     ) except $tei
     
     (: Text that this text points to :)
-    let $outgoing-ids := $parts//tei:ptr/@target[matches(., '^#')] ! replace(., '^#(end\-note\-)?', '')
+    let $outgoing-ids := $parts//tei:ptr/@target[matches(., '^(toh[0-9a-z\-]+\.html)?#')] ! replace(., '^#(end\-note\-)?', '')
     let $outgoing-id-chunks := common:ids-chunked($outgoing-ids)
     let $outgoing-teis :=
         for $key in map:keys($outgoing-id-chunks)

@@ -17,9 +17,9 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:api-version := '0.4.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.4.0')[1];
 declare variable $resource-id := request:get-parameter('resource-id', '');
-declare variable $annotate := request:get-parameter('annotate', true());
+declare variable $annotate := request:get-parameter('annotate', 'true');
 declare variable $local:tei := tei-content:tei($resource-id, 'translation');
 declare variable $local:html := request:get-data()/xhtml:html;
 declare variable $local:text-id := tei-content:id($local:tei);
@@ -53,15 +53,24 @@ declare function local:parse-translation() {
 
     (:
         Edge cases:
-        - eft:isCatalogueSectionChapter:    /translation/UT22084-001-001.json?api-version=0.3.0
-        - eft:isCommentaryOf:               /translation/UT23703-093-001.json?api-version=0.3.0
+        - eft:isCatalogueSectionChapter:    /translation/UT22084-001-001.json?api-version=0.4.0
+        - eft:isCommentaryOf:               /translation/UT23703-093-001.json?api-version=0.4.0
     :)
     
-    $local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation('eft:isCatalogueSectionChapter'),
+    if(not($annotate eq 'false')) then
+        $local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation('eft:isCatalogueSectionChapter')
+    else ()
+    ,
     
-    $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target)),
+    if(not($annotate eq 'false')) then
+        $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target))
+    else ()
+    ,
     
-    local:translation-project(),
+    if(not($annotate eq 'false')) then
+        local:translation-project()
+    else ()
+    ,
     
     local:titles(),
     
@@ -73,10 +82,10 @@ declare function local:titles(){
 
     (:
         Edge cases:
-        - eft:attestationType:               /translation/UT22084-080-002.json?api-version=0.3.0
-        - eft:catalogueContext:              /translation/UT22084-101-146.json?api-version=0.3.0
-        - eft:prependCatalogueSectionTitle:  /translation/UT22084-001-001.json?api-version=0.3.0
-        - shortcode:                         /translation/UT22084-026-001.json?api-version=0.3.0
+        - eft:attestationType:               /translation/UT22084-080-002.json?api-version=0.4.0
+        - eft:catalogueContext:              /translation/UT22084-101-146.json?api-version=0.4.0
+        - eft:prependCatalogueSectionTitle:  /translation/UT22084-001-001.json?api-version=0.4.0
+        - shortcode:                         /translation/UT22084-026-001.json?api-version=0.4.0
     :)
     
     for $title in (
@@ -99,22 +108,34 @@ declare function local:titles(){
     
     return (
         element title {
-        
+            
+            attribute json:array {'true'},
+            
             attribute titleType { $title-type },
             
-            $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),
+            if(not($annotate eq 'false')) then
+                $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .))
+            else ()
+            ,
             
             for $title-single in $title
             return
                 element label {
                     
+                    attribute json:array {'true'},
+                    
                     attribute language { ($title-single/@xml:lang, 'en')[1] },
                     
                     element {'content'} { string-join($title-single/text()) ! normalize-space(.) },
                     
-                    $title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),
+                    if(not($annotate eq 'false')) then (
                     
-                    $title-single/@*[not(name(.) = ('xml:lang','type','rend','key'))] ! element { name(.) } { . }
+                        $title-single/@rend ! eft-json:annotation-link('eft:attestationType', eft-json:id('attestationTypeId', .)),
+                        
+                        $title-single/@*[not(name(.) = ('xml:lang','type','rend','key'))] ! element { name(.) } { . }
+                        
+                    )
+                    else ()
                     
                 }
                 
@@ -123,12 +144,19 @@ declare function local:titles(){
         if($title-type eq 'eft:mainTitle' and $chapter-bibl and $section-title) then 
             
             element title {
-            
+                
+                attribute json:array {'true'},
+                
                 attribute titleType { 'eft:mainTitleOutsideCatalogueSection' },
-            
-                $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .)),
-            
+                
+                if(not($annotate eq 'false')) then
+                    $title-key[not(. eq '_any')] ! eft-json:annotation-link('eft:catalogueContext', eft-json:id('tohKey', .))
+                else ()
+                ,
+                
                 element label {
+                    
+                    attribute json:array {'true'},
                     
                     attribute language { 'en' },
                     
@@ -180,6 +208,7 @@ declare function local:passages(){
     let $parameters :=
         <parameters>
             <param name="annotate" value="{ $annotate }"/>
+            <param name="api-version" value="{ $local:api-version }"/>
         </parameters>
     
     return
@@ -190,7 +219,7 @@ declare function local:passages(){
 element work {
     attribute modelType { 'work' },
     attribute apiVersion { $local:api-version },
-    attribute url { concat('/translation/', $local:text-id,'.json?api-version=', $local:api-version) },
+    attribute url { concat('/translation/', $local:text-id,'.json?api-version=', $local:api-version, '&amp;annotate=', $annotate) },
     
     attribute workId { $local:text-id },
     attribute workType { 'eft:translation' },
@@ -198,7 +227,8 @@ element work {
     
     attribute publicationVersion { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },
     
-    element publicationStatus { attribute json:literal {'true'}, $local:translation/@status/number() },
+    element publicationStatus { $local:translation/@status/string() },
+    element publicationDate { $local:translation/eft:publication/eft:publication-date/text() },
     element cacheKey { $local:translation/@cache-key/string() },
     
     local:parse-translation()

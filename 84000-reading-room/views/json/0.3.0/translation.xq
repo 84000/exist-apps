@@ -16,7 +16,7 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:api-version := '0.3.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.3.0')[1];
 declare variable $resource-id := request:get-parameter('resource-id', '');
 declare variable $local:tei := tei-content:tei($resource-id, 'translation');
 
@@ -257,7 +257,7 @@ element translation {
     attribute url { concat('/translation/', $local:text-id,'.json?api-version=', $local:api-version) },
     attribute xmlId { $local:text-id },
     attribute publicationVersion { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },
-    element publicationStatus { attribute json:literal {'true'}, $local:translation/@status/number()},
+    element publicationStatus { $local:translation/@status/string() },
     element cacheKey { $local:translation/@cache-key/string() },
     element htmlUrl { concat('https://read.84000.co', '/translation/', $local:text-id,'.html') },
     

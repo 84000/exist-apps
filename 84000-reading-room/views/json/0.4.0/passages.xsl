@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/common.xsl"/>
     
     <xsl:param name="annotate" select="true()"/>
+    <xsl:param name="api-version" select="'0.4.0'"/>
     
     <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
     
@@ -33,10 +34,15 @@
         
         <passage>
             
+            <xsl:attribute name="json:array" select="true()"/>
             <xsl:attribute name="xmlId" select="$passage-id"/>
             <xsl:attribute name="parentId" select="$parent-id"/>
             <xsl:attribute name="passageLabel" select="$gutter/descendant::text()"/>
             <xsl:attribute name="segmentationType" select="'Passage'"/>
+            <xsl:element name="passageSort">
+                <xsl:attribute name="json:literal" select="true()"/>
+                <xsl:value-of select="common:index-of-node(/xhtml:html//*, $elements[1])"/>
+            </xsl:element>
             
             <xsl:variable name="content">
                 <xsl:call-template name="content">
@@ -93,6 +99,8 @@
                     
                     <line>
                         
+                        <xsl:attribute name="json:array" select="true()"/>
+                        
                         <xsl:attribute name="lineType">
                             <xsl:choose>
                                 <xsl:when test="matches($content/parent::xhtml:div/@class, '(^|\s)rw\-paragraph(\s|$)')">
@@ -133,6 +141,8 @@
                 <xsl:when test="$content/self::xhtml:div and matches($content/@class, '(^|\s)heading\-section(\s+(chapter|section))?(\s|$)') and $content/xhtml:header/xhtml:h2">
                     
                     <line>
+                        
+                        <xsl:attribute name="json:array" select="true()"/>
                         
                         <xsl:attribute name="content-type" select="'section-heading'"/>
                         
@@ -189,7 +199,8 @@
     </xsl:function>
     
     <xsl:template match="xhtml:*">
-        <xsl:element name="{ node-name(.)}">
+        <xsl:element name="{ node-name(.) }">
+            <xsl:attribute name="json:array" select="true()"/>
             <xsl:sequence select="@*"/>
             <xsl:apply-templates select="node()"/>
         </xsl:element>
@@ -427,6 +438,7 @@
         
         <annotation>
             
+            <xsl:attribute name="json:array" select="true()"/>
             <xsl:attribute name="annotationType" select="$annotation-type"/>
             
             <xsl:sequence select="$target"/>

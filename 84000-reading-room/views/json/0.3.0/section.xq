@@ -19,12 +19,13 @@ declare variable $local:response := request:get-data()/eft:response;
 declare variable $local:request := $local:response/eft:request;
 declare variable $local:section := $local:response/eft:section;
 declare variable $local:environment := $local:response/eft:environment;
-declare variable $local:api-version := '0.3.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.3.0')[1];
 declare variable $local:xhtml := transform:transform($local:response, doc(concat($common:app-path, "/views/html/section.xsl")), <parameters/>);
 
 declare function local:section($section as element()*, $parent-section-id as xs:string) as element()* {
 
     json-types:catalogue-section(
+        $local:api-version,
         $section/@id,
         $parent-section-id,
         $section/@sort-index, 
@@ -58,15 +59,21 @@ declare function local:stats($groups as element()*) {
     for $stat in $groups
     return
         element { 'stat' } {
-            attribute count-of { $stat ! local-name(.) },
+            attribute json:array {'true'},
+            attribute countType { $stat ! local-name(.) },
             $stat/parent::*/@*,
             element { 'values' } {
                 for $value in $stat/@*
+                let $attribute-name := local-name($value)
                 return
-                  element { $value ! local-name(.) } {
-                      attribute json:literal {'true'},
-                      $value/number()
-                  }
+                    element { 
+                        if($attribute-name eq 'in-translation') then 'inTranslation'
+                        else if($attribute-name eq 'not-started') then 'notStarted'
+                        else $attribute-name
+                    } {
+                        attribute json:literal {'true'},
+                        $value/number()
+                    }
            }
         }
 };
@@ -79,55 +86,53 @@ declare function local:child-texts($texts as element()*) {
     let $start-volume := $text/eft:source/eft:location/eft:volume[@number ! xs:integer(.) eq $start-volume-number]
     let $start-page-number := min($start-volume/@start-page ! xs:integer(.))
     
+    let $titles := (
+        json-types:title('eft:mainTitle', (), $text/eft:titles/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), ())),
+        json-types:title('eft:otherTitle', (), $text/eft:title-variants/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), ()))
+    )
     let $bibliographic-scope := 
         if($text/eft:source/eft:location) then
             element { QName('http://read.84000.co/ns/1.0', 'bibliographicScope') } { 
-                $text/eft:source/eft:location/@*, 
-                $text/eft:source/eft:location/*, 
+                $text/eft:source/eft:location ! eft-json:copy-nodes(.)/*, 
                 element description { string-join($text/eft:source/eft:scope/text()) ! normalize-space() } 
             }
         else ()
+    
+    let $text-summary := $local:xhtml//xhtml:div[@id eq $text/@resource-id]/descendant::xhtml:div[matches(@class, '(^|\s)summary(\s|$)')][*]
+    let $content :=
+        if($text-summary) then
+            json-types:content('eft:summary', ($text-summary/@lang, 'en')[1], $text-summary/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') })
+        else ()
+    
+    let $annotations := (
+    
+        $text/eft:downloads[@resource-id eq $text/@resource-id]/eft:download[not(@type = ('html', 'rdf', 'cache'))] ! eft-json:annotation-link(concat('eft:', @type, 'File'), eft-json:id('downloadUrl', @download-url)),
         
+        $text/eft:publication/eft:publication-date[text()] ! eft-json:annotation('eft:publicationDate', (), (), (), text()),
+        
+        for $attribution in $text/eft:source/eft:attribution
+        let $author := $local:response//eft:instance[@id eq $attribution/@xml:id]/parent::eft:entity
+        return
+            eft-json:annotation(concat('eft:source', functx:capitalize-first($attribution/@role)), $author/@xml:id ! eft-json:id('xmlId', .), (), (), string-join($attribution/text()))
+    
+    )
+    
     order by 
         $start-volume-number ascending,
         $start-page-number ascending
     return
         json-types:catalogue-work(
+            $local:api-version,
             $text/@resource-id,
             $text/@id,
             'eft:translation',
             $start-volume-number,
             $start-page-number,
+            $titles,
             $bibliographic-scope,
-            ()
+            $content,
+            $annotations
         )
-        (:element { 'text' } {
-        
-            attribute id { $text/@id },
-            attribute key { $text/@resource-id },
-            attribute translation-status { $text/@status-group },
-            attribute canonical-html { $text/@canonical-html },
-            
-            eft-json:titles($text/eft:titles/eft:title),
-            
-            element title-variants { 
-                eft-json:titles($text/eft:title-variants/eft:title) 
-            },
-            
-            $text/eft:toh,
-            
-            $text/eft:downloads/eft:download[not(@type = ('rdf', 'cache'))],
-            
-            if($text/eft:part[@type eq 'summary'][tei:p])then
-                element summary { 
-                    eft-json:tei-to-escaped-xhtml($text/eft:part[@type eq 'summary']/tei:p, $local:xhtml-xsl) 
-                }
-            else ()
-            ,
-            
-            eft-json:parent-sections($text/eft:parent)
-            
-        }:)
 };
 
 declare function local:filters($section as element(eft:section)) as element(eft:filters)* {

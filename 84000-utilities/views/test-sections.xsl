@@ -54,21 +54,21 @@
                         <li>
                             <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.html')"/>
-                                <xsl:attribute name="target" select="concat($text-id, '-html')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '.html')"/>
                                 <xsl:value-of select="'html'"/>
                             </a>
                         </li>
                         <li>
                             <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.xml')"/>
-                                <xsl:attribute name="target" select="concat($text-id, '-xml')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '.xml')"/>
                                 <xsl:value-of select="'xml'"/>
                             </a>
                         </li>
                         <li>
                             <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.tei')"/>
-                                <xsl:attribute name="target" select="concat($text-id, '-tei')"/>
+                                <xsl:attribute name="target" select="concat($text-id, '.tei')"/>
                                 <xsl:value-of select="'tei'"/>
                             </a>
                         </li>
@@ -142,7 +142,7 @@
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path, '/section/', $text-id, '.html')"/>
                                     <xsl:attribute name="title" select="$text-title"/>
-                                    <xsl:attribute name="target" select="$text-id"/>
+                                    <xsl:attribute name="target" select="concat($text-id, '.html')"/>
                                     <xsl:value-of select="common:limit-str(concat($text-id, ' / ', $text-title), 50)"/>
                                 </a>
                             </td>

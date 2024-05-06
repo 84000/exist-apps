@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -367,7 +367,7 @@
                                     <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
                                     <xsl:attribute name="data-folio" select="$ref/@cRef"/>
-                                    <xsl:attribute name="target" select="concat('source-', $toh-key)"/>
+                                    <xsl:attribute name="target" select="concat('source-', $toh-key, '.html')"/>
                                     <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh, ' (source text)')"/>
                                     <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
@@ -706,8 +706,9 @@
         <a>
             
             <xsl:variable name="pointer" select="."/>
-            <xsl:variable name="target-type" select="if(starts-with($pointer/@target, '#')) then 'id' else if(starts-with($pointer/@target, 'http')) then 'url' else ''"/>
-            <xsl:variable name="target-string" select="if($target-type eq 'id') then replace($pointer/@target, '^#(end\-note\-)?', '') else $pointer/@target"/>
+            <xsl:variable name="target-type" select="if(matches($pointer/@target, '^(toh[0-9a-z\-]+\.html)?#')) then 'id' else if(starts-with($pointer/@target, 'http')) then 'url' else ''"/>
+            <xsl:variable name="target-string" select="if($target-type eq 'id') then replace($pointer/@target, '^(toh[0-9a-z\-]+\.html)?#(end\-note\-)?(.*)', '$3') else $pointer/@target"/>
+            <xsl:variable name="target-toh-key" select="replace($pointer/@target, '^(toh[0-9a-z\-]+\.html)#', '$1')"/>
             
             <!-- Look through the various keys to find this id -->
             <xsl:variable name="target-element" as="element()?">
@@ -723,19 +724,30 @@
                 
                 <xsl:when test="$target-element">
                     
-                    <xsl:call-template name="target-element-link-attributes">
-                        <xsl:with-param name="target-element" select="$target-element"/>
-                        <xsl:with-param name="html-classes" as="xs:string*">
+                    <xsl:choose>
+                        <xsl:when test="$target-toh-key">
                             
-                            <xsl:value-of select="'pointer'"/>
+                            <xsl:attribute name="href" select="$pointer/@target"/>
+                            <xsl:attribute name="target" select="concat($target-toh-key, '.html')"/>
                             
-                            <!-- If id don't expand for printing -->
-                            <xsl:if test="$target-type eq 'id'">
-                                <xsl:value-of select="'printable'"/>
-                            </xsl:if>
+                        </xsl:when>
+                        <xsl:otherwise>
                             
-                        </xsl:with-param>
-                    </xsl:call-template>
+                            <xsl:call-template name="target-element-link-attributes">
+                                <xsl:with-param name="target-element" select="$target-element"/>
+                                <xsl:with-param name="html-classes" as="xs:string*">
+                                    
+                                    <xsl:value-of select="'pointer'"/>
+                                    
+                                    <!-- If id don't expand for printing -->
+                                    <xsl:if test="$target-type eq 'id'">
+                                        <xsl:value-of select="'printable'"/>
+                                    </xsl:if>
+                                    
+                                </xsl:with-param>
+                            </xsl:call-template>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     
                 </xsl:when>
                 

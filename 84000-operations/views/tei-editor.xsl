@@ -146,7 +146,7 @@
                                 <xsl:value-of select="' / '"/>
                                 <a>
                                     <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', m:request/@resource-id, '.html#', $passage-id)"/>
-                                    <xsl:attribute name="target" select="m:request/@resource-id"/>
+                                    <xsl:attribute name="target" select="concat(m:request/@resource-id, '.html')"/>
                                     <xsl:value-of select="$passage-id"/>
                                 </a>
                                 

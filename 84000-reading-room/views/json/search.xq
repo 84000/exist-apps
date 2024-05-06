@@ -12,6 +12,7 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.1.0')[1];
 declare variable $xhtml-xsl := doc(concat($common:app-path, "/views/html/search.xsl"));
 
 declare function local:results($results as element()*) as element()* {
@@ -47,13 +48,12 @@ declare function local:results($results as element()*) as element()* {
 };
 
 let $search := request:get-data()/m:response/m:tei-search
-let $api-version := '0.1.0'
 
 return
     <search json:array="true">
     {
-        attribute api-version { $api-version },
-        attribute url { concat('/search/search.json?search=', escape-uri($search/m:request, false()), '&amp;api-version=', $api-version) },
+        attribute api-version { $local:api-version },
+        attribute url { concat('/search/search.json?search=', escape-uri($search/m:request, false()), '&amp;api-version=', $local:api-version) },
         local:results($search/m:results)
     }
     </search>

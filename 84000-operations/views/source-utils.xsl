@@ -1503,7 +1503,7 @@
                             <a id="{ $entity/@xml:id }" class="block-link">
                                 
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/glossary/', $entity/@xml:id, '.html')"/>
-                                <xsl:attribute name="target" select="concat($entity/@xml:id, '-html')"/>
+                                <xsl:attribute name="target" select="concat($entity/@xml:id, '.html')"/>
                                 <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/glossary/', $entity/@xml:id, '.html')"/>
                                 <xsl:attribute name="data-dualview-title" select="string-join(($term-bo-marked, $terms-bo-marked)[1]/descendant::text())"/>
                                 <xsl:attribute name="data-dualview-title-lang" select="'text-bo'"/>

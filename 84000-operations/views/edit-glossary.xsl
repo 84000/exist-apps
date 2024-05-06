@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -56,9 +56,9 @@
                     <div class="top-vertical full-width sml-margin bottom">
                         
                         <div class="h3">
-                            <a target="_blank">
+                            <a>
                                 <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
-                                <xsl:attribute name="target" select="concat('translation-', ($text/m:toh/@key)[1])"/>
+                                <xsl:attribute name="target" select="concat(($text/m:toh/@key)[1], '.html')"/>
                                 <xsl:value-of select="string-join(($text/m:toh/m:full, $main-title), ' / ')"/>
                             </a>
                         </div>

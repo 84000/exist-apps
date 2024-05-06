@@ -288,7 +288,7 @@ declare function glossary:glossary-entry($gloss as element(tei:gloss), $include-
         glossary:sort-term($gloss),
         
         (: Terms and definition :)
-        for $term in $gloss/tei:term[normalize-space(text())]
+        for $term in $gloss/tei:term[text()]
         return 
              if($term[not(@xml:lang) or @xml:lang eq 'en'][not(@type eq 'translationAlternative')]) then
                 element { QName('http://read.84000.co/ns/1.0', 'term') } {

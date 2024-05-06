@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
+    
+    <xsl:param name="api-version" select="'0.4.0'"/>
     
     <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
     
@@ -13,7 +15,9 @@
                 <!-- Sponsorship project -->
                 <xsl:element name="sponsorshipProject">
                     
+                    <xsl:attribute name="json:array" select="true()"/>
                     <xsl:attribute name="projectId" select="@project-id"/>
+                    
                     <xsl:apply-templates select="eft:cost"/>
                     <xsl:apply-templates select="eft:status"/>
                     
@@ -36,10 +40,12 @@
         <xsl:param name="text" as="element(eft:text)"/>
         <xsl:element name="work">
             
+            <xsl:attribute name="json:array" select="true()"/>
+            
             <!-- Work attributes -->
             <xsl:attribute name="workId" select="$text/@id"/>
             <xsl:attribute name="workType" select="$text/@resource-type ! concat('eft:', .)"/>
-            <xsl:attribute name="url" select="$text/@id ! concat('/translation/', .,'.json?api-version=', '0.3.0')"/>
+            <xsl:attribute name="url" select="$text/@id ! concat('/translation/', .,'.json?api-version=', $api-version)"/>
             <xsl:attribute name="htmlUrl" select="$text/@id ! concat('https://read.84000.co', '/translation/', ., '.html')"/>
             <xsl:attribute name="publicationStatus" select="$text/@status"/>
             
@@ -53,9 +59,10 @@
                 <xsl:with-param name="titleType" select="'otherTitle'"/>
             </xsl:call-template>
             
-            <!-- Cost -->
+            <!-- Summary -->
             <xsl:if test="$text/eft:part[@type eq 'summary'][tei:p]">
                 <xsl:element name="content">
+                    <xsl:attribute name="json:array" select="true()"/>
                     <xsl:attribute name="contentType" select="'summary'"/>
                     <xsl:attribute name="language" select="(@xml:lang, 'en')[1]"/>
                     <xsl:for-each select="$text/eft:part[@type eq 'summary']/tei:p">
@@ -63,6 +70,7 @@
                             <xsl:apply-templates select="node()"/>
                         </xsl:variable>
                         <xsl:element name="p">
+                            <xsl:attribute name="json:array" select="true()"/>
                             <xsl:element name="tei">
                                 <xsl:value-of select="replace(replace(serialize(node()), '\s+', ' '), '\s*xmlns=&#34;[^\s|&gt;]*&#34;', '')"/>
                             </xsl:element>
@@ -81,9 +89,11 @@
         <xsl:param name="titles" as="element(eft:title)*"/>
         <xsl:param name="titleType" as="xs:string"/>
         <xsl:element name="title">
+            <xsl:attribute name="json:array" select="true()"/>
             <xsl:attribute name="titleType" select="$titleType"/>
             <xsl:for-each select="$titles">
                 <xsl:element name="label">
+                    <xsl:attribute name="json:array" select="true()"/>
                     <xsl:attribute name="language" select="@xml:lang"/>
                     <xsl:attribute name="content" select="string-join(text()) ! normalize-space(.)"/>
                 </xsl:element>

@@ -12,7 +12,7 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:api-version := '0.1.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.1.0')[1];
 declare variable $local:response := request:get-data()/m:response;
 declare variable $local:request := $local:response/m:request;
 declare variable $local:source := $local:response/m:source;

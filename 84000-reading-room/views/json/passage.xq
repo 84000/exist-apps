@@ -15,7 +15,7 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:api-version := '0.1.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.1.0')[1];
 declare variable $local:response := request:get-data()/eft:response;
 declare variable $local:translation := $local:response/eft:translation;
 declare variable $local:text-id := $local:response/eft:translation/@id;

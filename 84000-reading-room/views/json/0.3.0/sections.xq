@@ -16,7 +16,7 @@ declare option output:method "json";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:api-version := '0.3.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.3.0')[1];
 
 declare function local:parse-sections() {
 
@@ -49,6 +49,7 @@ declare function local:section($section-id as xs:string, $index-in-parent as xs:
     
     return
         json-types:catalogue-section(
+            $local:api-version,
             $section-id,
             $tei/tei:teiHeader//tei:sourceDesc/tei:bibl/tei:idno/@parent-id[not(. eq 'LOBBY')],
             $index-in-parent,
@@ -123,8 +124,9 @@ declare function local:text($tei as element(tei:TEI), $source-id as xs:string) a
     let $bibliographic-scope := 
         if($text-bibl/tei:location) then
             element { QName('http://read.84000.co/ns/1.0', 'bibliographicScope') } { 
-                $text-bibl/tei:location/@*, 
-                $text-bibl/tei:location/*, 
+                (:$text-bibl/tei:location/@*, 
+                $text-bibl/tei:location/*, :)
+                $text-bibl/tei:location ! eft-json:copy-nodes(.)/*, 
                 element description { string-join($text-bibl/tei:biblScope/text()) ! normalize-space() } 
             }
         else ()
@@ -134,7 +136,7 @@ declare function local:text($tei as element(tei:TEI), $source-id as xs:string) a
     )
     
     return
-        json-types:catalogue-work($source-id, $text-id, 'eft:translation', $child-text-start-volume-number, $child-text-start-page-number, $bibliographic-scope, $annotations)
+        json-types:catalogue-work($local:api-version, $source-id, $text-id, 'eft:translation', $child-text-start-volume-number, $child-text-start-page-number, (), $bibliographic-scope, (), $annotations)
 
 };
 

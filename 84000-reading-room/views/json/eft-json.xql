@@ -66,7 +66,7 @@ declare function eft-json:copy-nodes($nodes as node()*) as node()* {
     return
         if(functx:node-kind($node) eq 'text') then
             $node
-        else
+        else if(functx:node-kind($node) eq 'element') then
             element { local-name($node) } {
                 for $attr in $node/@*
                 return
@@ -80,6 +80,7 @@ declare function eft-json:copy-nodes($nodes as node()*) as node()* {
                 ,
                 eft-json:copy-nodes($node/node())
             }
+        else ()
 };
 
 declare function eft-json:attribute-node($attribute-name as xs:string, $value as xs:string) as element() {
@@ -181,7 +182,9 @@ declare function eft-json:annotation-substring($substring-text as xs:string?, $s
 
 declare function eft-json:annotation($type as xs:string, $resourceId as element(id)?, $substring-text as xs:string?, $substring-occurrence as xs:integer?, $body-text as xs:string?) as element(eft:annotation) {
     element { QName('http://read.84000.co/ns/1.0', 'annotation') } { 
-    
+        
+        attribute json:array {'true'},
+        
         element {'annotationType'} { $type },
         
         if($resourceId or $body-text) then
@@ -213,4 +216,16 @@ declare function eft-json:id($type as xs:string, $resourceId as xs:string) as el
         element {'idType'} { $type },
         element {'content'} { $resourceId }
     }
+};
+
+declare function eft-json:force-array($elements) {
+
+    for $element in $elements
+    return
+        element { node-name($element) } {
+            attribute json:array {'true'},
+            $element/@*,
+            $element/node()
+        }
+    
 };

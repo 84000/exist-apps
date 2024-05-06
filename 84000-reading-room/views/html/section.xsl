@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -1095,7 +1095,7 @@
                                                 <xsl:when test="@status-group = 'published'">
                                                     <a>
                                                         <xsl:attribute name="href" select="common:internal-link(concat('/translation/', $text/@resource-id, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                        <xsl:attribute name="target" select="concat('translation-', $text/@resource-id)"/>
+                                                        <xsl:attribute name="target" select="concat($text/@resource-id, '.html')"/>
                                                         <xsl:value-of select="normalize-space($text/m:titles/m:title[@xml:lang eq 'en'][not(@type)][1])"/> 
                                                     </a>
                                                 </xsl:when>
@@ -1125,7 +1125,7 @@
                                                         <xsl:when test="@status-group = 'published'">
                                                             <a>
                                                                 <xsl:attribute name="href" select="common:internal-link(concat('/translation/', m:source/@key, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                                <xsl:attribute name="target" select="concat('translation-', m:source/@key)"/>
+                                                                <xsl:attribute name="target" select="concat(m:source/@key, '.html')"/>
                                                                 <xsl:value-of select="normalize-space(m:source/m:toh)"/> 
                                                             </a>
                                                         </xsl:when>
@@ -1274,7 +1274,7 @@
                                                         <xsl:choose>
                                                             <xsl:when test="@type eq 'html'">
                                                                 <xsl:attribute name="href" select="common:internal-link(@url, (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                                <xsl:attribute name="target" select="concat('translation-', $text/@resource-id)"/>
+                                                                <xsl:attribute name="target" select="concat($text/@resource-id, '.html')"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
                                                                 <xsl:attribute name="href" select="@download-url"/>
@@ -1348,7 +1348,7 @@
                                                 <li>
                                                     <a>
                                                         <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, '/source/', $text/@resource-id, '.html'), (m:view-mode-parameter((),())), '', /m:response/@lang)"/>
-                                                        <xsl:attribute name="target" select="concat('source-', $text/@resource-id)"/>
+                                                        <xsl:attribute name="target" select="concat('source-', $text/@resource-id, '.html')"/>
                                                         <xsl:value-of select="'View the Tibetan source'"/>
                                                     </a>
                                                 </li>

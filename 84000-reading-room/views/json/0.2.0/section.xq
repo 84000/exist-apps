@@ -17,7 +17,7 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 declare variable $local:response := request:get-data()/m:response;
 declare variable $local:request := $local:response/m:request;
 declare variable $local:section := $local:response/m:section;
-declare variable $local:api-version := '0.2.0';
+declare variable $local:api-version := (request:get-attribute('api-version'),'0.2.0')[1];
 declare variable $local:xhtml-xsl := doc(concat($common:app-path, "/xslt/tei-to-xhtml.xsl"));
 
 declare function local:section($section as element(m:section)) as element(mjson:section) {
