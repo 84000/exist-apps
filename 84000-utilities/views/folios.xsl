@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -225,7 +225,7 @@
                                                     </td>
                                                     <td>
                                                         <a>
-                                                            <xsl:attribute name="target" select="$toh-key || '-source'"/>
+                                                            <xsl:attribute name="target" select="'source-' || $toh-key"/>
                                                             <xsl:attribute name="href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
                                                             <xsl:attribute name="data-dualview-href" select="m:url[@format eq 'html'][@xml:lang eq 'bo']"/>
                                                             <xsl:attribute name="data-dualview-title" select="$toh-key || ' source'"/>
@@ -234,7 +234,7 @@
                                                         </a>
                                                         <xsl:value-of select="' | '"/>
                                                         <a>
-                                                            <xsl:attribute name="target" select="$toh-key || '-translation'"/>
+                                                            <xsl:attribute name="target" select="'translation-' || $toh-key"/>
                                                             <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
                                                             <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
                                                             <xsl:attribute name="data-dualview-title" select="$toh-key || ' translation'"/>

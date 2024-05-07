@@ -8,7 +8,7 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
 import module namespace common = "http://read.84000.co/common" at "../../../modules/common.xql";
 import module namespace eft-json = "http://read.84000.co/json" at "../eft-json.xql";
-import module namespace json-types = "http://read.84000.co/json-types" at "types.xql";
+import module namespace json-types = "http://read.84000.co/json-types" at "../types.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option output:method "json";
@@ -23,31 +23,47 @@ declare variable $local:api-version := (request:get-attribute('api-version'),'0.
 declare variable $local:xhtml := transform:transform($local:response, doc(concat($common:app-path, "/views/html/section.xsl")), <parameters/>);
 
 declare function local:section($section as element()*, $parent-section-id as xs:string) as element()* {
-
-    json-types:catalogue-section(
-        $local:api-version,
-        $section/@id,
-        $parent-section-id,
-        $section/@sort-index, 
-        $section/@type, 
-        json-types:title('eft:mainTitle', (), $section/eft:titles/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), ())),
-        local:child-texts($section/eft:texts/eft:text),
+    
+    let $titles := $section/eft:titles/eft:title[text()]
+    let $labels := $titles ! json-types:label(@xml:lang, string-join(text()), (), eft-json:title-migration-id($section/@id, 'eft:mainTitle',. , $titles))
+    let $title := json-types:title('eft:mainTitle', (), $labels)
+    
+    let $content := (
+        if($local:xhtml//xhtml:div[@id eq 'abstract'][*]) then
+            json-types:content('eft:abstract', ($local:xhtml//xhtml:div[@id eq 'abstract']/@lang, 'en')[1], $local:xhtml//xhtml:div[@id eq 'abstract']/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
+        else ()
+        ,
+        if($local:xhtml//xhtml:div[@id eq 'tantra-warning-title'][*]) then
+            json-types:content('eft:tantraWarning', ($local:xhtml//xhtml:div[@id eq 'tantra-warning-title']/@lang, 'en')[1], $local:xhtml//xhtml:div[@id eq 'tantra-warning-title']//xhtml:div[matches(@class, '(^|\s)modal\-body(\s|$)')]/xhtml:p ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
+        else ()
+    )
+    
+    let $publications-summary :=
         element { QName('http://read.84000.co/ns/1.0', 'publicationsSummary') } {
             $local:section//eft:translation-summary[@section-id eq $section/@id]/eft:publications-summary[@grouping eq'text'][@scope eq 'descendant'] ! local:stats(*)
-        },
-        (
-            if($local:xhtml//xhtml:div[@id eq 'abstract'][*]) then
-                json-types:content('eft:abstract', ($local:xhtml//xhtml:div[@id eq 'abstract']/@lang, 'en')[1], $local:xhtml//xhtml:div[@id eq 'abstract']/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') })
-            else ()
-            ,
-            if($local:xhtml//xhtml:div[@id eq 'tantra-warning-title'][*]) then
-                json-types:content('eft:tantraWarning', ($local:xhtml//xhtml:div[@id eq 'tantra-warning-title']/@lang, 'en')[1], $local:xhtml//xhtml:div[@id eq 'tantra-warning-title']//xhtml:div[matches(@class, '(^|\s)modal\-body(\s|$)')]/xhtml:p ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') })
-            else ()
-        ),
+        }
+    
+    let $child-texts := local:child-texts($section/eft:texts/eft:text)
+    
+    let $annotations :=
         if($section[eft:page]) then
             eft-json:annotation-link('eft:knowledgebaseArticleLink', eft-json:id('knowledgebaseId', $section/eft:page/@kb-id))
         else ()
-    ),
+    
+    return
+        json-types:catalogue-section(
+            $local:api-version,
+            $section/@id,
+            $parent-section-id,
+            $section/@sort-index, 
+            $section/@type, 
+            $title,
+            $child-texts,
+            $publications-summary,
+            $content,
+            $annotations
+        )
+    ,
 
     for $child-section at $child-section-index in $section/eft:section
     return
@@ -63,8 +79,8 @@ declare function local:stats($groups as element()*) {
             attribute countType { $stat ! local-name(.) },
             $stat/parent::*/@*,
             element { 'values' } {
-                for $value in $stat/@*
-                let $attribute-name := local-name($value)
+                for $attribute in $stat/@*
+                let $attribute-name := local-name($attribute)
                 return
                     element { 
                         if($attribute-name eq 'in-translation') then 'inTranslation'
@@ -72,7 +88,7 @@ declare function local:stats($groups as element()*) {
                         else $attribute-name
                     } {
                         attribute json:literal {'true'},
-                        $value/number()
+                        $attribute/number()
                     }
            }
         }
@@ -87,8 +103,8 @@ declare function local:child-texts($texts as element()*) {
     let $start-page-number := min($start-volume/@start-page ! xs:integer(.))
     
     let $titles := (
-        json-types:title('eft:mainTitle', (), $text/eft:titles/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), ())),
-        json-types:title('eft:otherTitle', (), $text/eft:title-variants/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), ()))
+        json-types:title('eft:mainTitle', (), $text/eft:titles/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), (), ())),
+        json-types:title('eft:otherTitle', (), $text/eft:title-variants/eft:title[text()] ! json-types:label(@xml:lang, string-join(text()), (), ()))
     )
     let $bibliographic-scope := 
         if($text/eft:source/eft:location) then
@@ -99,9 +115,9 @@ declare function local:child-texts($texts as element()*) {
         else ()
     
     let $text-summary := $local:xhtml//xhtml:div[@id eq $text/@resource-id]/descendant::xhtml:div[matches(@class, '(^|\s)summary(\s|$)')][*]
-    let $content :=
+    let $content := 
         if($text-summary) then
-            json-types:content('eft:summary', ($text-summary/@lang, 'en')[1], $text-summary/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') })
+            json-types:content('eft:summary', ($text-summary/@lang, 'en')[1], $text-summary/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
         else ()
     
     let $annotations := (
@@ -117,21 +133,27 @@ declare function local:child-texts($texts as element()*) {
     
     )
     
+    let $work :=
+        json-types:work(
+            $local:api-version,
+            $text/@id,
+            'eft:translation',
+            $titles,
+            $bibliographic-scope,
+            $content,
+            $annotations,
+            'true'
+        )
+    
     order by 
         $start-volume-number ascending,
         $start-page-number ascending
     return
         json-types:catalogue-work(
-            $local:api-version,
+            $work,
             $text/@resource-id,
-            $text/@id,
-            'eft:translation',
             $start-volume-number,
-            $start-page-number,
-            $titles,
-            $bibliographic-scope,
-            $content,
-            $annotations
+            $start-page-number
         )
 };
 

@@ -229,3 +229,14 @@ declare function eft-json:force-array($elements) {
         }
     
 };
+
+declare function eft-json:title-migration-id($source-key as xs:string, $title-type as xs:string, $title as element(), $all-titles as element()*) {
+
+    let $language := ($title/@xml:lang, 'en')[1]
+    let $similar-titles := $all-titles[@xml:lang eq $title/@xml:lang][@type eq $title/@type][@key eq $title/@key]
+    let $index-in-similar-titles := (functx:index-of-node($similar-titles, $title), 1)[1]
+    
+    return
+        string-join(($source-key, $title-type, $language, $index-in-similar-titles), '/') (:! util:base64-encode(.):)
+
+};

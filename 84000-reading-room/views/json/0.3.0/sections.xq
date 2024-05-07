@@ -9,7 +9,7 @@ import module namespace common = "http://read.84000.co/common" at "../../../modu
 import module namespace section = "http://read.84000.co/section" at "../../../modules/section.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../../modules/tei-content.xql";
 import module namespace eft-json = "http://read.84000.co/json" at "../eft-json.xql";
-import module namespace json-types = "http://read.84000.co/json-types" at "types.xql";
+import module namespace json-types = "http://read.84000.co/json-types" at "../types.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option output:method "json";
@@ -99,10 +99,10 @@ declare function local:titles($section-tei as element(tei:TEI)) as element()* {
         )
         return (
             
-            json-types:label($title-lang, $title-string, $annotations),
+            json-types:label($title-lang, $title-string, $annotations, ()),
             
             if($title-lang eq 'Bo-Ltn' and not($title[@xml:lang eq 'bo'])) then
-                json-types:label('bo', common:bo-from-wylie($title-string), $annotations)
+                json-types:label('bo', common:bo-from-wylie($title-string), $annotations, ())
             else()
             
         )
@@ -135,8 +135,10 @@ declare function local:text($tei as element(tei:TEI), $source-id as xs:string) a
         $text-bibl/tei:idno[@source-id] ! eft-json:annotation-link('eft:catalogueId', eft-json:id(concat('eft:id', @work), @source-id))
     )
     
+    let $work := json-types:work($local:api-version, $text-id, 'eft:translation', (), $bibliographic-scope, (), $annotations, 'true')
+    
     return
-        json-types:catalogue-work($local:api-version, $source-id, $text-id, 'eft:translation', $child-text-start-volume-number, $child-text-start-page-number, (), $bibliographic-scope, (), $annotations)
+        json-types:catalogue-work($work, $source-id, $child-text-start-volume-number, $child-text-start-page-number)
 
 };
 

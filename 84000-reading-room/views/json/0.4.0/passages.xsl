@@ -12,7 +12,7 @@
         
         <translation annotate="{ $annotate }">
             
-            <xsl:for-each-group select="//xhtml:section[not(@id = ('titles','imprint','toc','end-notes','bibliography','glossary'))]/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
+            <xsl:for-each-group select="//xhtml:section[not(@id = ('titles','imprint','toc','end-notes','bibliography','glossary', 'abbreviations'))]/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
                 <xsl:call-template name="passage">
                     <xsl:with-param name="passage-id" select="@data-location-id"/>
                     <xsl:with-param name="parent-id" select="ancestor::xhtml:section/@id"/>
@@ -144,9 +144,9 @@
                         
                         <xsl:attribute name="json:array" select="true()"/>
                         
-                        <xsl:attribute name="content-type" select="'section-heading'"/>
+                        <xsl:attribute name="lineType" select="'section-heading'"/>
                         
-                        <xsl:attribute name="section-heading-type" select="replace($content/@class, '.*(^|\s)heading-section(\s+(chapter|section))?(\s|$).*', '$3')"/>
+                        <xsl:attribute name="sectionHeadingType" select="replace($content/@class, '.*(^|\s)heading-section(\s+(chapter|section))?(\s|$).*', '$3')"/>
                         
                         <value>
                             <xsl:value-of select="eft:content-string($content)"/>
@@ -161,9 +161,51 @@
                     
                 </xsl:when>
                 
+                <xsl:when test="$content/self::xhtml:div and matches($content/@class, '(^|\s)line\-group(\s|$)')">
+                    
+                    <xsl:for-each select="$content/*">
+                        
+                        <xsl:choose>
+                            
+                            <xsl:when test="self::xhtml:div and matches(@class, '(^|\s)rw\-line(\s|$)')">
+                                
+                                <line>
+                                    
+                                    <xsl:attribute name="lineType" select="'line-group-line'"/>
+                                    
+                                    <xsl:attribute name="json:array" select="true()"/>
+                                    
+                                    <value>
+                                        <xsl:value-of select="eft:content-string(.)"/>
+                                    </value>
+                                    
+                                </line>
+                                
+                            </xsl:when>
+                            
+                            <!-- Fallback -->
+                            <xsl:otherwise>
+                                <line>
+                                    <xsl:apply-templates select="$content"/>
+                                </line>
+                            </xsl:otherwise>
+                            
+                        </xsl:choose>
+                        
+                    </xsl:for-each>
+                    
+                    <xsl:call-template name="annotations">
+                        <xsl:with-param name="content-elements" select="$content/descendant::*"/>
+                        <xsl:with-param name="passage-contents" select="$contents"/>
+                    </xsl:call-template>
+                    
+                </xsl:when>
+                
                 <!-- Fallback -->
                 <xsl:otherwise>
-                    <xsl:apply-templates select="$content"/>
+                    <line>
+                        <xsl:apply-templates select="$content"/>
+                    </line>
                 </xsl:otherwise>
                 
             </xsl:choose>

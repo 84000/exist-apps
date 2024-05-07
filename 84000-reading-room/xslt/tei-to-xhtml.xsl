@@ -367,7 +367,7 @@
                                     <xsl:attribute name="href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:attribute name="data-ref" select="$ref/@cRef"/>
                                     <xsl:attribute name="data-folio" select="$ref/@cRef"/>
-                                    <xsl:attribute name="target" select="concat('source-', $toh-key, '.html')"/>
+                                    <xsl:attribute name="target" select="concat('source-', $toh-key)"/>
                                     <xsl:attribute name="data-dualview-href" select="concat('/source/', $toh-key, '.html?ref-index=', $folio-ref-index)"/>
                                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh, ' (source text)')"/>
                                     <xsl:attribute name="data-log-click-text-id" select="$text-id"/>

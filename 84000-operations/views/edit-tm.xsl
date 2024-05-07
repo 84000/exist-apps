@@ -507,7 +507,7 @@
                                                                                     <xsl:value-of select="' / '"/>
                                                                                 </span>
                                                                                 
-                                                                                <a target="{ $text/@id }-html">
+                                                                                <a target="translation-{ $text/@id }">
                                                                                     <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh[1]/@key, '.html#', $tm-location-id)"/>
                                                                                     <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $text/m:toh[1]/@key, '.html#', $tm-location-id)"/>
                                                                                     <xsl:attribute name="data-dualview-title" select="$text/m:toh[1]/m:full/data()"/>
