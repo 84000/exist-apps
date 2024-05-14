@@ -186,6 +186,7 @@ declare function store:create($file-name as xs:string) as element() {
     (: Get TEI document version :)
     let $tei := tei-content:tei($resource-id, 'translation')
     let $tei-version := tei-content:version-str($tei)
+    let $text-id := tei-content:id($tei)
     
     (: Select which file types to process :)
     let $file-types := ('pdf', 'epub', 'rdf', 'cache', 'json')
@@ -215,7 +216,7 @@ declare function store:create($file-name as xs:string) as element() {
             if($file-type eq 'cache') then
             
                 (: Set the cache version number, assuming it's up to date as it's maintained by the trigger :)
-                let $file-name := concat(tei-content:id($tei), '.cache')
+                let $file-name := concat($text-id, '.cache')
                 let $update-version-str := 
                     store:store-version-str(
                         concat($common:data-path, '/cache'), 
@@ -224,6 +225,14 @@ declare function store:create($file-name as xs:string) as element() {
                     )
                 return
                     <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', concat($common:data-path, '/cache/', $file-name)) }</stored>
+            
+            else if($file-type eq 'json') then
+                (:'Store new rdf':)
+                let $file-path := concat($common:data-path, '/json/', $text-id, '.json')
+                return (
+                    store:store-new-json($file-path, $tei-version),
+                    deploy:push('data-json', (), concat('Sync ', $text-id, '.json'), ())
+                )
             
             else
                 (: Loop through one or more Toh keys :)
@@ -253,14 +262,6 @@ declare function store:create($file-name as xs:string) as element() {
                             return (
                                 store:store-new-rdf($file-path, $tei-version),
                                 deploy:push('data-rdf', (), concat('Sync ', $toh-key, '.rdf'), ())
-                            )
-                        
-                        else if($file-type eq 'json') then
-                            (:'Store new rdf':)
-                            let $file-path := concat($common:data-path, '/json/', $toh-key, '.json')
-                            return (
-                                store:store-new-json($file-path, $tei-version),
-                                deploy:push('data-json', (), concat('Sync ', $toh-key, '.json'), ())
                             )
                             
                         else
@@ -531,12 +532,13 @@ declare function store:store-new-json($file-path as xs:string, $version as xs:st
         
             let $file-path-tokenized := tokenize($file-path, '/')
             let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
-            let $file-name := lower-case($file-path-tokenized[last()])
-            let $url := concat($json-url, '/translation/', $file-name)
+            let $file-name := $file-path-tokenized[last()]
+            let $url := concat($json-url, '/translation/', $file-name, '?annotate=false')
             
             let $log := util:log('info', concat('store-new-json:', $file-name))
             
             let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
+            
             return
                 if(name($download) eq 'stored') then
                     let $set-file-group:= sm:chgrp(xs:anyURI($file-path), $store:file-group)
@@ -557,8 +559,9 @@ declare function store:store-new-json($file-path as xs:string, $version as xs:st
          
          else
             <error xmlns="http://read.84000.co/ns/1.0">
-                <message>{ concat('JSON generation failed: JSON generation config not found (', $file-path,')') }</message>
+                <message>{ concat('JSON generation failed: JSON generation config not found (', $json-url,')') }</message>
             </error>
+         
 };
 
 declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string, $auth-group as xs:string) as item()* {
@@ -573,6 +576,7 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
     return
         (: check to ensure the remote server indicates success :)
         if ($head/@status = '200') then
+        
             (: override the stated media type if the file is known to be .xml :)
             let $media-type := $head/hc:body/@media-type
             let $mime-type := 

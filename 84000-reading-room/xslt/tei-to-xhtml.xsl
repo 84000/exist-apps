@@ -708,7 +708,7 @@
             <xsl:variable name="pointer" select="."/>
             <xsl:variable name="target-type" select="if(matches($pointer/@target, '^(toh[0-9a-z\-]+\.html)?#')) then 'id' else if(starts-with($pointer/@target, 'http')) then 'url' else ''"/>
             <xsl:variable name="target-string" select="if($target-type eq 'id') then replace($pointer/@target, '^(toh[0-9a-z\-]+\.html)?#(end\-note\-)?(.*)', '$3') else $pointer/@target"/>
-            <xsl:variable name="target-toh-key" select="replace($pointer/@target, '^(toh[0-9a-z\-]+\.html)#', '$1')"/>
+            <xsl:variable name="target-toh-key" select="replace($pointer/@target, '^(toh[0-9a-z\-]+\.html)?#(.*)', '$1')"/>
             
             <!-- Look through the various keys to find this id -->
             <xsl:variable name="target-element" as="element()?">

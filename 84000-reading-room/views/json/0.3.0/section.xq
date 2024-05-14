@@ -22,19 +22,20 @@ declare variable $local:environment := $local:response/eft:environment;
 declare variable $local:api-version := (request:get-attribute('api-version'),'0.3.0')[1];
 declare variable $local:xhtml := transform:transform($local:response, doc(concat($common:app-path, "/views/html/section.xsl")), <parameters/>);
 
-declare function local:section($section as element()*, $parent-section-id as xs:string) as element()* {
+declare function local:section($section as element()*, $parent-section-id as xs:string?) as element()* {
     
     let $titles := $section/eft:titles/eft:title[text()]
     let $labels := $titles ! json-types:label(@xml:lang, string-join(text()), (), eft-json:title-migration-id($section/@id, 'eft:mainTitle',. , $titles))
     let $title := json-types:title('eft:mainTitle', (), $labels)
-    
+    let $abstract := $local:xhtml//xhtml:div[@id eq concat('abstract-', $section/@id)][*]
+    let $tantra-warning := $local:xhtml//xhtml:div[@id eq concat('tantra-warning-', $section/@id)][*]
     let $content := (
-        if($local:xhtml//xhtml:div[@id eq 'abstract'][*]) then
-            json-types:content('eft:abstract', ($local:xhtml//xhtml:div[@id eq 'abstract']/@lang, 'en')[1], $local:xhtml//xhtml:div[@id eq 'abstract']/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
+        if($abstract) then
+            json-types:content('eft:abstract', ($abstract/@lang, 'en')[1], $abstract/* ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
         else ()
         ,
-        if($local:xhtml//xhtml:div[@id eq 'tantra-warning-title'][*]) then
-            json-types:content('eft:tantraWarning', ($local:xhtml//xhtml:div[@id eq 'tantra-warning-title']/@lang, 'en')[1], $local:xhtml//xhtml:div[@id eq 'tantra-warning-title']//xhtml:div[matches(@class, '(^|\s)modal\-body(\s|$)')]/xhtml:p ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
+        if($tantra-warning) then
+            json-types:content('eft:tantraWarning', ($tantra-warning/@lang, 'en')[1], $tantra-warning//xhtml:div[matches(@class, '(^|\s)modal\-body(\s|$)')]/xhtml:p ! element { local-name(.) } { serialize(node()) ! replace(., '\s+xmlns=[^\s|>]*', '') }, ())
         else ()
     )
     

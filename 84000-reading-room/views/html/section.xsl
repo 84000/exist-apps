@@ -762,7 +762,7 @@
                 
                 <xsl:if test="$section/m:abstract/*">
                     <hr/>
-                    <div id="abstract">
+                    <div id="abstract-{ $section/@id }">
                         <xsl:apply-templates select="$section/m:abstract/*"/>
                     </div>
                 </xsl:if>
@@ -781,7 +781,7 @@
                 <xsl:if test="$section/m:warning/tei:p">
                     <div class="top-margin">
                         <xsl:call-template name="tantra-warning">
-                            <xsl:with-param name="id" select="'title'"/>
+                            <xsl:with-param name="id" select="$section/@id"/>
                         </xsl:call-template>
                     </div>
                 </xsl:if>
@@ -1556,25 +1556,25 @@
                                 
                                 <div class="notes">
                                     
-                                    <xsl:for-each select="$sub-section/m:abstract/tei:p">
-                                        <p>
-                                            <xsl:apply-templates select="node()"/>
-                                        </p>
-                                    </xsl:for-each>
+                                    <div id="abstract-{ $sub-section/@id }">
+                                        <xsl:apply-templates select="$sub-section/m:abstract/*"/>
+                                    </div>
                                     
                                     <xsl:if test="$sub-section/m:page[@kb-id] and $environment/m:render/m:status[@type eq 'article'][@status-id eq $sub-section/m:page/@status]">
-                                        <p>
-                                            <a>
+                                        <div class="sml-margin bottom">
+                                            <a class="underline small">
                                                 <xsl:attribute name="href" select="concat('/knowledgebase/', $sub-section/m:page/@kb-id, '.html')"/>
                                                 <xsl:value-of select="'Read more in the knowledge base article'"/>
                                             </a>
-                                        </p>
+                                        </div>
                                     </xsl:if>
                                     
                                     <xsl:if test="$sub-section/m:warning/tei:p">
-                                        <xsl:call-template name="tantra-warning">
-                                            <xsl:with-param name="id" select="$sub-section-id"/>
-                                        </xsl:call-template>
+                                        <div class="sml-margin bottom">
+                                            <xsl:call-template name="tantra-warning">
+                                                <xsl:with-param name="id" select="$sub-section-id"/>
+                                            </xsl:call-template>
+                                        </div>
                                     </xsl:if>
                                     
                                 </div>

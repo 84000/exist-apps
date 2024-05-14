@@ -7,8 +7,7 @@ declare namespace file="http://exist-db.org/xquery/file";
 declare namespace expath="http://expath.org/ns/pkg";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
-import module namespace repair="http://exist-db.org/xquery/repo/repair" at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
-import module namespace dbutil="http://exist-db.org/xquery/dbutil";
+(:import module namespace repair="http://exist-db.org/xquery/repo/repair" at "resource:org/exist/xquery/modules/expathrepo/repair.xql";:)
 import module namespace functx="http://www.functx.com";
 
 declare variable $deploy:snapshot-conf := $common:environment//m:snapshot-conf;
@@ -174,10 +173,11 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             
             (: Do Git push :)
             element push {
+                process:execute(('git', 'checkout', ($repo/@branch/string(), 'master')[1]), $git-options),
                 process:execute(('git', 'status'), $git-options),
                 process:execute(('git', 'add', $git-add), $git-options),
                 process:execute(('git', 'commit', '-m', $commit-msg), $git-options),
-                process:execute(('git', 'push', 'origin', 'master'), $git-options)
+                process:execute(('git', 'push', 'origin', ($repo/@branch/string(), 'master')[1]), $git-options)
             }
             
         },
@@ -215,7 +215,8 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
             (:$exist-options, $git-options,:)
             element pull {
                 (:process:execute(('git', 'status'), $git-options),:)
-                process:execute(('git', 'pull', 'origin', 'master'), $git-options)
+                process:execute(('git', 'checkout', ($repo/@branch/string(), 'master')[1]), $git-options),
+                process:execute(('git', 'pull', 'origin', ($repo/@branch/string(), 'master')[1]), $git-options)
             },
             
             (: Restore the zip to eXist :)
@@ -250,226 +251,8 @@ declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string
     )
 };
 
-(: Old code from here... :)
-(:
-declare function deploy:execute-options($working-dir as xs:string) as element() {
-    <options>
-        <workingDir>/{ $working-dir }</workingDir>
-        <environment>
-        {
-            for $env-var in $common:environment//m:env-vars/m:var
-            return 
-                <env name="{ upper-case($env-var/@id) }" value="/{ $env-var/text() }"/>
-        }
-        </environment>
-    </options>
-};
-
-(\: Commit data to Git and push to Github :\)
-declare function deploy:commit-data($action as xs:string, $sync-resource as xs:string, $commit-msg as xs:string) {
-    
-    let $repo-path := $deploy:snapshot-conf/m:repo-path/text()
-    
-    (\: Sync all data :\)
-    let $sync :=
-        if($action eq 'sync' and $repo-path) then
-            (
-                for $collection in ('tei', 'translation-memory', 'translation-memory-generator', 'config', 'rdf')
-                return
-                    file:sync(
-                        concat($common:data-path, '/', $collection), 
-                        concat('/', $repo-path, '/', $collection), 
-                        ()
-                    )
-            )
-        else ()
-    
-    (\: Only add specified file to commit :\)
-    let $git-add := 
-        if($sync-resource = ('tei', 'config', 'tm', 'tmg', 'rdf')) then
-            '--all'
-        else
-            substring-after($sync-resource, concat($common:data-path, '/tei/'))
-    
-    (\: Default to file name if no commit message provided :\)
-    let $commit-msg := 
-        if(not($commit-msg))then
-            concat('Sync ', substring-after($sync-resource, concat($common:data-path, '/tei/')))
-        else
-            $commit-msg
-    
-    (\: Git working directory :\)
-    let $working-dir :=
-        if($sync-resource eq 'config') then
-            $repo-path || '/config'
-        else if($sync-resource eq 'tm') then
-            $repo-path || '/translation-memory'
-        else if($sync-resource eq 'tmg') then
-            $repo-path || '/translation-memory-generator'
-        else if($sync-resource eq 'rdf') then
-            $repo-path || '/rdf'
-        else if($sync-resource eq 'sections') then
-            $repo-path || '/tei/sections'
-        else
-            $repo-path || '/tei'
-    
-    return 
-        element { QName('http://read.84000.co/ns/1.0','result') } {
-        
-            attribute id {'deploy-commit-data'},
-            
-            element sync {
-                $sync
-            },
-            
-            if($sync) then
-                deploy:git-push($git-add, $commit-msg, deploy:execute-options($working-dir))
-            else ()
-            ,
-            
-            util:log('info', concat('deploy-commit-data:', $working-dir))
-            
-        }
-    
-};
-
-(\: Commit code to Git and push to GitHub :\)
-declare function deploy:deploy-apps($admin-password as xs:string, $commit-msg as xs:string, $get-app as xs:string) as element() {
-
-    let $repo-path := $deploy:deployment-conf/m:repo-path/text()
-    let $exist-path := $deploy:deployment-conf/m:exist-path/text()
-    let $action := $deploy:deployment-conf/m:apps/@role
-    let $pull-collection := $deploy:deployment-conf/m:apps/m:app[@collection eq $get-app]/@collection
-    
-    let $admin-password-validated := deploy:admin-password-validated($admin-password, 'dba')
-    
-    let $git-options := deploy:execute-options($repo-path)
-    let $exist-options := deploy:execute-options($exist-path)
-    
-    (\: Sync app :\)
-    let $sync :=
-        if($repo-path and $admin-password-validated gt '') then
-            if($action eq 'push')then (
-                (\: For each app configured for deployment :\)
-                for $push-collection in $deploy:deployment-conf/m:apps/m:app/@collection
-                    
-                (\: Sync files with the file system :\)
-                let $sync-collection := 
-                    file:sync(
-                        concat('/db/apps/', $push-collection), 
-                        concat('/', $repo-path, '/', $push-collection), 
-                        ()
-                    )
-                
-                where count($sync-collection//file:update) gt 0
-                
-                (\: Create a zip :\)
-                let $source-collection := concat('/db/apps/', $push-collection)
-                let $target-zip-file := concat('/', $repo-path, '/', $push-collection, '/zip/', $push-collection, '.zip')
-                let $do-backup :=
-                    process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password-validated, '-b', $source-collection, '-d', $target-zip-file), 
-                        $exist-options
-                    )
-                
-                return (
-                    $sync-collection,
-                    element debug {
-                        element command { concat('bin/backup.sh -b ', $source-collection, ' -d ', $target-zip-file)},
-                        $do-backup/stdout/line ! element output { data() }
-                    }
-                )
-                ,
-                    
-                (\: Push to github :\)
-                deploy:git-push('--all', $commit-msg, $git-options)
-                
-            )
-                
-            else if($action eq 'pull' and $pull-collection) then (
-            
-                (\: Pull from github :\)
-                deploy:git-pull($git-options),
-                
-                (\: Restore the zip to eXist :\)
-                let $restore-file := concat('/', $repo-path, '/', $pull-collection, '/zip/', $pull-collection, '.zip')
-                let $do-restore :=
-                    process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password-validated, '-P', $admin-password-validated, '-r', $restore-file),
-                        $exist-options
-                    )
-                
-                return 
-                    element debug {
-                        element command { concat('bin/backup.sh -r ', $restore-file)},
-                        $do-restore/stdout/line ! element output { data() }
-                    }
-                ,
-                
-                (\: Clean repos :\)
-                repair:clean-all(),
-                repair:repair()
-                
-            )
-            else ()
-             
-        else ()
-    
-    return 
-        element { QName('http://read.84000.co/ns/1.0','result') } {
-        
-            attribute id {'deploy-deploy-apps'},
-            
-            element deployment {
-                
-                attribute action { $action },
-                attribute admin-password-correct { if($admin-password-validated gt '') then true() else false() },
-                
-                $sync,
-                
-                util:log('info', concat('deploy-deploy-apps:', $get-app))
-                
-            }
-            
-        }
-    
-};
-
-(\: Push to GitHub :\)
-declare function deploy:git-push($git-add as xs:string, $commit-msg as xs:string, $options as element()) as node()*{
-    <execute xmlns="http://read.84000.co/ns/1.0">
-    {
-        process:execute(('git', 'status'), $options)
-    }
-    </execute>,
-    <execute xmlns="http://read.84000.co/ns/1.0">
-    {
-        process:execute(('git', 'add', $git-add), $options)
-    }
-    </execute>,
-    <execute xmlns="http://read.84000.co/ns/1.0">
-    {
-        process:execute(('git', 'commit', "-m", $commit-msg), $options)
-    }
-    </execute>,
-    <execute xmlns="http://read.84000.co/ns/1.0">
-    {
-        process:execute(('git', 'push', 'origin', 'master'), $options)
-    }
-    </execute>
-};
-
-(\: Pull from GitHub :\)
-declare function deploy:git-pull($options as element()) as node()*{
-    <execute xmlns="http://read.84000.co/ns/1.0">
-    {
-        process:execute(('git', 'pull', 'origin', 'master'), $options)
-    }
-    </execute>
-};
-
-(\: Create a xar package :\)
-declare function deploy:create-package($app-collection as xs:string) {
+(: Create a xar package :)
+(:declare function deploy:create-package($app-collection as xs:string) {
 
     let $entries :=
         dbutil:scan(
@@ -502,5 +285,5 @@ declare function deploy:create-package($app-collection as xs:string) {
     
     return 
         compression:zip($entries, true())
-};
-:)
+};:)
+

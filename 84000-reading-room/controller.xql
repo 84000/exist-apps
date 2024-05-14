@@ -21,7 +21,7 @@ declare variable $resource-suffix := string-join(subsequence(tokenize($exist:res
 declare variable $collection-path := lower-case(tokenize($exist:path, '/')[2]);
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 declare variable $user-name := common:user-name();
-declare variable $api-version := (request:get-parameter('api-version', '')[. = ('0.1.0','0.2.0','0.3.0','0.4.0')], '0.3.0')[1];
+declare variable $api-version := (request:get-parameter('api-version', '')[. = ('0.1.0','0.2.0','0.3.0','0.4.0')], '0.4.0')[1];
 declare variable $var-debug := 
     <debug>
         <var name="request:get-hostname()" value="{ request:get-hostname() }"/>
@@ -257,8 +257,19 @@ return
             (: xml model -> json view :)
             if ($resource-suffix eq 'json') then 
                 
+                (: 0.1.0 get xml, pass to json view, and download :)
+                if($api-version eq '0.1.0') then
+                    local:dispatch("/models/translation.xq", "/views/json/translation.xq",
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-suffix" value="json"/>
+                            <set-header name="Content-Type" value="application/json"/>
+                            <set-header name="Content-Disposition" value="attachment"/>
+                        </parameters>
+                    )
+                
                 (: 0.2.0 get xml, pass to json view :)
-                if($api-version eq '0.2.0') then
+                else if($api-version eq '0.2.0') then
                     local:dispatch("/models/translation.xq", "/views/json/0.2.0/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                             <add-parameter name="resource-id" value="{ $resource-id }"/>
@@ -277,7 +288,7 @@ return
                     )
                 
                 (: 0.4.0 get html, pass to json view :)
-                else if($api-version eq '0.4.0') then
+                else 
                     local:dispatch("/models/translation.xq", "/views/json/0.4.0/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                             <add-parameter name="resource-id" value="{ $resource-id }"/>
@@ -287,17 +298,6 @@ return
                         </parameters>
                     )
                 
-                (: *.*.* Get xml, pass to json view, and download :)
-                else
-                    local:dispatch("/models/translation.xq", "/views/json/translation.xq",
-                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                            <add-parameter name="resource-id" value="{ $resource-id }"/>
-                            <add-parameter name="resource-suffix" value="json"/>
-                            <set-header name="Content-Type" value="application/json"/>
-                            <set-header name="Content-Disposition" value="attachment"/>
-                        </parameters>
-                    )
-            
             (: xml model -> pdf view :)
             else if ($resource-suffix eq 'pdf') then (: placeholder - this is incomplete :)
                 local:dispatch("/models/translation.xq", "/views/pdf/translation-fo.xq",
