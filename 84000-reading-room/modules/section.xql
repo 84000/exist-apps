@@ -80,6 +80,22 @@ declare function section:text($tei as element(tei:TEI), $resource-id as xs:strin
 declare function section:publication-status($section-id as xs:string, $sponsorship-text-ids as xs:string*) as element(m:translation-summary) {
     
     let $section-tei := tei-content:tei($section-id, 'section')
+    let $section-tei-last-modified := tei-content:last-modified($section-tei)
+    
+    (: Get publication status of texts in this section :)
+    let $section-statuses := 
+        for $bibl in $tei-content:translations-collection//tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $section-id]]
+        return
+            translation:publication-status($bibl, $sponsorship-text-ids)
+    
+    (: Get publication status of texts in child sections :)
+    let $subsection-statuses :=
+        for $sub-section-fileDesc in $tei-content:sections-collection//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
+        order by $sub-section-fileDesc/tei:sourceDesc/@sort-index ! xs:integer(.) ascending
+        return 
+            section:publication-status($sub-section-fileDesc/tei:publicationStmt/tei:idno/@xml:id, $sponsorship-text-ids)
+    
+    let $combined-statuses := $subsection-statuses/descendant-or-self::m:publication-status | $section-statuses/self::m:publication-status
     
     where $section-tei
     return
@@ -87,31 +103,16 @@ declare function section:publication-status($section-id as xs:string, $sponsorsh
         
             attribute section-id { $section-id },
             attribute document-url { base-uri($section-tei) },
+            attribute last-modified { max(($section-tei-last-modified, $section-statuses/@last-modified ! xs:dateTime(.), $subsection-statuses/@last-modified ! xs:dateTime(.))) },
+            
             element title { tei-content:title-any($section-tei) },
             
-            (: Get publication status of texts in child sections :)
-            let $subsection-statuses :=
-                for $sub-section-fileDesc in $tei-content:sections-collection//tei:fileDesc[tei:sourceDesc/tei:bibl/tei:idno[@parent-id eq $section-id]]
-                order by $sub-section-fileDesc/tei:sourceDesc/@sort-index ! xs:integer(.) ascending
-                return 
-                    section:publication-status($sub-section-fileDesc/tei:publicationStmt/tei:idno/@xml:id, $sponsorship-text-ids)
-            
-            (: Get publication status of texts in this section :)
-            let $section-statuses := 
-                for $bibl in $tei-content:translations-collection//tei:sourceDesc/tei:bibl[tei:idno[@parent-id eq $section-id]]
-                return
-                    translation:publication-status($bibl, $sponsorship-text-ids)
-            
-            let $combined-statuses := $subsection-statuses/descendant-or-self::m:publication-status | $section-statuses/self::m:publication-status
-            
-            return (
-                $subsection-statuses,
-                $section-statuses,
-                local:publication-summary($section-statuses, 'toh', 'children'),
-                local:publication-summary($section-statuses[@bibl-first], 'text', 'children'),
-                local:publication-summary($combined-statuses, 'toh', 'descendant'),
-                local:publication-summary($combined-statuses[@bibl-first], 'text', 'descendant')
-            )
+            $subsection-statuses,
+            $section-statuses,
+            local:publication-summary($section-statuses, 'toh', 'children'),
+            local:publication-summary($section-statuses[@bibl-first], 'text', 'children'),
+            local:publication-summary($combined-statuses, 'toh', 'descendant'),
+            local:publication-summary($combined-statuses[@bibl-first], 'text', 'descendant')
         
         }
 };
@@ -218,6 +219,7 @@ declare function section:child-sections($tei as element(tei:TEI), $include-texts
             attribute last-updated { $last-updated },
             attribute include-texts { $include-texts },
             attribute toh-number-first { min($child-texts-output/m:toh/@number ! number(.)) },
+            attribute toh-number-last { max($child-texts-output/m:toh/@number ! number(.)) },
             
             tei-content:title-set($tei, 'mainTitle'),
             

@@ -233,7 +233,7 @@ declare function eft-json:force-array($elements) {
 declare function eft-json:title-migration-id($source-key as xs:string, $title-type as xs:string, $title as element(), $all-titles as element()*) {
 
     let $language := ($title/@xml:lang, 'en')[1]
-    let $similar-titles := $all-titles[@xml:lang eq $title/@xml:lang][@type eq $title/@type][@key eq $title/@key]
+    let $similar-titles := $all-titles[@xml:lang eq $title/@xml:lang][@type eq $title/@type][(@key, ($title/@key, '')[1])[1] eq ($title/@key, '')[1]]
     let $index-in-similar-titles := (functx:index-of-node($similar-titles, $title), 1)[1]
     
     return

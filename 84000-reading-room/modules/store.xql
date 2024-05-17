@@ -294,7 +294,7 @@ declare function store:stored-version-str($resource-id as xs:string, $file-exten
     
     (: Check the file is there :)
     let $file-exists := 
-        if($file-extension = ('pdf', 'epub')) then
+        if($file-extension = ('pdf', 'epub', 'json')) then
             util:binary-doc-available(concat($file-collection, '/', $file-name))
         else
             doc-available(concat($file-collection, '/', $file-name))

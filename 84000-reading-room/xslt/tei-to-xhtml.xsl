@@ -2058,10 +2058,6 @@
                                                 <xsl:with-param name="fragment-extension" select="concat('[data-glossary-id=&#34;', $glossary-id, '&#34;]')"/>
                                             </xsl:call-template>
                                             
-                                            <!--<xsl:if test="$view-mode[not(@client = ('ebook', 'app'))]">
-                                                <xsl:attribute name="data-location-id" select="$target-element/@id"/>
-                                            </xsl:if>-->
-                                            
                                             <xsl:call-template name="target-element-label">
                                                 <xsl:with-param name="target-element" select="$target-element"/>
                                             </xsl:call-template>
@@ -2584,11 +2580,9 @@
         <xsl:choose>
             <xsl:when test="$view-mode[@id = ('json','json-passage')]">
                 <div>
-                    <xsl:attribute name="data-location-id">
-                        <xsl:call-template name="persistent-location">
-                            <xsl:with-param name="node" select="$element"/>
-                        </xsl:call-template>
-                    </xsl:attribute>
+                    <xsl:call-template name="data-location-id-attribute">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
                     <xsl:sequence select="$content"/>
                 </div>
             </xsl:when>
@@ -2604,15 +2598,11 @@
                     </xsl:if>
                     
                     <!-- Set nearest id -->
-                    <xsl:variable name="location-id">
-                        <xsl:call-template name="persistent-location">
-                            <xsl:with-param name="node" select="$element"/>
-                        </xsl:call-template>
-                    </xsl:variable>
-                    
-                    <xsl:if test="not(ancestor::tei:p | ancestor::tei:ab | ancestor::tei:trailer | ancestor::tei:bibl | ancestor::tei:lg | ancestor::tei:q)">
-                        <xsl:attribute name="data-location-id" select="$location-id"/>
-                    </xsl:if>
+                    <!--<xsl:if test="not(ancestor::tei:p | ancestor::tei:ab | ancestor::tei:trailer | ancestor::tei:bibl | ancestor::tei:lg | ancestor::tei:q)">-->
+                    <xsl:call-template name="data-location-id-attribute">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
+                    <!--</xsl:if>-->
                     
                     <!-- Set the css class -->
                     <xsl:call-template name="class-attribute">
@@ -4174,6 +4164,10 @@
                                     <xsl:with-param name="node" select="$element"/>
                                 </xsl:call-template>
                             </xsl:variable>
+                            
+                            <xsl:if test="$location-id">
+                                <xsl:attribute name="data-glossary-location-id" select="$location-id"/>
+                            </xsl:if>
                             
                             <xsl:call-template name="class-attribute">
                                 

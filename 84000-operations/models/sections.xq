@@ -15,7 +15,8 @@ let $xml-response :=
         'operations/sections',
         'operations',
         (
-            section:publication-status('LOBBY',())
+            section:publication-status('LOBBY',()),
+            doc(concat($common:data-path, '/config/webflow-api.xml'))
         )
     )
 

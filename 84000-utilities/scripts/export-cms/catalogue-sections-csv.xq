@@ -74,7 +74,6 @@ declare function local:section($section-id as xs:string, $index-in-parent as xs:
     
 };
 
-
 declare function local:text($tei as element(tei:TEI), $source-id as xs:string) as element() {
     
     let $text-id := tei-content:id($tei)

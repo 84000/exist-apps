@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:webflow="http://read.84000.co/webflow-api" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
+    
+    <xsl:variable name="webflow-api" select="/m:response/webflow:webflow-api"/>
     
     <xsl:template match="m:results">
         
@@ -105,88 +107,114 @@
                     <xsl:with-param name="counter" select="1"/>
                     <xsl:with-param name="finish" select="count(ancestor::m:translation-summary) + 1"/>
                     <xsl:with-param name="content">
-                        <div>
-                            <span class="text-bold">
-                                <xsl:value-of select="$translation-summary/m:title"/>
-                            </span>
-                            <span class="small text-muted">
-                                <xsl:value-of select="concat(' \ ', $translation-summary/@section-id)"/>
-                            </span>
-                        </div>
-                        <div class="sml-margin bottom">
-                            <ul class="list-inline inline-dots">
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.tei')"/>
-                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.tei')"/>
-                                        <span class="small">
-                                            <xsl:value-of select="'tei'"/>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.xml')"/>
-                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.xml')"/>
-                                        <span class="small">
-                                            <xsl:value-of select="'xml'"/>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.json')"/>
-                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.json')"/>
-                                        <span class="small">
-                                            <xsl:value-of select="'json'"/>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.html')"/>
-                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.html')"/>
-                                        <span class="small">
-                                            <xsl:value-of select="'html'"/>
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.navigation.atom')"/>
-                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.navigation.atom')"/>
-                                        <span class="small">
-                                            <xsl:value-of select="'navigation.atom'"/>
-                                        </span>
-                                    </a>
-                                </li>
-                                <xsl:if test="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@published ! xs:integer(.) gt 0">
+                        <div style="min-height:130px;">
+                            <div>
+                                <span class="text-bold">
+                                    <xsl:value-of select="$translation-summary/m:title"/>
+                                </span>
+                                <span class="small text-muted">
+                                    <xsl:value-of select="concat(' \ ', $translation-summary/@section-id)"/>
+                                </span>
+                            </div>
+                            <div class="sml-margin bottom">
+                                <ul class="list-inline inline-dots">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.acquisition.atom')"/>
-                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.acquisition.atom')"/>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.tei')"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.tei')"/>
                                             <span class="small">
-                                                <xsl:value-of select="'acquisition.atom'"/>
+                                                <xsl:value-of select="'tei'"/>
                                             </span>
                                         </a>
                                     </li>
-                                </xsl:if>
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', $translation-summary/@section-id)"/>
-                                        <xsl:attribute name="target" select="concat($translation-summary/@section-id, 'tests')"/>
-                                        <span class="small">
-                                            <xsl:value-of select="'run tests'"/>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.xml')"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.xml')"/>
+                                            <span class="small">
+                                                <xsl:value-of select="'xml'"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.json')"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.json')"/>
+                                            <span class="small">
+                                                <xsl:value-of select="'json'"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.html')"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.html')"/>
+                                            <span class="small">
+                                                <xsl:value-of select="'html'"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.navigation.atom')"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.navigation.atom')"/>
+                                            <span class="small">
+                                                <xsl:value-of select="'navigation.atom'"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <xsl:if test="$translation-summary/m:publications-summary[@grouping eq 'toh'][@scope eq 'children']/m:texts/@published ! xs:integer(.) gt 0">
+                                        <li>
+                                            <a>
+                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.acquisition.atom')"/>
+                                                <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.acquisition.atom')"/>
+                                                <span class="small">
+                                                    <xsl:value-of select="'acquisition.atom'"/>
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </xsl:if>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', $translation-summary/@section-id)"/>
+                                            <xsl:attribute name="target" select="concat($translation-summary/@section-id, 'tests')"/>
+                                            <span class="small">
+                                                <xsl:value-of select="'run tests'"/>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="small text-muted sml-margin bottom">
+                                <xsl:value-of select="'TEI file: '"/>
+                                <span class="break">
+                                    <xsl:value-of select="$translation-summary/@document-url"/>
+                                </span>
+                            </div>
+                            <div class="center-vertical align-left">
+                                <xsl:variable name="webflow-api-item" select="$webflow-api//webflow:item[@id eq $translation-summary/@section-id]"/>
+                                <span>
+                                    <xsl:choose>
+                                        <xsl:when test="$webflow-api-item">
+                                            <span class="label label-default">
+                                                <xsl:value-of select="concat('Webflow CMS last updated ', (format-dateTime($webflow-api-item/@updated, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
+                                            </span>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="label label-danger">
+                                                <xsl:value-of select="'Not linked to Webflow CMS'"/>
+                                            </span>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </span>
+                                <xsl:if test="$webflow-api-item[@updated ! xs:dateTime(.) lt $translation-summary/@last-modified ! xs:dateTime(.)]">
+                                    <span>
+                                        <span class="label label-warning">
+                                            <xsl:value-of select="concat('Content updated ', (format-dateTime($translation-summary/@last-modified, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
                                         </span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="small text-muted">
-                            <xsl:value-of select="'TEI file: '"/>
-                            <span class="break">
-                                <xsl:value-of select="$translation-summary/@document-url"/>
-                            </span>
+                                    </span>
+                                </xsl:if>
+                            </div>
                         </div>
                     </xsl:with-param>
                 </xsl:call-template>

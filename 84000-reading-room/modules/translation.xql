@@ -242,6 +242,7 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
     let $bibl-first := if(not($bibl/preceding-sibling::tei:bibl)) then true() else false()
     let $location := translation:location($tei, $bibl/@key)
     let $text-pages := translation:count-volume-pages($location)
+    let $last-modified := tei-content:last-modified($tei)
     
     order by $text-id
     return (
@@ -262,7 +263,8 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
                         attribute status-group { $translation:status-statuses[@status-id eq $block/@status]/@group ! string() },
                         attribute count-pages { translation:chapter-block-pages($block) },
                         if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
-                        if($sponsored) then attribute sponsored { $text-id } else ()
+                        if($sponsored) then attribute sponsored { $text-id } else (),
+                        attribute last-modified { $last-modified }
                     }
             
             let $blocks-pages := sum($blocks-statuses/@count-pages ! xs:integer(.))
@@ -284,7 +286,8 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
                         attribute status-group { $translation:status-statuses[@status-id eq '0']/@group ! string() },
                         attribute count-pages { $remainder-pages },
                         if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
-                        if($sponsored) then attribute sponsored { $text-id } else ()
+                        if($sponsored) then attribute sponsored { $text-id } else (),
+                        attribute last-modified { $last-modified }
                     }
                 else ()
                 
@@ -305,7 +308,8 @@ declare function translation:publication-status($bibl as element(tei:bibl), $spo
                     attribute status-group { $translation:status-statuses[@status-id eq $status]/@group ! string() },
                     attribute count-pages { $text-pages - translation:unpublished-pages($tei) },
                     if($bibl-first) then attribute bibl-first { $bibl/@key } else (),
-                    if($sponsored) then attribute sponsored { $text-id } else ()
+                    if($sponsored) then attribute sponsored { $text-id } else (),
+                    attribute last-modified { $last-modified }
                 }
             
     )

@@ -873,10 +873,10 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
     (: Select any node with a data-glossary-id :)
     for $expression at $sort-index in $translation-html/descendant::xhtml:*[@data-glossary-id = $glossary-ids]
     
+    let $location-id := $expression/@data-glossary-location-id
     (: Select the nearest parent with a data-location-id :)
-    let $expression-container := $expression/ancestor-or-self::xhtml:*[@data-location-id][1]
-    
-    let $location-id := $expression-container/@data-location-id
+    let $expression-container := $expression/ancestor-or-self::xhtml:*[@data-location-id eq $location-id][1]
+    (:let $location-id := $expression-container/@data-location-id:)
     
     group by $location-id
     order by $sort-index[1]

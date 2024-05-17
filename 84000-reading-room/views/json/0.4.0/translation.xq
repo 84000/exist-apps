@@ -125,7 +125,7 @@ declare function local:title($titles as element()*, $title-type as xs:string, $t
         
         return
             json-types:label($language, string-join(($section-title/text(), $title/text()), ', ') ! normalize-space(.), $annotations, $title-migration-id)
-            
+        
     return
         json-types:title($title-type, $annotations, $labels)
     

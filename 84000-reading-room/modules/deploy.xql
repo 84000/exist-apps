@@ -176,6 +176,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                 process:execute(('git', 'checkout', ($repo/@branch/string(), 'master')[1]), $git-options),
                 process:execute(('git', 'status'), $git-options),
                 process:execute(('git', 'add', $git-add), $git-options),
+                process:execute(('git', 'ls-files', '--deleted', '|', 'xargs', 'git', 'add'), $git-options),
                 process:execute(('git', 'commit', '-m', $commit-msg), $git-options),
                 process:execute(('git', 'push', 'origin', ($repo/@branch/string(), 'master')[1]), $git-options)
             }
