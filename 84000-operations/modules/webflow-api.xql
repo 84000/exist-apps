@@ -12,7 +12,7 @@ declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace json="http://www.json.org";
 declare namespace fn="http://www.w3.org/2005/xpath-functions";
 
-declare variable $webflow:conf := doc(concat($common:data-path, '/config/webflow-api.xml'));
+declare variable $webflow:conf := doc(concat($common:data-path, '/local/webflow-api.xml'));
 declare variable $webflow:json-serialization-parameters := 
     element { QName('http://www.w3.org/2010/xslt-xquery-serialization','serialization-parameters') }{
         element method { 
