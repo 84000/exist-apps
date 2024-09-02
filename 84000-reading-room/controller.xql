@@ -184,12 +184,13 @@ let $log-request := ()
 (: Process the request :)
 return
 
-    (: Robots :)
+    (: robots.txt :)
     if ($exist:resource ! lower-case(.) = ('robots.txt')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="../../../system/config/db/system/robots.txt"/>
         </dispatch>
     
+    (: Dynamic robots.txt disallowing restricted texts :)
     else if ($exist:resource ! lower-case(.) = ('robots-public.txt')) then
         local:dispatch("/models/robots-public.xq", "", 
             <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
