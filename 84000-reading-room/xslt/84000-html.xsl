@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" exclude-result-prefixes="xs eft xhtml">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" exclude-result-prefixes="xs eft xhtml">
     
     <!-- 
         NOTE:
@@ -11,7 +11,7 @@
     <xsl:param name="active-url" select="'/'"/>
     <xsl:param name="local-comms-url" select="''"/>
     <xsl:param name="local-reading-room-url" select="'https://read.84000.co'"/>
-    <xsl:param name="local-front-end-url" select="'https://fe.84000.co'"/>
+    <xsl:param name="local-front-end-url" select="'https://read.84000.co/frontend'"/>
     <xsl:param name="default-search-form-target" select="'comms'"/>
     
     <xsl:output method="html" indent="no" omit-xml-declaration="yes"/>
@@ -42,7 +42,7 @@
                                 </xsl:attribute>
                                 <img>
                                     <xsl:attribute name="src">
-                                        <xsl:value-of select="concat($local-front-end-url, '/imgs/logo.png')"/>
+                                        <xsl:value-of select="concat($local-front-end-url, '/imgs/84000-logo.png')"/>
                                     </xsl:attribute>
                                     <xsl:attribute name="alt">
                                         <xsl:value-of select="'84000 logo'"/>
@@ -455,7 +455,7 @@
         <!-- Link to top of page -->
         <div class="hidden-print">
             <div id="link-to-top-container" class="fixed-btn-container">
-                <a href="#top" class="btn-round link-to-top">
+                <a href="#top" class="btn-round link-to-top hidden">
                     <xsl:attribute name="title">
                         <xsl:call-template name="translation">
                             <xsl:with-param name="translation-id" select="'top-link-title'"/>

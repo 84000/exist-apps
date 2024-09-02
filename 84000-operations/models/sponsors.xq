@@ -1,6 +1,6 @@
 xquery version "3.0" encoding "UTF-8";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace sponsors="http://read.84000.co/sponsors" at "../../84000-reading-room/modules/sponsors.xql";
 
@@ -32,7 +32,7 @@ return
 
     (: return html data :)
     if($resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/sponsors.xsl'))
+        common:html($xml-response, concat(helper:app-path(), '/views/sponsors.xsl'))
     )
     
     (: return xml data :)

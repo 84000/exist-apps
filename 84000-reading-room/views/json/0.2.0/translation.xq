@@ -59,7 +59,7 @@ declare function local:parse-parts($part as element(eft:part), $index as xs:inte
             let $label := eft-json:label($location[1], $location-id, $local:text-outline)
             order by min($location-index)
             return
-                if($element[self::eft:note][not(parent::eft:part[@id eq 'end-notes'])]) then ()
+                if($element[self::eft:note][not(parent::eft:part[@type eq 'end-notes'])]) then ()
                 else if($element[self::eft:orig]) then ()
                 else if($element[self::eft:part]) then
                     (: Recurse through the tree :)

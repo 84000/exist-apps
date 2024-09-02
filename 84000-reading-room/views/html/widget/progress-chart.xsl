@@ -145,8 +145,9 @@
             <xsl:with-param name="page-title" select="'Progress Summary | 84000 Translating the Words of the Buddha'"/>
             <xsl:with-param name="page-description" select="'Overview of the current status of the 84000 project'"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
+            <xsl:with-param name="additional-tags">
                 <script src="https://code.highcharts.com/highcharts.js"/>
+                <script src="https://code.highcharts.com/modules/accessibility.js"/>
             </xsl:with-param>
         </xsl:call-template>
 

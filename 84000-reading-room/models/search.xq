@@ -37,7 +37,7 @@ let $request :=
         attribute resource-id { $resource-id },
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
-        attribute search-type { request:get-parameter('search-type', '') ! lower-case(.) },
+        attribute search-type { (request:get-parameter('search-type', '')[. = ('tm','tei')] ! lower-case(.), 'tei')[1] },
         attribute search-lang { $search-langs//m:lang[@selected]/@id },
         if(request:get-parameter('search-glossary', '') gt '') then
             attribute search-glossary { '1' }
@@ -45,13 +45,16 @@ let $request :=
         attribute first-record { $first-record },
         attribute max-records { 10 },
         attribute specified-text { request:get-parameter('specified-text', '') },
+        attribute template { request:get-parameter('template', 'website-page')[. = ('website-page','embedded')] },
+        
         $search-langs,
         $search-data,
         element search { $search }
+        
     }
 
 let $results := 
-    if($request/@search-type eq 'tm' and compare($search, '') gt 0) then
+    if($request[@search-type eq 'tm'] and compare($search, '') gt 0) then
         search:tm-search($search, $request/@search-lang, $request/@first-record, $request/@max-records, if($request/@search-glossary) then true() else false(), ())
     else if(compare($search, '') gt 0) then 
         search:search($search, $search-data/m:type[@selected eq 'selected'], $request/@specified-text, $request/@first-record, $request/@max-records)
@@ -60,8 +63,7 @@ let $results :=
 (: Get related entities data :)
 let $entities :=
     element { QName('http://read.84000.co/ns/1.0', 'entities')} {
-        $results//m:header/m:entity,
-        $entities:entities//m:entity[m:instance/@id = $results//m:match/tei:gloss/@xml:id],
+        ($entities:entities/id($results//m:header/m:entity/@xml:id) | $entities:entities//m:entity[m:instance/@id = $results//m:match/tei:gloss/@xml:id]),
         element related {
             entities:related($results//m:header/m:entity, false(), ('glossary','knowledgebase'), ('requires-attention'), ('excluded'))
         }

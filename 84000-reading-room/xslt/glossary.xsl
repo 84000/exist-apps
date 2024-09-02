@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:util="http://exist-db.org/xquery/util" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="tei-to-xhtml.xsl"/>
     
@@ -13,7 +13,9 @@
         <xsl:param name="search-text" as="xs:string?"/>
         <xsl:param name="entry-label" as="element(m:label)?"/>
         
-        <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', $term-langs/m:lang[@selected eq 'selected'][1]/@id), $selected-type ! concat('term-type[]=', @id), concat('letter=', ''), concat('search=', $search-text), m:view-mode-parameter((),()))" as="xs:string*"/>
+        <xsl:variable name="internal-link-path" select="tokenize($page-url, '\?')[1]"/>
+        <xsl:variable name="internal-link-folder" select="tokenize($internal-link-path, '/')[last() -1]"/>
+        <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', $term-langs/m:lang[@selected eq 'selected'][1]/@id), $selected-type ! concat('term-type[]=', @id), concat('letter=', ''), concat('search=', $search-text), m:view-mode-parameter())" as="xs:string*"/>
         
         <div class="tabs-container-center">
             <ul class="nav nav-tabs" role="tablist">
@@ -21,14 +23,14 @@
                 <!-- Language tabs -->
                 <xsl:for-each select="$term-langs/m:lang">
                     
-                    <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', @id), $selected-type ! concat('term-type[]=', @id), concat('letter=', ''), concat('search=', $search-text), m:view-mode-parameter((),()))"/>
+                    <xsl:variable name="internal-link-attrs" select="(concat('term-lang=', @id), $selected-type ! concat('term-type[]=', @id), concat('letter=', ''), concat('search=', $search-text), m:view-mode-parameter())"/>
                     
                     <li role="presentation">
                         <xsl:if test="$active-tab eq @id">
                             <xsl:attribute name="class" select="'active'"/>
                         </xsl:if>
                         <a>
-                            <xsl:attribute name="href" select="common:internal-link('/glossary/search.html', $internal-link-attrs, '', $root/m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:internal-href(concat('/', $internal-link-folder, '/search.html'), $internal-link-attrs, (), $root/m:response/@lang)"/>
                             <xsl:attribute name="data-loading" select="'Loading...'"/>
                             <xsl:value-of select="text()"/>
                         </a>
@@ -42,7 +44,7 @@
                         <xsl:attribute name="class" select="'icon active'"/>
                     </xsl:if>
                     <a>
-                        <xsl:attribute name="href" select="common:internal-link('/glossary/downloads.html', $internal-link-attrs, '', $root/m:response/@lang)"/>
+                        <xsl:attribute name="href" select="common:internal-href(concat('/', $internal-link-folder, '/downloads.html'), $internal-link-attrs, (), $root/m:response/@lang)"/>
                         <xsl:attribute name="title" select="'Downloads'"/>
                         <xsl:attribute name="data-loading" select="'Loading...'"/>
                         <i class="fa fa-cloud-download"/>
@@ -54,7 +56,7 @@
                 <xsl:if test="$entry-label">
                     <li role="presentation" class="icon active">
                         <a>
-                            <xsl:attribute name="href" select="common:internal-link($page-url, (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:internal-href($page-url, m:view-mode-parameter(), (), $root/m:response/@lang)"/>
                             <xsl:attribute name="title" select="'Downloads'"/>
                             <xsl:attribute name="data-loading" select="'Loading...'"/>
                             <xsl:value-of select="'Entry'"/>
@@ -70,7 +72,7 @@
                                 <xsl:attribute name="class" select="'active icon'"/>
                             </xsl:if>
                             <a class="editor">
-                                <xsl:attribute name="href" select="common:internal-link(concat('/glossary/search.html?flagged=', @id), (m:view-mode-parameter((),())), '', $root/m:response/@lang)"/>
+                                <xsl:attribute name="href" select="common:internal-href(concat($internal-link-path, '?flagged=', @id), m:view-mode-parameter(), (), $root/m:response/@lang)"/>
                                 <xsl:attribute name="title" select="concat('Filter by ', m:label)"/>
                                 <xsl:attribute name="data-loading" select="'Loading...'"/>
                                 <xsl:value-of select="m:label"/>
@@ -85,7 +87,7 @@
                         <a>
                             <xsl:choose>
                                 <xsl:when test="$tei-editor-off">
-                                    <xsl:attribute name="href" select="common:internal-link($page-url, m:view-mode-parameter('editor'), '', $root/m:response/@lang)"/>
+                                    <xsl:attribute name="href" select="common:internal-href($page-url, m:view-mode-parameter('editor'), (), $root/m:response/@lang)"/>
                                     <xsl:attribute name="class" select="'editor'"/>
                                     <xsl:attribute name="data-loading" select="'Loading...'"/>
                                     <xsl:value-of select="'Show editor options'"/>
@@ -167,7 +169,7 @@
                         <a target="84000-operations" class="editor">
                             <xsl:attribute name="href" select="concat('/edit-entity.html?entity-id=', $entity/@xml:id, '#ajax-source')"/>
                             <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                            <xsl:attribute name="data-editor-callbackurl" select="common:internal-link($page-url, m:view-mode-parameter('editor'), concat('#',$entity/@xml:id), $root/m:response/@lang)"/>
+                            <xsl:attribute name="data-editor-callbackurl" select="common:internal-href(concat($reading-room-path, $page-url), m:view-mode-parameter('editor'), concat('#',$entity/@xml:id), $root/m:response/@lang)"/>
                             <xsl:value-of select="'Entity editor'"/>
                         </a>
                     </li>

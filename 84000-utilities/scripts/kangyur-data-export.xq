@@ -11,7 +11,7 @@ import module namespace contributors="http://read.84000.co/contributors" at "../
 
 declare variable $local:kangyur-tei := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = 'UT4CZ5369'];
 declare variable $local:text-refs := doc(concat($common:data-path, '/config/linked-data/text-refs.xml'));
-    
+
 element { QName('http://read.84000.co/ns/1.0', 'attributions') } {
     
     namespace {"rdf"} { "http://www.w3.org/1999/02/22-rdf-syntax-ns#" },

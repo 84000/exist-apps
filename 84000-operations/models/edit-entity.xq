@@ -1,6 +1,6 @@
 xquery version "3.0" encoding "UTF-8";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace update-entity="http://operations.84000.co/update-entity" at "../modules/update-entity.xql";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
@@ -58,7 +58,7 @@ return
         
             (: return html data :)
             if($request/@resource-suffix eq 'html') then (
-                common:html($xml-response, concat(local:app-path(), '/views/edit-entity.xsl'))
+                common:html($xml-response, concat(helper:app-path(), '/views/edit-entity.xsl'))
             )
             
             (: return xml data :)

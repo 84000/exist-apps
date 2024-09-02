@@ -108,7 +108,7 @@ return
             }
         
         let $outline := knowledgebase:outline($tei)
-        let $glossary-cache := glossary:glossary-cache($tei, (), false())
+        let $glossary-cached-locations := glossary:cached-locations($tei, (), false())
         
         let $xml-response := 
             if(not($resource-suffix = ('tei'))) then
@@ -121,7 +121,7 @@ return
                         
                         $knowledgebase-content,
                         $outline,
-                        $glossary-cache,
+                        $glossary-cached-locations,
                         $entities,
                         
                         (: Calculated strings :)
@@ -129,10 +129,6 @@ return
                             element value {
                                 attribute key { '#CurrentDateTime' },
                                 format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]')
-                            },
-                            element value {
-                                attribute key { '#LinkToSelf' },
-                                concat($common:environment/m:url[@id eq 'reading-room'], '/knowledgebase/', $resource-id, '.html')
                             }
                         }
                         

@@ -29,8 +29,8 @@ declare function trigger:after-create-document($uri as xs:anyURI) {
 
 declare function local:after-update-document-functions($doc) {
     
-     util:log('info', 'after-update-document-functions'),
-        
+    util:log('info', 'after-update-document-functions'),
+    
     (# exist:batch-transaction #) {
         
         if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
@@ -89,14 +89,82 @@ declare function local:permanent-ids($doc) {
         ,
         
         (: If any parts are missing a @xml:id then re-calculate all :)
-        let $part-missing-id := $tei//tei:text//tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')][not(@xml:id) or @xml:id eq '']
+        let $part-missing-id := $tei//tei:text//tei:div[@type][not(@xml:id) or @xml:id eq '']
         where $part-missing-id
-            for $part in $tei//tei:text//tei:div[@type][@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]
+            for $part in $tei//tei:text//tei:div[@type]
             
             (: Get the base type - except for translation :)
-            let $base-type := $part/ancestor::tei:div[not(@type eq 'translation')][last()]/@type
+            let $base := $part/ancestor::tei:div[not(@type = ('translation'))][last()]
             
             (: Get the index of this part in each ancestor part :)
+            let $part-indexes := 
+                for $ancestor-or-self in $part/ancestor-or-self::tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]
+                return (
+                    if($ancestor-or-self/@type eq 'prologue') then if (count($ancestor-or-self | $base) gt 1) then $translation:type-labels('prologue')('prefix') else ()
+                    else if($ancestor-or-self/@type eq 'prelude') then if (count($ancestor-or-self | $base) gt 1) then $translation:type-labels('prelude')('prefix') else ()
+                    else if($ancestor-or-self/@type eq 'homage') then if (count($ancestor-or-self | $base) gt 1) then $translation:type-labels('homage')('prefix') else ()
+                    else if($ancestor-or-self/@type eq 'colophon') then if (count($ancestor-or-self | $base) gt 1) then $translation:type-labels('colophon')('prefix') else ()
+                    else count($ancestor-or-self/preceding-sibling::tei:div[@type = ('section', 'chapter')]) + 1
+                )
+            
+            (: Join the elements into an id :)
+            let $part-id := string-join(($text-id, ($base/@type, $part/@type)[1], $part/@xml:lang, $part-indexes), '-')
+            return 
+                update insert attribute xml:id { $part-id } into $part
+        
+    )
+};
+
+(:declare function local:permanent-ids($doc) {
+
+    (\: Add xml:ids to linkable nodes :\)
+    (\: This enables persistent bookmarks :\)
+    
+    let $tei := $doc/tei:TEI
+    let $text-id := tei-content:id($tei)
+    where $text-id
+    return (
+    
+        util:log('info', concat('trigger-permanent-ids:', $text-id)),
+    
+        let $elements := (
+            $tei//tei:text//tei:milestone
+            | $tei//tei:text//tei:note[@place eq 'end']
+            | $tei//tei:text//tei:ref[@type = ('folio', 'volume')]
+            | $tei//tei:text//tei:ptr[@type eq 'quote-ref'][@target][ancestor::tei:q]
+            | $tei//tei:div[@type eq 'notes']//tei:item
+            | $tei//tei:div[@type eq 'listBibl']//tei:bibl
+            | $tei//tei:div[@type eq 'glossary']//tei:gloss
+            | $tei//tei:titleStmt/tei:author
+            | $tei//tei:titleStmt/tei:editor
+            | $tei//tei:titleStmt/tei:consultant
+            | $tei//tei:titleStmt/tei:sponsor
+            | $tei//tei:sourceDesc/tei:bibl/tei:author
+            | $tei//tei:sourceDesc/tei:bibl/tei:editor
+            | $tei//tei:revisionDesc/tei:change
+            (\:| $tei//tei:sourceDesc/tei:bibl/tei:citedRange - add these manually:\)
+        )
+        
+        (\: Add any missing, empty or duplicate @xml:ids (duplicate tests too slow for production) :\)
+        let $elements-missing-id := $elements[not(@xml:id) or @xml:id eq '' (\:or not(position() eq min(index-of($elements/@xml:id/string(), @xml:id/string()))):\)]
+        
+        where $elements-missing-id
+            let $max-id := tei-content:max-xml-id-int($tei)
+            for $element at $index in $elements-missing-id
+                let $new-id := tei-content:next-xml-id($text-id, sum(($max-id, $index)))
+            return
+                update insert attribute xml:id { $new-id } into $element
+        ,
+        
+        (\: If any parts are missing a @xml:id then re-calculate all :\)
+        let $part-missing-id := $tei//tei:text//tei:div[not(@xml:id) or @xml:id eq ''](\:[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]:\)
+        where $part-missing-id
+            for $part in $tei//tei:text//tei:div[@type](\:[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]:\)
+            
+            (\: Get the base type - except for translation :\)
+            let $base-type := $part/ancestor::tei:div[not(@type eq 'translation')][last()]/@type
+            
+            (\: Get the index of this part in each ancestor part :\)
             let $part-indexes := 
                 for $ancestor-or-self in $part/ancestor-or-self::tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'homage', 'colophon')]
                 return (
@@ -107,13 +175,13 @@ declare function local:permanent-ids($doc) {
                     else count($ancestor-or-self/preceding-sibling::tei:div[@type = ('section', 'chapter')]) + 1
                 )
             
-            (: Join the elements into an id :)
+            (\: Join the elements into an id :\)
             let $part-id := string-join(($text-id, ($base-type, $part/@type)[1], $part/@xml:lang, $part-indexes), '-')
-            return
-                update insert attribute xml:id { $part-id } into $part
+            return $part-id
+                (\:update insert attribute xml:id { $part-id } into $part:\)
         
     )
-};
+};:)
 
 declare function local:temporary-ids($doc) {
 
@@ -273,8 +341,7 @@ declare function local:log-event($type as xs:string, $event as xs:string, $objec
         into $log
 };
 
-
-(: Log other events too :)
+(: Log other after-* events too :)
 (:declare function trigger:before-create-collection($uri as xs:anyURI) {
     local:log-event("before", "create", "collection", $uri)
 };:)

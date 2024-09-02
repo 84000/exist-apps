@@ -570,7 +570,7 @@
                         <div class="center-vertical full-width">
                             <span class="logo">
                                 <img alt="84000 logo">
-                                    <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
+                                    <xsl:attribute name="src" select="'/frontend/imgs/84000-logo.png'"/>
                                 </img>
                             </span>
                             <span>

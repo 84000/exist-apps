@@ -4,7 +4,8 @@
     <xsl:import href="../../xslt/webpage.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
-    <xsl:variable name="base-url" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
+    <xsl:variable name="url-resource" select="if($request/@template eq 'embedded' and $request/@search-type eq 'tm') then '/search-tm-embedded.html' else '/search.html'"/>
+    <xsl:variable name="base-url" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
     <xsl:variable name="specified-text" select="/m:response/m:tei-search/m:request/m:header"/>
     
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
@@ -14,83 +15,90 @@
         <!-- PAGE CONTENT -->
         <xsl:variable name="content">
             
-            <div class="title-band">
-                <div class="container">
-                    <div class="center-vertical-sm full-width">
-                        
-                        <nav role="navigation" aria-label="Breadcrumbs">
-                            <ul class="breadcrumb">
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', @lang)"/>
-                                        <xsl:value-of select="'The Collection'"/>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a>
-                                        <xsl:attribute name="href" select="common:internal-link('search.html', (), '', @lang)"/>
-                                        <xsl:value-of select="'Search Our Translations'"/>
-                                    </a>
-                                </li>
-                                <xsl:if test="$request/m:search[text()]">
+            <xsl:if test="not($request/@template eq 'embedded')">
+                <div class="title-band">
+                    <div class="container">
+                        <div class="center-vertical-sm full-width">
+                            
+                            <nav role="navigation" aria-label="Breadcrumbs">
+                                <ul class="breadcrumb">
                                     <li>
-                                        <xsl:value-of select="$request/m:search"/>
+                                        <a>
+                                            <xsl:attribute name="href" select="common:internal-href('/section/lobby.html', (), (), @lang)"/>
+                                            <xsl:value-of select="'The Collection'"/>
+                                        </a>
                                     </li>
-                                </xsl:if>
-                            </ul>
-                        </nav>
-                        
-                        <div>
-                            <div class="center-vertical pull-right">
-                                
-                                <div>
-                                    <a class="center-vertical">
-                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', @lang)"/>
-                                        <span>
-                                            <span class="btn-round sml">
-                                                <i class="fa fa-list"/>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="common:internal-href('search.html', (), (), @lang)"/>
+                                            <xsl:value-of select="'Search Our Translations'"/>
+                                        </a>
+                                    </li>
+                                    <xsl:if test="$request/m:search[text()]">
+                                        <li>
+                                            <xsl:value-of select="$request/m:search"/>
+                                        </li>
+                                    </xsl:if>
+                                </ul>
+                            </nav>
+                            
+                            <div>
+                                <div class="center-vertical pull-right">
+                                    
+                                    <div>
+                                        <a class="center-vertical">
+                                            <xsl:attribute name="href" select="common:internal-href('/section/all-translated.html', (), (), @lang)"/>
+                                            <span>
+                                                <span class="btn-round sml">
+                                                    <i class="fa fa-list"/>
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span class="btn-round-text">
-                                            <xsl:value-of select="'Published Translations'"/>
-                                        </span>
-                                    </a>
-                                </div>
-                                
-                                <div>
-                                    <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
-                                        <span>
-                                            <span class="btn-round sml">
-                                                <i class="fa fa-bookmark"/>
-                                                <span class="badge badge-notification">0</span>
+                                            <span class="btn-round-text">
+                                                <xsl:value-of select="'Published Translations'"/>
                                             </span>
-                                        </span>
-                                        <span class="btn-round-text">
-                                            <xsl:value-of select="'Bookmarks'"/>
-                                        </span>
-                                    </a>
+                                        </a>
+                                    </div>
+                                    
+                                    <div>
+                                        <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
+                                            <span>
+                                                <span class="btn-round sml">
+                                                    <i class="fa fa-bookmark"/>
+                                                    <span class="badge badge-notification">0</span>
+                                                </span>
+                                            </span>
+                                            <span class="btn-round-text">
+                                                <xsl:value-of select="'Bookmarks'"/>
+                                            </span>
+                                        </a>
+                                    </div>
+                                    
                                 </div>
-                                
                             </div>
+                            
                         </div>
-                        
                     </div>
                 </div>
-            </div>
+            </xsl:if>
             
             <!-- Include the bookmarks sidebar -->
-            <xsl:variable name="bookmarks-sidebar">
-                <m:bookmarks-sidebar>
-                    <xsl:copy-of select="$eft-header/m:translation"/>
-                </m:bookmarks-sidebar>
-            </xsl:variable>
-            <xsl:apply-templates select="$bookmarks-sidebar"/>
+            <xsl:if test="not($request/@template eq 'embedded')">
+                <xsl:variable name="bookmarks-sidebar">
+                    <m:bookmarks-sidebar>
+                        <xsl:copy-of select="$eft-header/m:translation"/>
+                    </m:bookmarks-sidebar>
+                </xsl:variable>
+                <xsl:apply-templates select="$bookmarks-sidebar"/>
+            </xsl:if>
             
             <main class="content-band">
                 <div class="container">
                     
                     <!-- Page title -->
                     <div class="section-title row">
+                        <xsl:if test="$request/@template eq 'embedded'">
+                            <xsl:attribute name="class" select="'sr-only'"/>
+                        </xsl:if>
                         <div class="col-sm-offset-2 col-sm-8">
                             <h1 class="title main-title">
                                 <xsl:value-of select="'Search Our Translations'"/>
@@ -99,37 +107,39 @@
                     </div>
                     
                     <!-- Search type tabs -->
-                    <div class="tabs-container-center">
-                        <ul class="nav nav-tabs" role="tablist">
-                            
-                            <!-- TEI search tab -->
-                            <li role="presentation">
-                                <xsl:if test="not($request/@search-type eq 'tm')">
-                                    <xsl:attribute name="class" select="'active'"/>
-                                </xsl:if>
-                                <a>
-                                    <xsl:attribute name="href" select="common:internal-link('/search.html', (concat('search=', $request/m:search)), '', $root/m:response/@lang)"/>
-                                    <xsl:attribute name="title" select="'Search the 84000 published translations'"/>
-                                    <xsl:attribute name="data-loading" select="'Loading publications search...'"/>
-                                    <xsl:value-of select="'The Publications'"/>
-                                </a>
-                            </li>
-                            
-                            <!-- TM search tab -->
-                            <li role="presentation" class="icon">
-                                <xsl:if test="$request/@search-type eq 'tm'">
-                                    <xsl:attribute name="class" select="'active'"/>
-                                </xsl:if>
-                                <a>
-                                    <xsl:attribute name="href" select="common:internal-link('/search.html', ('search-type=tm', concat('search=', $request/m:search), 'search-glossary=1'), '', $root/m:response/@lang)"/>
-                                    <xsl:attribute name="title" select="'Search the 84000 Translation Memory'"/>
-                                    <xsl:attribute name="data-loading" select="'Loading translation memory search...'"/>
-                                    <xsl:value-of select="'Translation Memory'"/>
-                                </a>
-                            </li>
-                            
-                        </ul>
-                    </div>
+                    <xsl:if test="not($request/@template eq 'embedded')">
+                        <div class="tabs-container-center">
+                            <ul class="nav nav-tabs" role="tablist">
+                                
+                                <!-- TEI search tab -->
+                                <li role="presentation">
+                                    <xsl:if test="not($request/@search-type eq 'tm')">
+                                        <xsl:attribute name="class" select="'active'"/>
+                                    </xsl:if>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-href($url-resource, (concat('search=', $request/m:search)), (), $root/m:response/@lang)"/>
+                                        <xsl:attribute name="title" select="'Search the 84000 published translations'"/>
+                                        <xsl:attribute name="data-loading" select="'Loading publications search...'"/>
+                                        <xsl:value-of select="'The Publications'"/>
+                                    </a>
+                                </li>
+                                
+                                <!-- TM search tab -->
+                                <li role="presentation" class="icon">
+                                    <xsl:if test="$request/@search-type eq 'tm'">
+                                        <xsl:attribute name="class" select="'active'"/>
+                                    </xsl:if>
+                                    <a>
+                                        <xsl:attribute name="href" select="common:internal-href($url-resource, ('search-type=tm', concat('search=', $request/m:search), 'search-glossary=1'), (), $root/m:response/@lang)"/>
+                                        <xsl:attribute name="title" select="'Search the 84000 Translation Memory'"/>
+                                        <xsl:attribute name="data-loading" select="'Loading translation memory search...'"/>
+                                        <xsl:value-of select="'Translation Memory'"/>
+                                    </a>
+                                </li>
+                                
+                            </ul>
+                        </div>
+                    </xsl:if>
                     
                     <!-- Search types -->
                     <xsl:choose>
@@ -137,11 +147,13 @@
                         <!-- TM search -->
                         <xsl:when test="$request/@search-type eq 'tm'">
                             
-                            <p class="text-center text-muted small">
-                                <xsl:value-of select="'Search our Translation Memory files to find translations aligned with the Tibetan source.'"/>
-                                <br/>
-                                <xsl:value-of select="'Use quotation marks e.g. &#34;realm of phenomena&#34; to search for complete phrases rather than individual words.'"/>
-                            </p>
+                            <xsl:if test="not($request/@template eq 'embedded')">
+                                <p class="text-center text-muted small">
+                                    <xsl:value-of select="'Search our Translation Memory files to find translations aligned with the Tibetan source.'"/>
+                                    <br/>
+                                    <xsl:value-of select="'Use quotation marks e.g. &#34;realm of phenomena&#34; to search for complete phrases rather than individual words.'"/>
+                                </p>
+                            </xsl:if>
                             
                             <div id="search-container">
                                 
@@ -162,9 +174,11 @@
                         <!-- TEI search -->
                         <xsl:otherwise>
                             
-                            <p class="text-center text-muted small bottom-margin">
-                                <xsl:value-of select="'The 84000 database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur.'"/>
-                            </p>
+                            <xsl:if test="not($request/@template eq 'embedded')">
+                                <p class="text-center text-muted small bottom-margin">
+                                    <xsl:value-of select="'The 84000 database contains both the translated texts and titles and summaries for other works within the Kangyur and Tengyur.'"/>
+                                </p>
+                            </xsl:if>
                             
                             <div id="search-container">
                                 
@@ -191,13 +205,26 @@
         </xsl:variable>
         
         <!-- Compile with page template -->
-        <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="concat('http://read.84000.co/search.html?s=', $request/m:search)"/>
-            <xsl:with-param name="page-class" select="'reading-room section'"/>
-            <xsl:with-param name="page-title" select="string-join((if($request/m:search/text() gt '') then $request/m:search/text() else (), 'Search' , '84000 Reading Room'), ' | ')"/>
-            <xsl:with-param name="page-description" select="if($request/m:search/text() gt '') then concat('Search results for ', $request/m:search) else 'Search the 84000 Reading Room'"/>
-            <xsl:with-param name="content" select="$content"/>
-        </xsl:call-template>
+        <xsl:choose>
+            <xsl:when test="$request/@template eq 'embedded'">
+                <xsl:call-template name="widget-page">
+                    <xsl:with-param name="page-url" select="concat('http://read.84000.co', $url-resource, '?s=', $request/m:search)"/>
+                    <xsl:with-param name="page-class" select="''"/>
+                    <xsl:with-param name="page-title" select="string-join((if($request/m:search/text() gt '') then $request/m:search/text() else (), 'Search' , '84000 Reading Room'), ' | ')"/>
+                    <xsl:with-param name="page-description" select="if($request/m:search/text() gt '') then concat('Search results for ', $request/m:search) else 'Search the 84000 Reading Room'"/>
+                    <xsl:with-param name="content" select="$content"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:call-template name="website-page">
+                    <xsl:with-param name="page-url" select="concat('http://read.84000.co', $url-resource, '?s=', $request/m:search)"/>
+                    <xsl:with-param name="page-class" select="'reading-room section'"/>
+                    <xsl:with-param name="page-title" select="string-join((if($request/m:search/text() gt '') then $request/m:search/text() else (), 'Search' , '84000 Reading Room'), ' | ')"/>
+                    <xsl:with-param name="page-description" select="if($request/m:search/text() gt '') then concat('Search results for ', $request/m:search) else 'Search the 84000 Reading Room'"/>
+                    <xsl:with-param name="content" select="$content"/>
+                </xsl:call-template>
+            </xsl:otherwise>
+        </xsl:choose>
         
     </xsl:template>
     
@@ -205,7 +232,7 @@
         
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
-                <form action="/search.html" method="get" role="search" class="form-horizontal" data-loading="Loading...">
+                <form action="{ $url-resource }" method="get" role="search" class="form-horizontal" data-loading="Loading...">
                     
                     <input type="hidden" name="lang" value="{ $request/@lang }"/>
                     <input type="hidden" name="search-type" value="tei"/>
@@ -268,7 +295,7 @@
 
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
-                <form action="/search.html" method="get" role="search" accept-charset="UTF-8" class="form-horizontal" data-loading="Loading...">
+                <form action="{ $url-resource }" method="get" role="search" accept-charset="UTF-8" class="form-horizontal" data-loading="Loading...">
                     
                     <input type="hidden" name="lang" value="{ $request/@lang }"/>
                     <input type="hidden" name="search-type" value="tm"/>
@@ -368,7 +395,7 @@
                                             <h3 class="result-title">
                                                 <a>
                                                     
-                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $header/@link), (), '', /m:response/@lang)"/>
+                                                    <xsl:attribute name="href" select="common:internal-href($header/@link, (), (), /m:response/@lang)"/>
                                                     
                                                     <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
                                                     
@@ -429,11 +456,11 @@
                                                             <xsl:variable name="bibl-match" select="$matches/tei:bibl[@key eq $toh-key][tei:ref/exist:match][1]" as="element(tei:bibl)?"/>
                                                             <xsl:choose>
                                                                 <xsl:when test="$bibl-match">
-                                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $bibl-match/parent::m:match/@link), (), '', /m:response/@lang)"/>
+                                                                    <xsl:attribute name="href" select="common:internal-href($bibl-match/parent::m:match/@link, (), (), /m:response/@lang)"/>
                                                                     <xsl:apply-templates select="$bibl-match/tei:ref"/>
                                                                 </xsl:when>
                                                                 <xsl:otherwise>
-                                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $header/@link), (), '', /m:response/@lang)"/>
+                                                                    <xsl:attribute name="href" select="common:internal-href($header/@link, (), (), /m:response/@lang)"/>
                                                                     <xsl:apply-templates select="m:toh/m:full"/>
                                                                 </xsl:otherwise>
                                                             </xsl:choose>
@@ -564,19 +591,30 @@
                                                                     
                                                                     <li>
                                                                         <a>
-                                                                            <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $match/@link), (), '', /m:response/@lang)"/>
+                                                                            <xsl:attribute name="href" select="common:internal-href($match/@link, (), (), /m:response/@lang)"/>
                                                                             <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
                                                                             <xsl:attribute name="class" select="'underline'"/>
-                                                                            <xsl:value-of select="'Open the translation...'"/>
+                                                                            <xsl:choose>
+                                                                                <xsl:when test="$header[@type eq 'translation']">
+                                                                                    <xsl:value-of select="'Open the translation...'"/>
+                                                                                </xsl:when>
+                                                                                <xsl:when test="$header[@type eq 'entity']">
+                                                                                    <xsl:value-of select="'Open the glossary...'"/>
+                                                                                </xsl:when>
+                                                                                <xsl:otherwise>
+                                                                                    <xsl:value-of select="'Open...'"/>
+                                                                                </xsl:otherwise>
+                                                                            </xsl:choose>
+                                                                            
                                                                         </a>
                                                                     </li>
                                                                     
-                                                                    <xsl:variable name="match-gloss-entity" select="/m:response/m:entities/m:entity[m:instance/@id = $match/tei:gloss/@xml:id]"/>
+                                                                    <xsl:variable name="match-gloss-entity" select="(/m:response/m:entities/m:entity[m:instance/@id = $match/tei:gloss/@xml:id])[1]"/>
                                                                     <xsl:if test="$match-gloss-entity">
                                                                         <li>
                                                                             <a>
                                                                                 <xsl:attribute name="target" select="'84000-glossary'"/>
-                                                                                <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, '/glossary/', $match-gloss-entity/@xml:id, '.html'), (), '', /m:response/@lang)"/>
+                                                                                <xsl:attribute name="href" select="common:internal-href(concat('/glossary/', @xml:id, '.html'), (), (), /m:response/@lang)"/>
                                                                                 <xsl:attribute name="class" select="'underline'"/>
                                                                                 <xsl:value-of select="'View in the glossary...'"/>
                                                                             </a>
@@ -606,7 +644,7 @@
                                                             <xsl:when test="$header[@type eq 'translation'] and not($specified-text)">
                                                                 
                                                                 <a target="_self">
-                                                                    <xsl:attribute name="href" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search), concat('specified-text=', $header/@resource-id)), (), /m:response/@lang)"/>
+                                                                    <xsl:attribute name="href" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), concat('search=', $request/m:search), concat('specified-text=', $header/@resource-id)), (), /m:response/@lang)"/>
                                                                     <xsl:value-of select="concat('View all ', format-number($count-matches, '#,###'))"/>
                                                                 </a>
                                                                 
@@ -615,7 +653,7 @@
                                                                 
                                                                 <a>
                                                                     <xsl:attribute name="target" select="concat($header/@resource-id, '.html')"/>
-                                                                    <xsl:attribute name="href" select="common:internal-link(concat($reading-room-path, $header/@link), (), '', /m:response/@lang)"/>
+                                                                    <xsl:attribute name="href" select="common:internal-href($header/@link, (), (), /m:response/@lang)"/>
                                                                     <xsl:value-of select="'View the glossary entry.'"/>
                                                                 </a>
                                                                 
@@ -732,11 +770,11 @@
                                                 
                                                 <!-- Dualview link -->
                                                 <a>
-                                                    <xsl:attribute name="href" select="concat($reading-room-path, m:match/@location)"/>
+                                                    <xsl:attribute name="href" select="m:match/@location"/>
                                                     <xsl:choose>
-                                                        <xsl:when test="$dualview">
+                                                        <xsl:when test="$dualview and not($request/@template eq 'embedded')">
                                                             <xsl:attribute name="target" select="concat('translation-', m:header/@resource-id)"/>
-                                                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, m:match/@location)"/>
+                                                            <xsl:attribute name="data-dualview-href" select="m:match/@location"/>
                                                             <xsl:attribute name="data-dualview-title" select="m:header/m:bibl[1]/m:toh/m:full/text()"/>
                                                         </xsl:when>
                                                         <xsl:otherwise>
@@ -768,7 +806,7 @@
                                                 <xsl:if test="$bibl/m:toh/m:full">
                                                     <li>
                                                         <a>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $bibl/m:toh/@key, '.html')"/>
+                                                            <xsl:attribute name="href" select="m:translation-href($bibl/m:toh/@key, (), (), ())"/>
                                                             <xsl:attribute name="target" select="concat($bibl/@resource-id, '.html')"/>
                                                             <xsl:apply-templates select="$bibl/m:toh/m:full"/>
                                                         </a>
@@ -880,7 +918,7 @@
                                 <xsl:for-each select="$request/m:search-langs/m:lang[not(@selected)]">
                                     <li>
                                         <a class="underline">
-                                            <xsl:attribute name="href" select="common:internal-link('/search.html',(concat('search-type=', $request/@search-type), concat('search-lang=', @id), concat('search=', $request/m:search)), (), $root/m:response/@lang)"/>
+                                            <xsl:attribute name="href" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', @id), concat('search=', $request/m:search)), (), $root/m:response/@lang)"/>
                                             <xsl:value-of select="text()"/>
                                         </a>
                                     </li>

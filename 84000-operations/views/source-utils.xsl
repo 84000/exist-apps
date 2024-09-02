@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:bdo="http://purl.bdrc.io/ontology/core/" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:bcrdb="http://www.bcrdb.org/ns/1.0" xmlns:tmx="http://www.lisa.org/tmx14" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -28,8 +28,11 @@
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
+                
                 <xsl:with-param name="active-tab" select="@model"/>
+                
                 <xsl:with-param name="container-class" select="'container'"/>
+                
                 <xsl:with-param name="tab-content">
                     
                     <!-- Text title, links and pagination -->
@@ -42,7 +45,7 @@
                                 
                                 <div class="h3">
                                     <a target="_blank">
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                        <xsl:attribute name="href" select="m:translation-href(($text/m:toh/@key)[1], (), (), (), (), $reading-room-path)"/>
                                         <xsl:value-of select="concat(string-join($text/eft:toh/eft:full, ' / '), ' / ', $text/eft:titles/eft:title[@xml:lang eq 'en'][1])"/>
                                     </a>
                                 </div>
@@ -57,7 +60,7 @@
                             <div>
                                 <xsl:call-template name="text-links-list">
                                     <xsl:with-param name="text" select="$text"/>
-                                    <xsl:with-param name="exclude-links" select="('source-utils')"/>
+                                    <xsl:with-param name="disable-links" select="('source-utils')"/>
                                     <xsl:with-param name="text-status" select="eft:text-statuses/eft:status[@status-id eq $text/@status]"/>
                                 </xsl:call-template>
                             </div>
@@ -1355,6 +1358,7 @@
                     </div>
                     
                 </xsl:with-param>
+                
                 <xsl:with-param name="aside-content">
                     
                     <!-- General pop-up for notes and glossary -->
@@ -1382,6 +1386,7 @@
                     <xsl:call-template name="tei-editor-footer"/>
                     
                 </xsl:with-param>
+            
             </xsl:call-template>
             
         </xsl:variable>
@@ -1687,7 +1692,7 @@
                             <xsl:if test="$bibl/eft:toh/eft:full">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $bibl/eft:toh/@key, '.html')"/>
+                                        <xsl:attribute name="href" select="m:translation-href($bibl/eft:toh/@key, (), (), (), (), $reading-room-path)"/>
                                         <xsl:attribute name="target" select="concat($bibl/@resource-id, '.html')"/>
                                         <xsl:apply-templates select="$bibl/eft:toh/eft:full"/>
                                     </a>

@@ -154,7 +154,7 @@
                                             </span>
                                         </a>
                                     </li>
-                                    <li>
+                                    <!--<li>
                                         <a>
                                             <xsl:attribute name="href" select="concat($reading-room-path ,'/section/', $translation-summary/@section-id, '.navigation.atom')"/>
                                             <xsl:attribute name="target" select="concat($translation-summary/@section-id, '.navigation.atom')"/>
@@ -173,7 +173,7 @@
                                                 </span>
                                             </a>
                                         </li>
-                                    </xsl:if>
+                                    </xsl:if>-->
                                     <li>
                                         <a>
                                             <xsl:attribute name="href" select="concat('/test-sections.html?section-id=', $translation-summary/@section-id)"/>
@@ -195,6 +195,11 @@
                                 <xsl:variable name="webflow-api-item" select="$webflow-api//webflow:item[@id eq $translation-summary/@section-id]"/>
                                 <span>
                                     <xsl:choose>
+                                        <xsl:when test="$webflow-api-item and $webflow-api-item[not(@updated gt '')]">
+                                            <span class="label label-warning">
+                                                <xsl:value-of select="'No Webflow CMS updates'"/>
+                                            </span>
+                                        </xsl:when>
                                         <xsl:when test="$webflow-api-item">
                                             <span class="label label-default">
                                                 <xsl:value-of select="concat('Webflow CMS last updated ', (format-dateTime($webflow-api-item/@updated, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>

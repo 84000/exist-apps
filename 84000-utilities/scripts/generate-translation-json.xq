@@ -13,7 +13,7 @@ import module namespace deploy="http://read.84000.co/deploy" at "../../84000-rea
 declare variable $local:file-type := 'json';
 declare variable $local:tei := collection($common:translations-path);
 declare variable $local:file-collection := collection(string-join(($common:data-path, $local:file-type), '/'));
-declare variable $local:file-versions := doc(string-join(($common:data-path, $local:file-type, 'file-versions.xml'), '/'));
+declare variable $local:file-versions := doc(string-join(($common:data-path, 'local', 'file-versions.xml'), '/'));
 
 (: Generate and store files :)
 for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $translation:published-status-ids]

@@ -6,7 +6,7 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="/m:response/m:environment"/>
+        <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         
         <xsl:variable name="content">
@@ -53,9 +53,6 @@
                             <li>
                                 <a href="?collection=translation-memory" data-loading="Loading...">Translation memory data</a>
                             </li>
-                            <!--<li>
-                                <a href="?collection=translation-memory-generator" data-loading="Loading...">Translation memory generator data</a>
-                            </li>-->
                             <li>
                                 <a href="?collection=source" data-loading="Loading...">Tibetan source data</a>
                             </li>
@@ -63,7 +60,7 @@
                                 <a href="?collection=reading-room-config" data-loading="Loading...">Reading Room config</a>
                             </li>
                             <li>
-                                <a href="?collection=related-files" data-loading="Loading...">Related files</a>
+                                <a href="?collection=static-files" data-loading="Loading...">Static files</a>
                             </li>
                         </ul>
                         

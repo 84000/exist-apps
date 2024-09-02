@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:webflow="http://read.84000.co/webflow-api" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
-    <xsl:variable name="environment" select="/m:response/m:environment"/>
+    <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="text-statuses" select="/m:response/m:text-statuses"/>
     <xsl:variable name="selected-type" select="$request/m:article-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
     <xsl:variable name="page-url" select="concat($environment/m:url[@id eq 'operations'], '/knowledgebase.html?') || string-join(($selected-type ! concat('article-type[]=', @id), $request/@sort ! concat('sort=', .)), '&amp;')" as="xs:string"/>
+    <xsl:variable name="webflow-api" select="/m:response/webflow:webflow-api"/>
     
     <xsl:template match="/m:response">
         
         <xsl:variable name="content">
             <xsl:call-template name="operations-page">
+                
                 <xsl:with-param name="active-tab" select="@model"/>
+                
                 <xsl:with-param name="tab-content">
                     
                     <form action="/knowledgebase.html" method="get" role="search" class="form-inline" data-loading="Searching...">
@@ -72,7 +75,7 @@
                                     <a target="84000-operations" class="btn btn-danger">
                                         <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
                                         <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                        <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($environment/m:url[@id eq 'operations'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
+                                        <xsl:attribute name="data-editor-callbackurl" select="common:internal-href(concat($environment/m:url[@id eq 'operations'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
                                         <xsl:value-of select="'Add a new article'"/>
                                     </a>
                                 </div>
@@ -109,12 +112,14 @@
                     </xsl:choose>
                     
                 </xsl:with-param>
+                
                 <xsl:with-param name="aside-content">
                     
                     <!-- Pop-up for tei-editor -->
                     <xsl:call-template name="tei-editor-footer"/>
                     
                 </xsl:with-param>
+                
             </xsl:call-template>
         </xsl:variable>
         
@@ -130,8 +135,10 @@
     
     <xsl:template match="m:page[parent::m:knowledgebase]">
         
-        <xsl:variable name="page-id" select="concat('page-', fn:encode-for-uri(@xml:id))"/>
-        <xsl:variable name="text-status" select="@status"/>
+        <xsl:variable name="page" select="."/>
+        <xsl:variable name="page-id" select="concat('page-', fn:encode-for-uri($page/@xml:id))"/>
+        <xsl:variable name="text-status" select="$page/@status"/>
+        <xsl:variable name="webflow-api-item" select="$webflow-api//webflow:item[@id eq $page/@kb-id]"/>
         
         <div class="item">
             
@@ -272,6 +279,36 @@
             </div>
             
             <!-- Version note -->
+            
+            <!-- Webflow connction -->
+            <div class="center-vertical align-left">
+                <span>
+                    <xsl:choose>
+                        <xsl:when test="$webflow-api-item and $webflow-api-item[not(@updated gt '')]">
+                            <span class="label label-warning">
+                                <xsl:value-of select="'No Webflow CMS updates'"/>
+                            </span>
+                        </xsl:when>
+                        <xsl:when test="$webflow-api-item">
+                            <span class="label label-default">
+                                <xsl:value-of select="concat('Webflow CMS last updated ', (format-dateTime($webflow-api-item/@updated, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
+                            </span>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <span class="label label-danger">
+                                <xsl:value-of select="'Not linked to Webflow CMS'"/>
+                            </span>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </span>
+                <xsl:if test="$webflow-api-item[@updated ! xs:dateTime(.) lt $page/@last-updated ! xs:dateTime(.)]">
+                    <span>
+                        <span class="label label-warning">
+                            <xsl:value-of select="concat('Content updated ', (format-dateTime($page/@last-updated, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
+                        </span>
+                    </span>
+                </xsl:if>
+            </div>
             
         </div>
         

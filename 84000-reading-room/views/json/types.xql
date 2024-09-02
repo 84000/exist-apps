@@ -9,6 +9,7 @@ declare namespace json="http://www.json.org";
 import module namespace eft-json = "http://read.84000.co/json" at "eft-json.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../modules/tei-content.xql";
 import module namespace section = "http://read.84000.co/section" at "../../modules/section.xql";
+import module namespace translation = "http://read.84000.co/translation" at "../../modules/translation.xql";
 
 declare function json-types:catalogue-section (
     $api-version as xs:string,
@@ -41,7 +42,7 @@ declare function json-types:catalogue-work(
         $work/@*[not(local-name(.) = ('array', 'catalogueWorkId', 'htmlUrl'))],
         attribute json:array {'true'},
         attribute catalogueWorkId { $source-id },
-        attribute htmlUrl { concat('https://read.84000.co', '/translation/', $source-id,'.html') },
+        attribute htmlUrl { translation:canonical-html($source-id, (), ()) },
         element startVolumeNumber { attribute json:literal {'true'}, $start-volume-number },
         element startVolumeStartPageNumber { attribute json:literal {'true'}, $start-page-number },
         $work/*
@@ -59,7 +60,7 @@ declare function json-types:work(
         attribute workId { $text-id },
         attribute workType { $work-type },
         attribute url { concat('/translation/', $text-id,'.json?api-version=', $api-version, '&amp;annotate=', $annotate) },
-        attribute htmlUrl { concat('https://read.84000.co', '/translation/', $text-id,'.html') },
+        attribute htmlUrl { translation:canonical-html($text-id, (), ()) },
         $titles,
         $bibliographic-scope,
         $content,

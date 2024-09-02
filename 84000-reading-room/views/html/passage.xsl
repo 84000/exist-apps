@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
     <!-- Look up environment variables -->
-    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
-    <xsl:variable name="app-path" select="$environment/m:url[@id eq 'app']/text()"/>
-    <xsl:variable name="render-status" select="$environment/m:render/m:status[@type eq 'translation']/@status-id"/>
+    <!--<xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>-->
+    <!--<xsl:variable name="app-path" select="$environment/m:url[@id eq 'app']/text()"/>-->
+    <!--<xsl:variable name="render-status" select="$environment/m:render/m:status[@type eq 'translation']/@status-id"/>-->
     
     <xsl:variable name="page-title" as="node()*">
         <xsl:sequence select="/m:response/m:translation/m:titles/m:title[@xml:lang eq 'en']"/>

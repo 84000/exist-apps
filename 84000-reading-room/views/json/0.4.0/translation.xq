@@ -189,7 +189,9 @@ let $work-annotations :=
     
         $local:translation/tei:bibl[@type eq 'chapter']/tei:idno/@parent-id ! eft-json:annotation('eft:isCatalogueSectionChapter'),
         
-        $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target))
+        $local:tei//tei:sourceDesc/tei:link[@type] ! eft-json:annotation-link(concat('eft:', @type), eft-json:id('tohKey', @target)),
+        
+        $local:translation/eft:publication/eft:tantric-restriction[tei:p] ! eft-json:annotation('eft:tantricRestriction')
         
     )
     else ()
@@ -210,7 +212,9 @@ return
         
         $work,
         local:translation-project(),
-        local:passages()
         
+        if($local:translation[@status-group eq 'published']) then
+            local:passages()
+        else ()
         
     }

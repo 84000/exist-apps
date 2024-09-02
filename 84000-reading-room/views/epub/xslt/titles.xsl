@@ -109,6 +109,12 @@
                                 </h2>
                             </xsl:if>
                             
+                            <xsl:if test="not($long-titles) and $main-titles[@xml:lang eq 'Bo-Ltn']">
+                                <h2>
+                                    <xsl:apply-templates select="$main-titles[@xml:lang eq 'Bo-Ltn']"/>
+                                </h2>
+                            </xsl:if>
+                            
                         </div>
                         
                         <div class="source">

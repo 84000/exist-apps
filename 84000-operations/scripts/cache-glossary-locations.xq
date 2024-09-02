@@ -10,4 +10,4 @@ declare variable $local:glossary-id external;
 let $tei := tei-content:tei($local:resource-id, $local:resource-type)
 
 return
-    update-tei:cache-glossary($tei, $local:glossary-id)
+    update-tei:cache-glossary-locations($tei, $local:glossary-id)

@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
+    <xsl:variable name="environment" select="/m:response/m:environment"/>
+    <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
+    <xsl:variable name="utilities-path" select="$environment/m:url[@id eq 'utilities']/text()"/>
+    <xsl:variable name="source-texts" select="/m:response/m:source-text"/>
+    
     <xsl:template match="/m:response">
-        
-        <xsl:variable name="environment" select="/m:response/m:environment"/>
-        <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
-        <xsl:variable name="utilities-path" select="$environment/m:url[@id eq 'utilities']/text()"/>
         
         <xsl:variable name="content">
             
@@ -16,59 +17,214 @@
                 <p>This page tracks and validates cross references between texts, specifically tei:ref nodes with a target attribute refering to the 84000 Reading Room <br/>i.e. &lt;ref target="https://read.84000.co/translation/..."/&gt;</p>
                 <p>Pending references are those with the attribute @rend="pending". On publishing a text links pointing to it texts should be resolved and the pending attribute removed.</p>
             </div>
-        
-            <!-- Prioritise invalid targets -->
-            <xsl:variable name="invalid-targets" select="m:target-text[m:ref-context[not(@target-toh-key) or @target-toh-key eq '']]"/>
-            <xsl:call-template name="target-text-list">
-                <xsl:with-param name="target-texts" select="$invalid-targets"/>
-                <xsl:with-param name="group-id" select="'invalid-targets'"/>
-                <xsl:with-param name="group-title" select="'Link(s) to invalid resources '"/>
-                <xsl:with-param name="count-issues" select="count($invalid-targets/m:ref-context[not(@target-toh-key) or @target-toh-key eq ''])"/>
-            </xsl:call-template>
-        
-            <!-- Refs with invalid domains -->
-            <xsl:variable name="invalid-domains" select="m:target-text[not(@id = ($invalid-targets/@id))][m:ref-context[@target-domain-validated eq 'false']]"/>
-            <xsl:call-template name="target-text-list">
-                <xsl:with-param name="target-texts" select="$invalid-domains"/>
-                <xsl:with-param name="group-id" select="'invalid-domains'"/>
-                <xsl:with-param name="group-title" select="'Link(s) to invalid domains '"/>
-                <xsl:with-param name="count-issues" select="count($invalid-domains/m:ref-context[@target-domain-validated eq 'false'])"/>
-            </xsl:call-template>
-        
-            <!-- Texts with invalid hash -->
-            <xsl:variable name="invalid-hashes" select="m:target-text[not(@id = ($invalid-targets/@id))][m:ref-context[@target-id-validated eq 'false']]"/>
-            <xsl:call-template name="target-text-list">
-                <xsl:with-param name="target-texts" select="$invalid-hashes"/>
-                <xsl:with-param name="group-id" select="'invalid-hashes'"/>
-                <xsl:with-param name="group-title" select="'Texts with invalid pointers '"/>
-                <xsl:with-param name="count-issues" select="count($invalid-hashes)"/>
-            </xsl:call-template>
-        
-            <!-- Published texts with pending refs -->
-            <xsl:variable name="published-pending" select="m:target-text[not(@id = ($invalid-targets/@id))][@status-group eq 'published'][m:ref-context[tei:ref[@rend eq 'pending']]]"/>
-            <xsl:call-template name="target-text-list">
-                <xsl:with-param name="target-texts" select="$published-pending"/>
-                <xsl:with-param name="group-id" select="'published-pending'"/>
-                <xsl:with-param name="group-title" select="'Pending references to published texts '"/>
-                <xsl:with-param name="count-issues" select="count($published-pending/m:ref-context[tei:ref[@rend eq 'pending']])"/>
-            </xsl:call-template>
-        
-            <!-- Not-published texts with active refs -->
-            <xsl:variable name="non-published-active" select="m:target-text[not(@id = ($invalid-targets/@id))][not(@status-group eq 'published')][m:ref-context[tei:ref[not(@rend eq 'pending')]]]"/>
-            <xsl:call-template name="target-text-list">
-                <xsl:with-param name="target-texts" select="$non-published-active"/>
-                <xsl:with-param name="group-id" select="'non-published-active'"/>
-                <xsl:with-param name="group-title" select="'Active references to not published texts '"/>
-                <xsl:with-param name="count-issues" select="count($non-published-active/m:ref-context[tei:ref[not(@rend eq 'pending')]])"/>
-            </xsl:call-template>
-        
-            <!-- The rest -->
-            <xsl:variable name="remaining-texts" select="m:target-text[not(@id = ($invalid-targets/@id))][not(@id = ($invalid-targets/@id, $invalid-domains/@id, $invalid-hashes/@id, $published-pending/@id, $non-published-active/@id))]"/>
-            <xsl:call-template name="target-text-list">
-                <xsl:with-param name="target-texts" select="$remaining-texts"/>
-                <xsl:with-param name="group-id" select="'remainder'"/>
-                <xsl:with-param name="group-title" select="'Remaining texts referenced in other texts '"/>
-            </xsl:call-template>
+            
+            <xsl:for-each select="('issues-translated','issues-inprogress','no-issues')">
+                
+                <xsl:variable name="ref-type" select="."/>
+                
+                <xsl:choose>
+                    <xsl:when test="$ref-type eq 'issues-translated'">
+                        <p>Published texts with cross-reference issues</p>
+                    </xsl:when>
+                    <xsl:when test="$ref-type eq 'issues-inprogress'">
+                        <p>Unpublished texts with cross-reference issues</p>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <p>Cross-references without issues</p>
+                    </xsl:otherwise>
+                </xsl:choose>
+                
+                <div id="source-texts-{ $ref-type }" class="list-group accordion accordion-bordered accordion-background" role="tablist" aria-multiselectable="false">
+                    
+                    <xsl:variable name="ref-type-source-texts" select="if($ref-type eq 'issues-translated') then $source-texts[@status-group eq 'published'][m:ref[m:issue]] else if($ref-type eq 'issues-inprogress') then $source-texts[not(@status-group eq 'published')][m:ref[m:issue]] else $source-texts[not(m:ref[m:issue])]"/>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$ref-type-source-texts">
+                            
+                            <xsl:for-each select="$ref-type-source-texts">
+                                
+                                <xsl:sort select="count(m:ref[m:issue])" order="descending"/>
+                                <xsl:sort select="(m:toh ! 0, 1)[1]"/>
+                                <xsl:sort select="number(m:toh/@number)"/>
+                                <xsl:sort select="m:toh/@letter"/>
+                                <xsl:sort select="number(m:toh/@chapter-number)"/>
+                                <xsl:sort select="m:toh/@chapter-letter"/>
+                                
+                                <xsl:call-template name="expand-item">
+                                    
+                                    <xsl:with-param name="id" select="concat('source-text-', @id)"/>
+                                    <xsl:with-param name="accordion-selector" select="concat('#source-texts-', $ref-type)"/>
+                                    <xsl:with-param name="persist" select="true()"/>
+                                    <xsl:with-param name="title-opener" select="true()"/>
+                                    
+                                    <xsl:with-param name="title">
+                                        <div class="center-vertical align-left">
+                                            <span>
+                                                <xsl:choose>
+                                                    <xsl:when test="$ref-type = ('issues-translated', 'issues-inprogress')">
+                                                        <span class="badge badge-notification">
+                                                            <xsl:value-of select="count(m:ref[m:issue])"/>
+                                                        </span>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <span class="badge badge-notification badge-muted">
+                                                            <xsl:value-of select="count(m:ref)"/>
+                                                        </span>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </span>
+                                            <span>
+                                                <xsl:value-of select="common:limit-str(string-join((m:toh/m:full, (m:titles/m:title[@xml:lang eq 'en'][text()], m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1], @id), ' / '), 120)"/>
+                                            </span>
+                                            <span>
+                                                <span>
+                                                    <xsl:attribute name="class">
+                                                        <xsl:choose>
+                                                            <xsl:when test="@status-group eq 'published'">
+                                                                <xsl:value-of select="'label label-success'"/>
+                                                            </xsl:when>
+                                                            <xsl:otherwise>
+                                                                <xsl:value-of select="'label label-default'"/>
+                                                            </xsl:otherwise>
+                                                        </xsl:choose>
+                                                    </xsl:attribute>
+                                                    <xsl:value-of select="common:translation-status(@status-group)"/>
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </xsl:with-param>
+                                    
+                                    <xsl:with-param name="content">
+                                        <table class="table no-border full-width sml-margin top">
+                                            <tbody>
+                                                <xsl:for-each select="m:ref">
+                                                    
+                                                    <xsl:sort select="count(m:issue)" order="descending"/>
+                                                    
+                                                    <tr>
+                                                        <td>
+                                                            <xsl:value-of select="' ↳ '"/>
+                                                        </td>
+                                                        <td>
+                                                            <code class="small">
+                                                                <xsl:if test="m:issue[@type = ('invalid-domain', 'invalid-text', 'invalid-id', 'invalid-url')]">
+                                                                    <xsl:attribute name="class" select="'small red-alert'"/>
+                                                                </xsl:if>
+                                                                <xsl:value-of select="concat('@target=&#34;', @target, '&#34;')"/>
+                                                            </code>
+                                                            <xsl:if test="m:issue">
+                                                                <ul class="small text-muted sml-margin top bottom">
+                                                                    <xsl:if test="m:issue[@type eq 'invalid-domain']">
+                                                                        <li>
+                                                                            <xsl:value-of select="'Invalid domain'"/>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                    <xsl:if test="m:issue[@type eq 'invalid-text']">
+                                                                        <li>
+                                                                            <xsl:value-of select="concat('Invalid text id: ', @target-page)"/>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                    <xsl:if test="m:issue[@type eq 'invalid-id']">
+                                                                        <li>
+                                                                            <xsl:value-of select="concat('Incorrect xml:id: ', @target-hash)"/>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                    <xsl:if test="m:issue[@type eq 'invalid-url']">
+                                                                        <li>
+                                                                            <xsl:value-of select="concat('Invalid url: ', @target-page)"/>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                    <xsl:if test="m:issue[@type eq 'pending-link-published-text']">
+                                                                        <li>
+                                                                            <xsl:value-of select="'Pending link to a published text'"/>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                    <xsl:if test="m:issue[@type eq 'active-link-unpublished-text']">
+                                                                        <li>
+                                                                            <xsl:value-of select="'Active link to an unpublished text'"/>
+                                                                        </li>
+                                                                    </xsl:if>
+                                                                </ul>
+                                                            </xsl:if>
+                                                        </td>
+                                                        <td>
+                                                            <xsl:choose>
+                                                                <xsl:when test="m:issue[@type eq 'pending-link-published-text']">
+                                                                    <span class="label label-danger">
+                                                                        <xsl:value-of select="'Pending link'"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                                <xsl:when test="m:issue[@type eq 'active-link-unpublished-text']">
+                                                                    <span class="label label-danger">
+                                                                        <xsl:value-of select="'Active link'"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                                <xsl:when test="@rend eq 'pending'">
+                                                                    <span class="label label-warning">
+                                                                        <xsl:value-of select="'Pending link'"/>
+                                                                    </span>
+                                                                </xsl:when>
+                                                                <xsl:otherwise>
+                                                                    <span class="label label-info">
+                                                                        <xsl:value-of select="'Active link'"/>
+                                                                    </span>
+                                                                </xsl:otherwise>
+                                                            </xsl:choose>
+                                                        </td>
+                                                        <td>
+                                                            <xsl:if test="m:target-text">
+                                                                <span>
+                                                                    <xsl:attribute name="class">
+                                                                        <xsl:choose>
+                                                                            <xsl:when test="m:target-text[@status-group eq 'published']">
+                                                                                <xsl:value-of select="'label label-success'"/>
+                                                                            </xsl:when>
+                                                                            <xsl:otherwise>
+                                                                                <xsl:value-of select="'label label-default'"/>
+                                                                            </xsl:otherwise>
+                                                                        </xsl:choose>
+                                                                    </xsl:attribute>
+                                                                    <xsl:value-of select="concat(m:target-text/m:toh/m:full, ' ', common:translation-status(m:target-text/@status-group))"/>
+                                                                </span>
+                                                            </xsl:if>
+                                                        </td>
+                                                        <td class="nowrap">
+                                                            <a target="_blank" class="small">
+                                                                <xsl:attribute name="href" select="@target"/>
+                                                                <xsl:value-of select="'actual link'"/>
+                                                            </a>
+                                                        </td>
+                                                        <td class="nowrap">
+                                                            <span>
+                                                                <a target="_blank" class="small">
+                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', @target-path)"/>
+                                                                    <xsl:value-of select="'local link'"/>
+                                                                </a>
+                                                            </span>
+                                                        </td>                                            
+                                                    </tr>
+                                                    
+                                                </xsl:for-each>
+                                            </tbody>
+                                        </table>
+                                    </xsl:with-param>
+                                    
+                                </xsl:call-template>
+                                
+                            </xsl:for-each>
+                            
+                        </xsl:when>
+                        <xsl:otherwise>
+                            
+                            <hr class="sml-margin"/>
+                            
+                            <p class="text-muted italic">No texts to display</p>
+                            
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </div>
+                
+            </xsl:for-each>
             
         </xsl:variable>
         
@@ -83,212 +239,6 @@
                 </xsl:call-template>
             </xsl:with-param>
         </xsl:call-template>
-        
-    </xsl:template>
-    
-    <xsl:template name="target-text-list">
-        
-        <xsl:param name="target-texts" as="element(m:target-text)*" required="yes"/>
-        <xsl:param name="group-id" as="xs:string" required="yes"/>
-        <xsl:param name="group-title" as="xs:string" required="yes"/>
-        <xsl:param name="count-issues" as="xs:integer" select="-1"/>
-        
-        <div class="div-list">
-            
-            <div class="heading">
-                <xsl:value-of select="$group-title"/>
-                <xsl:if test="$count-issues gt -1">
-                    <span class="badge badge-notification">
-                        <xsl:if test="$count-issues eq 0">
-                            <xsl:attribute name="class" select="'badge badge-notification badge-muted'"/>
-                        </xsl:if>
-                        <xsl:value-of select="$count-issues"/>
-                    </span>
-                </xsl:if>
-            </div>
-            
-            <xsl:for-each select="$target-texts">
-                
-                <xsl:sort select="number(m:toh/@number)"/>
-                <xsl:sort select="m:toh/@letter"/>
-                <xsl:sort select="number(m:toh/@chapter-number)"/>
-                <xsl:sort select="m:toh/@chapter-letter"/>
-                
-                <xsl:variable name="target-text" select="."/>
-                <xsl:variable name="text-row-id" select="concat('target-text-', $group-id, '-', position())"/>
-                
-                <div class="item">
-                    
-                    <div role="tab">
-                        
-                        <xsl:attribute name="id" select="concat($text-row-id, '-heading')"/>
-                        
-                        <a class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
-                            
-                            <xsl:attribute name="href" select="concat('#', $text-row-id, '-detail')"/>
-                            <xsl:attribute name="aria-controls" select="concat($text-row-id, '-detail')"/>
-                            
-                            <span>
-                                
-                                <xsl:choose>
-                                    
-                                    <xsl:when test="$target-text[@id gt '']">
-                                        
-                                        <span>
-                                            <!-- Toh / Title -->
-                                            <xsl:value-of select="'&lt;ref/&gt;s targeting '"/>
-                                            <strong>
-                                                <xsl:value-of select="$target-text/m:toh/m:full"/>
-                                            </strong>
-                                            <xsl:value-of select=" ' / '"/>
-                                            <xsl:value-of select="$target-text/@id"/>
-                                            <xsl:value-of select=" ' / '"/>
-                                            <xsl:value-of select="($target-text/m:titles/m:title[@xml:lang eq 'en'][text()], $target-text/m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], $target-text/m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1]"/>
-                                        </span>
-                                        
-                                    </xsl:when>
-                                    
-                                    <xsl:otherwise>
-                                        <span class="text-danger">
-                                            <xsl:value-of select="concat($target-text/@resource-id, ' is not valid')"/>
-                                        </span>
-                                    </xsl:otherwise>
-                                    
-                                </xsl:choose>
-                                
-                                <xsl:value-of select=" ' '"/>
-                                
-                                <!-- Published flag -->
-                                <span class="label label-warning">
-                                    <xsl:choose>
-                                        <xsl:when test="$target-text[@status-group eq 'published']">
-                                            <xsl:attribute name="class" select="'label label-success'"/>
-                                            <xsl:value-of select="'Text published'"/>
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            <xsl:value-of select="'Text not published'"/>
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </span>
-                                <xsl:value-of select="' '"/>
-                                
-                                <!-- Refs pending -->
-                                <xsl:if test="$target-text/m:ref-context[tei:ref[@rend eq 'pending']]">
-                                    <span class="label label-warning">
-                                        <xsl:value-of select="concat(count($target-text/m:ref-context/tei:ref[@rend eq 'pending']), ' pending ref(s)')"/>
-                                    </span>
-                                    <xsl:value-of select="' '"/>
-                                </xsl:if>
-                                
-                                <!-- Refs active -->
-                                <xsl:if test="$target-text/m:ref-context[tei:ref[not(@rend eq 'pending')]]">
-                                    <span class="label label-success">
-                                        <xsl:value-of select="concat(count($target-text/m:ref-context/tei:ref[not(@rend eq 'pending')]), ' active ref(s)')"/>
-                                    </span>
-                                </xsl:if>
-                                
-                            </span>
-                            
-                            <span class="text-right">
-                                <i class="fa fa-plus collapsed-show"/>
-                                <i class="fa fa-minus collapsed-hide"/>
-                            </span>
-                            
-                        </a>
-                    </div>
-                    
-                    <div class="collapse" role="tabpanel" aria-expanded="false">
-                        
-                        <xsl:attribute name="id" select="concat($text-row-id, '-detail')"/>
-                        <xsl:attribute name="aria-labelledby" select="concat($text-row-id, '-heading')"/>
-                        
-                        <div class="top-margin">
-                            <xsl:for-each-group select="$target-text/m:ref-context" group-by="m:toh/@key">
-                                
-                                <xsl:sort select="number(m:toh[1]/@number)"/>
-                                <xsl:sort select="m:toh[1]/@letter"/>
-                                <xsl:sort select="number(m:toh[1]/@chapter-number)"/>
-                                <xsl:sort select="m:toh[1]/@chapter-letter"/>
-                                
-                                <div class="bottom-margin">
-                                    
-                                    <div class="small">
-                                        <xsl:value-of select="m:toh/m:full"/>
-                                        <xsl:value-of select="' / '"/>
-                                        <xsl:value-of select="(m:titles/m:title[@xml:lang eq 'en'][text()], m:titles/m:title[@xml:lang eq 'Sa-Ltn'][text()], m:titles/m:title[@xml:lang eq 'Bo-Ltn'][text()])[1]"/>
-                                        <xsl:value-of select="' / '"/>
-                                        <xsl:value-of select="@resource-id"/>
-                                    </div>
-                                    
-                                    <xsl:for-each select="fn:current-group()">
-                                        
-                                        <xsl:variable name="target-file" select="tokenize(tei:ref/@target, '/')[last()]"/>
-                                        
-                                        <div>
-                                            <ul class="list-inline inline-dots">
-                                                <li>
-                                                    
-                                                    <xsl:value-of select="' ↳ '"/>
-                                                    
-                                                    <code class="small">
-                                                        <xsl:if test="@target-domain-validated eq 'false'">
-                                                            <xsl:attribute name="class" select="'small red-alert'"/>
-                                                        </xsl:if>
-                                                        <xsl:value-of select="concat('@target=&#34;', tei:ref/@target, '&#34;')"/>
-                                                    </code>
-                                                    
-                                                    <xsl:value-of select="' '"/>
-                                                    
-                                                    <xsl:choose>
-                                                        <xsl:when test="tei:ref[@rend eq 'pending']">
-                                                            <span class="label label-warning">
-                                                                <xsl:value-of select="'Pending'"/>
-                                                            </span>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <span class="label label-info">
-                                                                <xsl:value-of select="'Active'"/>
-                                                            </span>
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                    
-                                                    <xsl:if test="@target-id-validated eq 'false'">
-                                                        <xsl:value-of select="' '"/>
-                                                        <span class="label label-danger">
-                                                            <xsl:value-of select="concat('@xml:id=&#34;', @target-hash, '&#34; not found in ', @target-toh-key)"/>
-                                                        </span>
-                                                    </xsl:if>
-                                                    
-                                                </li>
-                                                <li>
-                                                    <a target="_blank" class="small">
-                                                        <xsl:attribute name="href" select="tei:ref/@target"/>
-                                                        <xsl:value-of select="'actual link'"/>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a target="_blank" class="small">
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $target-file)"/>
-                                                        <xsl:value-of select="'local link'"/>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        
-                                    </xsl:for-each>
-                                    
-                                </div>
-                            </xsl:for-each-group>
-                            
-                        </div>
-                        
-                    </div>
-                    
-                </div>
-                
-            </xsl:for-each>
-            
-        </div>
         
     </xsl:template>
     

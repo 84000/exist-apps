@@ -17,6 +17,7 @@
                     <xsl:apply-templates select="m:translation-summary"/>
                     
                 </xsl:with-param>
+                
             </xsl:call-template>
             
         </xsl:variable>
@@ -24,7 +25,7 @@
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="''"/>
             <xsl:with-param name="page-class" select="'utilities'"/>
-            <xsl:with-param name="page-title" select="'Sections | 84000 Project Management'"/>
+            <xsl:with-param name="page-title" select="'Catalogue Sections | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'84000 catalogue of sections'"/>
             <xsl:with-param name="content" select="$content"/>
         </xsl:call-template>

@@ -88,7 +88,7 @@
 
     <!-- About -->
     <item key="about.common.sponsor-button-label">Support Our Work</item>
-    <item key="about.common.sponsor-button-link">#commsSiteUrl/give-monthly</item>
+    <item key="about.common.sponsor-button-link">https://84000.co/give-monthly</item>
     <item key="about.common.sharing-label">Share this page:</item>
     <item key="about.common.summary-label">Summary</item>
     <item key="about.common.no-results-label">There are currently not texts in this list</item>
@@ -102,7 +102,7 @@
 
     <!-- Progress -->
     <item key="about.progress.page-title">Translation Progress</item>
-    <item key="about.progress.header-img-src">#feSiteUrl/imgs/about-headers/progress.jpg</item>
+    <item key="about.progress.header-img-src">/images/about-headers/progress.jpg</item>
     <item key="about.progress.page-quote">"You should know first hand how Dharma helps you… With this mind if you extend your intention to reach out with your translation…it’ll really make a
         difference in the world, and it already does."</item>
     <item key="about.progress.page-quote-author">Dzigar Kongtrül Rinpoche</item>
@@ -123,17 +123,17 @@
         <h2>Other Related Pages</h2>
         <ul class="list-unstyled">
             <li>
-                <a href="#commsSiteUrl/about/work-flow">Learn more about what it takes to produce a page of translation</a>
+                <a href="https://84000.co/about/work-flow">Learn more about what it takes to produce a page of translation</a>
             </li>
             <li>
-                <a href="#commsSiteUrl/facts-and-figures-about-kangyur-and-tengyur">Learn more about the Kangyur, the Tengyur, and their contents</a>
+                <a href="https://84000.co/facts-and-figures-about-kangyur-and-tengyur">Learn more about the Kangyur, the Tengyur, and their contents</a>
             </li>
         </ul>
     </item>
 
     <!-- Impact -->
     <item key="about.impact.page-title">Reader Engagement</item>
-    <item key="about.impact.header-img-src">#feSiteUrl/imgs/about-headers/impact.jpg</item>
+    <item key="about.impact.header-img-src">/images/about-headers/impact.jpg</item>
     <item key="about.impact.page-quote">“It’s not just the heritage of one tradition, one civilization or one nation – it’s the heritage of the world. The Kangyur and Tengyur will really contribute to
         the happiness, peace and freedom of all mankind.”</item>
     <item key="about.impact.page-quote-author">Tulku Pema Wangyal Rinpoche</item>
@@ -167,48 +167,16 @@
     <item key="about.impact.engagement-description">
         <p>In 2020 alone, our readers downloaded #annualDownloadsFormatted sūtras from our online Reading Room.</p>
     </item>
-    <!--<item key="about.impact.popular-views-stat">
-        <div class="heading">Most popular</div>
-        <div class="data">
-            <span>#topTextViewsFormatted</span> views of the top 5 sūtras</div>
-    </item>
-    <item key="about.impact.popular-description">
-        <p>To date in 2018, the following five sūtras have received a combined 43,610 views, out of the almost 150,000 views of our Reading
-            Room this year:</p>
-        <ol>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-055-001.html">The King of Samādhis Sūtra</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-031-002.html">The Transcendent Perfection of Wisdom in Ten Thousand Lines</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-060-005.html">The Teaching of Vimalakīrti</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-062-010.html">The Rice Seedling</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-062-012.html">The Sūtra on Dependent Arising</a>
-            </li>
-        </ol>
-        <p>With over 21,000 pages currently in translation, we look forward to giving free access to, and easy readability of, more sūtras
-            to you soon.</p>
-    </item>
-    <item key="about.impact.countries-title">Countries where our readers come from</item>
-    <item key="about.impact.countries-legend">*The flags above are selected examples of the countries where our readers come from. The list
-        is not exhaustive.</item>
-    <item key="about.impact.countries-timestamp">Information updated on: Aug 5, 2018</item>-->
 
     <!-- Sponsors -->
     <item key="about.sponsors.page-title">Sponsors</item>
-    <item key="about.sponsors.header-img-src">#feSiteUrl/imgs/about-headers/sponsors.jpg</item>
+    <item key="about.sponsors.header-img-src">/images/about-headers/sponsors.jpg</item>
     <item key="about.sponsors.page-quote">“Both the very generous benefactors and also the very knowledgeable and experienced translators will be able to perfect their two accumulations of virtue
         through their interdependent connection.”</item>
     <item key="about.sponsors.page-quote-author">Tri Ralpachen (one of the three Dharma kings of Tibet)</item>
     <item key="about.sponsors.page-intro">
-        <p>84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="#commsSiteUrl/give-monthly">Give Monthly</a> and <a href="#commsSiteUrl/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is an
-            equally meritorious drop in in the ocean of our activity.</p>
+        <p>84000 is dependent on the kind and generous support of thousands of donors, many of whom give through our <a href="https://84000.co/give-monthly">Give Monthly</a> and <a href="https://84000.co/download-dana">Download Dāna</a> streams, as well as through the programs listed below. We are grateful for every offering and believe each to be a gift that is
+            an equally meritorious drop in in the ocean of our activity.</p>
     </item>
     <item key="about.sponsors.matching-funds-title">Matching Funds Sponsors</item>
     <item key="about.sponsors.sutras-title">Sūtra Sponsors</item>
@@ -218,11 +186,11 @@
             thank the following Matching Funds sponsors for their gift to 84000 and their generosity in allowing small-dollar donors to feel their contribution is making a more significant impact on
             the progress of the translation of the Tibetan Buddhist canon.</p>
     </item>
-    <item key="about.sponsors.matching-funds-list-title"> Our Matching Funds Sponsors </item>
-    <item key="about.sponsors.sponsor-sutras-link">#readingRoomSiteUrl/about/sponsor-a-sutra.html</item>
+    <item key="about.sponsors.matching-funds-list-title">Our Matching Funds Sponsors</item>
+    <item key="about.sponsors.sponsor-sutras-link">/about/sponsor-a-sutra.html</item>
     <item key="about.sponsors.sutras-description">
         <p>Every year, we commission a new batch of translations. Some of the designated texts are long, important sūtras that require a sizeable amount of funding in order to see the translation
-            process through to completion. We would like to thank our sponsors for their generous support of the <a href="#readingRoomSiteUrl/about/sponsor-a-sutra.html">“Sponsor A Sūtra”</a>
+            process through to completion. We would like to thank our sponsors for their generous support of the <a href="/about/sponsor-a-sutra.html">“Sponsor A Sūtra”</a>
             program.</p>
     </item>
     <item key="about.sponsors.sutras-list-title"> Our Sūtra Sponsors </item>
@@ -233,14 +201,14 @@
             editors; and offset both the costs of the initial planning, and the current and ongoing administrative and operating costs.</p>
         <p>With the vision and generosity of these Founding Sponsors, 84000 has been able to successfully launch and significantly progress with the immense task of translating the words of the
             Buddha. We offer our heartfelt thanks to all our Founding Sponsors for enabling us to safeguard this invaluable world heritage, and making it available for generations to come.</p>
-        <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="#commsSiteUrl/message-to-founding-sponsors">a message addressed to all 108 Founding Sponsors</a>.</p>
+        <p>Dzongsar Khyentse Rinpoche, chairperson of 84000, has written <a href="https://84000.co/message-to-founding-sponsors">a message addressed to all 108 Founding Sponsors</a>.</p>
     </item>
     <item key="about.sponsors.founding-list-title"> Our 108 Founding Sponsors </item>
     <item key="about.sponsors.text-sponsorship-link-label">There are further sponsorship opportunities for this translation</item>
 
     <!-- Translators -->
     <item key="about.translators.page-title">Translation Teams</item>
-    <item key="about.translators.header-img-src">#feSiteUrl/imgs/about-headers/translators.jpg</item>
+    <item key="about.translators.header-img-src">/images/about-headers/translators.jpg</item>
     <item key="about.translators.page-quote">“It’s very important that translators really come together as one harmonious unit to do the work for the present time and also for future
         generations.”</item>
     <item key="about.translators.page-quote-author">Dzigar Kongtrül Rinpoche</item>
@@ -264,7 +232,7 @@
 
     <!-- Sponsor a Sutra -->
     <item key="about.sponsor-a-sutra.page-title">Sponsor a Sūtra</item>
-    <item key="about.sponsor-a-sutra.header-img-src">#feSiteUrl/imgs/about-headers/sponsor-a-sutra.jpg</item>
+    <item key="about.sponsor-a-sutra.header-img-src">/images/about-headers/sponsor-a-sutra.jpg</item>
     <item key="about.sponsor-a-sutra.page-quote">“Sūtras teach us the Dharma. The sūtras are much more precious, much more important than the image of the Buddha.”</item>
     <item key="about.sponsor-a-sutra.page-quote-author">Garchen Rinpoche</item>
     <item key="about.sponsor-a-sutra.page-intro">
@@ -308,7 +276,7 @@
     <!-- Progress panel widget -->
     <item key="widget.progress-panel.support-label">Join Us</item>
     <item key="widget.progress-panel.support-description">
-        <p>With the help of our <a href="#readingRoomSiteUrl/about/sponsors.html">108 founding sponsors</a> and thousands of individual donors, we provide funding to the translators who are working to
+        <p>With the help of our <a href="/about/sponsors.html">108 founding sponsors</a> and thousands of individual donors, we provide funding to the translators who are working to
             safeguard these important teachings for future generations.</p>
     </item>
     <item key="widget.progress-panel.kangyur-count-after-label">Total Kangyur Pages</item>
@@ -350,7 +318,7 @@
         <p>The cultivation of generosity, or dāna—giving voluntarily with a view that something wholesome will come of it—is considered to be a fundamental Buddhist practice by all schools. The nature
             and quantity of the gift itself is often considered less important.</p>
     </item>
-    <item key="widget.download-dana.donate-form-link">/give-monthly</item>
+    <item key="widget.download-dana.donate-form-link">https://84000.co/give-monthly</item>
     <item key="widget.download-dana.donate-form-link-label">Click here to make a dāna donation</item>
 
     <!-- Audio test -->

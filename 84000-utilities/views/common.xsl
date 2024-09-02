@@ -3,7 +3,6 @@
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
-    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
     <xsl:variable name="response-model" select="/m:response/@model" as="xs:string"/>
     
     <xsl:variable name="tabs">
@@ -86,7 +85,7 @@
                 <div class="center-vertical full-width">
                     <div class="logo">
                         <img alt="84000 logo">
-                            <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
+                            <xsl:attribute name="src" select="'/frontend/imgs/84000-logo.png'"/>
                         </img>
                     </div>
                     <div>

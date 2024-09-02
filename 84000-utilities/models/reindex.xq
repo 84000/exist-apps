@@ -17,7 +17,7 @@ let $reindex-collections as xs:string* :=
     else if(request:get-parameter('collection', '') eq 'local') then
         string-join(($common:data-path, 'local'), '/')
     else if(request:get-parameter('collection', '') eq 'tei') then
-        string-join(($common:data-path, 'tei'), '/')
+        $common:tei-path
     else if(request:get-parameter('collection', '') eq 'translation-memory') then
         string-join(($common:data-path, 'translation-memory'), '/')
     else if(request:get-parameter('collection', '') eq 'source') then (
@@ -26,13 +26,15 @@ let $reindex-collections as xs:string* :=
     )
     else if(request:get-parameter('collection', '') eq 'reading-room-config') then
         $common:app-config
-    else if(request:get-parameter('collection', '') eq 'related-files') then (
+    (:else if(request:get-parameter('collection', '') eq 'related-files') then (
         string-join(($common:data-path, 'epub'), '/'),
         string-join(($common:data-path, 'pdf'), '/'),
         string-join(($common:data-path, 'rdf'), '/'),
         string-join(($common:data-path, 'cache'), '/'),
         string-join(($common:data-path, 'json'), '/')
-    )
+    ):)
+    else if(request:get-parameter('collection', '') eq 'static-files') then
+        $common:static-content-path
     else ()
 
 return

@@ -6,17 +6,18 @@ function local:scan($path) as xs:string* {
 };
 
 declare
-function local:resource ($collection as xs:string, $resource as xs:string) as xs:string? {
+function local:resource ($collection as xs:string, $resource as xs:string) as xs:string* {
     try {
-        let $test := doc($collection || '/' || $resource)/* ! local-name()
+        (:let $test := doc($collection || '/' || $resource)/* ! local-name():)
+        let $test := doc($collection || '/' || $resource)//*:aside/* ! local-name(.)
         return 
             (:if(matches($resource, '^listing.*')) then 
                 $collection || '/' || $resource
-            else:)
-                (:$collection || '/' || $resource:) (:$test:) ()
+            else
+                $collection || '/' || $resource :) (:$test:) ()
     }
     catch * {
-        $collection || '/' || $resource
+        'Error:' || $collection || '/' || $resource
     }
 };
 

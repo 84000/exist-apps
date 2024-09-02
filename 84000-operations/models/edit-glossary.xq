@@ -4,7 +4,7 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
 import module namespace update-entity="http://operations.84000.co/update-entity" at "../modules/update-entity.xql";
 
@@ -67,10 +67,10 @@ let $updates :=
             update-tei:glossary-definition-use($tei, $glossary-id)
         
         else if($form-action eq 'cache-locations') then
-            update-tei:cache-glossary($tei, $glossary-id)
+            update-tei:cache-glossary-locations($tei, $glossary-id)
         
         else if($form-action = ('cache-locations-all', 'cache-locations-uncached', 'cache-locations-version')) then 
-            (:update-tei:cache-glossary($tei, 'all'):)
+            (:update-tei:cache-glossary-locations($tei, 'all'):)
             
             (: Run asynchronously :)
             let $scope := 
@@ -79,7 +79,7 @@ let $updates :=
                 else 'all'
             
             return
-                local:async-script(
+                helper:async-script(
                     'cache-glossary-locations',
                     <parameters xmlns="">
                         <param name="resource-id" value="{ $resource-id }"/>
@@ -99,7 +99,7 @@ let $updates :=
         
         else if($form-action eq 'merge-all-entities') then
             (: update-entity:auto-assign-glossary($resource-id, true()) :)
-            local:async-script(
+            helper:async-script(
                 'auto-assign-entities',
                 <parameters xmlns="">
                     <param name="resource-id" value="{ $resource-id }"/>
@@ -216,7 +216,7 @@ return
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
                 attribute records-assigned-entities { count($glossary-entities-assigned) },
-                attribute tei-version-cached { store:stored-version-str($resource-id, 'cache') },
+                attribute tei-version-cached { store:stored-version-str(concat($common:data-path, '/cache'), concat($resource-id, '.cache')) },
                 
                 $tei//tei:div[@type eq 'glossary']/@status,
                 
@@ -288,7 +288,7 @@ return
                 
             }
         
-        let $glossary-cache := glossary:glossary-cache($tei, (), false())
+        let $glossary-cached-locations := glossary:cached-locations($tei, (), false())
         
         let $xml-response := 
             common:response(
@@ -300,7 +300,7 @@ return
                     $glossary,
                     tei-content:text-statuses-selected($text/@status, $resource-type),
                     $entities,
-                    $glossary-cache,
+                    $glossary-cached-locations,
                     $glossary:attestation-types,
                     $update-tei:blocking-jobs,
                     $entities:predicates,
@@ -313,7 +313,7 @@ return
         
             (: return html data :)
             if($resource-suffix eq 'html') then (
-                common:html($xml-response, concat(local:app-path(), '/views/edit-glossary.xsl'))
+                common:html($xml-response, concat(helper:app-path(), '/views/edit-glossary.xsl'))
             )
             
             (: return xml data :)

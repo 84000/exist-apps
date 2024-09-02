@@ -54,7 +54,7 @@
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="concat($test-domain, '/translation/', $text-id, '.html?view-mode=tests')"/>
+                                <xsl:attribute name="href" select="m:translation-href($text-id, (), (), (), 'view-mode=tests', $test-domain)"/>
                                 <xsl:attribute name="target" select="concat($text-id, '.html')"/>
                                 <xsl:value-of select="'html'"/>
                             </a>
@@ -195,7 +195,7 @@
                         <tr>
                             <td>
                                 <a>
-                                    <xsl:attribute name="href" select="concat($test-domain, '/translation/', $toh-key, '.html?view-mode=tests')"/>
+                                    <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), (), 'view-mode=tests', $test-domain)"/>
                                     <xsl:attribute name="title" select="$text-title"/>
                                     <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
                                     <xsl:value-of select="m:toh/m:full"/>

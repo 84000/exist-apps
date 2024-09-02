@@ -4,7 +4,7 @@ declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace update-tei="http://operations.84000.co/update-tei" at "../modules/update-tei.xql";
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
@@ -17,25 +17,22 @@ declare option exist:serialize "method=xml indent=no";
 
 let $resource-id := request:get-parameter('resource-id', '')
 let $part-id := request:get-parameter('part', '')
+let $root := request:get-parameter('root', '')
 let $tei := tei-content:tei($resource-id, 'translation')
+let $source := tei-content:source($tei, '')
 
 let $request :=
     element { QName('http://read.84000.co/ns/1.0', 'request') }{
         attribute resource-suffix { request:get-parameter('resource-suffix', 'html') },
         attribute resource-id { if($tei) then $resource-id else () },
-        attribute part { 
-            if($tei//tei:div[@type eq 'translation']/tei:div[@xml:id eq $part-id]) then 
-                $part-id 
-            else 
-                $tei//tei:div[@type eq 'translation']/tei:div[@xml:id][1]/@xml:id
-        }
+        attribute part { ($tei//tei:div[@type eq 'translation']/tei:div[@xml:id eq $part-id], $tei//tei:div[@type eq 'translation']/tei:div[@xml:id])[1]/@xml:id/string() },
+        attribute root { ($source/m:isCommentaryOf[@toh-key eq $root], $source/m:isCommentaryOf)[1]/@toh-key/string() }
     }
 
 let $text-id := tei-content:id($tei)
 let $source := tei-content:source($tei, $request/@resource-id)
 
-let $updates := 
-    element { QName('http://read.84000.co/ns/1.0', 'updates') } {}
+let $updates := element { QName('http://read.84000.co/ns/1.0', 'updates') } {}
 
 let $text := 
     element { QName('http://read.84000.co/ns/1.0', 'text') }{
@@ -48,6 +45,7 @@ let $text :=
         attribute status { tei-content:publication-status($tei) },
         attribute status-group { tei-content:publication-status-group($tei) },
         
+        $source,
         translation:titles($tei, $source/@key),
         translation:toh($tei, $source/@key),
         translation:parts($tei, $request/@part, $translation:view-modes/m:view-mode[@id eq 'passage'], 'body')
@@ -56,19 +54,19 @@ let $text :=
 
 let $quotes := translation:outline-cached($tei)/m:pre-processed[@type eq 'quotes']
 
-let $part-quote-refs := $text/m:part[@id eq 'translation']/m:part[@id eq $request/@part]//tei:ptr[@type eq 'quote-ref']/@xml:id
+let $part-quote-refs := $text/m:part[@type eq 'translation']/m:part[@id eq $request/@part]//tei:ptr[@type eq 'quote-ref']/@xml:id
 let $part-quote-refs-chunked := common:ids-chunked($part-quote-refs)
 let $part-quotes := 
     for $key in map:keys($part-quote-refs-chunked)
     return
-        $quotes/m:quote[@id = map:get($part-quote-refs-chunked, $key)]
+        $quotes/m:quote[@id = map:get($part-quote-refs-chunked, $key)][m:source/@resource-id eq $request/@root]
 
 let $root-texts :=
     element { QName('http://read.84000.co/ns/1.0', 'root-texts') }{
         for $location-part in distinct-values($part-quotes/m:source/@location-part)
         let $resource-id := ($part-quotes/m:source[@location-part eq $location-part])[1]/@resource-id
         return
-            local:root-html($resource-id, $location-part, $source/@key)
+            helper:root-html($resource-id, $location-part, $source/@key)
     }
 
 let $quotes-with-responses :=
@@ -79,7 +77,7 @@ let $quotes-with-responses :=
         for $quote in $part-quotes
         
         let $html-part := $root-texts/m:html[@part-id eq $quote/m:source/@location-part]
-        let $html-passage := ($html-part//*[@data-location-id eq $quote/m:source/@location-id][not(ancestor::*[@data-location-id])] | $html-part//*[@id eq $quote/m:source/@location-id])
+        let $html-passage := ($html-part//*[@data-location-id eq $quote/m:source/@location-id](:[not(ancestor::*[@data-location-id])]:) | $html-part//*[@id eq $quote/m:source/@location-id])
         let $html-highlights := $html-passage[descendant::xhtml:span[@data-quote-id = $quote/@id]]
         let $highlight-spans := $html-highlights/descendant::xhtml:span[@data-quote-id = $quote/@id]
         let $link-status := 
@@ -147,7 +145,7 @@ return
 
     (: return html data :)
     if($request/@resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/edit-quotes.xsl'))
+        common:html($xml-response, concat(helper:app-path(), '/views/edit-quotes.xsl'))
     )
     
     (: return xml data :)

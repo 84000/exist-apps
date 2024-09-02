@@ -5,35 +5,36 @@ module namespace translation = "http://read.84000.co/translation";
 declare namespace m = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
+declare namespace webflow="http://read.84000.co/webflow-api";
 
 import module namespace common = "http://read.84000.co/common" at "common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "tei-content.xql";
 import module namespace sponsors = "http://read.84000.co/sponsors" at "sponsors.xql";
 import module namespace contributors = "http://read.84000.co/contributors" at "contributors.xql";
-import module namespace download = "http://read.84000.co/download" at "download.xql";
 import module namespace source = "http://read.84000.co/source" at "source.xql";
 import module namespace glossary = "http://read.84000.co/glossary" at "glossary.xql";
 import module namespace entities = "http://read.84000.co/entities" at "entities.xql";
+import module namespace store = "http://read.84000.co/store" at "store.xql";
 import module namespace functx = "http://www.functx.com";
 
-(: view-modes hold attributes that determine the display :)
+(: View modes hold attributes that determine the display of a translation :)
 declare variable $translation:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-      <view-mode id="default"          client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections"  annotation="none" />
+      <view-mode id="default"          client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections"  annotation="none"   />
       <view-mode id="editor"           client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"             annotation="editor" />
-      <view-mode id="json"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
-      <view-mode id="passage"          client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none" />
+      <view-mode id="json"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="passage"          client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
       <view-mode id="editor-passage"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"         annotation="editor" />
-      <view-mode id="json-passage"     client="none"     cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none" />
-      <view-mode id="outline"          client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"         annotation="none" />
-      <view-mode id="annotation"       client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"             annotation="web" />
-      <view-mode id="txt"              client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
-      <view-mode id="ebook"            client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none" />
-      <view-mode id="pdf"              client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
-      <view-mode id="app"              client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none" />
-      <view-mode id="tests"            client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none" />
-      <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none" />
-      <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none" />
+      <view-mode id="json-passage"     client="none"     cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
+      <view-mode id="outline"          client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"         annotation="none"   />
+      <view-mode id="annotation"       client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"             annotation="web"    />
+      <view-mode id="txt"              client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="ebook"            client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none"   />
+      <view-mode id="pdf"              client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="app"              client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none"   />
+      <view-mode id="tests"            client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none"   />
+      <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none"   />
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
@@ -73,6 +74,8 @@ declare variable $translation:stopwords := (
 );
 
 declare variable $translation:linked-data := collection(concat($common:data-path, '/config/linked-data'));
+
+declare variable $translation:file-groups := ('translation-html','translation-files','source-html','glossary-html','glossary-files','publications-list');
 
 declare function translation:title($tei as element(tei:TEI), $source-key as xs:string?) as xs:string? {
     
@@ -161,11 +164,11 @@ declare function translation:title-variants($tei as element(tei:TEI), $source-ke
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'title-variants')} {
-            for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type eq 'shortcode')] except $mainTitles
+            for $title in $tei/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@type eq 'shortcode')] except $mainTitles[@xml:lang = ('eng','en','Bo-Ltn','bo','Sa-Ltn','')]
             where $title[normalize-space(text())]
             return
                 element {QName('http://read.84000.co/ns/1.0', 'title')} {
-                    attribute xml:lang {$title/@xml:lang},
+                    attribute xml:lang { $title/@xml:lang },
                     normalize-space($title/text())
                 }
             ,
@@ -207,6 +210,7 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
                         normalize-space($contributor/text())
                     }
             },
+            
             element sponsors {
                 for $sponsor in $fileDesc/tei:titleStmt/tei:sponsor
                 return
@@ -215,22 +219,28 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
                         normalize-space($sponsor/text())
                     }
             },
+            
             element edition {
                 $fileDesc/tei:editionStmt/tei:edition[1]/node()
             },
+            
             element license {
                 attribute img-url {$fileDesc/tei:publicationStmt/tei:availability/tei:licence/tei:graphic/@url},
                 common:normalize-space($fileDesc/tei:publicationStmt/tei:availability/tei:licence/tei:p)
             },
+            
             element publication-statement {
                 common:normalize-space($fileDesc/tei:publicationStmt/tei:publisher/node())
             },
+            
             element publication-date {
                 normalize-space($fileDesc/tei:publicationStmt/tei:date/text())
             },
+            
             element tantric-restriction {
                 common:normalize-space($fileDesc/tei:publicationStmt/tei:availability/tei:p[@type eq 'tantricRestriction'])
             }
+            
         }
 };
 
@@ -418,72 +428,449 @@ declare function translation:filename($tei as element(tei:TEI), $source-key as x
 
 };
 
-declare function translation:relative-html($resource-id as xs:string, $condition as xs:string*) as xs:string {
-
-    concat('/translation/', $resource-id, '.html', if(count($condition[. gt '']) gt 0) then concat('?', string-join($condition, '&amp;')) else '')
-    
-};
-
-declare function translation:local-html($resource-id as xs:string) as xs:string {
-
-    concat($common:environment/m:url[@id eq 'reading-room'], translation:relative-html($resource-id, ()))
-    
-};
-
-declare function translation:canonical-html($resource-id as xs:string, $condition as xs:string*) as xs:string {
+declare function translation:canonical-html($source-key as xs:string, $part-id as xs:string?, $commentary-id as xs:string?) as xs:string {
 
     (: This must point to the distribution server - files generated on other servers must point to the canonical page :)
-    concat('https://read.84000.co', translation:relative-html($resource-id, $condition))
+    (: Maintain the legacy canonical html url for now :)
+    (:concat('https://read.84000.co', concat('/translation/', $resource-id, '.html', string-join($url-parameters[. gt ''], '&amp;')[. gt ''] ! concat('?', .))):)
+    translation:href($source-key, $part-id, $commentary-id, (), (), 'https://84000.co')
     
 };
 
-declare function translation:downloads($tei as element(tei:TEI), $resource-id as xs:string, $include as xs:string) as element(m:downloads) {
-        
-    (: Types :)
-    (: Only return download elements if $include defined :)
-    let $types :=
-        if($include gt '') then
-            ('html', 'pdf', 'epub', 'rdf', 'cache', 'json')
-        else ()
-    (: Types stored in the database :)
-    let $stored-types := ('pdf', 'epub', 'rdf', 'cache', 'json')
-    (: Types returned via /data :)
-    let $data-path-types := ('pdf', 'epub', 'rdf', 'json')
+declare function translation:downloads($tei as element(tei:TEI), $source-key as xs:string, $include as xs:string) as element(m:downloads) {
     
     let $tei-version := tei-content:version-str($tei)
-    let $file-name := translation:filename($tei, $resource-id)
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $download-file-name := translation:filename($tei, $source-key)
+    let $translation-files := translation:files($tei, 'translation-files', $source-key)
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'downloads')} {
         
+            attribute resource-id { $source-key },
             attribute tei-version { $tei-version },
-            attribute resource-id { $resource-id },
+            attribute tei-timestamp { $tei-timestamp },
             
-            for $type in $types
-                
-                let $resource-id := if($type eq 'cache') then tei-content:id($tei) else $resource-id
-                
-                let $stored-version := if($type = $stored-types) then download:stored-version-str($resource-id, $type) else $tei-version
-                
-                let $path := if($type = $data-path-types) then '/data' else '/translation'
-            
+            for $file in $translation-files/m:file
+            (:let $resource-id := if($file/@type eq 'cache') then tei-content:id($tei) else $source-key:)
+            let $file-collection := $file/@target-folder
+            let $file-source-tokens := tokenize($file/@source, '/')
+            let $glossary-locations := if(matches($file-source-tokens[last()], '\.glossary\-locations\.xml$', 'i')) then true() else false()
+            let $stored-version-str := store:stored-version-str($file-collection, $file/@target-file)
             where (
-                ($include eq 'all')                                                                 (: return all types :)
-                or ($include eq 'any-version' and not($stored-version eq 'none'))                   (: return if there is any version :)
-                or ($include eq 'latest-version' and compare($stored-version, $tei-version) eq 0)   (: return only if it's the latest version :)
+                ($include eq 'all')                                        (: return all types :)
+                or ($include eq 'any-version' and $file/@timestamp gt '')  (: return if there is any version :)
+                or ($include eq 'latest-version' and $file/@up-to-date)    (: return only if it's the latest version :)
             )
             return
                 element download {
-                    attribute type { $type },
-                    attribute version { $stored-version },
-                    attribute url { concat($path, '/', $resource-id, '.', $type) },
-                    if($type = $data-path-types) then (
-                        attribute download-url { concat($path, '/', $file-name, '.', $type) },
-                        attribute filename { $file-name }
+                    attribute type { if($glossary-locations) then 'cache' else $file/@type },
+                    attribute version { $stored-version-str },
+                    attribute timestamp { $file/@timestamp },
+                    if(not($glossary-locations)) then (
+                        attribute url { $file/@source },
+                        attribute download-url { string-join((subsequence($file-source-tokens, 1, count($file-source-tokens)-1), replace($file-source-tokens[last()], '^[^\.]*\.', concat($download-file-name, '.'), 'i')),'/') },
+                        attribute filename { $download-file-name }   
                     )
-                    else ()
+                    else 
+                        attribute url { replace($file/@source, '\.glossary\-locations\.xml$', '.cache', 'i') }
                 }
         }
+};
+
+declare function translation:files($tei as element(tei:TEI)) as element(m:files) {
+    translation:files($tei, $translation:file-groups, ())
+};
+
+declare function translation:files($tei as element(tei:TEI), $groups as xs:string*, $source-key as xs:string?) as element(m:files) {
+    
+    let $text-id := tei-content:id($tei)
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $publication-status-group := tei-content:publication-status-group($tei)
+    
+    (: Get outline with citation index to check for incoming quotes :)
+    let $parts := 
+        if($groups = 'translation-html') then
+            translation:parts($tei, 'citation-index', $translation:view-modes/m:view-mode[@id eq 'default'], ())
+        else ()
+    let $commentary-keys := $parts[@type eq 'citation-index'] ! translation:commentary-keys($tei, tei:ptr)
+    
+    let $source-bibls := 
+        if($source-key) then
+            $tei//tei:sourceDesc/tei:bibl[@key eq $source-key]
+        else 
+            $tei//tei:sourceDesc/tei:bibl[@key]
+    
+    let $glossary-ids := 
+        if($groups = ('glossary-html','glossary-files')) then
+            $tei/tei:text/tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss[not(@mode eq 'surfeit')]/@xml:id
+        else ()
+    
+    let $attribution-ids := 
+        if($groups = ('glossary-html','glossary-files')) then
+            $source-bibls ! tei-content:source($tei, @key)/m:attribution/@xml:id
+        else ()
+    
+    let $entities := translation:entities((), distinct-values(($glossary-ids, $attribution-ids)))
+    
+    let $translation-single-page := translation:single-page($tei)
+    
+    return
+    
+        element {QName('http://read.84000.co/ns/1.0', 'files')} {
+            
+            attribute tei-version { tei-content:version-str($tei) },
+            attribute tei-timestamp { $tei-timestamp },
+            attribute glossary-locations-timestamp { xmldb:last-modified($glossary:cached-locations-path, concat($text-id, '.xml')) },
+            
+            for $bibl in $source-bibls
+            
+            let $source-key := $bibl/@key
+            let $source-folios := translation:folio-refs-sorted($tei, $source-key)
+            
+            return (
+                
+                if($publication-status-group eq 'published') then (
+                    
+                    if($groups = 'translation-html') then 
+                    
+                        for $commentary-key in ('_none', $commentary-keys)
+                        return (
+                        
+                            (: Single page / skeleton translation HTML :)
+                            local:generated-file(
+                                'html', 
+                                'translation-html',
+                                concat('/translation/', $source-key, '.html', $commentary-key[not(. eq '_none')] ! concat('?commentary=', .)),
+                                concat($common:static-content-path, '/translation/', $source-key, $commentary-key[not(. eq '_none')] ! concat('/commentary-', .)),
+                                concat('index', '.html'),
+                                $tei-timestamp
+                            ),
+                            
+                            (: Translation parts :)
+                            for $part in ($parts[@content-status eq 'preview'] | $parts[@type eq 'translation']/m:part[@content-status eq 'preview'] | $parts[@type eq 'citation-index'][not($translation-single-page)])
+                            return
+                                local:generated-file(
+                                    'html', 
+                                    'translation-html',
+                                    concat('/translation/', $source-key, '.html?part=', $part/@id, $commentary-key[not(. eq '_none')] ! concat('&amp;commentary=', .)),
+                                    concat($common:static-content-path, '/translation/', $source-key, $commentary-key[not(. eq '_none')] ! concat('/commentary-', .)),
+                                    concat($part/@id, '.html'),
+                                    $tei-timestamp
+                                )
+                            
+                        )
+                    else ()
+                    ,
+                    
+                    if($groups = 'translation-files') then (
+                    
+                        (: PDF :)
+                        local:generated-file(
+                            'pdf',
+                            'translation-files',
+                            concat('/translation/', $source-key, '.pdf'),
+                            concat($common:static-content-path, '/translation/', $source-key),
+                            concat($source-key, '.pdf'),
+                            $tei-timestamp
+                        ),
+                        
+                        (: EPUB :)
+                        local:generated-file(
+                            'epub',
+                            'translation-files',
+                            concat('/translation/', $source-key, '.epub'),
+                            concat($common:static-content-path, '/translation/', $source-key),
+                            concat($source-key, '.epub'),
+                            $tei-timestamp
+                        )
+                        
+                    )
+                    else (),
+                    
+                    if($groups = 'source-html') then 
+                    
+                        (: Source HTML :)
+                        for $folio in $source-folios
+                        return
+                            local:generated-file(
+                                'html',
+                                'source-html',
+                                concat('/source/', $source-key, '.html?ref-index=', $folio/@index-in-resource),
+                                concat($common:static-content-path, '/source/', $source-key),
+                                concat('folio-', $folio/@index-in-resource, '.html'),
+                                $tei-timestamp
+                            )
+                            
+                    else ()
+                    
+                )
+                else ()
+                ,
+                
+                if($groups = 'translation-files') then (
+                    
+                    (: RDF :)
+                    local:generated-file(
+                        'rdf',
+                        'translation-files',
+                        concat('/translation/', $source-key, '.rdf'),
+                        concat($common:static-content-path, '/rdf/translation'),
+                        concat($source-key, '.rdf'),
+                        $tei-timestamp
+                    )
+                
+                )
+                else ()
+                
+            ),
+            
+            if($groups = 'translation-files') then (
+            
+                (: JSON :)
+                local:generated-file(
+                    'json',
+                    'translation-files',
+                    concat('/translation/', $text-id, '.json?api-version=0.4.0&amp;annotate=false'),
+                    concat($common:static-content-path, '/json/translation'),
+                    concat($text-id, '.json'),
+                    $tei-timestamp
+                ),
+                
+                (: Glossary cached locations :)
+                if($publication-status-group eq 'published') then 
+                    local:generated-file(
+                        'xml',
+                        'translation-files',
+                        concat('/translation/', $text-id, '.glossary-locations.xml'),
+                        $glossary:cached-locations-path,
+                        concat($text-id, '.xml'),
+                        $tei-timestamp,
+                        'manual'
+                    )
+                else ()
+                
+            )
+            else ()
+            ,
+            
+            if($publication-status-group eq 'published') then (
+                
+                if($groups = 'glossary-html') then 
+                
+                    (: Glossary HTML :)
+                    for $entity in $entities/m:entity
+                    return
+                        local:generated-file(
+                            'html',
+                            'glossary-html',
+                            concat('/glossary/', $entity/@xml:id, '.html'),
+                            concat($common:static-content-path, '/glossary/named-entities'),
+                            concat($entity/@xml:id, '.html'),
+                            $tei-timestamp
+                        )
+                        
+                else ()
+                ,
+                
+                (: Glossary files :)
+                (:if($glossary-ids and $groups = 'glossary-files') then (
+                
+                    let $glossary-files := glossary:downloads()
+                    for $glossary-file in $glossary-files/m:download
+                    return 
+                        local:generated-file(
+                            $glossary-file/@type,
+                            'glossary-files',
+                            $glossary-file/@url,
+                            concat($common:static-content-path, '/glossary/combined'),
+                            concat('84000-glossary', $glossary-file/@lang-key ! concat('-',.), '.', $glossary-file/@type),
+                            $tei-timestamp,
+                            'scheduled'
+                        )
+                        
+                )
+                else ()
+                ,:)
+                
+                if($groups = 'publications-list') then (
+                
+                    (: Publication manifest files :)
+                    local:generated-file(
+                        'json',
+                        'publications-list',
+                        '/.well-known/apple-app-site-association',
+                        concat($common:static-content-path, '/catalogue'),
+                        'apple-app-site-association.json',
+                        $tei-timestamp
+                    ),
+                    
+                    local:generated-file(
+                        'json',
+                        'publications-list',
+                        '/section/all-translated.json?api-version=0.2.0',
+                        concat($common:static-content-path, '/catalogue'),
+                        'all-translated.json',
+                        $tei-timestamp
+                    ),
+                    
+                    local:generated-file(
+                        'json',
+                        'publications-list',
+                        '/section/lobby.json?api-version=0.2.0',
+                        concat($common:static-content-path, '/catalogue'),
+                        'lobby.json',
+                        $tei-timestamp
+                    ),
+                    
+                    local:generated-file(
+                        'xml',
+                        'publications-list',
+                        '/sitemap.xml',
+                        concat($common:static-content-path, '/catalogue'),
+                        'sitemap.xml',
+                        $tei-timestamp
+                    ),
+                    
+                    local:generated-file(
+                        'txt',
+                        'publications-list',
+                        '/robots-public.txt',
+                        concat($common:static-content-path, '/catalogue'),
+                        'robots.txt',
+                        $tei-timestamp
+                    )
+                    
+                )
+                else ()
+                
+                (:for $bibl in $tei//tei:sourceDesc/tei:bibl[@key]
+                let $source-key := $bibl/@key
+                let $catalogue-sections := tei-content:ancestors($tei, $source-key, 1)
+                return (
+                    (\: Section HTML :\)
+                    for $section in $catalogue-sections/descendant-or-self::m:parent[@type eq 'section'][not(@id eq 'LOBBY')]
+                    let $section-webflow-item := $webflow-api-config//webflow:item[@id eq $section/@id]
+                    return
+                        element file {
+                            attribute type { 'json' },
+                            attribute group {'publication-files'},
+                            attribute source { concat('/section/', $section/@id, '.json') },
+                            attribute target { concat($section/@id, '.json') },
+                            attribute timestamp { 'none' }
+                        }
+                ):)
+                
+            )
+            else ()
+        }
+    
+};
+
+declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $tei-timestamp as xs:dateTime) as element(m:file) {
+
+    local:generated-file($file-type, $file-group, $source-url, $target-folder, $target-file, $tei-timestamp, ())
+
+};
+
+declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $tei-timestamp as xs:dateTime, $action as xs:string?) as element(m:file) {
+    
+    let $target := string-join(($target-folder, $target-file), '/')
+    
+    let $file-timestamp := (:file:directory-list($target-folder, $target-file)/file:file[1]/@modified:)
+        if($file-type = $store:binary-types) then
+            if(util:binary-doc-available($target)) then 
+                xmldb:last-modified($target-folder, $target-file)
+            else ()
+        else
+            if(doc-available($target)) then 
+                xmldb:last-modified($target-folder, $target-file) 
+            else ()
+    
+    let $file-up-to-date := ($file-timestamp ! xs:dateTime(.) ge $tei-timestamp)
+    
+    return
+      element { QName('http://read.84000.co/ns/1.0','file') } {
+          attribute type { $file-type },
+          attribute group { $file-group },
+          attribute source { $source-url },
+          attribute target-folder { $target-folder },
+          attribute target-file { $target-file },
+          attribute timestamp { $file-timestamp },
+          if($file-up-to-date) then attribute up-to-date { true() } else (),
+          if($action = ('scheduled','manual')) then attribute action { $action } else (),
+          if(not($file-up-to-date) and not($action = ('scheduled','manual'))) then attribute publish { true() } else ()
+      }
+};
+
+declare function translation:api-status($tei as element(tei:TEI)) as element(m:api-status) {
+    
+    let $text-id := tei-content:id($tei)
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $webflow-api-config := doc(concat($common:data-path, '/local/webflow-api.xml'))
+    
+    return
+        element {QName('http://read.84000.co/ns/1.0', 'api-status')} {
+            
+            attribute tei-version { tei-content:version-str($tei) },
+            attribute tei-timestamp { tei-content:last-modified($tei) },
+            
+            for $bibl in $tei//tei:sourceDesc/tei:bibl[@key]
+            let $source-key := $bibl/@key
+            let $text-webflow-item := $webflow-api-config//webflow:item[@id eq $source-key]
+            let $catalogue-sections := tei-content:ancestors($tei, $source-key, 1)
+            return (
+                
+                (: Texts :)
+                element api-call {
+                    attribute type { 'webflow-api' },
+                    attribute group {'translation'},
+                    attribute source { $source-key },
+                    (:attribute target { $text-webflow-item ! concat('https://api.webflow.com/v2/collections/', parent::webflow:collection/@webflow-id, '/items/', @webflow-id) },:)
+                    attribute target-call { 'patch-text' },
+                    attribute linked { if($text-webflow-item) then true() else false() },
+                    attribute timestamp { ($text-webflow-item/@updated, 'none')[1] },
+                    if($text-webflow-item/@updated[xs:dateTime(.) ge $tei-timestamp]) then attribute up-to-date { true() }
+                    else attribute publish { true() }
+                },
+            
+                (: Sections :)
+                for $section in $catalogue-sections/descendant-or-self::m:parent[@type eq 'section'][not(@id eq 'LOBBY')]
+                let $section-webflow-item := $webflow-api-config//webflow:item[@id eq $section/@id]
+                return
+                    element api-call {
+                        attribute type { 'webflow-api' },
+                        attribute group {'catalogue-section'},
+                        attribute source { $section/@id },
+                        (:attribute target { $section-webflow-item ! concat('https://api.webflow.com/v2/collections/', parent::webflow:collection/@webflow-id, '/items/', @webflow-id) },:)
+                        attribute target-call { 'patch-catalogue-section' },
+                        attribute linked { if($section-webflow-item) then true() else false() },
+                        attribute timestamp { ($section-webflow-item/@updated, 'none')[1] },
+                        if($section-webflow-item/@updated[xs:dateTime(.) ge $tei-timestamp]) then attribute up-to-date { true() }
+                        else attribute publish { true() }
+                    }
+            )
+            
+        }
+    
+};
+
+declare function translation:single-page($tei as element(tei:TEI)) as xs:boolean {
+
+    if(count($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]) le 1) then
+        true()
+    else
+        false()
+
+};
+
+declare function translation:commentary-keys($tei as element(tei:TEI), $inbound-pointers as element(tei:ptr)*) as xs:string* {
+    
+    let $other-tei := local:other-tei($tei, true(), ())
+    let $commentary-tei := $other-tei/id($inbound-pointers/@xml:id)/ancestor::tei:TEI
+    return
+        $commentary-tei//tei:sourceDesc/tei:bibl/@key
+        
 };
 
 declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $part as xs:string?) as element(m:part)* {
@@ -493,7 +880,7 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     let $passage-id :=
         if($view-mode[@parts eq 'all']) then
             'all'
-        else if( $view-mode[@parts eq 'count-sections'] and count($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]) le 1) then
+        else if( $view-mode[@parts eq 'count-sections'] and translation:single-page($tei)) then
             'all'
         else
             $passage-id
@@ -545,6 +932,14 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
             translation:bibliography($tei, $passage-id, $view-mode)
         else ()
     
+    let $glossary :=
+        if($status-render) then 
+            (: Derive relevant glossary ids from other content :)
+            let $glossary-ids := ($summary, $acknowledgment, $preface, $introduction, $body, $appendix, $abbreviations, $bibliography)[@glossarize eq 'mark']//@xml:id
+            return
+                translation:glossary($tei, $passage-id, $view-mode, $glossary-ids)
+        else ()
+    
     let $end-notes :=
         if($status-render) then 
             (: Derive relevant notes ids from other content :)
@@ -553,17 +948,9 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
                 translation:end-notes($tei, $passage-id, $view-mode, $end-note-ids)
         else ()
     
-    let $glossary :=
-        if($status-render) then 
-            (: Derive relevant glossary ids from other content :)
-            let $glossary-ids := ($summary, $acknowledgment, $preface, $introduction, $body, $appendix, $abbreviations, $bibliography)[@glossarize eq 'mark']//@xml:id
-            return
-                translation:glossary($tei, $passage-id, $view-mode, $glossary-ids)
-        else ()
-        
     let $citation-index :=
         if($status-render) then 
-            translation:citation-index($passage-id, $view-mode)
+            translation:citation-index($tei, $passage-id, $view-mode, $body//@xml:id)
         else ()
     
     (: Parts are displayed in the order returned here :)
@@ -636,12 +1023,14 @@ declare function translation:passage($tei as element(tei:TEI), $passage-id as xs
             else ()
         else ()
     
+    let $citation-index := translation:citation-index($tei, $passage-id, $view-mode, $part//@xml:id)
+    
     where $chapter-part
     return (
         $part,
         $notes,
         $glosses,
-        translation:citation-index($passage-id, $view-mode)
+        $citation-index
     )
 
 };
@@ -681,11 +1070,14 @@ declare function translation:outline-cached($tei as element(tei:TEI)) as element
         else
             
             let $outline := 
-                element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
+                element { QName('http://read.84000.co/ns/1.0', 'text-outline') } {
                     
                     attribute text-id { $text-id },
                     attribute tei-timestamp { $tei-timestamp },
                     attribute app-version { $app-version },
+                    
+                    tei-content:titles-all($tei),
+                    $tei//tei:sourceDesc/tei:bibl[@key] ! translation:toh($tei, .),
                     
                     local:parts-pre-processed($tei),
                     tei-content:milestones-pre-processed($tei),
@@ -724,17 +1116,21 @@ declare function local:parts-pre-processed($tei as element(tei:TEI)) as element(
         
 };
 
-declare function translation:outlines-related($tei as element(tei:TEI), $parts as element(m:part)*, $commentary-key as xs:string?) as element(m:text-outline)* {
+declare function local:other-tei($tei as element(tei:TEI), $published-only as xs:boolean?, $commentary-key as xs:string?) as element(tei:TEI)* {
     
     let $text-id := tei-content:id($tei)
+    let $render-status-ids := $common:environment/m:render/m:status[@type eq 'translation']/@status-id
     
-    let $published-tei := (
+    return (
     
         (: Published TEI :)
-        $tei-content:translations-collection//tei:TEI
-            [tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability
-                [range:eq(@status, $common:environment/m:render/m:status[@type eq 'translation']/@status-id)]
-            ]
+        if($published-only) then
+            $tei-content:translations-collection//tei:TEI
+                [tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability
+                    [range:eq(@status, $render-status-ids)]
+                ]
+        else
+            $tei-content:translations-collection//tei:TEI
         ,
         
         (: Test TEI if appropriate :)
@@ -743,30 +1139,37 @@ declare function translation:outlines-related($tei as element(tei:TEI), $parts a
         else ()
         
     ) except $tei
+};
+
+declare function translation:outlines-related($tei as element(tei:TEI), $parts as element(m:part)*, $commentary-key as xs:string?) as element(m:text-outline)* {
+    
+    let $text-id := tei-content:id($tei)
+    
+    let $other-tei := local:other-tei($tei, true(), $commentary-key)
     
     (: Text that this text points to :)
-    let $outgoing-ids := $parts//tei:ptr/@target[matches(., '^(toh[0-9a-z\-]+\.html)?#')] ! replace(., '^#(end\-note\-)?', '')
-    let $outgoing-id-chunks := common:ids-chunked($outgoing-ids)
-    let $outgoing-teis :=
-        for $key in map:keys($outgoing-id-chunks)
-        for $outgoing-location in $published-tei/id(map:get($outgoing-id-chunks, $key))
-        let $outgoing-tei := $outgoing-location/ancestor::tei:TEI
+    let $outbound-ids := $parts//tei:ptr/@target[matches(., '^(toh[0-9a-z\-]+\.html)?#')] ! replace(., '^#(end\-note\-)?', '')
+    let $outbound-id-chunks := common:ids-chunked($outbound-ids)
+    let $outbound-teis :=
+        for $key in map:keys($outbound-id-chunks)
+        for $outbound-location in $other-tei/id(map:get($outbound-id-chunks, $key))
+        let $outbound-tei := $outbound-location/ancestor::tei:TEI
         return
-            $outgoing-tei
+            $outbound-tei
     
     (: Texts that point to this text :)
-    let $internal-ids := ($parts//m:part/@id, $parts//@xml:id)
-    let $incoming-id-targets := $internal-ids ! concat('#',.)
-    let $incoming-id-targets-chunks := common:ids-chunked($incoming-id-targets)
-    let $incoming-teis :=
-        for $key in map:keys($incoming-id-targets-chunks)
-        for $incoming-location in $published-tei/tei:text//tei:ptr[range:eq(@target, map:get($incoming-id-targets-chunks, $key))]
-        let $incoming-tei := $incoming-location/ancestor::tei:TEI
+    let $tei-ids := ($parts//m:part/@id, $parts//@xml:id)
+    let $inbound-id-targets := $tei-ids ! concat('#',.)
+    let $inbound-id-targets-chunks := common:ids-chunked($inbound-id-targets)
+    let $inbound-teis :=
+        for $key in map:keys($inbound-id-targets-chunks)
+        for $inbound-location in $other-tei/tei:text//tei:ptr[range:eq(@target, map:get($inbound-id-targets-chunks, $key))]
+        let $inbound-tei := $inbound-location/ancestor::tei:TEI
         return
-            $incoming-tei
+            $inbound-tei
     
     return 
-        ($outgoing-teis | $incoming-teis) ! translation:outline-cached(.)
+        ($outbound-teis | $inbound-teis) ! translation:outline-cached(.)
     
 };
 
@@ -882,6 +1285,12 @@ declare function local:part($part as element(tei:div)?, $content-directive as xs
                 $part/*
             
             else ()
+        
+        (: Citation Index :)
+        else if($type eq 'citation-index') then 
+            
+            (: Return all :)
+            $part/*
             
         (: Other content :)
         else
@@ -1045,7 +1454,7 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
     where $summary
     
     let $content-directive := 
-        if($passage-id = ('summary','front','all')) then
+        if($passage-id = ($summary/@xml:id, 'summary','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($summary, $passage-id, true())) then
@@ -1073,7 +1482,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
     where $acknowledgment
     
     let $content-directive := 
-        if($passage-id = ('acknowledgment','front','all')) then
+        if($passage-id = ($acknowledgment/@xml:id, 'acknowledgment','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($acknowledgment, $passage-id, true())) then
@@ -1100,7 +1509,7 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
     where $preface
     
     let $content-directive := 
-        if($passage-id = ('preface','front','all')) then
+        if($passage-id = ($preface/@xml:id, 'preface','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($preface, $passage-id, true())) then
@@ -1127,7 +1536,7 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
     where $introduction
     
     let $content-directive := 
-        if($passage-id = ('introduction','front','all')) then
+        if($passage-id = ($introduction/@xml:id, 'introduction','front','all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($introduction, $passage-id, true())) then
@@ -1149,15 +1558,15 @@ declare function translation:body($tei as element(tei:TEI)) as element(m:part)? 
 
 declare function translation:body($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $chapter-id as xs:string?) as element(m:part)? {
     
-    let $translation := $tei/tei:text/tei:body/tei:div[@type eq 'translation']
+    let $translation := $tei//tei:body/tei:div[@type eq 'translation']
     let $parts := $translation/tei:div[@type = ('section', 'chapter', 'prelude', 'prologue', 'colophon', 'homage')]
-    let $count-chapters := count($translation/tei:div[@type = ('section', 'chapter')])
+    let $count-chapters := count($parts[@type = ('section', 'chapter')])
     
     where $translation
     return
         element {QName('http://read.84000.co/ns/1.0', 'part')} {
             $translation/@type,
-            attribute id { 'translation' },
+            attribute id { ($translation/@xml:id, $translation/@type)[1] },
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute glossarize { 'mark' },
@@ -1213,7 +1622,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
     let $appendix := $tei/tei:text/tei:back/tei:div[@type eq 'appendix'][1]
     
     let $content-directive := 
-        if($passage-id = ('appendix', 'back', 'all')) then
+        if($passage-id = ($appendix/@xml:id, 'appendix', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($appendix, $passage-id, true())) then
@@ -1232,7 +1641,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
         
         element { QName('http://read.84000.co/ns/1.0', 'part') } {
             $appendix/@type,
-            attribute id { 'appendix' },
+            attribute id { ($appendix/@xml:id, $appendix/@type)[1] },
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute content-status { $content-directive },
@@ -1261,29 +1670,34 @@ declare function translation:abbreviations($tei as element(tei:TEI)) as element(
 declare function translation:abbreviations($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
     
     let $type := 'abbreviations'
+    let $text-id := tei-content:id($tei)
+    let $abbreviations-part := $tei/tei:text/tei:back/tei:div[@type eq 'notes']
     
     let $abbreviations := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
         
             attribute type { $type },
+            attribute xml:id { ($abbreviations-part/@xml:id, $type)[1] },
             
             element { QName('http://www.tei-c.org/ns/1.0', 'head') } {
                 attribute type { $type },
                 text { $translation:type-labels($type)('label')}
             },
             
-            if($tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq $type]) then
+            (: If the abbreviations don't have a section container then add one :)
+            if($abbreviations-part/tei:div[@type eq "section"]) then
+                $abbreviations-part/*
+            else
                 element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
                     attribute type { 'section' },
-                    $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:list[@type eq $type]
+                    attribute xml:id { concat($text-id, '-notes-', '1') },
+                    $abbreviations-part/*
                 }
-            else
-                $tei/tei:text/tei:back/tei:div[@type eq 'notes']/tei:div[@type eq "section"][tei:list[@type eq $type]]
             
         }
     
     let $content-directive := 
-        if($passage-id = ('abbreviations', 'back', 'all')) then
+        if($passage-id = ($abbreviations-part/@xml:id, 'abbreviations', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($abbreviations, $passage-id, true())) then
@@ -1304,16 +1718,19 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
 declare function translation:end-notes($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $note-ids as xs:string*) as element(m:part)? {
     
     let $type := 'end-notes'
+    let $text-id := tei-content:id($tei)
+    let $end-notes-part-id := concat($text-id, '-', $type)
     let $end-notes := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
             attribute type { $type },
+            attribute xml:id { $end-notes-part-id },
             $tei/tei:text//tei:note[@place eq 'end'][@xml:id]
         }
     
     where $end-notes[tei:note]
     
     let $content-directive := 
-        if($passage-id = ('end-notes', 'back', 'all')) then
+        if($passage-id = ($end-notes//@xml:id, $end-notes-part-id, 'end-notes', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
             'passage'
@@ -1374,10 +1791,12 @@ declare function translation:glossary($tei as element(tei:TEI)) as element(m:par
 declare function translation:glossary($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $location-ids as xs:string*) as element(m:part)? {
     
     let $type := 'glossary'
+    let $glossary-part := $tei/tei:text/tei:back/tei:div[@type eq $type]
     let $glossary := 
         element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
             attribute type { $type },
-            $tei/tei:text/tei:back//tei:list[@type eq $type]/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
+            attribute xml:id { ($glossary-part/@xml:id, $type)[1] },
+            $glossary-part/tei:list[@type eq $type]/tei:item/tei:gloss[@xml:id][not(@mode eq 'surfeit')]
         }
     
     (:let $content-directive := local:content-directive($glossary, ($type, 'back'), $passage-id, $view-mode, 'preview'):)
@@ -1386,7 +1805,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
             'complete'
         else if($view-mode[@parts = ('glossary')]) then
             'complete'
-        else if($passage-id = ('glossary', 'back', 'all')) then
+        else if($passage-id = ($glossary-part/@xml:id, 'glossary', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
              'passage'
@@ -1405,10 +1824,10 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     (: Get based on location-ids :)
     let $location-cache-gloss := 
         if($content-directive = ('preview', 'passage') and not($view-mode[@parts eq 'outline'])) then
-            let $glossary-locations-cache := glossary:glossary-cache($tei, (), false())
-            where $glossary-locations-cache
+            let $glossary-cached-locations := glossary:cached-locations($tei, (), false())
+            where $glossary-cached-locations
             return
-                local:related-glossary-ids(distinct-values(($passage-id, $location-ids)), $glossary-locations-cache)
+                local:related-glossary-ids(distinct-values(($passage-id, $location-ids)), $glossary-cached-locations)
         else ()
     
     where $glossary[tei:gloss]
@@ -1417,7 +1836,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
         
 };
 
-declare function local:related-glossary-ids($location-ids as xs:string*, $glossary-locations-cache as element(m:glossary-cache)) as xs:string* {
+declare function local:related-glossary-ids($location-ids as xs:string*, $glossary-cached-locations as element(m:glossary-cached-locations)) as xs:string* {
     
     (: Get glossary entries referenced in locations :)
     let $related-glossary-ids := 
@@ -1425,12 +1844,12 @@ declare function local:related-glossary-ids($location-ids as xs:string*, $glossa
         for $key in map:keys($location-id-chunks)
         let $location-ids := $location-id-chunks($key)
         return
-            $glossary-locations-cache/m:gloss[range:eq(m:location/@id, $location-ids)]/@id
+            $glossary-cached-locations/m:gloss[range:eq(m:location/@id, $location-ids)]/@id
     
     return 
         (: Check for more glossaries referenced in these glossaries :)
         if($related-glossary-ids[not(. = $location-ids)]) then
-            local:related-glossary-ids(($location-ids, $related-glossary-ids), $glossary-locations-cache)
+            local:related-glossary-ids(($location-ids, $related-glossary-ids), $glossary-cached-locations)
         
         (: Return glossary ids :)
         else 
@@ -1438,26 +1857,69 @@ declare function local:related-glossary-ids($location-ids as xs:string*, $glossa
     
 };
 
-declare function translation:citation-index($passage-id as xs:string?, $view-mode as element(m:view-mode)?) as element(m:part)? {
+declare function translation:citation-index($tei as element(tei:TEI), $passage-id as xs:string?, $view-mode as element(m:view-mode)?, $location-ids as xs:string*) as element(m:part)? {
 
     let $type := 'citation-index'
-    let $citation-index := 
-        element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
-            attribute type { $type }
-            (:,element p { 'Passages this text that are quoted in other texts.' }:)
-        }
+    let $text-id := tei-content:id($tei)
+    let $citation-index-part-id := concat($text-id, '-', $type)
     
     let $content-directive := 
-        if($passage-id = ('citation-index', 'back', 'all')) then
+        if($passage-id = ($citation-index-part-id, 'citation-index', 'back', 'all')) then
             'complete'
         else if($view-mode[@parts = ('passage')]) then
-            'none'
+            'passage'
         else if($view-mode[@parts eq 'outline']) then
-            'none'
+            'empty'
         else
             'preview'
     
-    where not($content-directive eq 'none') (: and false() Disable this while incomplete :)
+    (: Do other texts reference this one? :)
+    (: It's a bit slow to do this for every text :)
+    let $inbound-id-targets := $tei/tei:text/tei:body//@xml:id ! concat('#',.)
+    let $inbound-id-targets-chunks := common:ids-chunked($inbound-id-targets)
+    let $other-tei := local:other-tei($tei, true(), ())
+    let $inbound-pointers :=
+        for $key in map:keys($inbound-id-targets-chunks)
+        let $inbound-id-targets := map:get($inbound-id-targets-chunks, $key)
+        return
+            $other-tei//tei:ptr[@type eq 'quote-ref'][range:eq(@target, $inbound-id-targets)][@xml:id][ancestor::tei:q]
+    
+    (: ~ Alternative query is slower
+    let $other-tei := local:other-tei($tei, true(), ())
+    let $inbound-pointer-ids := $other-tei/tei:text//tei:ptr[@type eq 'quote-ref'][@xml:id][ancestor::tei:q]/@target ! replace(., '^#', '')
+    let $inbound-pointers :=
+        for $target in $tei/id($inbound-pointer-ids)
+        return
+            $other-tei/tei:text//tei:ptr[range:eq(@target, concat('#', $target/@xml:id))][@type eq 'quote-ref'][@xml:id][ancestor::tei:q]:)
+    
+    let $citation-index := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'div') } {
+        
+            attribute type { $type },
+            attribute xml:id { $citation-index-part-id },
+            
+            (: Return all :)
+            if($content-directive eq 'complete') then
+                $inbound-pointers
+            
+            (: Return those relevant to the passage :)
+            else if($content-directive = ('passage','preview')) then
+                let $location-refs := $location-ids ! concat('#',.)
+                return (
+                
+                    $inbound-pointers[@target = $location-refs],
+                    
+                    (: Ensure at least one to trigger the part. The actual preview is handled in the view. :)
+                    if($content-directive eq 'preview') then
+                        $inbound-pointers[1]
+                    else ()
+                    
+                )
+                
+            else ()
+        }
+    
+    where not($content-directive eq 'none') and $inbound-pointers (: and false() Disable this while incomplete :)
     return
         translation:part($citation-index, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, ())
 
@@ -1475,9 +1937,11 @@ declare function local:folio-refs-pre-processed($tei as element(tei:TEI)) as ele
         let $folios-for-toh := translation:folio-refs-sorted($tei, $source-key)
         return
             for $folio in $folios-for-toh
+            let $part := $tei/id($folio/@xml:id)/ancestor::tei:div[@type][not(@type eq 'translation')][last()]
             return 
                 element { QName('http://read.84000.co/ns/1.0', 'folio-ref') } {
                     attribute id { $folio/@xml:id },
+                    attribute part-id { ($part/@xml:id, $part/@type)[1]/string() },
                     attribute source-key { $source-key },
                     $folio/@index-in-resource,
                     $folio/@index-in-sort,
@@ -1564,7 +2028,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $source
     let $refs-for-resource :=
         for $ref at $index-in-resource in translation:refs($tei, $source-key, ('folio', 'volume'))
         return
-            element {node-name($ref)} {
+            element { node-name($ref) } {
                 $ref/@*,
                 attribute index-in-resource {$index-in-resource},
                 if ($ref[@type = ('volume')]) then
@@ -1637,7 +2101,6 @@ declare function translation:folios($tei as element(tei:TEI), $source-key as xs:
     
     let $location := translation:location($tei, $source-key)
     let $work := $location/@work
-    let $reading-room-path := $common:environment/m:url[@id eq 'reading-room']/text()
     let $folio-refs := translation:folio-refs-sorted($tei, $source-key)
     
     return
@@ -1694,21 +2157,20 @@ declare function translation:folios($tei as element(tei:TEI), $source-key as xs:
                         },
                         attribute folio-in-volume {concat('F.', source:page-to-folio($page-in-volume))},
                         attribute folio-consecutive {concat('F.', source:page-to-folio($page-in-text + $count-title-pages + $count-trailing-pages))},
-                        
                         element url {
                             attribute format {'xml'},
                             attribute xml:lang {'bo'},
-                            text {concat($reading-room-path, '/source/', $location/@key, '.xml?ref-index=', $folio-ref/@index-in-resource)}
+                            text {concat('/source/', $location/@key, '.xml?ref-index=', $folio-ref/@index-in-resource)}
                         },
                         element url {
                             attribute format {'html'},
                             attribute xml:lang {'bo'},
-                            text {concat($reading-room-path, '/source/', $location/@key, '.html?ref-index=', $folio-ref/@index-in-resource)}
+                            text {concat('/source/', $location/@key, '.html?ref-index=', $folio-ref/@index-in-resource)}
                         },
                         element url {
                             attribute format {'xml'},
                             attribute xml:lang {'en'},
-                            text {concat($reading-room-path, '/translation/', $location/@key, '.xml?ref-index=', $folio-ref/@index-in-resource)}
+                            text {concat('/translation/', $location/@key, '.xml?ref-index=', $folio-ref/@index-in-resource)}
                         }
                         
                     }
@@ -1878,23 +2340,15 @@ declare function translation:contributors($tei as element(tei:TEI), $include-ack
         )}
 };
 
-declare function translation:replace-text($resource-id as xs:string) as element(m:replace-text) {
+declare function translation:replace-text($source-key as xs:string) as element(m:replace-text) {
     element { QName('http://read.84000.co/ns/1.0', 'replace-text')} {
         element value {
             attribute key { '#CurrentDateTime' },
             text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
         },
         element value {
-            attribute key { '#LinkToSelf' },
-            text { translation:local-html($resource-id) }
-        },
-        element value {
             attribute key { '#canonicalHTML' },
-            text { translation:canonical-html($resource-id, '') }
-        },
-        element value {
-            attribute key { '#commsSiteUrl' },
-            text { $common:environment/m:url[@id eq 'communications-site'][1]/text() }
+            text { translation:canonical-html($source-key, (), ()) }
         }
     }
 };
@@ -1947,7 +2401,8 @@ declare function local:quotes($tei as element(tei:TEI)) as element(m:quote)* {
     let $quote-ref-target-ids := $quote-refs/@target ! replace(., '^#', '')
     
     (: Texts to cross-reference :)
-    let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $common:environment/m:render/m:status[@type eq 'translation']/@status-id]
+    let $render-status-ids := $common:environment/m:render/m:status[@type eq 'translation']/@status-id
+    let $published := collection($common:tei-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability/@status = $render-status-ids]
     
     for $source-tei in $published/id($quote-ref-target-ids)/ancestor::tei:TEI
     let $source-text-id := $source-tei ! tei-content:id(.)
@@ -1982,7 +2437,7 @@ declare function local:quote($quote-ref as element(tei:ptr), $quote-part-id as x
             attribute target { $quote-ref/@target },
             attribute resource-id { $quote-text-toh/@key },
             attribute resource-type { $quote-text-type },
-            attribute part { $quote-part-id },
+            attribute part-id { $quote-part-id },
             attribute ptr-index { functx:index-of-node($quote//tei:ptr[@type eq 'quote-ref'], $quote-ref) },
             
             (: Title of the quoting text :)
@@ -2195,3 +2650,12 @@ declare function translation:cache-key($tei as element(tei:TEI), $archive-path a
             ),'-')
         )
 };
+
+declare function translation:href($source-key as xs:string, $part-id as xs:string?, $commentary-id as xs:string?, $url-parameters as xs:string*, $fragment as xs:string?) as xs:string {
+    translation:href($source-key, $part-id, $commentary-id, $url-parameters, $fragment, ())
+};
+
+declare function translation:href($source-key as xs:string, $part-id as xs:string?, $commentary-id as xs:string?, $url-parameters as xs:string*, $fragment as xs:string?, $host as xs:string?) as xs:string {
+    concat($host, '/', string-join(('translation', $source-key, ($part-id, $commentary-id[. gt ''] ! '')[1], $commentary-id), '/'), string-join($url-parameters[. gt ''], '&amp;')[. gt ''] ! concat('?', .), $fragment ! concat('#', .))
+};
+

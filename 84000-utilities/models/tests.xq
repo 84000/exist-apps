@@ -30,8 +30,8 @@ common:response(
                 return 
                     <resource id="{ $text-id }" toh-key="{ $toh-key }">
                         <title>{ translation:title($tei, $toh-key) }</title>
-                        <link url="{ $reading-room-path }/translation/{ $toh-key }.html">View html</link>
-                        <link url="{ $reading-room-path }/translation/{ $toh-key }.html?view-mode=editor">View html in editor mode</link>
+                        <link url="{ translation:href($toh-key, (), (), (), (), $reading-room-path) }">View html</link>
+                        <link url="{ translation:href($toh-key, (), (), 'view-mode=editor', (), $reading-room-path) }">View html in editor mode</link>
                         <link url="{ $reading-room-path }/translation/{ $toh-key }.epub">View epub</link>
                         <link url="/test-translations.html?translation-id={ $text-id }">Run automated tests</link>
                     </resource>

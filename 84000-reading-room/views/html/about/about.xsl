@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/tei-to-xhtml.xsl"/>
     
@@ -90,7 +90,7 @@
                             </h1>
                             
                             <!-- Passed content -->
-                            <xsl:copy-of select="$sub-content"/>
+                            <xsl:sequence select="$sub-content"/>
                             
                         </main>
                         
@@ -104,7 +104,7 @@
                             <xsl:apply-templates select="$sharing-panel"/>
                             
                             <!-- Passed content -->
-                            <xsl:copy-of select="$side-content"/>
+                            <xsl:sequence select="$side-content"/>
                             
                             <xsl:variable name="shopping-panel">
                                 <m:shopping-panel>
@@ -146,8 +146,9 @@
             <xsl:with-param name="page-title" select="concat($page-title, ' | 84000 Translating the Words of the Buddha')"/>
             <xsl:with-param name="page-description" select="$page-description"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
+            <xsl:with-param name="additional-tags">
                 <script src="https://code.highcharts.com/highcharts.js"/>
+                <script src="https://code.highcharts.com/modules/accessibility.js"/>
             </xsl:with-param>
         </xsl:call-template>
         
@@ -368,7 +369,7 @@
             <xsl:choose>
                 <xsl:when test="$text/@status eq '1'">
                     <a>
-                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh/@key, '.html')"/>
+                        <xsl:attribute name="href" select="m:translation-href($text/m:toh/@key, (), (), ())"/>
                         <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
                         <xsl:value-of select="$title"/>
                     </a>

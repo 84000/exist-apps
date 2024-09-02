@@ -17,16 +17,18 @@ declare option exist:serialize "method=xml indent=no";
 let $source-ids := request:get-parameter('source-ids', '')
 let $resource-ids := request:get-parameter('resource-ids', '')
 
-let $resource-ids := 
+let $texts := 
     if(not($resource-ids gt '') and $source-ids gt '') then
         (: Convert source-ids to resource-ids :)
-        string-join(collection($common:translations-path)//tei:fileDesc/tei:sourceDesc/tei:bibl[@key][tei:idno/@source-id[string() = tokenize($source-ids, ',')]]/@key/string(), ',')
+        let $source-keys := collection($common:translations-path)//tei:fileDesc/tei:sourceDesc/tei:bibl[@key][tei:idno/@source-id[string() = tokenize($source-ids, ',')]]/@key
+        return
+            translations:downloads($source-keys)
     else 
-        $resource-ids
+        translations:downloads(tokenize($resource-ids, ','))
 
 return
     common:response(
         'downloads',
         $common:app-id,
-        translations:downloads(tokenize($resource-ids, ','))
+        $texts
     )

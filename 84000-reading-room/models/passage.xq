@@ -67,11 +67,6 @@ let $cache-key :=
             ),'-')
         )
 
-let $canonical-id := (
-    $request/@archive-path ! concat('id=', .), 
-    concat('passage=', $request/@passage-id)
-)
-
 (: Get parts from cache and merge passages :)
 let $text-id := tei-content:id($tei)
 
@@ -88,8 +83,7 @@ let $translation-data :=
         attribute id { tei-content:id($tei) },
         attribute status { tei-content:publication-status($tei) },
         attribute status-group { tei-content:publication-status-group($tei) },
-        attribute relative-html { translation:relative-html($source/@key, $canonical-id) },
-        attribute canonical-html { translation:canonical-html($source/@key, $canonical-id) },
+        attribute canonical-html { translation:href($source/@key, (), (), ($request/@archive-path ! concat('id=', .), $request/@passage-id ! concat('passage=', .)), (), 'https://read.84000.co') },
         attribute cache-key { $cache-key },
         
         translation:titles($tei, $source/@key),
@@ -101,10 +95,10 @@ let $translation-data :=
         
     }
 
-let $entities-data := translation:entities((), $passage[@id eq 'glossary']//tei:gloss/@xml:id)
+let $entities-data := translation:entities((), $passage[@type eq 'glossary']//tei:gloss/@xml:id)
 
 (: Get caches :)
-let $glossary-cache := glossary:glossary-cache($tei, (), false())
+let $glossary-cached-locations := glossary:cached-locations($tei, (), false())
 
 (: Calculated strings :)
 let $strings := translation:replace-text($source/@key)
@@ -119,7 +113,7 @@ let $xml-response :=
             $entities-data,
             $outline,
             $outlines-related,
-            $glossary-cache,
+            $glossary-cached-locations,
             $entities:flags,
             $glossary:attestation-types,
             $strings

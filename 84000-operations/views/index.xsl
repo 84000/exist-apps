@@ -9,7 +9,9 @@
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
+                
                 <xsl:with-param name="active-tab" select="@model"/>
+                
                 <xsl:with-param name="tab-content">
                     
                     <!-- Section summaries -->
@@ -154,7 +156,7 @@
                                             <td>
                                                 <h4 class="no-top-margin no-bottom-margin">
                                                     <a>
-                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '.html')"/>
+                                                        <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), (), (), $reading-room-path)"/>
                                                         <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
                                                         <xsl:attribute name="title" select="concat('Open ', $toh-key, '.html in the Reading Room')"/>
                                                         <xsl:value-of select="'Toh ' || string-join(m:toh/m:base, ' / ') || ' (' || @id || ') '"/>
@@ -201,6 +203,7 @@
                     </xsl:for-each>
                     
                 </xsl:with-param>
+            
             </xsl:call-template>
             
         </xsl:variable>
@@ -211,6 +214,9 @@
             <xsl:with-param name="page-title" select="'Summary | 84000 Project Management'"/>
             <xsl:with-param name="page-description" select="'Project progress report for 84000 operations team.'"/>
             <xsl:with-param name="content" select="$content"/>
+            <xsl:with-param name="additional-tags">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"/>
+            </xsl:with-param>
         </xsl:call-template>
         
     </xsl:template>
@@ -268,7 +274,7 @@
                     
                     <tr class="{ $status }">
                         <td>
-                            <a>
+                            <a data-loading="Loading texts...">
                                 <xsl:attribute name="href" select="concat('search.html?section-id=', $translation-summary/@section-id, if($text-status) then concat('&amp;status=', string-join($text-status/@status-id, ',')) else (), if($status eq 'sponsored') then concat('&amp;filter=', 'sponsored') else ())"/>
                                 <xsl:value-of select="$label"/>
                                 <xsl:if test="$text-status">
@@ -307,6 +313,7 @@
                             </xsl:if>
                         </td>
                     </tr>
+                
                 </xsl:for-each>
                 
             </tbody>
@@ -324,7 +331,6 @@
             <canvas>
                 <xsl:attribute name="id" select="$chart-id"/>
             </canvas>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"/>
             <script>
                 
                 <xsl:variable name="chart-script">

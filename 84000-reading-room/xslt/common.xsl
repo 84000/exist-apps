@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="lang.xsl"/>
     <xsl:import href="layout.xsl"/>
@@ -374,13 +374,14 @@
                 <a class="printable">
                     <xsl:choose>
                         <xsl:when test="@type eq 'grouping'">
-                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent/@id, '.html'), $attributes, concat('#grouping-', @id), /m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:internal-href(concat('/section/', m:parent/@id, '.html'), $attributes, concat('#grouping-', @id), /m:response/@lang)"/>
                         </xsl:when>
                         <xsl:otherwise>
-                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', @id, '.html'), $attributes, '', /m:response/@lang)"/>
+                            <xsl:attribute name="href" select="common:internal-href(concat('/section/', @id, '.html'), $attributes, (), /m:response/@lang)"/>
                         </xsl:otherwise>
                     </xsl:choose>
-                    <xsl:attribute name="data-loading" select="'Loading page...'"/>
+                    <xsl:attribute name="target" select="'_top'"/>
+                    <!--<xsl:attribute name="data-loading" select="'Loading page...'"/>-->
                     <xsl:apply-templates select="m:titles/m:title[@xml:lang='en']/text()"/>
                 </a>
             </li>
@@ -453,15 +454,15 @@
      -->
     
     <!-- Localization helpers -->
-    <xsl:function name="common:internal-link" as="xs:string?">
-        <xsl:param name="url" required="yes"/>
-        <xsl:param name="attributes" required="yes" as="xs:string*"/>
-        <xsl:param name="fragment-id" required="yes" as="xs:string?"/>
-        <xsl:param name="lang" as="xs:string" required="yes"/>
+    <xsl:function name="common:internal-href" as="xs:string?">
+        <xsl:param name="url" as="xs:string"/>
+        <xsl:param name="attributes" as="xs:string*"/>
+        <xsl:param name="fragment" as="xs:string?"/>
+        <xsl:param name="lang" as="xs:string"/>
         <xsl:variable name="lang-attribute" select="if($lang = ('zh')) then concat('lang=', $lang) else ()"/>
         <xsl:variable name="attributes-with-lang" select="($attributes[. gt ''], $lang-attribute)"/>
         <xsl:variable name="url-append" select="if(count($attributes-with-lang) gt 0) then if(contains($url, '?')) then '&amp;' else '?' else ()"/>
-        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat($url-append, string-join($attributes-with-lang, '&amp;')) else (), $fragment-id)"/>
+        <xsl:value-of select="concat($url, if(count($attributes-with-lang) gt 0) then concat($url-append, string-join($attributes-with-lang, '&amp;')) else (), $fragment)"/>
     </xsl:function>
     
     <xsl:function name="common:homepage-link" as="xs:string">
@@ -538,7 +539,7 @@
         <xsl:choose>
             <xsl:when test="$lang eq 'bo'">
                 <!--<xsl:value-of select="concat('(^|[^\p{L}\p{N}­])(', $strings-combined, ')(ར|ས|འི)?([^\p{L}\p{N}­]|$)')"/>-->
-                <xsl:value-of select="concat('(^|་|།|\s)(', $strings-combined, ')(ར|ས|འི)?(་|།|\s|$)')"/>
+                <xsl:value-of select="concat('(^|་|།|།​|\s)(', $strings-combined, ')(ར|ས|འི)?(་|།|\s|$)')"/>
             </xsl:when>
             <xsl:otherwise>
                 <!-- The word bounded by non-word characters, start or end -->
@@ -1034,6 +1035,67 @@
             </div>
         </xsl:if>
         
+    </xsl:template>
+    
+    <!-- Download Dana popup -->
+    <xsl:template name="popup-download-dana">
+        <xsl:param name="translation-title" as="xs:string"/>
+        <aside xmlns="http://www.w3.org/1999/xhtml" id="popup-footer-download-dana" class="fixed-footer collapse hidden-print">
+            <div class="fix-height">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-offset-1 col-md-10">
+                            
+                            <div class="text-center" id="dana-description">
+                                
+                                <div class="center-vertical center-aligned">
+                                    <span>
+                                        <i class="fa fa-cloud-download"/>
+                                    </span>
+                                    <span>
+                                        <xsl:call-template name="text">
+                                            <xsl:with-param name="global-key" select="'widget.download-dana.icon-label'"/>
+                                        </xsl:call-template>
+                                    </span>
+                                </div>
+                                
+                                <h2>
+                                    <xsl:value-of select="$translation-title"/>
+                                </h2>
+                                
+                                <p>
+                                    <a target="84000-comms" class="underline">
+                                        
+                                        <xsl:attribute name="href">
+                                            <xsl:call-template name="text">
+                                                <xsl:with-param name="global-key" select="'widget.download-dana.donate-form-link'"/>
+                                            </xsl:call-template>
+                                        </xsl:attribute>
+                                        
+                                        <xsl:call-template name="text">
+                                            <xsl:with-param name="global-key" select="'widget.download-dana.donate-form-link-label'"/>
+                                        </xsl:call-template>
+                                        
+                                    </a>
+                                </p>
+                                
+                                <xsl:call-template name="text">
+                                    <xsl:with-param name="global-key" select="'widget.download-dana.dana-description'"/>
+                                </xsl:call-template>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fixed-btn-container close-btn-container">
+                <button type="button" class="btn-round close close-collapse" aria-label="Close">
+                    <span aria-hidden="true">
+                        <i class="fa fa-times"/>
+                    </span>
+                </button>
+            </div>
+        </aside>
     </xsl:template>
     
 </xsl:stylesheet>

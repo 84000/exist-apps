@@ -22,6 +22,8 @@ declare variable $common:app-config := concat($common:app-path, '/config');
 declare variable $common:app-version := doc(concat($common:root-path, '/expath-pkg.xml'))/pkg:package/@version;
 declare variable $common:log-path := '/db/system/logs';
 declare variable $common:cache-path := '/db/apps/84000-cache';
+declare variable $common:static-content-collection := '/84000-static';
+declare variable $common:static-content-path := concat('/db/apps', $common:static-content-collection);
 declare variable $common:data-collection := '/84000-data';
 declare variable $common:data-path := concat('/db/apps', $common:data-collection);
 declare variable $common:tei-path := concat($common:data-path, '/tei');
@@ -550,11 +552,11 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
         else if($mode = ('words')) then
             let $find-escaped := ($find-tokenized, $find-diacritics)[matches(., '[\p{L}\p{N}]+')] ! replace(., '\s+', ' ') ! functx:escape-for-regex(.)
             return
-                concat('\b(', string-join($find-escaped, '|'),')\b')
+                concat('\b(', string-join($find-escaped[. gt ''], '|'),')\b')
         else
             let $find-escaped := $find-tokenized ! string-join(tokenize(., '[^\p{L}\p{N}]+') ! functx:escape-for-regex(.), '[^\p{L}\p{N}]+')
             return
-                concat('(', string-join($find-escaped, '|'),')')
+                concat('(', string-join($find-escaped[. gt ''], '|'),')')
     
     (: double spaces to support the regex :)
     let $text := replace($text, '\s+', ' ') (:! common:normalized-chars(.):)
@@ -567,8 +569,8 @@ declare function common:mark-text($text as xs:string, $find as xs:string*, $mode
     
         (:element debug {
             element find { string-join($find, ',') },
-            element regex {$regex},
-            element search-text {$text},
+            element regex { $regex },
+            element search-text { $text },
             $analyze-result
         },:)
         
@@ -1146,3 +1148,11 @@ declare function common:ids-chunked($ids as xs:string*) as map(*) {
 
 };
 
+declare function common:html-lang($xml-lang as xs:string?) {
+    if($xml-lang eq 'en') then 'en'
+    else if($xml-lang eq 'bo') then 'bo'
+    else if($xml-lang eq 'Bo-Ltn') then 'bo-LATN'
+    else if($xml-lang eq 'Sa-Ltn') then 'sa-LATN'
+    else if($xml-lang eq 'zh') then 'zh'
+    else ()
+};

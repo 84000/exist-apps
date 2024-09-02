@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -13,7 +13,7 @@
     
     <xsl:variable name="page-title" select="concat(normalize-space($request-entity-data/m:label[@type eq 'primary']/text()), ' | Glossary of Terms')" as="xs:string"/>
     
-    <xsl:variable name="page-url" select="concat($reading-room-path, '/glossary/', $request-entity/@xml:id, '.html')" as="xs:string"/>
+    <xsl:variable name="page-url" select="concat('/glossary/', $request-entity/@xml:id)" as="xs:string"/>
     
     <xsl:template match="/m:response">
         
@@ -29,15 +29,20 @@
                             <ul class="breadcrumb">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', /m:response/@lang)"/>
+                                        <xsl:attribute name="href" select="common:internal-href('/section/lobby.html', (), (), /m:response/@lang)"/>
                                         <xsl:value-of select="'The Collection'"/>
                                     </a>
                                 </li>
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="common:internal-link('/glossary/search.html', (), '', /m:response/@lang)"/>
+                                        <xsl:attribute name="href" select="common:internal-href('/glossary/search.html', (), (), /m:response/@lang)"/>
                                         <xsl:value-of select="'Glossary'"/>
                                     </a>
+                                </li>
+                                <li>
+                                    <h1 class="text-bo" lang="bo">
+                                        <xsl:value-of select="normalize-space($request-entity-data/m:label[@type eq 'primary']/text())"/>
+                                    </h1>
                                 </li>
                             </ul>
                         </nav>
@@ -47,7 +52,7 @@
                                 
                                 <div>
                                     <a class="center-vertical">
-                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', /m:response/@lang)"/>
+                                        <xsl:attribute name="href" select="common:internal-href('/section/all-translated.html', (), (), /m:response/@lang)"/>
                                         <span>
                                             <span class="btn-round sml">
                                                 <i class="fa fa-list"/>
@@ -59,7 +64,7 @@
                                     </a>
                                 </div>
                                 
-                                <div>
+                                <!--<div>
                                     <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
                                         <span>
                                             <span class="btn-round sml">
@@ -71,7 +76,7 @@
                                             <xsl:value-of select="'Bookmarks'"/>
                                         </span>
                                     </a>
-                                </div>
+                                </div>-->
                                 
                             </div>
                         </div>
@@ -81,18 +86,18 @@
             </div>
             
             <!-- Include the bookmarks sidebar -->
-            <xsl:variable name="bookmarks-sidebar">
+            <!--<xsl:variable name="bookmarks-sidebar">
                 <m:bookmarks-sidebar>
                     <xsl:copy-of select="$eft-header/m:translation"/>
                 </m:bookmarks-sidebar>
             </xsl:variable>
-            <xsl:apply-templates select="$bookmarks-sidebar"/>
+            <xsl:apply-templates select="$bookmarks-sidebar"/>-->
             
             <main id="combined-glossary" class="content-band">
                 <div class="container">
                     
                     <!-- Page title -->
-                    <div class="section-title row hidden-iframe">
+                    <!--<div class="section-title row hidden-iframe">
                         <div class="col-sm-offset-2 col-sm-8">
                             <div class="h1 title main-title">
                                 <xsl:value-of select="'84000 Glossary of Terms'"/>
@@ -102,22 +107,22 @@
                                 <xsl:value-of select="'Our trilingual glossary combining entries from all of our publications into one useful resource, giving translations and definitions of thousands of terms, people, places, and texts from the Buddhist canon.'"/>
                             </p>
                         </div>
-                    </div>
+                    </div>-->
                     
                     <!-- Title -->
-                    <h1 class="sr-only">
-                        <xsl:value-of select="$page-title"/>
-                    </h1>
+                    <!--<h1 class="sr-only text-bo" lang="bo">
+                        <xsl:value-of select="normalize-space($request-entity-data/m:label[@type eq 'primary']/text())"/>
+                    </h1>-->
                     
                     <!-- Tabs -->
-                    <div class="hidden-iframe">
+                    <!--<div class="hidden-iframe">
                         <xsl:call-template name="glossary-tabs">
                             <xsl:with-param name="page-url" select="$page-url"/>
                             <xsl:with-param name="term-langs" select="m:request/m:term-langs"/>
                             <xsl:with-param name="entity-flags" select="m:entity-flags"/>
                             <xsl:with-param name="entry-label" select="$request-entity-data/m:label[@type eq 'primary']"/>
                         </xsl:call-template>
-                    </div>
+                    </div>-->
                     
                     <xsl:choose>
                         <xsl:when test="$request-entity">
@@ -145,32 +150,16 @@
                                                         <xsl:sort select="string-join(tokenize(text(), '\s+') ! normalize-unicode(.), ' ')"/>
                                                         
                                                         <li>
-                                                            <xsl:choose>
-                                                                <xsl:when test="position() eq 1">
-                                                                    <h2 class="no-bottom-margin inline-block">
-                                                                        <xsl:call-template name="glossary-term">
-                                                                            <xsl:with-param name="term-text" select="text()"/>
-                                                                            <xsl:with-param name="term-lang" select="@xml:lang"/>
-                                                                            <!--<xsl:with-param name="term-type" select="@type"/>-->
-                                                                            <xsl:with-param name="term-status" select="@status"/>
-                                                                            <xsl:with-param name="glossary-type" select="@glossary-type"/>
-                                                                            <xsl:with-param name="interpolation" select="@flagged"/>
-                                                                        </xsl:call-template>
-                                                                    </h2>
-                                                                </xsl:when>
-                                                                <xsl:otherwise>
-                                                                    <span class="h2">
-                                                                        <xsl:call-template name="glossary-term">
-                                                                            <xsl:with-param name="term-text" select="text()"/>
-                                                                            <xsl:with-param name="term-lang" select="@xml:lang"/>
-                                                                            <!--<xsl:with-param name="term-type" select="@type"/>-->
-                                                                            <xsl:with-param name="term-status" select="@status"/>
-                                                                            <xsl:with-param name="glossary-type" select="@glossary-type"/>
-                                                                            <xsl:with-param name="interpolation" select="@flagged"/>
-                                                                        </xsl:call-template>
-                                                                    </span>
-                                                                </xsl:otherwise>
-                                                            </xsl:choose>
+                                                            <span class="h2">
+                                                                <xsl:call-template name="glossary-term">
+                                                                    <xsl:with-param name="term-text" select="text()"/>
+                                                                    <xsl:with-param name="term-lang" select="@xml:lang"/>
+                                                                    <!--<xsl:with-param name="term-type" select="@type"/>-->
+                                                                    <xsl:with-param name="term-status" select="@status"/>
+                                                                    <xsl:with-param name="glossary-type" select="@glossary-type"/>
+                                                                    <xsl:with-param name="interpolation" select="@flagged"/>
+                                                                </xsl:call-template>
+                                                            </span>
                                                         </li>
                                                         
                                                     </xsl:for-each>
@@ -246,7 +235,7 @@
                                                 
                                                 <!-- Glossary entries: grouped by translation -->
                                                 <label class="sml-margin bottom">
-                                                    <xsl:value-of select="'Translated as:'"/>
+                                                    <xsl:value-of select="'Appears in our translations as:'"/>
                                                 </label>
                                                 <div id="{ concat($item-id, '-translations') }" class="entity-detail-accordion">
                                                     
@@ -518,8 +507,8 @@
         </xsl:variable>
         
         <!-- Compile with page template -->
-        <xsl:call-template name="website-page">
-            <xsl:with-param name="page-url" select="$page-url"/>
+        <xsl:call-template name="reading-room-page">
+            <xsl:with-param name="page-url" select="concat('https://84000.co', $page-url)"/>
             <xsl:with-param name="page-class" select="'reading-room section'"/>
             <xsl:with-param name="page-title" select="$page-title || ' | 84000 Reading Room'"/>
             <xsl:with-param name="page-description" select="$page-title"/>
@@ -536,8 +525,17 @@
         <xsl:param name="instance" as="element(m:instance)"/>
         
         <xsl:variable name="glossary-status" select="$text/@glossary-status"/>
-        <xsl:variable name="href" select="concat($reading-room-path, '/', $text/@type, '/', $text/m:bibl[1]/m:toh[1]/@key, '.html#', $entry/@id)"/>
-        <xsl:variable name="target" select="concat($text/@id, '.html')"/>
+        <xsl:variable name="entry-href">
+            <xsl:choose>
+                <xsl:when test="$text/@type eq 'translation'">
+                    <xsl:value-of select="m:translation-href($text/m:bibl[1]/m:toh[1]/@key, (), (), $entry/@id)"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat('/', $text/@type, '/', $text/m:bibl[1]/m:toh[1]/@key, '.html#', $entry/@id)"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="text-target" select="concat($text/@id, '.html')"/>
         <xsl:variable name="dom-id" select="concat('glossary-entry-', $entry/@id)"/>
         
         <div class="entity-list-item">
@@ -555,8 +553,8 @@
                 
                 <div class="sml-margin bottom">
                     <a class="text-bold">
-                        <xsl:attribute name="href" select="$href"/>
-                        <xsl:attribute name="target" select="$target"/>
+                        <xsl:attribute name="href" select="$entry-href"/>
+                        <xsl:attribute name="target" select="$text-target"/>
                         <xsl:apply-templates select="($text/m:titles/m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], $text/m:titles/m:title[@type eq 'mainTitle'])[1]/text()"/>
                     </a>
                     <xsl:if test="$tei-editor and ($glossary-status eq 'excluded')">
@@ -578,8 +576,17 @@
                             <xsl:if test="m:toh/m:full">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="concat($reading-room-path, '/', $text/@type, '/', m:toh/@key, '.html')"/>
-                                        <xsl:attribute name="target" select="$target"/>
+                                        <xsl:attribute name="href">
+                                            <xsl:choose>
+                                                <xsl:when test="$text/@type eq 'translation'">
+                                                    <xsl:value-of select="m:translation-href(m:toh/@key, (), (), ())"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="concat('/', $text/@type, '/', m:toh/@key, '.html')"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:attribute>
+                                        <xsl:attribute name="target" select="$text-target"/>
                                         <xsl:apply-templates select="m:toh/m:full"/>
                                     </a>
                                 </li>
@@ -774,11 +781,11 @@
             </xsl:choose>
             
             <!-- Count of references -->
-            <xsl:variable name="count-entry-locations" select="count($text/m:glossary-cache/m:gloss[@id eq $entry/@id]/m:location)"/>
+            <xsl:variable name="count-entry-locations" select="count($text/m:glossary-cached-locations/m:gloss[@id eq $entry/@id]/m:location)"/>
             <div>
                 <a class="small underline">
-                    <xsl:attribute name="href" select="$href"/>
-                    <xsl:attribute name="target" select="$target"/>
+                    <xsl:attribute name="href" select="$entry-href"/>
+                    <xsl:attribute name="target" select="$text-target"/>
                     <xsl:choose>
                         <xsl:when test="$count-entry-locations gt 1">
                             <xsl:value-of select="concat(format-number($count-entry-locations, '#,###'), ' passages contain this term')"/>
@@ -824,9 +831,9 @@
                                 <a target="84000-glossary-tool" class="editor">
                                     <xsl:attribute name="href" select="concat($environment/m:url[@id eq 'operations'],'/edit-glossary.html?resource-id=', $text/@id, '&amp;glossary-id=', $entry/@id, '&amp;resource-type=', $text/@type, '&amp;max-records=1&amp;filter=check-all')"/>
                                     <!-- Pop-up window variant
-                                <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id, '&amp;glossary-id=', $entry/@id, '&amp;resource-type=', $text/@type, '&amp;max-records=1&amp;filter=check-none#glossary-form-', $entry/@id)"/>
-                                <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                <xsl:attribute name="data-editor-callbackurl" select="concat($page-url, m:view-mode-parameter('editor','?'), '#', $dom-id)"/>-->
+                                    <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id, '&amp;glossary-id=', $entry/@id, '&amp;resource-type=', $text/@type, '&amp;max-records=1&amp;filter=check-none#glossary-form-', $entry/@id)"/>
+                                    <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
+                                    <xsl:attribute name="data-editor-callbackurl" select="concat($page-url, m:view-mode-parameter('editor','?'), '#', $dom-id)"/>-->
                                     <xsl:value-of select="'Glossary editor'"/>
                                 </a>
                             </li>

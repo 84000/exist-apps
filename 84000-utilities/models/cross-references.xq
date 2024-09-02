@@ -11,88 +11,103 @@ import module namespace functx="http://www.functx.com";
 
 declare option exist:serialize "method=xml indent=no";
 
-declare function local:ref-context($ref as element(tei:ref), $target-tei as element(tei:TEI)?) as element(m:ref-context) {
-
-    let $tei := $ref/ancestor::tei:TEI[1]
-    let $text-id := tei-content:id($tei)
-    let $toh-key := translation:source-key($tei, '')
-    let $target-toh-key := if($target-tei) then translation:source-key($target-tei, '') else ()
-    let $target := tokenize($ref/@target, '/')[last()]
-    let $target-page := tokenize($target, '#')[1]
-    let $target-hash := tokenize($target, '#')[2]
-    let $target-id-validated := 
-        if(not($target-hash)) then
-            true()
-        else if($target-tei/id($target-hash)) then
-            true()
-        else if($target-tei/id(substring-after($target-hash, 'end-note-'))[self::tei:note][@place eq 'end']) then
-            true()
-        else
-            false()
-    
-    let $target-domain-validated := 
-        if($ref[matches(@target, '^(http|https)://read\.84000\.co/translation/')]) then
-            true()
-        else
-            false()
-            
-    (:let $passage := $ref/ancestor-or-self::*[preceding-sibling::tei:milestone[@xml:id]][1]:)
-    return 
-        element { QName('http://read.84000.co/ns/1.0', 'ref-context') } {
-        
-            attribute resource-id { $text-id },
-            attribute toh-key { $toh-key },
-            attribute target-toh-key { $target-toh-key },
-            attribute target-page { $target-page },
-            attribute target-hash { $target-hash },
-            attribute target-id-validated { $target-id-validated },
-            attribute target-domain-validated { $target-domain-validated },
-            
-            translation:titles($tei, $toh-key),
-            translation:toh($tei, $toh-key),
-            $ref(:,
-            $passage/preceding-sibling::tei:milestone[@xml:id][1],
-            $passage:)
-        }
-};
-
 common:response(
     'utilities/cross-references',
     'utilities',(
         utilities:request(),
-    
-        for $ref in $tei-content:translations-collection/descendant::tei:ref[matches(@target, '^(http|https)://read\.84000.*/translation/')]
-        let $page-id := substring-after($ref/@target, '/translation/')
-        let $resource-id := tokenize($page-id, '\.')[1]
-        let $target-tei := tei-content:tei($resource-id, 'translation')
-        let $target-text-id := if($target-tei) then tei-content:id($target-tei) else $resource-id
-        group by $target-text-id
-        return
-            if($target-tei) then
-                element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
-                
-                    attribute id { $target-text-id },
-                    attribute resource-id { translation:source-key($target-tei[1], '') },
-                    attribute status-group { tei-content:publication-status-group($target-tei[1]) },
+        
+        let $source-teis := ($tei-content:translations-collection//tei:TEI, $tei-content:knowledgebase-collection//tei:TEI)
+        let $source-texts :=
+            for $source-tei in $source-teis
+            let $source-resource-id := tei-content:id($source-tei)
+            let $source-resource-type := tei-content:type($source-tei)
+            let $source-status-group := tei-content:publication-status-group($source-tei)
+            let $source-refs := $source-tei/descendant::tei:ref[matches(@target, '^https?://read\.84000[^/]*/translation/([^\.#]+)')]
+            where $source-refs (:and $source-resource-id eq 'UT22084-093-018':)
+            return
+                element { QName('http://read.84000.co/ns/1.0', 'source-text') } {
                     
-                    translation:toh($target-tei[1], $resource-id[1]),
-                    translation:titles($target-tei[1], $resource-id[1]),
-                    for $one-ref in $ref
-                    return 
-                        local:ref-context($one-ref, $target-tei[1])
+                    attribute id { $source-resource-id },
+                    attribute type { $source-resource-type },
+                    attribute status-group { tei-content:publication-status-group($source-tei) },
+                    
+                    tei-content:titles-all($source-tei),
+                    $source-resource-type[. eq 'translation'] ! translation:toh($source-tei, ''),
+                    
+                    for $ref in $source-refs
+                    let $target-path := replace($ref/@target, '^https?://read\.84000[^/]+/translation/(.+)', '$1', 'i')
+                    let $target-page := tokenize($target-path, '#')[1]
+                    let $target-hash := tokenize($target-path, '#')[2]
+                    let $target-resource-id := replace($target-path, '^([^\.#]+)(.*)', '$1', 'i')
+                    return
+                        element ref {
+                            $ref/@*,
+                            attribute target-path { $target-path },
+                            attribute target-page { $target-page },
+                            attribute target-hash { $target-hash },
+                            attribute target-resource-id { $target-resource-id },
+                            if(not(matches($ref/@target, '^https?://read\.84000\.co/translation/'))) then 
+                                element issue { attribute type { 'invalid-domain' } }
+                            else ()
+                            ,
+                            if(not(matches($target-page, '(^[a-zA-Z0-9\-]*\.html$|^[a-zA-Z0-9\-]*$)', 'i'))) then 
+                                element issue { attribute type { 'invalid-url' } }
+                            else ()
+                            ,
+                            if(not($target-hash)) then ()
+                            else if($tei-content:translations-collection/id($target-hash)) then ()
+                            else if($tei-content:translations-collection/id(substring-after($target-hash, 'end-note-'))[self::tei:note][@place eq 'end']) then ()
+                            else
+                                element issue { attribute type { 'invalid-id' } }
+                        }
+                    
                 }
             
-            (: !! Also list refs that point to invalid tohs !! :)
-            else
-                element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
-                    
-                    attribute id { '' },
-                    attribute resource-id { $resource-id[1] },
-                    
-                    for $one-ref in $ref
-                    return 
-                        local:ref-context($one-ref, ())
+            let $target-texts :=
+                for $text-ref in $source-texts/m:ref
+                let $target-resource-id := $text-ref/@target-resource-id
+                group by $target-resource-id
+                let $target-tei := tei-content:tei($target-resource-id, 'translation')
+                where $target-tei
+                return
+                    element { QName('http://read.84000.co/ns/1.0', 'target-text') } {
                         
-                }
+                        attribute id { tei-content:id($target-tei) },
+                        attribute type { tei-content:type($target-tei) },
+                        attribute status-group { tei-content:publication-status-group($target-tei) },
+                        attribute ref-target-resource-id { $target-resource-id },
+                        
+                        tei-content:titles-all($target-tei),
+                        translation:toh($target-tei, $target-resource-id)
+                        
+                    }
+            
+            return 
+                for $source-text in $source-texts
+                return
+                    element { node-name($source-text) } {
+                        $source-text/@*,
+                        $source-text/*[not(local-name() eq 'ref')],
+                        for $ref in $source-text/m:ref
+                        let $target-text := ($target-texts[@id eq $ref/@target-resource-id], $target-texts[m:toh[@key eq $ref/@target-resource-id]])[1]
+                        return
+                            element { node-name($ref) } {
+                                $ref/@*,
+                                $ref/*,
+                                if (not($target-text)) then
+                                    element issue { attribute type { 'invalid-text' } }
+                                else ()
+                                ,
+                                if ($ref[@rend eq 'pending'] and $target-text[@status-group eq 'published']) then
+                                    element issue { attribute type { 'pending-link-published-text' } }
+                                else ()
+                                ,
+                                if ($ref[not(@rend eq 'pending')] and $target-text[not(@status-group eq 'published')]) then
+                                    element issue { attribute type { 'active-link-unpublished-text' } }
+                                else ()
+                                ,
+                                $target-text
+                            }
+                    }
     )
 )

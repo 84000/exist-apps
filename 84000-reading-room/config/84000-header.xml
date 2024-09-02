@@ -90,9 +90,9 @@
             <item url="https://read.84000.co/glossary/search.html">
                 <label key="label-glossary">Glossary of Terms</label>
             </item>
-            <item url="https://read.84000.co/knowledgebase.html">
+            <!--<item url="https://read.84000.co/knowledgebase.html">
                 <label key="label-knowledgebase">Knowledge Base</label>
-            </item>
+            </item>-->
             <item url="https://read.84000.co/search.html">
                 <label key="label-search">Search</label>
             </item>
@@ -230,9 +230,9 @@
             <item url="https://read.84000.co/glossary/search.html?lang=zh">
                 <label key="label-glossary">術語表</label>
             </item>
-            <item url="https://read.84000.co/knowledgebase.html?lang=zh">
+            <!--<item url="https://read.84000.co/knowledgebase.html?lang=zh">
                 <label key="label-knowledgebase">Knowledge Base</label>
-            </item>
+            </item>-->
             <item url="https://read.84000.co/search.html?lang=zh">
                 <label key="label-search">雲端藏經閣檢索</label>
             </item>

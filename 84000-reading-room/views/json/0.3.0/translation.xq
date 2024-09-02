@@ -259,7 +259,7 @@ element translation {
     attribute publicationVersion { tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]) },
     element publicationStatus { $local:translation/@status/string() },
     element cacheKey { $local:translation/@cache-key/string() },
-    element htmlUrl { concat('https://read.84000.co', '/translation/', $local:text-id,'.html') },
+    element htmlUrl { translation:canonical-html($local:text-id, ()) },
     
     local:parse-translation()
 

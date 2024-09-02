@@ -7,6 +7,7 @@
     <xsl:variable name="response" select="/m:response"/>
     <xsl:variable name="request-resource-id" select="$response/m:request/@resource-id" as="xs:string"/>
     <xsl:variable name="request-part" select="$response/m:request/@part" as="xs:string?"/>
+    <xsl:variable name="request-root" select="$response/m:request/@root" as="xs:string?"/>
     
     <xsl:variable name="text" select="$response/m:text[1]"/>
     <xsl:variable name="main-title" select="$text/m:titles/m:title[@xml:lang eq 'en'][1]"/>
@@ -36,7 +37,7 @@
                         
                         <div class="h3">
                             <a target="_blank">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:attribute name="href" select="m:translation-href(($text/m:toh/@key)[1], (), (), (), (), $reading-room-path)"/>
                                 <xsl:value-of select="concat(string-join($text/m:toh/m:full, ' / '), ' / ', $main-title)"/>
                             </a>
                         </div>
@@ -50,18 +51,18 @@
                     <!-- Links -->
                     <xsl:call-template name="text-links-list">
                         <xsl:with-param name="text" select="$text"/>
-                        <xsl:with-param name="exclude-links" select="('edit-quotes', 'source-folios')"/>
+                        <xsl:with-param name="disable-links" select="('edit-quotes')"/>
                         <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
                     </xsl:call-template>
                     
                     <hr class="sml-margin"/>
                     
                     <!-- Navigation -->
-                    <div class="center-vertical">
+                    <div class="center-vertical align-left">
                         
                         <!-- Select part -->
                         <div>
-                            <form action="/edit-quotes.html" class="filter-form form-inline" data-loading="Loading part...">
+                            <form action="/edit-quotes.html" class="form-inline" data-loading="Reviewing quotes...">
                                 
                                 <input type="hidden" name="resource-id" value="{ $request-resource-id }"/>
                                 
@@ -73,6 +74,18 @@
                                             </xsl:if>
                                             <xsl:attribute name="value" select="@id"/>
                                             <xsl:value-of select="(tei:head[@type eq parent::m:part/@type], '[Section with no header]')[1]"/>
+                                        </option>
+                                    </xsl:for-each>
+                                </select>
+                                
+                                <select name="root" class="form-control">
+                                    <xsl:for-each select="$text/m:source/m:isCommentaryOf">
+                                        <option>
+                                            <xsl:if test="@toh-key eq $request-root">
+                                                <xsl:attribute name="selected" select="'selected'"/>
+                                            </xsl:if>
+                                            <xsl:attribute name="value" select="@toh-key"/>
+                                            <xsl:value-of select="(tei:bibl/tei:ref, '[Root with no Toh]')[1]"/>
                                         </option>
                                     </xsl:for-each>
                                 </select>
@@ -144,6 +157,13 @@
                     
                 </xsl:with-param>
             
+                <xsl:with-param name="aside-content">
+                    
+                    <!-- Dual-view pop-up -->
+                    <xsl:call-template name="dualview-popup"/>
+                    
+                </xsl:with-param>
+                
             </xsl:call-template>
         
         </xsl:variable>
@@ -234,7 +254,7 @@
                         <div>
                             <div>
                                 <a class="small">
-                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/@resource-id, '.html', '#', $quote/@id)"/>
+                                    <xsl:attribute name="href" select="m:translation-href($quote/@resource-id, (), (), $quote/@id, (), $reading-room-path)"/>
                                     <xsl:attribute name="target" select="concat($quote/@resource-id, '.html')"/>
                                     <xsl:value-of select="$quote/@id"/>
                                 </a>
@@ -374,6 +394,12 @@
                         </div>
                         
                         <div>
+                            <span class="label label-info">
+                                <xsl:value-of select="$quote/m:source/m:toh/m:full"/>
+                            </span>
+                        </div>
+                        
+                        <div>
                             <span class="italic">
                                 <xsl:value-of select="concat('This quote references ', $quote/m:source/m:text-title)"/>
                             </span>
@@ -385,7 +411,7 @@
                         
                         <div>
                             <a class="small">
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $quote/m:source/@resource-id, '.html', '#', $quote/m:source/@location-id)"/>
+                                <xsl:attribute name="href" select="m:translation-href($quote/m:source/@resource-id, (), (), $quote/m:source/@location-id, (), $reading-room-path)"/>
                                 <xsl:attribute name="target" select="concat($quote/m:source/@resource-id, '.html')"/>
                                 <xsl:value-of select="$quote/m:source/@location-id"/>
                             </a>
@@ -470,6 +496,9 @@
         
         <xsl:choose>
             <xsl:when test="self::xhtml:div[matches(@class, '(^|\s+)gtr(\s+|$)', 'i')]">
+                <!-- Skip -->
+            </xsl:when>
+            <xsl:when test="self::xhtml:a[matches(@class, '(^|\s+)quote-link(\s+|$)', 'i')]">
                 <!-- Skip -->
             </xsl:when>
             <xsl:when test="self::xhtml:div">

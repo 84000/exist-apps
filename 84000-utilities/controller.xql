@@ -30,6 +30,25 @@ else if ($exist:path = ('', '/') or $exist:resource = ('index.html', 'index.htm'
         <redirect url="translations.html"/>
     </dispatch>
 
+(: Stylesheets, javascript and other front-end :)
+else if($collection-path eq 'frontend' and $resource-suffix = ('css','js','min.js','svg','png','ttf','otf','eot','svg','woff','woff2')) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{ string-join(('/84000-static', $exist:path)) }">
+            <set-header name="Content-Type" value="{ 
+                if($resource-suffix eq 'css') then 'text/css'
+                else if($resource-suffix eq 'svg') then 'image/svg+xml'
+                else if($resource-suffix eq 'png') then 'image/png'
+                else if($resource-suffix eq 'ttf') then 'font/ttf'
+                else if($resource-suffix eq 'otf') then 'font/otf'
+                else if($resource-suffix eq 'eot') then 'application/vnd.ms-fontobject'
+                else if($resource-suffix eq 'svg') then 'image/svg+xml'
+                else if($resource-suffix eq 'woff') then 'font/woff'
+                else if($resource-suffix eq 'woff2') then 'font/woff2'
+                else 'text/javascript'
+            }"/>
+        </forward>
+    </dispatch>
+
 (: Editor :)
 (: Module located in operations app :)
 else if ($resource-id = ("create-article") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
@@ -63,7 +82,7 @@ else if (ends-with($exist:resource, ".html")) then
             </forward>
         </view>
     </dispatch>
-
+    
 else
     (: everything else is passed through :)
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">

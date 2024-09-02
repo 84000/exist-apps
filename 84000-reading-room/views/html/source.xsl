@@ -124,7 +124,7 @@
                                 <xsl:if test="$request/@ref-index ! xs:integer(.) gt  1">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', '1')"/>
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, 1, ())"/>
                                             <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
                                             <xsl:attribute name="title" select="'first page (1)'"/>
                                             <xsl:attribute name="target" select="'_self'"/>
@@ -135,8 +135,7 @@
                                     </li>
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page - 1))"/>
-                                            <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, ($current-page - 1), ())"/>
                                             <xsl:attribute name="title" select="concat('previous page (', format-number(($current-page - 1), '#,###'), ')')"/>
                                             <xsl:attribute name="target" select="'_self'"/>
                                             <xsl:attribute name="data-loading" select="'Loading previous page...'"/>
@@ -154,8 +153,7 @@
                                 <xsl:if test="$current-page lt $count-pages">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', ($current-page + 1))"/>
-                                            <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, ($current-page + 1), ())"/>
                                             <xsl:attribute name="title" select="concat('next page (', format-number(($current-page + 1), '#,###'), ')')"/>
                                             <xsl:attribute name="target" select="'_self'"/>
                                             <xsl:attribute name="data-loading" select="'Loading next page...'"/>
@@ -164,12 +162,10 @@
                                     </li>
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat('/source/', $toh-key,'.html?ref-index=', $count-pages)"/>
-                                            <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, $count-pages, ())"/>
                                             <xsl:attribute name="title" select="concat('last page (', format-number($count-pages, '#,###'), ')')"/>
                                             <xsl:attribute name="target" select="'_self'"/>
                                             <xsl:attribute name="data-loading" select="'Loading last page...'"/>
-                                            <!--<xsl:value-of select="'page ' || $count-pages"/>-->
                                             <i class="fa fa-step-forward"/>
                                         </a>
                                     </li>
@@ -367,13 +363,11 @@
         <xsl:choose>
             <xsl:when test="@data-glossary-location-id">
                 <a>
-                    <xsl:variable name="page" select="concat('/translation/', $translation/m:source/@key, '.html')"/>
-                    <xsl:variable name="fragment-id" select="concat('#', @data-glossary-location-id, '/',  @data-glossary-id ! concat('[data-glossary-id=&#34;', ., '&#34;]') ! encode-for-uri(.))"/>
-                    <xsl:attribute name="href" select="$page || $fragment-id"/>
+                    <xsl:variable name="fragment" select="concat(@data-glossary-location-id, '/',  @data-glossary-id ! concat('[data-glossary-id=&#34;', ., '&#34;]') ! encode-for-uri(.))"/>
+                    <xsl:attribute name="href" select="m:translation-href($translation/m:source/@key, (), (), $fragment)"/>
                     <xsl:attribute name="target" select="concat('translation-', $translation/m:source/@key)"/>
-                    <xsl:attribute name="data-dualview-href" select="$page || $fragment-id"/>
+                    <xsl:attribute name="data-dualview-href" select="m:translation-href($translation/m:source/@key, (), (), $fragment)"/>
                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh,' (translation)')"/>
-                    <xsl:attribute name="data-alt-pathname" select="concat('/translation/', $text-id, '.html')"/>
                     <xsl:attribute name="data-mark" select="concat('[data-glossary-id=&#34;', @data-glossary-id, '&#34;]')"/>
                     <xsl:attribute name="data-loading" select="'Loading translation...'"/>
                     <xsl:if test="@data-glossary-id eq $request-glossary-id">

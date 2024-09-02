@@ -4,7 +4,7 @@
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
     
-    <xsl:variable name="environment" select="/m:response/m:environment"/>
+    <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="text-statuses" select="/m:response/m:text-statuses"/>
     <xsl:variable name="selected-type" select="$request/m:article-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
@@ -71,7 +71,7 @@
                                 <a target="84000-operations" class="btn btn-danger">
                                     <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
                                     <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
+                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-href(concat($environment/m:url[@id eq 'utilities'], '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
                                     <xsl:value-of select="'Add a new article'"/>
                                 </a>
                             </div>

@@ -259,3 +259,7 @@ declare function source:bdrc-rdf($toh as element(m:toh)) as element(rdf:RDF)* {
     else ()
     
 };
+
+declare function source:href($source-key as xs:string, $ref-index as xs:string?, $url-parameters as xs:string*, $fragment as xs:string?) as xs:string {
+    concat('/', string-join(('source', $source-key, $ref-index ! ('folio', $ref-index)), '/'), string-join($url-parameters[. gt ''], '&amp;')[. gt ''] ! concat('?', .), $fragment ! concat('#', .))
+};

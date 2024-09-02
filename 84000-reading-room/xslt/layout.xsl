@@ -111,6 +111,8 @@
         
         <div>
             
+            <xsl:attribute name="id" select="concat('expand-item-', $id)"/>
+            
             <xsl:attribute name="class">
                 <xsl:value-of select="'list-group-item'"/>
                 <xsl:if test="$active">
@@ -291,10 +293,6 @@
                 <div data-preview-child-list-rows="2">
                     
                     <xsl:sequence select="$list"/>
-                    
-                    <!--<a href="#{ $list-id }" class="small preview-child-list-clear">
-                        <xsl:value-of select="'Show all...'"/>
-                    </a>-->
                     
                 </div>
             </xsl:when>

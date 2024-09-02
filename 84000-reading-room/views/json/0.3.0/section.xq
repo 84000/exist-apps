@@ -123,7 +123,7 @@ declare function local:child-texts($texts as element()*) {
     
     let $annotations := (
     
-        $text/eft:downloads[@resource-id eq $text/@resource-id]/eft:download[not(@type = ('html', 'rdf', 'cache'))] ! eft-json:annotation-link(concat('eft:', @type, 'File'), eft-json:id('downloadUrl', @download-url)),
+        $text/eft:files/eft:file[@group eq 'translation-files'][@timestamp gt ''] ! eft-json:annotation-link(concat('eft:', @type, 'File'), eft-json:id('downloadUrl', @source)),
         
         $text/eft:publication/eft:publication-date[text()] ! eft-json:annotation('eft:publicationDate', (), (), (), text()),
         

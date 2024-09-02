@@ -6,7 +6,7 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="/m:response/m:environment"/>
+        <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         <xsl:variable name="utilities-path" select="$environment/m:url[@id eq 'utilities']/text()"/>
         
@@ -235,8 +235,8 @@
                                                         <xsl:value-of select="' | '"/>
                                                         <a>
                                                             <xsl:attribute name="target" select="'translation-' || $toh-key"/>
-                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
-                                                            <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/translation/', $toh-key, '#', @ref-id)"/>
+                                                            <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), @ref-id, (), $reading-room-path)"/>
+                                                            <xsl:attribute name="data-dualview-href" select="m:translation-href($toh-key, (), (), @ref-id, (), $reading-room-path)"/>
                                                             <xsl:attribute name="data-dualview-title" select="$toh-key || ' translation'"/>
                                                             <xsl:attribute name="data-loading" select="'Loading ' || $toh-key || ' translation...'"/>
                                                             <xsl:value-of select="'Published translation'"/>

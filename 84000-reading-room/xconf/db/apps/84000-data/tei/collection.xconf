@@ -56,7 +56,7 @@
             <text match="//tei:back//tei:gloss/tei:term">
                 <field name="bo-terms" if="@xml:lang='bo'" analyzer="bo"/>
                 <!--<field name="sa-terms" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>-->
-                <field name="full-term" if="@xml:lang='en'" analyzer="no-stopwords"/>
+                <field name="full-terms" analyzer="no-stopwords"/>
             </text>
         </lucene>
         
@@ -90,4 +90,5 @@
         </range>
         
     </index>
+    
 </collection>

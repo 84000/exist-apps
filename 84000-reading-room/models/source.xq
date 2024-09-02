@@ -25,7 +25,7 @@ let $tei := tei-content:tei($resource-id, 'translation')
 (: Pass a page index to get a page, or zero to get all pages :)
 let $ref-index := 
     if(request:get-parameter('ref-index', '')[functx:is-a-number(.)]) then
-        xs:integer(request:get-parameter('ref-index', ''))
+        xs:integer(request:get-parameter('ref-index', '')[. gt ''][1])
     
     (: legacy links using page parameter :)
     else if(request:get-parameter('page', '')[functx:is-a-number(.)]) then
@@ -85,7 +85,7 @@ return
     if($cached) then $cached 
     
     else if($request/@resource-suffix eq 'resources') then
-        common:html(common:response($request/@model, $common:app-id, ()), concat($common:app-path, "/views/html/resources-help.xsl"))
+        common:html(common:response($request/@model, $common:app-id, ($request)), concat($common:app-path, "/views/html/resources-help.xsl"))
     
     (: Not cached :)
     else
@@ -117,7 +117,7 @@ return
                 element { QName('http://read.84000.co/ns/1.0', 'source') } {
                 
                     attribute work { $tei-location/@work },
-                    attribute canonical-html { concat('https://read.84000.co/source/', $tei-location/@key, '.html?ref-index=', $ref-index) },
+                    attribute canonical-html { concat('https://read.84000.co', source:href($tei-location/@key, $ref-index, (), ())) },
                     attribute cache-key { $cache-key },
                     
                     (: Get a page of text :)
@@ -128,7 +128,7 @@ return
                     where $ref-1
                     return
                         element { QName('http://read.84000.co/ns/1.0', 'back-link') } {
-                            attribute url { concat($common:environment/m:url[@id eq 'reading-room'], '/translation/', $request/@resource-id, '.html', '?part=', $ref-1/@xml:id, '#', $ref-1/@xml:id) }
+                            attribute url { translation:href($tei-location/@key, $ref-1/@xml:id, (), (), $ref-1/@xml:id) }
                         }
                         
                 }
@@ -138,7 +138,7 @@ return
                 source:etext-full($tei-location)
                 
         (: Get glossary cache :)
-        let $glossary-cache := glossary:glossary-cache($tei, (), false())
+        let $glossary-cached-locations := glossary:cached-locations($tei, (), false())
         (: Get tei outline :)
         let $outline := translation:outline-cached($tei)
         
@@ -151,7 +151,7 @@ return
                     $source,
                     $translation,
                     $outline,
-                    $glossary-cache
+                    $glossary-cached-locations
                 )
             )
         

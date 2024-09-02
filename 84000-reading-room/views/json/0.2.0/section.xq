@@ -126,7 +126,8 @@ declare function local:child-texts($texts as element(m:text)*) as element(mjson:
             eft-json:copy-nodes($text/m:source/m:location),
             eft-json:parent-sections($text/m:parent),
             
-            $text/m:downloads/m:download[not(@type = ('rdf', 'cache'))],
+            (:$text/m:downloads/m:download[not(@type = ('rdf', 'cache'))],:)
+            $text/m:files/m:file[@group eq 'translation-files'][@timestamp gt ''] ! element download { @*, *},
             
             if($text/m:part[@type eq 'summary'][tei:p])then
                 element summary { 

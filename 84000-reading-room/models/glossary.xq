@@ -100,6 +100,7 @@ let $request :=
         attribute sort { request:get-parameter('sort', 'term')[. = ('term','frequency')] },
         attribute first-record { $first-record },
         attribute records-per-page { 20 },
+        attribute template { request:get-parameter('template', 'website-page')[. = ('website-page','embedded')] },
         
         element search { if(not($flag) and not($resource-id eq 'downloads') and $search gt '') then $search else '' },
         

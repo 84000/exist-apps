@@ -29,11 +29,6 @@ let $xml-response :=
         $common:app-id,
         (
             $request,
-            <replace-text xmlns="http://read.84000.co/ns/1.0">
-                <value key="#commsSiteUrl">{ $common:environment/m:url[@id eq 'communications-site'][1]/text() }</value>
-                <value key="#readingRoomSiteUrl">{ $common:environment/m:url[@id eq 'reading-room'][1]/text() }</value>
-                <value key="#feSiteUrl">{ $common:environment/m:url[@id eq 'front-end'][1]/text() }</value>
-            </replace-text>,
             $contributors-teams,
             $contributors-regions
         )

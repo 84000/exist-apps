@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:m="http://read.84000.co/ns/1.0" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
 
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="selected-type" select="$request/m:article-types/m:type[@selected eq 'selected']" as="element(m:type)*"/>
 
-    <xsl:variable name="page-url" select="concat($reading-room-path, '/knowledgebase.html?') || string-join(($selected-type ! concat('article-type[]=', @id), $request/@sort ! concat('sort=', .)), '&amp;')" as="xs:string"/>
+    <xsl:variable name="page-url" select="'/knowledgebase.html?' || string-join(($selected-type ! concat('article-type[]=', @id), $request/@sort ! concat('sort=', .)), '&amp;')" as="xs:string"/>
 
     <xsl:template match="/m:response">
 
@@ -84,7 +84,8 @@
                             <xsl:choose>
                                 <xsl:when test="$tei-editor-off">
                                     <p class="small">
-                                        <a href="{ $page-url }&amp;view-mode=editor" class="editor">
+                                        <a class="editor">
+                                            <xsl:attribute name="href" select="concat($page-url, '&amp;view-mode=editor')"/>
                                             <xsl:value-of select="'For more options activate editor mode'"/>
                                         </a>
                                     </p>
@@ -108,7 +109,7 @@
                                                 <a target="84000-operations" class="editor">
                                                     <xsl:attribute name="href" select="'/create-article.html#ajax-source'"/>
                                                     <xsl:attribute name="data-ajax-target" select="'#popup-footer-editor .data-container'"/>
-                                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-link(concat($reading-room-path, '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest', 'view-mode=editor'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
+                                                    <xsl:attribute name="data-editor-callbackurl" select="common:internal-href(concat($reading-room-path, '/knowledgebase.html?') || string-join(('article-type[]=articles', 'sort=latest', 'view-mode=editor'), '&amp;'), (), '#articles-list', $root/m:response/@lang)"/>
                                                     <xsl:value-of select="'Start a new article'"/>
                                                 </a>
                                             </li>
@@ -128,7 +129,8 @@
                                                 </ul>
                                             </li>
                                             <li>
-                                                <a href="{ $page-url }" target="_self" class="editor">
+                                                <a target="_self" class="editor">
+                                                    <xsl:attribute name="href" select="$page-url"/>
                                                     <xsl:value-of select="'Hide editor options'"/>
                                                 </a>
                                             </li>
@@ -240,7 +242,7 @@
                                                         <div>
                                                             <h3 class="list-group-item-heading">
                                                                 <a>
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
+                                                                    <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
                                                                     <xsl:value-of select="m:titles ! (m:title[@type eq 'articleTitle'], m:title[@type eq 'mainTitle'][@xml:lang eq 'en'], m:title[@type eq 'mainTitle'])[1]"/>
                                                                 </a>
                                                             </h3>
@@ -274,7 +276,7 @@
                                                         <ul class="list-inline inline-dots small">
                                                             <li>
                                                                 <a class="underline">
-                                                                    <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html')"/>
+                                                                    <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html')"/>
                                                                     <xsl:value-of select="'Read the article'"/>
                                                                 </a>
                                                             </li>
@@ -296,7 +298,7 @@
                                                                 <!-- File path -->
                                                                 <div>
                                                                     <a class="text-muted small">
-                                                                        <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.tei')"/>
+                                                                        <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.tei')"/>
                                                                         <xsl:attribute name="target" select="concat(@xml:id, '.tei')"/>
                                                                         <xsl:value-of select="@document-url"/>
                                                                     </a>
@@ -338,7 +340,7 @@
                                                                 <ul class="list-inline inline-dots">
                                                                     <li>
                                                                         <a class="editor">
-                                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/knowledgebase/', @kb-id, '.html?view-mode=editor')"/>
+                                                                            <xsl:attribute name="href" select="concat('/knowledgebase/', @kb-id, '.html?view-mode=editor')"/>
                                                                             <xsl:attribute name="target" select="concat(@xml:id, '.html')"/>
                                                                             <xsl:value-of select="'Edit article'"/>
                                                                         </a>
@@ -381,7 +383,7 @@
                             </xsl:choose>
 
                             <!-- Pagination -->
-                            <xsl:sequence select="common:pagination(m:request/@first-record, m:request/@records-per-page, m:knowledgebase/@count-pages, common:internal-link($page-url, (m:view-mode-parameter((),())),(), /m:response/@lang))"/>
+                            <xsl:sequence select="common:pagination(m:request/@first-record, m:request/@records-per-page, m:knowledgebase/@count-pages, common:internal-href($page-url, m:view-mode-parameter(), (), /m:response/@lang))"/>
 
                         </div>
                     </div>
@@ -403,8 +405,9 @@
             <xsl:with-param name="page-title" select="'84000 Knowledge Base'"/>
             <xsl:with-param name="page-description" select="''"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
+            <xsl:with-param name="additional-tags">
                 <script src="https://code.highcharts.com/highcharts.js"/>
+                <script src="https://code.highcharts.com/modules/accessibility.js"/>
             </xsl:with-param>
         </xsl:call-template>
 

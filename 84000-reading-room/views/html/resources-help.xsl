@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -17,7 +17,6 @@
                             <div>
                                 <nav role="navigation" aria-label="Breadcrumbs">
                                     <ul class="breadcrumb">
-                                        
                                         <li>
                                             <xsl:value-of select="'84000 Resources'"/>
                                         </li>
@@ -25,7 +24,6 @@
                                         <li>
                                             <xsl:value-of select="'Resources not found'"/>
                                         </li>
-                                        
                                     </ul>
                                 </nav>
                             </div>
@@ -51,6 +49,21 @@
                                 </p>
                                 
                             </main>
+                            
+                            <!--
+                            <aside class="col-lg-12">
+                                <script type="text/javascript">
+                                    function resizeIframe() {
+                                    try {
+                                    var iframe = document.getElementById('eft_glossary_embedded');
+                                    iframe.height = iframe.contentWindow.document.body.scrollHeight + "px";
+                                    }
+                                    catch {}
+                                    }
+                                </script>
+                                <iframe src="{ concat('/source/', /m:response/m:request/@resource-id, '.html') }" onload="resizeIframe()" style="border:0px;" id="eft_glossary_embedded" name="eft_glossary_embedded" scrolling="yes" frameborder="1" marginheight="0px" marginwidth="0px" height="400px" width="100%" allowfullscreen=""></iframe>
+                            </aside>-->
+                            
                         </div>
                     </div>
                 </div>

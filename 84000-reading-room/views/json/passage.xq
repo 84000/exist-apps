@@ -29,8 +29,8 @@ declare function local:parse-response() as element()* {
     
     for $location at $index in (
         $local:translation/descendant::eft:part[@content-status eq 'passage'][not(@id = ('end-notes','glossary'))][not(eft:part[@content-status eq 'passage'])] 
-        | $local:translation/eft:part[@id eq 'end-notes']/tei:note 
-        | $local:translation/eft:part[@id eq 'glossary']/tei:gloss
+        | $local:translation/eft:part[@type eq 'end-notes']/tei:note 
+        | $local:translation/eft:part[@type eq 'glossary']/tei:gloss
     )
     
     let $location-id := ($location/@xml:id, $location/descendant::tei:milestone/@xml:id)[1]

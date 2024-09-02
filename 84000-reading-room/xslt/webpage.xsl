@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -8,26 +8,36 @@
     <!-- Look up environment variables -->
     <xsl:variable name="environment" select="if(/m:response[m:environment]) then /m:response/m:environment else doc('/db/system/config/db/system/environment.xml')/m:environment"/>
     
-    <xsl:variable name="front-end-path" select="if($environment/m:url[@id eq 'front-end']) then $environment/m:url[@id eq 'front-end'] else ''" as="xs:string"/>
-    <xsl:variable name="reading-room-path" select="if($environment/m:url[@id eq 'reading-room']) then $environment/m:url[@id eq 'reading-room'] else ''" as="xs:string"/>
-    <xsl:variable name="communications-site-path" select="if($environment/m:url[@id eq 'communications-site']) then $environment/m:url[@id eq 'communications-site'] else ''" as="xs:string"/>
-    <xsl:variable name="ga-tracking-id" select="if($environment/m:google-analytics[@tracking-id]) then $environment/m:google-analytics/@tracking-id else ''" as="xs:string"/>
-    <xsl:variable name="app-version" select="if(/m:response/@app-version) then /m:response/@app-version else ''" as="xs:string"/>
-    <xsl:variable name="app-version-url-attribute" select="if($app-version gt '') then concat('?v=', $app-version) else ''" as="xs:string"/>
+    <!--<xsl:variable name="front-end-path" select="if($environment/m:url[@id eq 'front-end']) then $environment/m:url[@id eq 'front-end'] else ''" as="xs:string"/>-->
+    <xsl:variable name="reading-room-path" select="($environment/m:url[@id eq 'reading-room'],'')[1]" as="xs:string"/>
+    <xsl:variable name="communications-site-path" select="($environment/m:url[@id eq 'communications-site'],'')[1]" as="xs:string"/>
+    <xsl:variable name="ga-tracking-id" select="($environment/m:google-analytics[@tracking-id],'')[1]" as="xs:string"/>
+    <xsl:variable name="app-version" select="(/m:response/@app-version,'')[1]" as="xs:string"/>
+    <xsl:variable name="app-version-url-attribute" select="($app-version ! concat('?v=', .), '')[1]" as="xs:string"/>
     
     <!-- get shared html -->
     <xsl:variable name="eft-header" select="doc('../config/84000-header.xml')/m:eft-header" as="element(m:eft-header)"/>
     <xsl:variable name="eft-footer" select="doc('../config/84000-footer.xml')/m:eft-footer" as="element(m:eft-footer)"/>
     
     <!-- language [en|zh] -->
-    <xsl:variable name="lang" select="if(/m:response/@lang) then /m:response/@lang else 'en'" as="xs:string"/>
+    <xsl:variable name="lang" select="(/m:response/@lang,'en')[1]" as="xs:string"/>
     
-    <!-- Tei Editor -->
-    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'] and $view-mode[@id = ('editor','editor-passage')]"/>
-    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'] and not($view-mode[@id = ('editor','editor-passage')])"/>
+    <!-- Main variables -->
+    <xsl:variable name="translation" select="/m:response/m:translation" as="element(m:translation)?"/>
+    <xsl:variable name="section" select="/m:response/m:section" as="element(m:section)?"/>
+    <xsl:variable name="article" select="/m:response/m:article" as="element(m:article)?"/>
+    <xsl:variable name="toh-key" select="($translation/m:source/@key, $article/m:page/@kb-id)[1]" as="xs:string?"/>
+    <xsl:variable name="text-id" select="($translation/@id, $article/m:page/@xml:id)[1]" as="xs:string?"/>
+    
+    <!-- Tei editor -->
+    <xsl:variable name="tei-editor" select="/m:response[@tei-editor eq 'true'][not(m:request[@template eq 'embedded'])] and $view-mode[@id = ('editor','editor-passage')]"/>
+    <xsl:variable name="tei-editor-off" select="/m:response[@tei-editor eq 'true'][not(m:request[@template eq 'embedded'])] and not($view-mode[@id = ('editor','editor-passage')])"/>
     
     <!-- view-mode [default|editor|annotation|txt|ebook|pdf|app|tests|glossary-editor|glossary-check] -->
     <xsl:variable name="view-mode" select="/m:response/m:request/m:view-mode" as="element(m:view-mode)?"/>
+    <xsl:function name="m:view-mode-parameter" as="xs:string">
+        <xsl:value-of select="m:view-mode-parameter((), ())"/>
+    </xsl:function>
     <xsl:function name="m:view-mode-parameter" as="xs:string">
         <xsl:param name="override" as="xs:string?"/>
         <xsl:value-of select="m:view-mode-parameter($override, '&amp;')"/>
@@ -51,60 +61,59 @@
         <xsl:value-of select="$view-mode-id ! concat($prefix, 'view-mode=',.)"/>
     </xsl:function>
     
+    <!-- Archive path parameter supports access to archived copies of the TEI -->
     <xsl:variable name="archive-path" select="/m:response/m:request/@archive-path" as="xs:string?"/>
-    <xsl:function name="m:archive-path-parameter" as="xs:string">
-        <xsl:value-of select="if($archive-path gt '') then concat('&amp;archive-path=', $archive-path)  else ''"/>
-    </xsl:function>
     
     <!-- doc-type [html|epub|ncx] -->
     <xsl:variable name="doc-type" select="/m:response/m:request/@doc-type"/>
     
     <!-- Override navigation params -->
     <xsl:variable name="active-url" as="xs:string">
-        <!-- <xsl:value-of select="common:internal-link('https://read.84000.co/', (), '', $lang)"/> -->
+        <!-- <xsl:value-of select="common:internal-href('https://read.84000.co/', (), (), $lang)"/> -->
         <xsl:choose>
             <xsl:when test="upper-case(/m:response/m:section/@id) eq 'ALL-TRANSLATED'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/section/all-translated.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/section/all-translated.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'section'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/section/lobby.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/section/lobby.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'search'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/search.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/search.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model = ('glossary', 'glossary-entry')">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/glossary/search.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/glossary/search.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model = ('knowledgebase', 'knowledgebase-article')">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/knowledgebase.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/knowledgebase.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/sponsors'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsors.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/about/sponsors.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/impact'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/about/impact.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/about/impact.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/progress'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/about/progress.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/about/progress.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/translators'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/about/translators.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/about/translators.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'about/sponsor-a-sutra'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/about/sponsor-a-sutra.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/about/sponsor-a-sutra.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:when test="/m:response/@model eq 'knowledgebase'">
-                <xsl:value-of select="common:internal-link('https://read.84000.co/knowledgebase.html', (), '', $lang)"/>
+                <xsl:value-of select="common:internal-href('https://read.84000.co/knowledgebase.html', (), (), $lang)"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:value-of select="common:internal-link('#reading-room', (), '', '')"/>
+                <xsl:value-of select="common:internal-href('', (), (), '#reading-room')"/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:variable>
     
     <xsl:variable name="local-comms-url" select="$communications-site-path" as="xs:string"/>
-    <xsl:variable name="local-reading-room-url" select="$reading-room-path" as="xs:string"/>
-    <xsl:variable name="local-front-end-url" select="$front-end-path" as="xs:string"/>
+    <xsl:variable name="local-reading-room-url" select="''" as="xs:string"/>
+    <!--<xsl:variable name="local-front-end-url" select="'/frontend'" as="xs:string"/>-->
+    <xsl:variable name="local-front-end-url" select="'http://fe.84000.local/frontend'" as="xs:string"/>
     <xsl:variable name="default-search-form-target" select="'reading-room'" as="xs:string"/>
     
     <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/>
@@ -117,7 +126,7 @@
         <xsl:param name="page-title" required="yes" as="xs:string"/>
         <xsl:param name="page-description" required="yes" as="xs:string"/>
         <xsl:param name="page-type" required="yes" as="xs:string"/>
-        <xsl:param name="additional-links" required="no" as="node()*"/>
+        <xsl:param name="additional-tags" required="no" as="node()*"/>
         
         <head>
             
@@ -131,16 +140,18 @@
                 <xsl:value-of select="$page-title"/>
             </title>
             
+            <xsl:variable name="fe-version" select="'2.25.0'"/>
+            
             <link rel="stylesheet" type="text/css">
                 <xsl:choose>
                     <xsl:when test="$page-type = ('communications')">
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-comms.css', $app-version-url-attribute)"/>
+                        <xsl:attribute name="href" select="string-join(($front-end-path, 'css', $fe-version, '84000-comms.css'), '/')"/>
                     </xsl:when>
                     <xsl:when test="$page-type = ('utilities')">
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-utilities.css', $app-version-url-attribute)"/>
+                        <xsl:attribute name="href" select="string-join(($front-end-path, 'css', $fe-version, '84000-utilities.css'), '/')"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:attribute name="href" select="concat($front-end-path, '/css/84000-translation.css', $app-version-url-attribute)"/>
+                        <xsl:attribute name="href" select="string-join(($front-end-path, 'css', $fe-version, '84000-translation.css'), '/')"/>
                     </xsl:otherwise>
                 </xsl:choose>
             </link>
@@ -148,7 +159,7 @@
             <xsl:if test="not($view-mode) or $view-mode[@client eq 'browser']">
                 
                 <link rel="stylesheet" type="text/css">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/css/ie10-viewport-bug-workaround.css')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'css', 'ie10-viewport-bug-workaround.css'), '/')"/>
                 </link>
                 
                 <xsl:if test="$page-url gt ''">
@@ -158,30 +169,44 @@
                 </xsl:if>
                 
                 <link rel="apple-touch-icon">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/apple-touch-icon.png')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'favicon', 'apple-touch-icon.png'), '/')"/>
                 </link>
                 <link rel="icon" type="image/png" sizes="32x32">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon-32x32.png')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'favicon', 'favicon-32x32.png'), '/')"/>
                 </link>
                 <link rel="icon" type="image/png" sizes="16x16">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon-16x16.png')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'favicon', 'favicon-16x16.png'), '/')"/>
                 </link>
                 <link rel="manifest">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/manifest.json')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'favicon', 'manifest.json'), '/')"/>
                 </link>
                 <link rel="mask-icon">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/safari-pinned-tab.svg')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'favicon', 'safari-pinned-tab.svg'), '/')"/>
                 </link>
                 <link rel="shortcut icon">
-                    <xsl:attribute name="href" select="concat($front-end-path, '/favicon/favicon.ico')"/>
+                    <xsl:attribute name="href" select="string-join(($front-end-path, 'favicon', 'favicon.ico'), '/')"/>
                 </link>
                 
-                <xsl:sequence select="$additional-links"/>
+                <!--[if lt IE 9]>
+                    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+                    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+                <![endif]-->
+                
+                <script>
+                    <xsl:attribute name="src" select="string-join(($front-end-path, 'js', $fe-version, '84000.min.js'), '/')"/>
+                </script>
+                
+                <xsl:if test="$view-mode[@annotation eq 'web']">
+                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
+                    <script src="https://hypothes.is/embed.js" async="async"/>
+                </xsl:if>
+                
+                <xsl:sequence select="$additional-tags"/>
                 
                 <xsl:sequence select="$environment/m:html-head/xhtml:*"/>
                 
                 <meta name="msapplication-config">
-                    <xsl:attribute name="content" select="concat($front-end-path, '/favicon/browserconfig.xml')"/>
+                    <xsl:attribute name="content" select="string-join(($front-end-path, 'favicon', 'browserconfig.xml'), '/')"/>
                 </meta>
                 <meta name="theme-color" content="#ffffff"/>
                 
@@ -195,28 +220,14 @@
                     <xsl:attribute name="content" select="$page-description"/>
                 </meta>
                 <meta property="og:image">
-                    <xsl:attribute name="content" select="concat($front-end-path, '/imgs/logo-stacked-sq.jpg')"/>
+                    <xsl:attribute name="content" select="string-join(($front-end-path, 'imgs', 'logo-stacked-sq.jpg'), '/')"/>
                 </meta>
                 <meta property="og:image:width" content="300"/>
                 <meta property="og:image:height" content="300"/>
-                <meta property="og:site_name" content="84000 Translating The Words of The Budda"/>
+                <meta property="og:site_name" content="84000 Translating The Words of The Buddha"/>
                 <meta name="twitter:card" content="summary"/>
                 <meta name="twitter:image:alt" content="84000 Translating The Words of The Budda Logo"/>
                 <meta name="twitter:site" content="@Translate84000"/>
-                
-                <!--[if lt IE 9]>
-                    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-                    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-                <![endif]-->
-                
-                <script>
-                    <xsl:attribute name="src" select="concat($front-end-path, '/js/84000-fe.min.js', $app-version-url-attribute)"/>
-                </script>
-                
-                <xsl:if test="$view-mode[@annotation eq 'web']">
-                    <!-- <script type="application/json" class="js-hypothesis-config">{"theme": "clean"}</script> -->
-                    <script src="https://hypothes.is/embed.js" async="async"/>
-                </xsl:if>
                 
             </xsl:if>
         
@@ -227,7 +238,7 @@
     <!-- html footer -->
     <xsl:template name="html-footer">
         
-        <xsl:param name="front-end-path" required="yes" as="xs:string"/>
+        <!--<xsl:param name="front-end-path" required="yes" as="xs:string"/>-->
         <xsl:param name="ga-tracking-id" required="no" as="xs:string?"/>
         <xsl:param name="text-id" required="no" as="xs:string?"/>
         
@@ -260,7 +271,7 @@
         <xsl:param name="page-title" required="yes" as="xs:string"/>
         <xsl:param name="page-description" required="yes" as="xs:string"/>
         <xsl:param name="content" required="no" as="node()*"/>
-        <xsl:param name="additional-links" required="no" as="node()*"/>
+        <xsl:param name="additional-tags" required="no" as="node()*"/>
         
         <html>
             
@@ -268,12 +279,12 @@
             
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">
-                <xsl:with-param name="front-end-path" select="$front-end-path"/>
+                <xsl:with-param name="front-end-path" select="$local-front-end-url"/>
                 <xsl:with-param name="page-url" select="$page-url"/>
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="'communications'"/>
-                <xsl:with-param name="additional-links" select="$additional-links"/>
+                <xsl:with-param name="additional-tags" select="$additional-tags"/>
             </xsl:call-template>
             
             <body id="top">
@@ -305,7 +316,7 @@
                 
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
-                    <xsl:with-param name="front-end-path" select="$front-end-path"/>
+                    <!--<xsl:with-param name="front-end-path" select="$front-end-path"/>-->
                     <xsl:with-param name="ga-tracking-id" select="$ga-tracking-id"/>
                 </xsl:call-template>
                 
@@ -322,7 +333,7 @@
         <xsl:param name="page-title" required="yes" as="xs:string"/>
         <xsl:param name="page-description" required="yes" as="xs:string"/>
         <xsl:param name="content" required="no" as="node()*"/>
-        <xsl:param name="additional-links" required="no" as="node()*"/>
+        <xsl:param name="additional-tags" required="no" as="node()*"/>
         <xsl:param name="text-id" required="no" as="xs:string?"/>
         
         <html>
@@ -331,12 +342,12 @@
             
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">
-                <xsl:with-param name="front-end-path" select="$front-end-path"/>
+                <xsl:with-param name="front-end-path" select="$local-front-end-url"/>
                 <xsl:with-param name="page-url" select="$page-url"/>
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="if(contains($page-class, 'utilities')) then 'utilities' else 'reading-room'"/>
-                <xsl:with-param name="additional-links" select="$additional-links"/>
+                <xsl:with-param name="additional-tags" select="$additional-tags"/>
             </xsl:call-template>
             
             <body id="top">
@@ -360,7 +371,7 @@
                 
                 <!-- Get the common <footer> -->
                 <xsl:call-template name="html-footer">
-                    <xsl:with-param name="front-end-path" select="$front-end-path"/>
+                    <!--<xsl:with-param name="front-end-path" select="$front-end-path"/>-->
                     <xsl:with-param name="ga-tracking-id" select="$ga-tracking-id"/>
                     <xsl:with-param name="text-id" select="$text-id"/>
                 </xsl:call-template>
@@ -378,7 +389,7 @@
         <xsl:param name="page-title" required="yes" as="xs:string"/>
         <xsl:param name="page-description" required="yes" as="xs:string"/>
         <xsl:param name="content" required="no" as="node()*"/>
-        <xsl:param name="additional-links" required="no" as="node()*"/>
+        <xsl:param name="additional-tags" required="no" as="node()*"/>
         
         <html>
             
@@ -386,12 +397,12 @@
             
             <!-- Get the common <head> -->
             <xsl:call-template name="html-head">
-                <xsl:with-param name="front-end-path" select="$front-end-path"/>
+                <xsl:with-param name="front-end-path" select="$local-front-end-url"/>
                 <xsl:with-param name="page-url" select="$page-url"/>
                 <xsl:with-param name="page-title" select="$page-title"/>
                 <xsl:with-param name="page-description" select="$page-description"/>
                 <xsl:with-param name="page-type" select="'communications'"/>
-                <xsl:with-param name="additional-links" select="$additional-links"/>
+                <xsl:with-param name="additional-tags" select="$additional-tags"/>
             </xsl:call-template>
             
             <body id="top">
@@ -399,7 +410,7 @@
                 <xsl:attribute name="class" select="$page-class"/>
                 
                 <!-- Place content -->
-                <xsl:copy-of select="$content"/>
+                <xsl:sequence select="$content"/>
                 
             </body>
         </html>
@@ -445,6 +456,39 @@
     <xsl:function name="m:has-user-content" as="xs:boolean">
         <xsl:param name="content" as="node()*"/>
         <xsl:sequence select="if($view-mode[@id eq 'editor'] or $content/descendant-or-self::text()[normalize-space(.)][not(ancestor::tei:head)][not(ancestor::*/@rend = 'default-text')]) then true() else false()"/>
+    </xsl:function>
+    
+    <xsl:function name="m:translation-url-parameters" as="xs:string">
+        <xsl:param name="resource-id" as="xs:string"/>
+        <xsl:param name="append-parameters" as="xs:string*"/>
+        <xsl:variable name="view-mode-parameter" select="m:view-mode-parameter()"/>
+        <xsl:variable name="archive-path-parameter" select="if($resource-id = ($text-id, $toh-key) and $archive-path gt '') then concat('archive-path=', $archive-path) else ()"/>
+        <xsl:value-of select="string-join(($view-mode-parameter, $archive-path-parameter, $append-parameters)[. gt ''], '&amp;')[. gt ''] ! concat('?', .)"/>
+    </xsl:function>
+    
+    <xsl:function name="m:translation-href" as="xs:string">
+        <xsl:param name="resource-id" as="xs:string"/>
+        <xsl:param name="part-id" as="xs:string?"/>
+        <xsl:param name="commentary-id" as="xs:string?"/>
+        <xsl:param name="fragment" as="xs:string?"/>
+        <xsl:value-of select="m:translation-href($resource-id, $part-id, $commentary-id, $fragment, m:translation-url-parameters($resource-id, ()), ())"/>
+    </xsl:function>
+    
+    <xsl:function name="m:translation-href" as="xs:string">
+        <xsl:param name="resource-id" as="xs:string"/>
+        <xsl:param name="part-id" as="xs:string?"/>
+        <xsl:param name="commentary-id" as="xs:string?"/>
+        <xsl:param name="fragment" as="xs:string?"/>
+        <xsl:param name="url-parameters" as="xs:string?"/>
+        <xsl:param name="host" as="xs:string?"/>
+        <xsl:value-of select="concat($host, '/', string-join(('translation', $resource-id, ($part-id[. gt ''], $commentary-id[. gt ''] ! 'index')[1], $commentary-id), '/'), $url-parameters, $fragment ! concat('#', .))"/>
+    </xsl:function>
+    
+    <xsl:function name="m:source-href" as="xs:string">
+        <xsl:param name="resource-id" as="xs:string"/>
+        <xsl:param name="ref-index" as="xs:integer?"/>
+        <xsl:param name="fragment" as="xs:string?"/>
+        <xsl:value-of select="concat('/', string-join(('source', $resource-id, $ref-index ! ('folio', $ref-index)), '/'), m:translation-url-parameters($resource-id, ()), $fragment ! concat('#', .))"/>
     </xsl:function>
     
 </xsl:stylesheet>

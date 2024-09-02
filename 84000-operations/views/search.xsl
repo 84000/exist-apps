@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -15,7 +15,9 @@
         <xsl:variable name="content">
             
             <xsl:call-template name="operations-page">
+                
                 <xsl:with-param name="active-tab" select="@model"/>
+                
                 <xsl:with-param name="tab-content">
                     
                     <h1 class="visible-print-block no-top-margin">
@@ -462,7 +464,7 @@
                     </xsl:if>
                                                 
                     <xsl:if test="m:texts/m:text">
-                        <table class="table table-responsive">
+                        <table class="table table-responsive full-width">
                             
                             <thead>
                                 <tr>
@@ -519,10 +521,10 @@
                                     </xsl:if>
                                     
                                     <!-- Main row - About the text -->
-                                    <tr>
+                                    <tr class="vertical-middle">
                                         
                                         <!-- Toh / status -->
-                                        <td rowspan="4">
+                                        <td rowspan="4" class="vertical-top">
                                             
                                             <xsl:if test="$text/m:sponsors/tei:div[@type eq 'acknowledgment'][tei:p]">
                                                 <xsl:attribute name="rowspan" select="'4'"/>
@@ -571,37 +573,18 @@
                                             
                                         </td>
                                         
-                                        <!-- Title / links to forms / stats -->
+                                        <!-- Title -->
                                         <td>
                                             
-                                            <!-- Title -->
                                             <a target="_blank" class="printable">
-                                                <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', $text/m:toh/@key, '.html')"/>
+                                                <xsl:attribute name="href" select="m:translation-href(($text/m:toh/@key)[1], (), (), (), (), $reading-room-path)"/>
                                                 <xsl:value-of select="($text/m:titles/m:title[@xml:lang eq 'en'], $text/m:titles/m:title[@xml:lang eq 'Sa-Ltn'], $text/m:titles/m:title[@xml:lang eq 'Bo-Ltn'])[normalize-space()][1]"/>
                                             </a>
-                                            
-                                            <!-- Stats -->
-                                            <xsl:if test="$text-translation-status/@word-count ! xs:integer(.) gt 0 or $text-translation-status/@glossary-count ! xs:integer(.) gt 0">
-                                                <div class="sml-margin top">
-                                                    <ul class="list-inline inline-dots small text-muted hidden-print">
-                                                        <xsl:if test="$text-translation-status/@word-count ! xs:integer(.) gt 0">
-                                                            <li>
-                                                                <xsl:value-of select="concat(format-number($text-translation-status/@word-count, '#,###'), ' words translated')"/>
-                                                            </li>
-                                                        </xsl:if>
-                                                        <xsl:if test="$text-translation-status/@glossary-count ! xs:integer(.) gt 0">
-                                                            <li>
-                                                                <xsl:value-of select="concat(format-number($text-translation-status/@glossary-count, '#,###'), ' glossaries')"/>
-                                                            </li>
-                                                        </xsl:if>
-                                                    </ul>
-                                                </div>
-                                            </xsl:if>
                                             
                                         </td>
                                         
                                         <!-- Pages / location -->
-                                        <td class="nowrap small">
+                                        <td class="nowrap small w-60px">
                                             <xsl:variable name="text-pages" select="$text/m:source/m:location/@count-pages ! xs:integer(.)" as="xs:integer?"/>
                                             <xsl:variable name="status-pages" as="xs:integer?">
                                                 <xsl:call-template name="status-pages">
@@ -617,20 +600,20 @@
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                         </td>
-                                        <td class="nowrap small hidden-print">
+                                        <td class="nowrap small w-60px hidden-print">
                                             <xsl:variable name="start-volume-number" select="min($text/m:source/m:location/m:volume/@number)"/>
                                             <xsl:variable name="start-volume" select="$text/m:source/m:location/m:volume[@number ! xs:integer(.) eq $start-volume-number][1]"/>
                                             <xsl:value-of select="concat('vol. ' , $start-volume/@number, ', p. ', $start-volume/@start-page)"/>
                                         </td>
-                                        <td class="nowrap small hidden-print">
+                                        <td class="nowrap small w-60px hidden-print">
                                             <xsl:variable name="end-volume-number" select="max($text/m:source/m:location/m:volume/@number)"/>
                                             <xsl:variable name="end-volume" select="$text/m:source/m:location/m:volume[@number ! xs:integer(.) eq $end-volume-number][1]"/>
                                             <xsl:value-of select="concat('vol. ' , $end-volume/@number, ', p. ', $end-volume/@end-page)"/>
                                         </td>
                                         
                                         <!-- Sponsorship -->
-                                        <td>
-                                            <xsl:copy-of select="ops:sponsorship-status($text/m:sponsorship-status/m:status)"/>
+                                        <td class="nowrap w-60px">
+                                            <xsl:sequence select="ops:sponsorship-status($text/m:sponsorship-status/m:status)"/>
                                         </td>
                                         
                                     </tr>
@@ -641,7 +624,7 @@
                                             
                                             <xsl:call-template name="text-links-list">
                                                 <xsl:with-param name="text" select="$text"/>
-                                                <xsl:with-param name="exclude-links" select="('source-folios')"/>
+                                                <xsl:with-param name="disable-links" select="()"/>
                                                 <xsl:with-param name="text-status" select="$text-status"/>
                                                 <xsl:with-param name="glossary-filter" select="$texts/@filter"/>
                                             </xsl:call-template>
@@ -726,6 +709,14 @@
                                                 </div>
                                             </xsl:if>
                                             
+                                            <xsl:if test="$text[@status-group eq 'published'] and $text/m:downloads/m:download[@timestamp ! xs:dateTime(.) lt parent::m:downloads/@tei-timestamp ! xs:dateTime(.)]">
+                                                <hr/>
+                                                <div class="text-warning small">
+                                                    <i class="fa fa-exclamation-circle"/>
+                                                    <xsl:value-of select="' TEI updated since files were generated'"/>
+                                                </div>
+                                            </xsl:if>
+                                            
                                             <!-- Project targets -->
                                             <hr/>
                                             <div>
@@ -739,12 +730,12 @@
                                                                 <xsl:choose>
                                                                     <xsl:when test="xs:integer($next-target-date/@due-days) ge 0">
                                                                         <span class="label label-success">
-                                                                            <xsl:value-of select="concat($next-target-date/@due-days, ' days')"/>
+                                                                            <xsl:value-of select="concat($next-target-date/@due-days, ($next-target-date[@due-days ! xs:integer(.) eq 1] ! ' day', ' days')[1])"/>
                                                                         </span>
                                                                     </xsl:when>
                                                                     <xsl:when test="xs:integer($next-target-date/@due-days) lt 0">
                                                                         <span class="label label-danger">
-                                                                            <xsl:value-of select="concat(abs($next-target-date/@due-days), ' overdue')"/>
+                                                                            <xsl:value-of select="concat(abs($next-target-date/@due-days), ($next-target-date[@due-days ! xs:integer(.) eq 1] ! ' day', ' days')[1], ' overdue')"/>
                                                                         </span>
                                                                     </xsl:when>
                                                                 </xsl:choose>
@@ -790,10 +781,25 @@
                                                         </li>
                                                     </xsl:for-each>
                                                     
-                                                    <xsl:if test="$text/@status-group eq 'published'">
+                                                    <xsl:if test="$text[@status-group eq 'published']">
                                                         <li>
                                                             <span class="small italic">
                                                                 <xsl:value-of select="concat('Publication date: ', format-date($text/m:publication/m:publication-date, '[D01] [MNn,*-3] [Y]'))"/>
+                                                            </span>
+                                                        </li>
+                                                    </xsl:if>
+                                                    
+                                                    <xsl:if test="$text-translation-status[@word-count ! xs:integer(.) gt 0]">
+                                                        <li>
+                                                            <span class="small italic">
+                                                                <xsl:value-of select="concat(format-number($text-translation-status/@word-count, '#,###'), ' words translated')"/>
+                                                            </span>
+                                                        </li>
+                                                    </xsl:if>
+                                                    <xsl:if test="$text-translation-status[@glossary-count ! xs:integer(.) gt 0]">
+                                                        <li>
+                                                            <span class="small italic">
+                                                                <xsl:value-of select="concat(format-number($text-translation-status/@glossary-count, '#,###'), ' glossaries')"/>
                                                             </span>
                                                         </li>
                                                     </xsl:if>
@@ -854,6 +860,14 @@
                     </div>
                 
                 </xsl:with-param>
+                
+                <xsl:with-param name="aside-content">
+                    
+                    <!-- Dual-view pop-up -->
+                    <xsl:call-template name="dualview-popup"/>
+                    
+                </xsl:with-param>
+                
             </xsl:call-template>
             
         </xsl:variable>

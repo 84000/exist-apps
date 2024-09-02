@@ -3,7 +3,7 @@
     
     <xsl:import href="../../../xslt/webpage.xsl"/>
     
-    <xsl:variable name="environment" select="/m:response/m:environment"/>
+    <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
     
     <xsl:template match="/m:response">
         

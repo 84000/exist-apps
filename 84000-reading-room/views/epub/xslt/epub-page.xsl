@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0" exclude-result-prefixes="#all">
         
     <xsl:template name="epub-page">
         
@@ -15,7 +15,7 @@
                 <link href="css/fontStyles.css" rel="stylesheet" type="text/css"/>
             </head>
             <body lang="en-GB" xml:lang="en-GB">
-                <xsl:copy-of select="$content"/>
+                <xsl:sequence select="$content"/>
             </body>
         </html>
         

@@ -2,7 +2,7 @@ xquery version "3.0" encoding "UTF-8";
 
 declare namespace m = "http://read.84000.co/ns/1.0";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace functx="http://www.functx.com";
 
@@ -123,7 +123,7 @@ return
 
     (: return html data :)
     if($resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/sys-config.xsl'))
+        common:html($xml-response, concat(helper:app-path(), '/views/sys-config.xsl'))
     )
     
     (: return xml data :)

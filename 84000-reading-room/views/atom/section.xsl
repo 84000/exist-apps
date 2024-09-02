@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/2005/Atom" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dc="http://purl.org/dc/terms/" version="3.0" exclude-result-prefixes="#default">
+<xsl:stylesheet xmlns="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dc="http://purl.org/dc/terms/" version="3.0" exclude-result-prefixes="#default">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -259,7 +259,7 @@
                 </eft:summary>
             </xsl:if>
             
-            <xsl:for-each select="$text/eft:downloads/eft:download[@type = ('epub', 'pdf')]">
+            <xsl:for-each select="$text/eft:files/eft:file[@type = ('pdf','epub')][@group eq 'translation-files'][@timestamp gt '']">
                 <xsl:variable name="download" select="."/>
                 <link>
                     <xsl:choose>
@@ -270,7 +270,7 @@
                             <xsl:attribute name="type" select="'application/pdf'"/>
                         </xsl:when>
                     </xsl:choose>
-                    <xsl:attribute name="href" select="$download/@url"/>
+                    <xsl:attribute name="href" select="$download/@source"/>
                     <xsl:attribute name="rel" select="'http://opds-spec.org/acquisition/open-access'"/>
                 </link>
             </xsl:for-each>

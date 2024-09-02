@@ -35,7 +35,7 @@
         <p>This print version was generated at #CurrentDateTime from the online version of the text available on that date. If some time has
             elapsed since then, this version may have been superseded, as most of 84000’s published translations undergo significant updates
             from time to time. For the latest online version, with bilingual display, interactive glossary entries and notes, and a variety
-            of further download options, please see <a href="#LinkToSelf" class="printable">#LinkToSelf</a>.</p>
+            of further download options, please see <a href="#canonicalHTML" class="printable">#canonicalHTML</a>.</p>
     </item>
     <item key="translation.partial-text-warning">This webpage does not include the entire published text</item>
     <item key="translation.partial-text-link">The full translation is available to download as pdf at:</item>
@@ -85,8 +85,8 @@
     
     <!-- About -->
     <item key="about.common.sponsor-button-label">護持84000</item>
-    <item key="about.common.sponsor-button-link">#commsSiteUrl/ch-give-monthly</item>
-    <item key="about.common.donate-instructions-link">#commsSiteUrl/media/ch_donate_instructions.pdf</item>
+    <item key="about.common.sponsor-button-link">https://84000.co/ch-give-monthly</item>
+    <item key="about.common.donate-instructions-link">https://84000.co/media/ch_donate_instructions.pdf</item>
     <item key="about.common.donate-instructions-label">幫助</item>
     <item key="about.common.donate-instructions-link-title">如何線上捐款</item>
     <item key="about.common.sharing-label">Share this page:</item>
@@ -102,7 +102,7 @@
     
     <!-- Progress -->
     <item key="about.progress.page-title">翻譯進度</item>
-    <item key="about.progress.header-img-src">#feSiteUrl/imgs/about-headers/progress.jpg</item>
+    <item key="about.progress.header-img-src">/images/about-headers/progress.jpg</item>
     <item key="about.progress.page-quote">「佛法是如何助益你，你應該有親身體會。既然如此, 如果你發心以你的翻譯去影響外界，這必定會改變世界。其實已經在改變世界了。」</item>
     <item key="about.progress.page-quote-author">吉噶康楚仁波切</item>
     <item key="about.progress.page-intro">【八萬四千．佛典傳譯】百年願景的第一部份，是將《甘珠爾》的70,000頁翻譯成英文，之後再開始《丹珠爾》161,800頁的翻譯工作。翻譯作品列表</item>
@@ -119,17 +119,17 @@
         <h2>其他相關頁面</h2>
         <ul class="list-unstyled">
             <li>
-                <a href="#commsSiteUrl/ch-about/ch-about-workflow">點擊此了解一頁經文從翻譯到出版的過程</a>
+                <a href="https://84000.co/ch-about/ch-about-workflow">點擊此了解一頁經文從翻譯到出版的過程</a>
             </li>
             <li>
-                <a href="#commsSiteUrl/facts-and-figures-about-kangyur-and-tengyur">點擊此了解更多關於《甘珠爾》與《丹珠爾》的內容與歷史</a>
+                <a href="https://84000.co/facts-and-figures-about-kangyur-and-tengyur">點擊此了解更多關於《甘珠爾》與《丹珠爾》的內容與歷史</a>
             </li>
         </ul>
     </item>
     
     <!-- Impact -->
     <item key="about.impact.page-title">讀者互動</item>
-    <item key="about.impact.header-img-src">#feSiteUrl/imgs/about-headers/impact.jpg</item>
+    <item key="about.impact.header-img-src">/images/about-headers/impact.jpg</item>
     <item key="about.impact.page-quote">「《甘珠爾》與《丹珠爾》並不僅是一個傳統、一個文明時代或一個國家的遺產,而是整個世界的珍貴遺產。」</item>
     <item key="about.impact.page-quote-author">祖古貝馬望買仁波切</item>
     <item key="about.impact.page-intro">
@@ -159,44 +159,14 @@
     <item key="about.impact.engagement-description">
         <p>僅在2020年中，讀者就於雲端藏經閣下載了#annualDownloadsFormatted次的經文。</p>
     </item>
-    <!--<item key="about.impact.popular-views-stat">
-        <div class="heading">熱門經典的 <br/> 閱覽次數</div>
-        <div class="data">
-            <span>#topTextViewsFormatted</span>
-        </div>
-    </item>
-    <item key="about.impact.popular-description">
-        <p>2018年裡，雲端藏經閣已被瀏覽150000次，而最受歡迎的5部經典共被閱覽43610次。這5部經文為：</p>
-        <ol>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-055-001.html?lang=zh">《三摩地王經》</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-031-002.html?lang=zh">《般若波羅蜜多萬頌》</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-060-005.html?lang=zh">《維摩詰所說經》</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-062-010.html?lang=zh">《佛說稻芉經》</a>
-            </li>
-            <li>
-                <a href="#readingRoomSiteUrl/translation/UT22084-062-012.html?lang=zh">《緣起經》</a>
-            </li>
-        </ol>
-        <p>我們目前有21000頁經文正在翻譯中，期望近期能夠出版更多經典供您免費閱讀。</p>
-    </item>
-    <item key="about.impact.countries-title">讀者來源:</item>
-    <item key="about.impact.countries-legend">*備註：以上圖案僅列出部分讀者所處國家與地區，並非全數。</item>
-    <item key="about.impact.countries-timestamp">最後更新日期：2018年8月5日</item>-->
     
     <!-- Sponsors -->
     <item key="about.sponsors.page-title">贊助者</item>
-    <item key="about.sponsors.header-img-src">#feSiteUrl/imgs/about-headers/sponsors.jpg</item>
+    <item key="about.sponsors.header-img-src">/images/about-headers/sponsors.jpg</item>
     <item key="about.sponsors.page-quote">「無論是慷慨的施主，或是學識淵博且經驗豐富的譯者們，都能因彼此之間相輔相成的因緣，而圓滿福慧二種資糧的積累。」</item>
     <item key="about.sponsors.page-quote-author">赤熱巴巾（又稱赤祖德贊王）</item>
     <item key="about.sponsors.page-intro">
-        <p>84000的佛典傳譯工作能夠順利進行，靠的是上千位贊助者的慷慨支持。贊助者可選擇以「贊助一頁佛經」 <a href="#commsSiteUrl/ch-give-monthly">每月定捐</a> 、 <a href="#commsSiteUrl/ch-download-dana">「隨喜贊助」</a> ，或下方其他方式給予支持。每一份善款——無論金額大小——均是功德無量的佈施。</p>
+        <p>84000的佛典傳譯工作能夠順利進行，靠的是上千位贊助者的慷慨支持。贊助者可選擇以「贊助一頁佛經」 <a href="https://84000.co/ch-give-monthly">每月定捐</a> 、 <a href="https://84000.co/ch-download-dana">「隨喜贊助」</a> ，或下方其他方式給予支持。每一份善款——無論金額大小——均是功德無量的佈施。</p>
     </item>
     <item key="about.sponsors.matching-funds-title">對等基金贊助人</item>
     <item key="about.sponsors.sutras-title">「一部佛典」贊助人</item>
@@ -207,9 +177,9 @@
     <item key="about.sponsors.matching-funds-list-title">
         對等基金贊助人
     </item>
-    <item key="about.sponsors.sponsor-sutras-link">#readingRoomSiteUrl/about/sponsor-a-sutra.html?lang=zh</item>
+    <item key="about.sponsors.sponsor-sutras-link">/about/sponsor-a-sutra.html?lang=zh</item>
     <item key="about.sponsors.sutras-description">
-        <p>我們每年都會挑選出一些長篇幅的重要經典，加入<a href="#readingRoomSiteUrl/about/sponsor-a-sutra.html?lang=zh">「贊助一部佛典」</a>計畫之中。為了圓滿完成優質的翻譯，需要進行大量的研究與諮詢，因此需要較多的贊助經費。我們非常感謝所有贊助人的慷慨支持。</p>
+        <p>我們每年都會挑選出一些長篇幅的重要經典，加入<a href="/about/sponsor-a-sutra.html?lang=zh">「贊助一部佛典」</a>計畫之中。為了圓滿完成優質的翻譯，需要進行大量的研究與諮詢，因此需要較多的贊助經費。我們非常感謝所有贊助人的慷慨支持。</p>
     </item>
     <item key="about.sponsors.sutras-list-title">
         「一部佛典」贊助人
@@ -217,7 +187,7 @@
     <item key="about.sponsors.founding-description">
         <p>我們要特別感謝108位創始贊助人如此慷慨地提供首批資金，以幫助【八萬四千•佛典傳譯】開始進行翻譯佛陀言教的任務。為了促使該計畫得以起航，每位捐助者都承諾在五年內資助50,000-250,000美元。除了作為首輪翻譯項目所提供的資金之外，這筆基金也分配運用在為評審、編輯和出版前各項工作創建的基礎設施；開發翻譯工作所需的工具和資源、培訓翻譯和編輯、初期規畫成本以及當前和即將進行的行政管理運營成本。</p>
         <p>正因為這些慷慨且有遠見的創始贊助人，84000計畫才得以成功地開展，並於短期內完成了大量佛陀言教的翻譯任務，進展顯著。我們衷心感謝所有捐助者，使我們能夠保護無價的世界文化遺產，從而流通後代為普世所共享。</p>
-        <p>84000計畫的主席宗薩欽哲仁波切給108位創始贊助者寫下一段話。<a href="#commsSiteUrl/ch-message-to-founding-sponsors">點擊此處查看仁波切的開示。</a>
+        <p>84000計畫的主席宗薩欽哲仁波切給108位創始贊助者寫下一段話。<a href="https://84000.co/ch-message-to-founding-sponsors">點擊此處查看仁波切的開示。</a>
         </p>
     </item>
     <item key="about.sponsors.founding-list-title">
@@ -227,7 +197,7 @@
     
     <!-- Translators -->
     <item key="about.translators.page-title">翻譯團隊</item>
-    <item key="about.translators.header-img-src">#feSiteUrl/imgs/about-headers/translators.jpg</item>
+    <item key="about.translators.header-img-src">/images/about-headers/translators.jpg</item>
     <item key="about.translators.page-quote">「譯者們必須真正團結起來, 形成一個和諧的群體, 一起為當代及未來的世代而努力, 這是非常重要的。」</item>
     <item key="about.translators.page-quote-author">吉噶康楚仁波切</item>
     <item key="about.translators.page-intro">
@@ -249,7 +219,7 @@
     
     <!-- Sponsor a Sutra -->
     <item key="about.sponsor-a-sutra.page-title">贊助一部佛典</item>
-    <item key="about.sponsor-a-sutra.header-img-src">#feSiteUrl/imgs/about-headers/sponsor-a-sutra.jpg</item>
+    <item key="about.sponsor-a-sutra.header-img-src">/images/about-headers/sponsor-a-sutra.jpg</item>
     <item key="about.sponsor-a-sutra.page-quote">「佛經傳述了佛陀言教，因此佛經無比的珍貴，遠比佛像更為珍貴。」</item>
     <item key="about.sponsor-a-sutra.page-quote-author">嘎千仁波切</item>
     <item key="about.sponsor-a-sutra.page-intro">
@@ -289,7 +259,7 @@
     <!-- Progress panel widget -->
     <item key="widget.progress-panel.support-label">護持【八萬四千•佛典傳譯】</item>
     <item key="widget.progress-panel.support-description">
-        <p>我們在<a href="#readingRoomSiteUrl/about/sponsors.html?lang=zh">108 founding sponsors</a> 108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
+        <p>我們在<a href="/about/sponsors.html?lang=zh">108 founding sponsors</a> 108位創始贊助人和數千位捐助者的幫助下，持續資助佛典的翻譯。共七萬頁的《甘珠爾》經文，仍需要您的發心贊助，請加入我們的行列。</p>
     </item>
     <!--<item key="widget.progress-panel.kangyur-count-before-label">《甘珠爾》總頁數</item>
     <item key="widget.progress-panel.translation-count-before-label">翻譯中頁數</item>
@@ -333,7 +303,7 @@
         <p>本部經典由【八萬四千 • 佛典傳譯】免費出版流通。</p>
         <p>如若您因此心生喜悅想隨喜贊助，請點擊「隨喜贊助」，為佛法傳世點燃無盡藏法燈，延續無盡藏傳承！</p>
     </item>
-    <item key="widget.download-dana.donate-form-link">/ch-give-monthly</item>
+    <item key="widget.download-dana.donate-form-link">https://84000.co/ch-give-monthly</item>
     <item key="widget.download-dana.donate-form-link-label">點擊此線上捐款</item>
     
     <!-- Audio test -->

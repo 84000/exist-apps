@@ -5,7 +5,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace tmx="http://www.lisa.org/tmx14";
 declare namespace bcrdb="http://www.bcrdb.org/ns/1.0";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace update-tm="http://operations.84000.co/update-tm" at "../modules/update-tm.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -23,7 +23,7 @@ let $tmx := collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $
 (: If no tmx, try fixing it :)
 let $tmx := 
     if(not($tmx)) then
-        let $fix-mime-type := local:fix-tm-mimetypes()
+        let $fix-mime-type := helper:fix-tm-mimetypes()
         return
             collection($update-tm:tm-path)//tmx:tmx[tmx:header/@eft:text-id eq $text-id]
     else 
@@ -35,7 +35,7 @@ let $update-tm :=
     (: Apply revisions :)
     if($tmx and request:get-parameter('form-action', '') eq 'apply-revisions') then 
     
-        local:async-script(
+        helper:async-script(
             'tm-maintenance',
             <parameters xmlns="">
                 <param name="text-id" value="{ $text-id}"/>
@@ -125,7 +125,7 @@ return
 
     (: return html data :)
     if($request/@resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/edit-tm.xsl'))
+        common:html($xml-response, concat(helper:app-path(), '/views/edit-tm.xsl'))
     )
     
     (: return xml data :)

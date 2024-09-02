@@ -17,6 +17,7 @@ import module namespace knowledgebase="http://read.84000.co/knowledgebase" at "k
 import module namespace entities="http://read.84000.co/entities" at "entities.xql";
 import module namespace contributors="http://read.84000.co/contributors" at "contributors.xql";
 import module namespace devanagari="http://read.84000.co/devanagari" at "devanagari.xql";
+import module namespace store="http://read.84000.co/store" at "store.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $glossary:types := ('term', 'person', 'place', 'text');
@@ -44,8 +45,8 @@ declare variable $glossary:tei := (
 
 declare variable $glossary:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-        <view-mode id="default"  client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache"/>
-        <view-mode id="editor"   client="browser" layout="full" glossary="no-cache" parts="all" cache="no-cache"/>
+        <view-mode id="default"  client="browser" layout="full" glossary="no-cache" parts="all" cache="use-cache" annotation="none"/>
+        <view-mode id="editor"   client="browser" layout="full" glossary="no-cache" parts="all" cache="no-cache"  annotation="editor"/>
     </view-modes>;
     
 declare variable $glossary:attestation-types :=
@@ -102,7 +103,9 @@ declare variable $glossary:attestation-types :=
 
 declare variable $glossary:empty-term-placeholders := (common:local-text('glossary.term-empty-sa-ltn', 'en'), common:local-text('glossary.term-empty-bo-ltn', 'en'));
 
-declare variable $glossary:stopwords-en := ("a", "an", "and", "are", "as", "at", "be", "but", "by","for", "if", "in", "into", "is", "it","no", "not", "of", "on", "or", "such","that", "the", "their", "then", "there", "these","they", "this", "to", "was", "will", "with");
+declare variable $glossary:stopwords-en := ("a","an","and","are","as","at","be","but","by","for","if","in","into","is","it","no","not","of","on","or","such","that","the","their","then","there","these","they","this","to","was","will","with");
+
+declare variable $glossary:cached-locations-path := string-join(($common:static-content-path, 'glossary', 'cached-locations'), '/');
 
 declare function local:lookup-options() as element() {
     <options>
@@ -140,13 +143,6 @@ declare function local:search-query($string as xs:string) as element() {
 
 declare function local:valid-type($type as xs:string*) as xs:string* {
     $type[lower-case(.) = $glossary:types]
-};
-
-declare function local:lang-field($valid-lang as xs:string) as xs:string {
-    if($valid-lang eq 'Sa-Ltn-x') then
-        'sa-term'
-    else
-        'full-term'
 };
 
 declare function glossary:glossary-search($type as xs:string*, $lang as xs:string, $search as xs:string, $exclude-status as xs:string*) as element(tei:term)* {
@@ -264,6 +260,7 @@ declare function glossary:glossary-flagged($flag-type as xs:string*, $glossary-t
             let $flagged-instances := $entities:entities//m:flag[@type eq $flag/@id]/parent::m:instance
             return
                 $glossary:tei//tei:gloss/id($flagged-instances/@id)[not(@mode eq 'surfeit')][@type = $valid-glossary-type]
+
 };
 
 declare function glossary:entries($glossary-ids as xs:string*, $include-context as xs:boolean) as element(m:entry)* {
@@ -420,9 +417,7 @@ declare function local:distinct-terms($terms as element(tei:term)*) as xs:string
         $term-text-prefixed[1]
 };
 
-declare function glossary:cache-combined-xml($request-xml as element(m:request), $cache-key as xs:string) as xs:boolean {
-    
-    (: This needs generating in a different way as it exceeds the limit for output in exist :)
+declare function glossary:glossary-combined() as element(m:glossary-combined) {
     
     let $entities := $entities:entities/m:entity
     let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = 'excluded')]
@@ -492,7 +487,7 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                                 },
                                 
                                 (: Glossary links :)
-                                $gloss ! ( text{ common:ws(3) }, element link { attribute href { translation:canonical-html($toh/@key, ()) || '#' || @xml:id } } )
+                                $gloss ! ( text{ common:ws(3) }, element link { attribute href { translation:canonical-html($toh/@key, (), ()) || '#' || @xml:id } } )
                                 
                             ),
                             
@@ -528,9 +523,9 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
                     text{ common:ws(1) }
                     
                 }
-                
+     
     (: Save file with just the terms :)
-    let $glossary-combined := 
+    return
         element { QName('http://read.84000.co/ns/1.0', 'glossary-combined') } {
         
             attribute created { current-dateTime() },
@@ -545,6 +540,13 @@ declare function glossary:cache-combined-xml($request-xml as element(m:request),
             
             text{ $common:chr-nl }
         }
+};
+
+declare function glossary:cache-combined-xml($request-xml as element(m:request), $cache-key as xs:string) as xs:boolean {
+    
+    (: This needs generating in a different way as it exceeds the limit for output in exist :)
+    
+    let $glossary-cobined := glossary:glossary-combined()
     
     let $cache-put := common:cache-put($request-xml, $glossary-combined, $cache-key)
     
@@ -558,35 +560,52 @@ declare function glossary:spreadsheet-data($request-xml as element(m:request), $
     let $glossary-combined := common:cache-get($request-xml, $cache-key)//m:glossary-combined
     where $glossary-combined
     return
-        element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
-        
-            attribute key { concat('84000-glossary-', format-dateTime(current-dateTime(), '[Y0001]-[M01]-[D01]'))},
-            
-            for $term in $glossary-combined/m:term
-            return
-                element row {
-                    element Tibetan { $term/m:tibetan/string() },
-                    element Wylie { $term/m:wylie/string() },
-                    element Type { string-join($term/m:type, '; ') },
-                    element Translation { string-join($term/m:translation, '; ') },
-                    element Sanskrit { string-join($term/m:sanskrit, '; ') },
-                    element Chinese { string-join($term/m:chinese, '; ') },
-                    element Pali { string-join($term/m:pali, '; ') },
-                    element Definition { 
-                        attribute width { '80' }, 
-                        string-join($term/m:definition, '; ')
-                    },
-                    element Tohs { string-join($term/m:ref/m:toh , '; ') },
-                    if($term[@href]) then
-                        element Link { 
-                            attribute width { '40' }, 
-                            $term/@href/string() 
-                        }
-                    else ()
-                }
-                
-        }
+        glossary:spreadsheet-data($glossary-combined)
     
+};
+
+declare function glossary:spreadsheet-data() as element(m:spreadsheet-data)? {
+    
+    let $glossary-downloads := glossary:downloads()
+    let $glossary-download-xml := $glossary-downloads/m:download[@type eq 'xml']
+    let $glossary-combined := doc(xs:anyURI(concat($glossary-download-xml/@collection, '/', $glossary-download-xml/@filename)))/m:glossary-combined
+    
+    where $glossary-combined
+    return
+        glossary:spreadsheet-data($glossary-combined)
+    
+};
+
+declare function glossary:spreadsheet-data($glossary-combined as element(m:glossary-combined)) as element(m:spreadsheet-data) {
+
+    element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
+        
+        attribute key { concat('84000-glossary-', format-dateTime(current-dateTime(), '[Y0001]-[M01]-[D01]'))},
+        
+        for $term in $glossary-combined/m:term
+        return
+            element row {
+                element Tibetan { $term/m:tibetan/string() },
+                element Wylie { $term/m:wylie/string() },
+                element Type { string-join($term/m:type, '; ') },
+                element Translation { string-join($term/m:translation, '; ') },
+                element Sanskrit { string-join($term/m:sanskrit, '; ') },
+                element Chinese { string-join($term/m:chinese, '; ') },
+                element Pali { string-join($term/m:pali, '; ') },
+                element Definition { 
+                    attribute width { '80' }, 
+                    string-join($term/m:definition, '; ')
+                },
+                element Tohs { string-join($term/m:ref/m:toh , '; ') },
+                if($term[@href]) then
+                    element Link { 
+                        attribute width { '40' }, 
+                        $term/@href/string() 
+                    }
+                else ()
+            }
+    }
+
 };
 
 declare function glossary:combined-txt($request-xml as element(m:request), $cache-key as xs:string, $key as xs:string?) as text()* {
@@ -594,29 +613,108 @@ declare function glossary:combined-txt($request-xml as element(m:request), $cach
     let $glossary-combined := common:cache-get($request-xml, $cache-key)//m:glossary-combined
     where $glossary-combined
     return
-        for $term at $position in $glossary-combined/m:term
-        where $term/m:tibetan[text()]
-        return (
-            
-            if($position gt 1) then text { '&#10;' } else (),
-            text { 
-                concat(
-                    if($key eq 'wy') then $term/m:wylie/text() else $term/m:tibetan/text(), '&#9;',
-                    if($term/m:type[text()]) then concat('Type: ', string-join($term/m:type, '; '), ' / ') else (),
-                    if($term/m:translation[text()]) then concat('Translated: ', string-join($term/m:translation, '; '), ' / ') else (),
-                    if($term/m:sanskrit[text()]) then concat('Sanskrit: ', string-join($term/m:sanskrit, '; '), ' / ') else (),
-                    if($term/m:chinese[text()]) then concat('Chinese: ', string-join($term/m:chinese, '; '), ' / ') else (),
-                    if($term/m:pali[text()]) then concat('Pali: ', string-join($term/m:pali, '; '), ' / ') else (),
-                    if($term/m:definition[text()]) then concat('Definition: ', string-join($term/m:definition, '; '), ' / ') else (),
-                    if($term[@href]) then
-                        concat('Link: ', $term/@href/string())
-                    else ()
-                    (:concat('Tohs: ', string-join($term/m:ref/m:toh, '; '), ' / '),:)
-                    (:concat('Translators: ', string-join($term/m:ref/m:translator, '; ')):)
-                )
-            }
+        glossary:combined-txt($glossary-combined, $key)
+        
+};
+
+declare function glossary:combined-txt($key as xs:string?) as text()* {
+
+    let $glossary-downloads := glossary:downloads()
+    let $glossary-download-xml := $glossary-downloads/m:download[@type eq 'xml']
+    let $glossary-combined := doc(xs:anyURI(concat($glossary-download-xml/@collection, '/', $glossary-download-xml/@filename)))/m:glossary-combined
     
-        )
+    where $glossary-combined
+    return
+        glossary:combined-txt($glossary-combined, $key)
+};
+
+declare function glossary:combined-txt($glossary-combined as element(m:glossary-combined), $key as xs:string?) as text()* {
+
+    for $term at $position in $glossary-combined/m:term
+    where $term/m:tibetan[text()]
+    return (
+        
+        if($position gt 1) then text { '&#10;' } else (),
+        text { 
+            concat(
+                if($key eq 'wy') then $term/m:wylie/text() else $term/m:tibetan/text(), '&#9;',
+                if($term/m:type[text()]) then concat('Type: ', string-join($term/m:type, '; '), ' / ') else (),
+                if($term/m:translation[text()]) then concat('Translated: ', string-join($term/m:translation, '; '), ' / ') else (),
+                if($term/m:sanskrit[text()]) then concat('Sanskrit: ', string-join($term/m:sanskrit, '; '), ' / ') else (),
+                if($term/m:chinese[text()]) then concat('Chinese: ', string-join($term/m:chinese, '; '), ' / ') else (),
+                if($term/m:pali[text()]) then concat('Pali: ', string-join($term/m:pali, '; '), ' / ') else (),
+                if($term/m:definition[text()]) then concat('Definition: ', string-join($term/m:definition, '; '), ' / ') else (),
+                if($term[@href]) then
+                    concat('Link: ', $term/@href/string())
+                else ()
+                (:concat('Tohs: ', string-join($term/m:ref/m:toh, '; '), ' / '),:)
+                (:concat('Translators: ', string-join($term/m:ref/m:translator, '; ')):)
+            )
+        }
+
+    )
+    
+};
+
+declare function glossary:combined-dict($key as xs:string?) as xs:base64Binary? {
+    
+    let $pyglossary-file := $common:environment/m:glossary-downloads-conf/m:pyglossary-path ! concat('/', .)
+    let $target-folder := $common:environment/m:glossary-downloads-conf/m:sync-path ! concat('/', .)
+    
+    let $glossary-downloads := glossary:downloads()
+    let $glossary-download-txt := $glossary-downloads/m:download[@type eq 'txt'][@lang-key eq $key]
+    let $glossary-download-dict := $glossary-downloads/m:download[@type eq 'dict'][@lang-key eq $key]
+    
+    where $pyglossary-file and $target-folder and $glossary-download-txt/@last-modified[. gt ''] and $glossary-download-dict
+    
+    (: Sync the txt file to file system :)
+    let $target-folder-txt := string-join(($target-folder, 'txt'),'/')
+    let $sync-txt := file:sync($glossary-download-txt/@collection, $target-folder-txt, ())
+    
+    (: Make target folder to create the dict file into :)
+    let $target-folder-dict := string-join(($target-folder, 'dict'),'/')
+    let $target-subfolder-dict := tokenize($glossary-download-dict/@filename, '\.')[1]
+    let $make-target-folder-dict:= file:mkdirs($target-folder-dict)
+    let $make-target-subfolder-dict:= file:mkdirs(concat($target-folder-dict, '/', $target-subfolder-dict))
+    
+    (: Use pyglossary to process txt file :)
+    let $exec-pyglossary := (
+        'python3', 
+        $pyglossary-file, 
+        concat($target-folder-txt, '/', $glossary-download-txt/@filename), 
+        concat($target-folder-dict, '/', $target-subfolder-dict),
+        '--read-format=Tabfile',
+        '--write-format=Stardict',
+        '--no-interactive'
+    )
+    
+    let $exec-pyglossary-options := 
+        <options>
+            <workingDir>{$target-folder}</workingDir>
+        </options>
+        
+    let $generate-dict-files := process:execute($exec-pyglossary, $exec-pyglossary-options)
+    
+    (: Zip pyglossary output into dict file :)
+    let $dict-filename-zip := concat($target-subfolder-dict, '.zip')
+    
+    let $exec-zip := (
+        'zip', 
+        '-rj', 
+        $dict-filename-zip,
+        $target-subfolder-dict
+    )
+    
+    let $exec-zip-options := 
+        <options>
+            <workingDir>{$target-folder-dict}</workingDir>
+        </options>
+    
+    let $zip-dict-files := process:execute($exec-zip, $exec-zip-options)
+    
+    return
+        file:read-binary(concat('file://', $target-folder-dict, '/', $dict-filename-zip))
+        
 };
 
 declare function glossary:item-count($tei as element(tei:TEI)) as xs:integer {
@@ -675,8 +773,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 attribute id { tei-content:id($tei) },
                 attribute status { tei-content:publication-status($tei) },
                 attribute status-group { tei-content:publication-status-group($tei) },
-                attribute relative-html { translation:relative-html($source/@key, '') },
-                attribute canonical-html { translation:canonical-html($source/@key, '') },
+                attribute canonical-html { translation:canonical-html($source/@key, (), ()) },
                 (: Parts relevant to glossary :)
                 translation:titles($tei, $source/@key),
                 translation:long-titles($tei, $source/@key),
@@ -686,8 +783,8 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 translation:parts($tei, 'all', $translation:view-modes/m:view-mode[@id eq 'glossary-check'], ())
             }
     
-    (: Include caches - do not call glossary:cache(), this causes a recursion problem :)
-    let $glossary-cache := glossary:cache($tei, false())/m:glossary-cache
+    (: Include caches - do not call glossary:cached-locations(), this causes a recursion problem :)
+    let $glossary-cached-locations := glossary:cached-locations($tei, false())
     
     let $text-outline := 
         if($resource-type eq 'knowledgebase') then
@@ -702,12 +799,13 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 text { format-dateTime(current-dateTime(), '[h].[m01][Pn] on [FNn], [D1o] [MNn] [Y0001]') }
             },
             element value {
-                attribute key { '#LinkToSelf' },
-                text { concat($common:environment/m:url[@id eq 'reading-room'], '/', $resource-type, '/', $resource-id, '.html') }
-            },
-            element value {
                 attribute key { '#canonicalHTML' },
-                text { concat('https://read.84000.co', '/', $resource-type, '/', $resource-id, '.html') }
+                text { 
+                    if($resource-type eq 'translation') then
+                        translation:canonical-html($resource-id, (), ())
+                    else 
+                        concat('https://read.84000.co', '/', $resource-type, '/', $resource-id, '.html')
+                }
             }
         }
     
@@ -719,7 +817,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 $request,
                 $resource,
                 $text-outline,
-                $glossary-cache,
+                $glossary-cached-locations,
                 $replace-text
             )
         )
@@ -729,7 +827,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
 declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:string, $filter as xs:string, $search as xs:string) as element(tei:gloss)* {
     
     (: Glossary cache (on) :)
-    let $glossary-cache := glossary:cache($tei, false())/m:glossary-cache/m:gloss
+    let $glossary-cached-locations := glossary:cached-locations($tei, false())/m:gloss
     
     (: Pre-defined filters :)
     let $tei-gloss :=
@@ -771,7 +869,7 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         
         (: No locations in the cache :)
         else if($filter eq 'no-locations') then
-            let $cache-with-locations := $glossary-cache[m:location]
+            let $cache-with-locations := $glossary-cached-locations[m:location]
             let $gloss-with-locations := $tei//tei:back//tei:div[@type eq 'glossary']//id($cache-with-locations/@id)/self::tei:gloss
             return
                 $tei//tei:back//tei:div[@type eq 'glossary']//tei:gloss except $gloss-with-locations
@@ -779,17 +877,17 @@ declare function glossary:filter($tei as element(tei:TEI), $resource-type as xs:
         (: New locations in this version :)
         else if($filter eq 'new-locations') then
             let $tei-version := tei-content:version-str($tei)
-            let $glossary-cache-new-locations := $glossary-cache[m:location/@initial-version eq $tei-version]
+            let $glossary-cached-locations-new := $glossary-cached-locations[m:location/@initial-version eq $tei-version]
             return
-                $tei//tei:back//tei:div[@type eq 'glossary']//id($glossary-cache-new-locations/@id)/self::tei:gloss
+                $tei//tei:back//tei:div[@type eq 'glossary']//id($glossary-cached-locations-new/@id)/self::tei:gloss
         
         (: Locations from other version :)
         else if($filter eq 'cache-behind') then
             let $tei-version := tei-content:version-str($tei)
-            let $glossary-cache-current := $glossary-cache[@tei-version eq $tei-version]
-            let $glossary-cache-outdate := $glossary-cache[m:location] except $glossary-cache-current
+            let $glossary-cached-locations-current := $glossary-cached-locations[@tei-version eq $tei-version]
+            let $glossary-cached-locations-outdated := $glossary-cached-locations[m:location] except $glossary-cached-locations-current
             return
-                $tei//tei:back//tei:div[@type eq 'glossary']//id($glossary-cache-outdate/@id)/self::tei:gloss
+                $tei//tei:back//tei:div[@type eq 'glossary']//id($glossary-cached-locations-outdated/@id)/self::tei:gloss
         
         
         (: Blank form - no records required :)
@@ -908,43 +1006,40 @@ declare function local:instance-locations($translation-html as element(xhtml:htm
 
 };
 
-declare function glossary:cache($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:cache)? {
+declare function glossary:cached-locations($tei as element(tei:TEI), $create-if-unavailable as xs:boolean?) as element(m:glossary-cached-locations)? {
     
     let $text-id := tei-content:id($tei)
-    let $cache-collection := concat($common:data-path, '/', 'cache')
-    let $cache-file := concat($text-id, '.cache')
-    let $cache-uri := concat($cache-collection, '/', $cache-file)
-    let $cache := doc($cache-uri)/m:cache[m:glossary-cache]
-    let $cache-empty := <cache xmlns="http://read.84000.co/ns/1.0"><glossary-cache/></cache>
-    
-    let $cache := 
-        if(not(doc-available($cache-uri))) then 
-            if($create-if-unavailable and $tei/tei:text//tei:div) then 
-                let $cache-create := xmldb:store($cache-collection, $cache-file, $cache-empty, 'application/xml')
-                let $set-permissions := (
-                    sm:chown(xs:anyURI($cache-uri), 'admin'),
-                    sm:chgrp(xs:anyURI($cache-uri), 'tei'),
-                    sm:chmod(xs:anyURI($cache-uri), 'rw-rw-r--')
-                )
-                return
-                    doc($cache-uri)/m:cache
-            else 
-                $cache-empty
-        else 
-            $cache
+    let $file-name := concat($text-id, '.xml')
+    let $file-uri := string-join(($glossary:cached-locations-path, $file-name), '/')
+    let $glossary-cached-locations := doc($file-uri)/m:glossary-cached-locations
+    let $glossary-cached-locations-empty := <glossary-cached-locations xmlns="http://read.84000.co/ns/1.0"/>
     
     return
-        $cache
+        if(not(doc-available($file-uri))) then 
+            if($create-if-unavailable and $tei/tei:text//tei:div) then 
+                let $file-create := xmldb:store($glossary:cached-locations-path, $file-name, $glossary-cached-locations-empty, 'application/xml')
+                let $set-permissions := (
+                    sm:chown(xs:anyURI($file-uri), 'admin'),
+                    sm:chgrp(xs:anyURI($file-uri), $store:permissions-group),
+                    sm:chmod(xs:anyURI($file-uri), $store:file-permissions)
+                )
+                return
+                    doc($file-uri)/m:glossary-cached-locations
+            else 
+                 $glossary-cached-locations-empty
+        else 
+            $glossary-cached-locations
+    
 };
 
-declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-locations as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cache) {
+declare function glossary:cached-locations($tei as element(tei:TEI), $refresh-glossary-ids as xs:string*, $create-if-unavailable as xs:boolean?) as element(m:glossary-cached-locations) {
     
-    let $glossary-cache := glossary:cache($tei, $create-if-unavailable)/m:glossary-cache
+    let $glossary-cached-locations := glossary:cached-locations($tei, $create-if-unavailable)
     
     return
         (: If there is one and there's nothing to refresh, just return the cache :)
-        if($glossary-cache and count($refresh-locations) eq 0) then
-            $glossary-cache
+        if($glossary-cached-locations and count($refresh-glossary-ids) eq 0) then
+            $glossary-cached-locations
 
         (: Build the cache :)
         else
@@ -959,8 +1054,8 @@ declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-loca
             
             (: Get glossary instances, if valid ids have been requested :)
             let $glossary-locations := 
-                if($tei-glossary/id($refresh-locations)) then
-                    glossary:locations($tei, $resource-id, $resource-type, $refresh-locations)
+                if($tei-glossary/id($refresh-glossary-ids)) then
+                    glossary:locations($tei, $resource-id, $resource-type, $refresh-glossary-ids)
                 else ()
             
             (: Sort glossaries :)
@@ -973,8 +1068,8 @@ declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-loca
             let $cache-glosses := 
                 for $gloss at $index in $tei-glossary-sorted
                 let $sort-term := glossary:sort-term($gloss)
-                let $existing-cache := $glossary-cache/m:gloss[range:eq(@id, $gloss/@xml:id)][1]
-                let $gloss-refresh-locations := $gloss[@xml:id = $refresh-locations]
+                let $gloss-refresh-locations := $gloss[@xml:id = $refresh-glossary-ids]
+                let $existing-cached-gloss := $glossary-cached-locations/m:gloss[@id eq $gloss/@xml:id][1]
                 let $cache-locations :=
                 
                     (: If we processed it then add it with the new $glossary-instances :)
@@ -984,12 +1079,12 @@ declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-loca
                         
                         for $location in glossary:locations($gloss-locations, $gloss/@xml:id)
                         let $location-id := $location/@id
-                        let $existing-cache-location := $existing-cache/m:location[@id eq $location-id]
+                        let $existing-cached-location := $existing-cached-gloss/m:location[@id eq $location-id]
                         group by $location-id
                         order by $location[1]/@sort-index ! xs:integer(.)
                         return
-                            if($existing-cache-location) then
-                                $existing-cache-location
+                            if($existing-cached-location) then
+                                ($existing-cached-location)[1]
                             else
                                 element { QName('http://read.84000.co/ns/1.0', 'location') } {
                                     attribute id { $location/@id },
@@ -999,7 +1094,7 @@ declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-loca
                     
                     (: Otherwise copy the existing locations :)
                     else
-                        $existing-cache/m:location
+                        $existing-cached-gloss/m:location
                         
                 return 
                 
@@ -1015,34 +1110,34 @@ declare function glossary:glossary-cache($tei as element(tei:TEI), $refresh-loca
                             attribute timestamp { current-dateTime() }
                         )
                         else (
-                            $existing-cache/@tei-version,
-                            $existing-cache/@timestamp
+                            $existing-cached-gloss/@tei-version,
+                            $existing-cached-gloss/@timestamp
                         ),
                         
                         (:$cache-locations:)
                         if($cache-locations) then (
                             for $cache-location in $cache-locations
                             return (
-                                common:ws(3),
+                                common:ws(2),
                                 $cache-location
                             ),
-                            common:ws(2)
+                            common:ws(1)
                         )
                         else ()
                     }
             
             return
-                element { QName('http://read.84000.co/ns/1.0', 'glossary-cache') } {
+                element { QName('http://read.84000.co/ns/1.0', 'glossary-cached-locations') } {
                 
-                    $glossary-cache/@*,
-                    (:$cache-glosses:)
+                    $glossary-cached-locations/@*,
+                    
                     if($cache-glosses) then (
                         for $cache-gloss in $cache-glosses
                         return (
-                            common:ws(2),
+                            common:ws(1),
                             $cache-gloss
                         ),
-                        common:ws(1)
+                        common:ws(0)
                     )
                     else ()
                 }
@@ -1094,24 +1189,28 @@ declare function glossary:downloads() as element(m:downloads) {
         
         for $type in ('xml', 'xlsx', 'txt', 'dict')
         let $keys := if($type = ('txt', 'dict')) then ('bo', 'wy') else ('')
-        for $key in $keys
+        let $collection := string-join(($common:static-content-path, 'glossary', 'combined'), '/')
         return
-            let $request := 
-                element { QName('http://read.84000.co/ns/1.0', 'request')} {
-                    attribute model { 'glossary-download' },
-                    attribute resource-suffix { $type },
-                    $key[. gt ''] ! attribute key { $key }
-                }
-            let $latest-key := common:cache-key-latest($request)
-            where $latest-key
+            for $key in $keys
+            let $file-name := concat('84000-glossary', $key[. gt ''] ! concat('-', $key), '.', $type(:, $type[. eq 'dict'] ! '.zip':))
+            let $file-last-modified := 
+                if($type eq 'xml' and doc-available(string-join(($collection, $file-name), '/'))) then 
+                    xmldb:last-modified($collection, $file-name) 
+                else if(util:binary-doc-available(string-join(($collection, $file-name), '/'))) then 
+                    xmldb:last-modified($collection, $file-name) 
+                else ()
             return
                 element download {
                     attribute type { $type },
-                    attribute url { '/glossary/search.html' },
-                    attribute download-url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },
-                    attribute filename { concat($latest-key, $key[. gt ''] ! concat('-', $key), '.', $type, $type[. eq 'dict'] ! '.zip') },
-                    attribute last-modified { common:cache-last-modified($request, $latest-key) },
-                    (:$latest-key ! attribute latest-key { $latest-key }:)
+                    (:attribute url { '/glossary/search.html' },:)
+                    (:attribute download-url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },:)
+                    attribute url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },
+                    attribute collection { $collection },
+                    attribute filename { $file-name },
+                    attribute last-modified { $file-last-modified },
+                    $file-last-modified ! attribute age-in-days { (current-dateTime() - xs:dateTime(.)) ! days-from-duration(.) },
+                    $key[. gt ''] ! attribute lang-key { $key },
+                    (:$latest-key ! attribute latest-key { $latest-key },:)
                     if($type eq 'xml') then
                         text { 'The complete combined glossary as XML' }
                     else if($type eq 'xlsx') then

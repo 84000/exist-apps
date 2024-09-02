@@ -85,11 +85,11 @@ declare function contributors:acknowledgement($contributors as element()*, $tei 
             attribute translation-id { tei-content:id($tei) },
             attribute status { tei-content:publication-status($tei) },
             attribute status-group { tei-content:publication-status-group($tei) },
-            element m:title { tei-content:title-any($tei) },
+            element title { tei-content:title-any($tei) },
             translation:toh($tei, ''),
             for $contribution in $contributions
             return
-                element m:contribution {
+                element contribution {
                     attribute node-name { local-name($contribution) },
                     $contribution/@role,
                     $contribution/@xml:id,

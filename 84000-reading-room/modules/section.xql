@@ -56,23 +56,24 @@ declare function section:filters($tei as element(tei:TEI)) as element() {
     
 };
 
-declare function section:text($tei as element(tei:TEI), $resource-id as xs:string){
+declare function section:text($tei as element(tei:TEI), $source-key as xs:string){
     element { QName('http://read.84000.co/ns/1.0', 'text') }{
         attribute id { tei-content:id($tei) },
-        attribute resource-id { $resource-id },
+        attribute resource-id { $source-key },
         attribute status { tei-content:publication-status($tei) },
         attribute status-group { tei-content:publication-status-group($tei) },
         attribute document-url { base-uri($tei) },
-        attribute canonical-html { translation:canonical-html($resource-id, '') },
+        attribute canonical-html { translation:canonical-html($source-key, (), ()) },
         attribute last-updated { tei-content:last-modified($tei) },
-        translation:toh($tei, $resource-id),
-        tei-content:source($tei, $resource-id),
-        tei-content:ancestors($tei, $resource-id, 0),
-        translation:titles($tei, $resource-id),
-        translation:title-variants($tei, $resource-id),
+        translation:toh($tei, $source-key),
+        tei-content:source($tei, $source-key),
+        tei-content:ancestors($tei, $source-key, 0),
+        translation:titles($tei, $source-key),
+        translation:title-variants($tei, $source-key),
         translation:publication($tei),
-        translation:publication-status($tei//tei:sourceDesc/tei:bibl[@key eq $resource-id], ()),
-        translation:downloads($tei, $resource-id, 'any-version'),
+        translation:publication-status($tei//tei:sourceDesc/tei:bibl[@key eq$source-key], ()),
+        (:translation:downloads($tei, $resource-id, 'any-version'),:)
+        translation:files($tei, 'translation-files', $source-key),
         translation:summary($tei)
     }
 };

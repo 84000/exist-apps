@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
     <xsl:variable name="environment" select="/m:response/m:environment"/>
     <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()" as="xs:string"/>
-    <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()" as="xs:string"/>
     <xsl:variable name="operations-path" select="$environment/m:url[@id eq 'operations']/text()"/>
     
     <!-- Page header -->
@@ -22,7 +21,7 @@
                 <div class="center-vertical full-width">
                     <div class="logo">
                         <img alt="84000 logo">
-                            <xsl:attribute name="src" select="concat($front-end-path, '/imgs/logo.png')"/>
+                            <xsl:attribute name="src" select="'/frontend/imgs/84000-logo.png'"/>
                         </img>
                     </div>
                     <div>
@@ -56,7 +55,7 @@
                                 <xsl:if test="$active-tab eq 'operations/sections'">
                                     <li>
                                         <a href="sections.html">
-                                            <xsl:value-of select="'Sections'"/>
+                                            <xsl:value-of select="'Catalogue Sections'"/>
                                         </a>
                                     </li>
                                 </xsl:if>
@@ -150,7 +149,20 @@
                                         <a>
                                             <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@id)"/>
                                             <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                            <xsl:value-of select="'Edit Text Header'"/>
+                                            <xsl:value-of select="'Edit TEI Header'"/>
+                                        </a>
+                                    </li>
+                                </xsl:if>
+                                
+                                <xsl:if test="$active-tab eq 'operations/translation-project'">
+                                    <li>
+                                        <xsl:value-of select="/m:response/m:request/@id"/>
+                                    </li>
+                                    <li>
+                                        <a>
+                                            <xsl:attribute name="href" select="concat('/translation-project.html?id=', /m:response/m:request/@id)"/>
+                                            <xsl:attribute name="data-loading" select="'Loading...'"/>
+                                            <xsl:value-of select="'Translation Project'"/>
                                         </a>
                                     </li>
                                 </xsl:if>
@@ -238,9 +250,9 @@
                                     </li>
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', /m:response/m:request/@text-id, '#submissions-form')"/>
+                                            <xsl:attribute name="href" select="concat('/translation-project.html?id=', /m:response/m:request/@text-id, '#submissions-form')"/>
                                             <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                            <xsl:value-of select="'Edit Text Header'"/>
+                                            <xsl:value-of select="'Translation Project'"/>
                                         </a>
                                     </li>
                                     <li>
@@ -349,7 +361,7 @@
                 </xsl:when>
                 <xsl:when test="/m:response/m:updates/m:updated[@update][@node eq 'cache-glossary']">
                     <div class="alert alert-warning small" role="alert">
-                        <xsl:value-of select="'Glossary locations have been cached'"/>
+                        <xsl:value-of select="'Glossary pointers have been cached'"/>
                     </div>
                 </xsl:when>
                 <xsl:otherwise>
@@ -426,7 +438,7 @@
                                 </xsl:if>
                                 <td>
                                     <a href="sections.html" data-loading="Loading Sections...">
-                                        <xsl:value-of select="'Sections'"/>
+                                        <xsl:value-of select="'Catalogue Sections'"/>
                                     </a>
                                 </td>
                             </tr>
@@ -897,6 +909,7 @@
                     </xsl:for-each>
                 </div>
                 
+                
             </div>
         </xsl:if>
         
@@ -1191,14 +1204,21 @@
         
         <div class="panel panel-default no-bottom-margin">
             <div class="panel-heading" role="tab">
-                <a href="{ concat('#tag-reference-', $element-id) }" aria-controls="{ concat('tag-reference-', $element-id) }" id="{ concat('#tag-reference-heading-', $element-id) }" class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                <a class="center-vertical full-width collapsed" role="button" data-toggle="collapse" aria-expanded="false">
+                    
+                    <xsl:attribute name="href" select="concat('#tag-reference-', $element-id)"/>
+                    <xsl:attribute name="aria-controls" select="concat('tag-reference-', $element-id)"/>
+                    <xsl:attribute name="id" select="concat('#tag-reference-heading-', $element-id)"/>
+                    
                     <h5 class="text-muted italic">
                         <xsl:value-of select="'Tag reference'"/>
                     </h5>
+                    
                     <span class="text-right">
                         <i class="fa fa-plus collapsed-show"/>
                         <i class="fa fa-minus collapsed-hide"/>
                     </span>
+                    
                 </a>
             </div>
             <div id="{ concat('tag-reference-', $element-id) }" aria-labelledby="{ concat('#tag-reference-heading-', $element-id) }" class="panel-body collapse" role="tabpanel" aria-expanded="false">
@@ -1667,7 +1687,8 @@
                             <span>
                                 <xsl:value-of select="' / '"/>
                                 <a target="reading-room" class="small">
-                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $related-text/@id, '.html#', $entry/@id)"/>
+                                    <!-- m:translation-href() not available -->
+                                    <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', ($related-text/m:bibl/m:toh/@key)[1], '#', $entry/@id)"/>
                                     <xsl:value-of select="$entry/@id"/>
                                 </a>
                             </span>
@@ -1853,47 +1874,61 @@
     <xsl:template name="text-links-list">
         
         <xsl:param name="text" as="element(m:text)"/>
-        <xsl:param name="exclude-links" as="xs:string*"/>
+        <xsl:param name="disable-links" as="xs:string*"/>
         <xsl:param name="text-status" as="element(m:status)?"/>
         <xsl:param name="glossary-filter" as="xs:string?"/>
         
         <xsl:variable name="list-items" as="element()*">
             
-            <xsl:if test="not($exclude-links[. eq 'edit-text-header']) and $text[@id][@resource-type eq 'translation']">
+            <xsl:if test="$text[@id][@resource-type eq 'translation']">
                 <li>
                     <a data-loading="Loading headers form...">
-                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text/@id)"/>
-                        <xsl:value-of select="'Edit headers'"/>
+                        <xsl:attribute name="href" select="concat('/translation-project.html?id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'translation-project']">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Translation project'"/>
                     </a>
-                    <xsl:if test="$text[@status-group eq 'published'] and $text/m:downloads[@tei-version != m:download/@version]">
-                        <xsl:value-of select="' '"/>
-                        <span class="text-danger">
-                            <i class="fa fa-exclamation-circle"/>
-                            <xsl:value-of select="' Version updated'"/>
-                        </span>
-                    </xsl:if>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'edit-text-sponsors']) and $text[@id][@resource-type eq 'translation']">
+            <xsl:if test="$text[@id][@resource-type eq 'translation']">
+                <li>
+                    <a data-loading="Loading headers form...">
+                        <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'edit-text-header']">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Edit TEI header'"/>
+                    </a>
+                </li>
+            </xsl:if>
+            
+            <xsl:if test="$text[@id][@resource-type eq 'translation']">
                 <li>
                     <a data-loading="Loading sponsorship form...">
                         <xsl:attribute name="href" select="concat('/edit-text-sponsors.html?id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'edit-text-sponsors']">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
                         <xsl:value-of select="'Edit sponsorship'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'source-utils']) and $text[@id][@resource-type eq 'translation']">
+            <xsl:if test="$text[@id][@resource-type eq 'translation']">
                 <li>
                     <a data-loading="Loading source utilities...">
                         <xsl:attribute name="href" select="concat('source-utils.html', '?text-id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'source-utils']">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
                         <xsl:value-of select="'Source utilities'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'edit-glossary']) and $text[@id]">
+            <xsl:if test="$text[@id]">
                 <li>
                     <a data-loading="Loading glossary editor...">
                         
@@ -1909,60 +1944,81 @@
                             </xsl:otherwise>
                         </xsl:choose>
                         
+                        <xsl:if test="$disable-links[. eq 'edit-glossary']">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
+                        
                         <xsl:value-of select="'Glossary editor'"/>
                         
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'edit-tm']) and $text[@id] and $text-status[@marked-up eq 'true']">
+            <xsl:if test="$text[@id]">
                 <li>
                     <a data-loading="Loading TM editor...">
                         <xsl:attribute name="href" select="concat('/edit-tm.html?text-id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'edit-tm'] or $text-status[not(@marked-up eq 'true')]">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
                         <xsl:value-of select="'TM editor'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'edit-quotes']) and $text[@id] and $text-status[@marked-up eq 'true']">
+            <xsl:if test="$text[@id]">
                 <li>
                     <a data-loading="Loading quotes...">
                         <xsl:attribute name="href" select="concat('/edit-quotes.html?resource-id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'edit-quotes'] or $text-status[not(@marked-up eq 'true')]">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
                         <xsl:value-of select="'Review quotes'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'annotation-tei']) and $text[@id] and $text-status[@marked-up eq 'true']">
+            <xsl:if test="$text[@id]">
                 <li>
                     <a data-loading="Loading archive...">
                         <xsl:attribute name="href" select="concat('/annotation-tei.html?text-id=', $text/@id)"/>
+                        <xsl:if test="$disable-links[. eq 'annotation-tei'] or $text-status[not(@marked-up eq 'true')]">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
                         <xsl:value-of select="'Archived copies'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'editor-mode']) and $text[m:toh] and $text-status[@marked-up eq 'true']">
+            <xsl:if test="$text[m:toh]">
                 <li>
                     <a target="{ $text/@id }-html">
-                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', ($text/m:toh)[1]/@key, '.html?view-mode=editor')"/>
+                        <!-- m:translation-href() not available -->
+                        <xsl:attribute name="href" select="concat($reading-room-path ,'/translation/', ($text/m:toh)[1]/@key, '?view-mode=editor')"/>
+                        <xsl:if test="$disable-links[. eq 'editor-mode'] or $text-status[not(@marked-up eq 'true')]">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
                         <xsl:value-of select="'Editor mode'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'source-folios']) and $text[m:toh]">
+            <xsl:if test="$text[m:toh]">
                 <li>
                     <a target="check-folios">
+                        <!-- m:source-href() not available -->
                         <xsl:attribute name="href" select="concat($reading-room-path, '/source/', ($text/m:toh)[1]/@key, '.html')"/>
                         <xsl:attribute name="data-dualview-href" select="concat($reading-room-path, '/source/', ($text/m:toh)[1]/@key, '.html?page=1')"/>
                         <xsl:attribute name="data-dualview-title" select="'Folio view'"/>
-                        <xsl:value-of select="'Folio view'"/>
+                        <xsl:if test="$disable-links[. eq 'source-folios']">
+                            <xsl:attribute name="class" select="'disabled'"/>
+                        </xsl:if>
+                        <xsl:value-of select="'Tibetan source'"/>
                     </a>
                 </li>
             </xsl:if>
             
-            <xsl:if test="not($exclude-links[. eq 'user-lock']) and $text[@locked-by-user gt '']">
+            <xsl:if test="not($disable-links[. eq 'user-lock']) and $text[@locked-by-user gt '']">
                 <li>
                     <span class="text-danger">
                         <i class="fa fa-exclamation-circle"/>

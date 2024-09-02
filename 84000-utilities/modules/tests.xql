@@ -51,7 +51,7 @@ declare function tests:translations($translation-id as xs:string) as element(m:r
                 
                     let $start-time := util:system-dateTime()
                     
-                    let $html-url := concat($test-config/m:path/text(), '/translation/', $toh-key, '.html?view-mode=tests')
+                    let $html-url := translation:href($toh-key, (), (), 'view-mode=tests', (), $test-config/m:path/text())
                     
                     let $request := 
                         if(count($credentials) eq 2) then 
@@ -294,7 +294,7 @@ declare function tests:titles($toh-html as document-node(), $tei as element(tei:
     
     let $tei-main-titles := (
         $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('en', 'Sa-Ltn')][not(@key) or @key eq $toh-key][text()],
-        $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()][1]
+        ($tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()])[1]
     )
     
     (: Max 4: 'en', 'Sa-Ltn', 'Bo-Ltn' and 'bo' if 'Bo-Ltn' or 'bo'  :)
@@ -303,10 +303,12 @@ declare function tests:titles($toh-html as document-node(), $tei as element(tei:
         $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()][1],
         $tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'longTitle'][@xml:lang = ('Bo-Ltn', 'bo')][not(@key) or @key eq $toh-key][text()][1]
     )
+    
     let $tei-long-titles := 
         if(count($tei-long-titles) gt 1 or $tei-long-titles[@xml:lang eq 'Bo-Ltn']) then
             $tei-long-titles
-        else ()
+        else 
+            ($tei//tei:fileDesc/tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang = ('Bo-Ltn')][not(@key) or @key eq $toh-key][text()])[1]
     
     let $html-main-titles := $toh-html//*[@id eq 'main-titles']/descendant::*[common:contains-class(@class, 'title')][data()]
     let $html-long-titles := $toh-html//*[@id eq 'long-titles']/descendant::*[common:contains-class(@class, 'title')][data()]

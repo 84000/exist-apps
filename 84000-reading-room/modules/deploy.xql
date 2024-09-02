@@ -116,76 +116,76 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
             else
                 '--all'
     
-    where $git-add
-    return (
-        element { QName('http://read.84000.co/ns/1.0','result') } {
-        
-            attribute id {'deploy-push'},
-            attribute admin-password-correct { if($admin-password-validated gt '') then true() else false() },
+        where $git-add
+        return (
+            element { QName('http://read.84000.co/ns/1.0','result') } {
             
-            (: Sync the data for each $repo/m:sync :)
-            for $sync in $repo/m:sync[@collection]
+                attribute id {'deploy-push'},
+                attribute admin-password-correct { if($admin-password-validated gt '') then true() else false() },
                 
-            (: Sub directory to sync :)
-            let $sub-dir := $sync/@sub-dir ! concat('/',  .)
-            
-            (: Sync files in the collection with the filesystem :)
-            let $do-sync := 
-                file:sync(
-                    $sync/@collection, 
-                    concat($repo/@path, $sub-dir), 
-                    if($sync[@prune]) then
-                        map{ "prune": true(), "excludes": ("zip","xar",".git",".gitignore","README.md") }
-                    else ()
-                )
-            
-            let $log := util:log('info', concat('deploy-push: ', concat($repo/@path, $sub-dir), ' synced'))
-            
-            return (
+                (: Sync the data for each $repo/m:sync :)
+                for $sync in $repo/m:sync[@collection]
+                    
+                (: Sub directory to sync :)
+                let $sub-dir := $sync/@sub-dir ! concat('/',  .)
                 
-                (: Return details of the sync :)
-                $do-sync,
-                
-                (: Create a zip if required :)
-                let $target-file := $sync/@backup ! concat($repo/@path, $sub-dir, '/',  .)
-                
-                where 
-                    $do-sync//file:update 
-                    and $target-file
-                    and matches($target-file, '\.zip$')
-                    and $admin-password-validated gt ''
-                
-                let $do-backup := 
-                    process:execute(
-                        ('bin/backup.sh', '-u', 'admin', '-p', $admin-password-validated, '-b', $sync/@collection, '-d', $target-file), 
-                        $exist-options
+                (: Sync files in the collection with the filesystem :)
+                let $do-sync := 
+                    file:sync(
+                        $sync/@collection, 
+                        concat($repo/@path, $sub-dir), 
+                        if($sync[@prune]) then
+                            map{ "prune": true(), "excludes": ("zip","xar","README.md",".git",".gitignore",".htaccess") }
+                        else ()
                     )
                 
-                let $log := util:log('info', concat('deploy-push: ', $target-file, ' backed-up'))
+                let $log := util:log('info', concat('deploy-push: ', 'synced (', count($do-sync//file:update), ') ', concat($repo/@path, $sub-dir)))
                 
-                return 
-                    element debug {
-                        element command { concat('bin/backup.sh -b ', $sync/@collection, ' -d ', $target-file)},
-                        $do-backup/stdout/line ! element output { data() }
-                    }
-                 
-            ),
+                return (
+                    
+                    (: Return details of the sync :)
+                    $do-sync,
+                    
+                    (: Create a zip if required :)
+                    let $target-file := $sync/@backup ! concat($repo/@path, $sub-dir, '/',  .)
+                    
+                    where 
+                        $do-sync//file:update 
+                        and $target-file
+                        and matches($target-file, '\.zip$')
+                        and $admin-password-validated gt ''
+                    
+                    let $do-backup := 
+                        process:execute(
+                            ('bin/backup.sh', '-u', 'admin', '-p', $admin-password-validated, '-b', $sync/@collection, '-d', $target-file), 
+                            $exist-options
+                        )
+                    
+                    let $log := util:log('info', concat('deploy-push: ', $target-file, ' backed-up'))
+                    
+                    return 
+                        element debug {
+                            element command { concat('bin/backup.sh -b ', $sync/@collection, ' -d ', $target-file)},
+                            $do-backup/stdout/line ! element output { data() }
+                        }
+                     
+                ),
+                
+                (: Do Git push :)
+                element push {
+                    process:execute(('git', 'checkout', ($repo/@branch/string(), 'master')[1]), $git-options),
+                    process:execute(('git', 'status'), $git-options),
+                    process:execute(('git', 'add', $git-add), $git-options),
+                    process:execute(('git', 'ls-files', '--deleted', '|', 'xargs', 'git', 'add'), $git-options),
+                    process:execute(('git', 'commit', '-m', concat('"', $commit-msg, '"')), $git-options),
+                    process:execute(('git', 'push', 'origin', ($repo/@branch/string(), 'master')[1]), $git-options)
+                }
+                
+            },
             
-            (: Do Git push :)
-            element push {
-                process:execute(('git', 'checkout', ($repo/@branch/string(), 'master')[1]), $git-options),
-                process:execute(('git', 'status'), $git-options),
-                process:execute(('git', 'add', $git-add), $git-options),
-                process:execute(('git', 'ls-files', '--deleted', '|', 'xargs', 'git', 'add'), $git-options),
-                process:execute(('git', 'commit', '-m', $commit-msg), $git-options),
-                process:execute(('git', 'push', 'origin', ($repo/@branch/string(), 'master')[1]), $git-options)
-            }
+            util:log('info', 'deploy-push: completed')
             
-        },
-        
-        util:log('info', 'deploy-push: completed')
-        
-    )
+        )
 };
 
 declare function deploy:pull($repo-id as xs:string, $admin-password as xs:string) as element(m:result)? {

@@ -228,7 +228,7 @@ declare function local:entities-content($entities as element(m:entity)*, $conten
             where not($glossary-status = $exclude-status)
             
             let $text-type := tei-content:type($tei[1])
-            let $glossary-cache := glossary:glossary-cache($tei[1], (), false())
+            let $glossary-cached-locations := glossary:cached-locations($tei[1], (), true())
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -262,12 +262,12 @@ declare function local:entities-content($entities as element(m:entity)*, $conten
                         glossary:glossary-entry($gloss-single[1], false())
                     ,
                     
-                    element glossary-cache {
+                    element glossary-cached-locations {
                     
                         let $glossary-id-chunks := common:ids-chunked($gloss/@xml:id)
                         for $key in map:keys($glossary-id-chunks)
                         return
-                            $glossary-cache/m:gloss[range:eq(@id, map:get($glossary-id-chunks, $key))]
+                            $glossary-cached-locations/m:gloss[range:eq(@id, map:get($glossary-id-chunks, $key))]
                         
                     }
                     

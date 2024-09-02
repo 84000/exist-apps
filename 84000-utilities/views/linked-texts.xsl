@@ -6,7 +6,7 @@
     
     <xsl:template match="/m:response">
         
-        <xsl:variable name="environment" select="/m:response/m:environment"/>
+        <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
         <xsl:variable name="reading-room-path" select="$environment/m:url[@id eq 'reading-room']/text()"/>
         
         <xsl:variable name="content">

@@ -1,19 +1,18 @@
-xquery version "3.0";
+xquery version "3.1";
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace tmx="http://www.lisa.org/tmx14";
 
-import module namespace common="http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
-import module namespace tei-content="http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
-import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
-import module namespace store="http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
-import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
+import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
+import module namespace tei-content = "http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace translation = "http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
+import module namespace store = "http://read.84000.co/store" at "../../84000-reading-room/modules/store.xql";
+import module namespace deploy = "http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 
 declare variable $local:file-type := 'epub';
 declare variable $local:tei := collection($common:translations-path);
-declare variable $local:file-collection := collection(string-join(($common:data-path, $local:file-type), '/'));
-declare variable $local:file-versions := doc(string-join(($common:data-path, $local:file-type, 'file-versions.xml'), '/'));
+declare variable $local:file-collection := string-join(($common:static-content-path, $local:file-type, 'translation'), '/');
 
 (: Select missing files :)
 let $missing-file-maps :=
@@ -24,7 +23,8 @@ let $missing-file-maps :=
     return
         for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         let $file-name := concat($toh-key, '.', $local:file-type)
-        let $file-version := store:stored-version-str($toh-key, $local:file-type)
+        (:let $file-version := store:stored-version-str($toh-key, $local:file-type):)
+        let $file-version := store:stored-version-str($local:file-collection, concat($toh-key, '.', $local:file-type))
         let $file-path := string-join(($common:data-path, $local:file-type, $file-name), '/')
         let $file-map := map{}
         let $file-map := map:put($file-map, 'file-path', $file-path)

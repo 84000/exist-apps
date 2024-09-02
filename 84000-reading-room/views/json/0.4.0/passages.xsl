@@ -12,7 +12,7 @@
         
         <translation annotate="{ $annotate }">
             
-            <xsl:for-each-group select="//xhtml:section[not(@id = ('titles','imprint','toc','end-notes','bibliography','glossary', 'abbreviations'))]/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
+            <xsl:for-each-group select="//xhtml:section[not(@data-part-type = ('titles','imprint','toc','end-notes','bibliography','glossary', 'abbreviations', 'citation-index'))]/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
                 <xsl:call-template name="passage">
                     <xsl:with-param name="passage-id" select="@data-location-id"/>
                     <xsl:with-param name="parent-id" select="ancestor::xhtml:section/@id"/>
@@ -37,8 +37,9 @@
             <xsl:attribute name="json:array" select="true()"/>
             <xsl:attribute name="xmlId" select="$passage-id"/>
             <xsl:attribute name="parentId" select="$parent-id"/>
-            <xsl:attribute name="passageLabel" select="$gutter/descendant::text()"/>
+            <xsl:attribute name="passageLabel" select="$gutter/descendant::text() ! replace(., '­', '')"/>
             <xsl:attribute name="segmentationType" select="'Passage'"/>
+            
             <xsl:element name="passageSort">
                 <xsl:attribute name="json:literal" select="true()"/>
                 <xsl:value-of select="common:index-of-node(/xhtml:html//*, $elements[1])"/>

@@ -235,7 +235,7 @@ declare function knowledgebase:article($tei as element(tei:TEI)) as element(m:pa
         
         for $section at $index in $tei/tei:text/tei:body/tei:div[@type eq 'article']/tei:div
         return
-            element {QName('http://read.84000.co/ns/1.0', 'part')} {
+            element { QName('http://read.84000.co/ns/1.0', 'part') } {
 
                 attribute type { $section/@type },
                 attribute id { $section/@xml:id },
@@ -440,11 +440,12 @@ declare function knowledgebase:outline($tei as element(tei:TEI)) as element(m:te
     let $app-version := replace($common:app-version, '\.', '-')
     
     return
-        element {QName('http://read.84000.co/ns/1.0', 'text-outline')} {
+        element { QName('http://read.84000.co/ns/1.0', 'text-outline') } {
             
             attribute text-id { $text-id },
             attribute app-version { $app-version },
             
+            tei-content:titles-all($tei),
             tei-content:milestones-pre-processed($tei),
             tei-content:end-notes-pre-processed($tei),
             glossary:pre-processed($tei)

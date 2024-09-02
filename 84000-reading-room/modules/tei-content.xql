@@ -104,7 +104,7 @@ declare function tei-content:tei($resource-id as xs:string, $resource-type as xs
     let $resource-id-lowercase := lower-case($resource-id)
     let $tei := 
         if(not($tei) and $resource-type eq 'translation') then
-            $collection//tei:sourceDesc/tei:bibl[@key = $resource-id-lowercase][1]/ancestor::tei:TEI
+            $collection//tei:sourceDesc/tei:bibl[@key eq $resource-id-lowercase][1]/ancestor::tei:TEI
         else if(not($tei) and $resource-type = ('knowledgebase', 'section')) then
             $collection//tei:publicationStmt/tei:idno[range:eq(., $resource-id-lowercase)][@type eq 'eft-kb-id'][1]/ancestor::tei:TEI
         else 
@@ -278,12 +278,7 @@ declare function tei-content:text-statuses-selected($selected-ids as xs:string*,
 
 declare function tei-content:source-bibl($tei as element(tei:TEI), $resource-id as xs:string?) as element(tei:bibl)? {
     (: Returns a bibl node based on a resource-id :)
-    let $bibl := $resource-id ! $tei//tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)][1]
-    return
-        if(not($bibl)) then
-            $tei//tei:sourceDesc/tei:bibl[1]
-        else
-            $bibl
+    ($tei//tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)], $tei//tei:sourceDesc/tei:bibl)[1]
 };
 
 declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs:string) as element(m:source) {
@@ -355,16 +350,19 @@ declare function tei-content:source($tei as element(tei:TEI), $resource-id as xs
                 
                 for $link in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:link[@type eq 'isCommentaryOf']
                 let $link-tei := tei-content:tei($link/@target, 'translation')
+                let $source-bibl := $link-tei ! tei-content:source-bibl(., $link/@target)
                 where $link-tei
                 return
                     element isCommentaryOf {
-                        attribute toh-key { tei-content:source-bibl($link-tei, $link/@target)/@key },
+                        attribute toh-key { $source-bibl/@key },
                         attribute text-id { tei-content:id($link-tei) },
-                        tei-content:titles-all($link-tei)
+                        tei-content:titles-all($link-tei),
+                        $source-bibl
                     }
                 
             }
         </source>
+
 };
 
 declare function tei-content:location($bibl as element(tei:bibl)?) as element(m:location) {
@@ -695,7 +693,7 @@ declare function tei-content:new-section($type as xs:string?) as element(tei:div
     
         <div type="section" xmlns="http://www.tei-c.org/ns/1.0">
             <head type="section">Bibliography Section Heading</head>
-            <bibl rend="default-text">This is a sample bibliographic reference with a <ref target="https://read.84000.co/translation/toh46.html">link example</ref>.</bibl>
+            <bibl rend="default-text">This is a sample bibliographic reference with a <ref target="https://read.84000.co/translation/toh46">link example</ref>.</bibl>
         </div>
         
     else

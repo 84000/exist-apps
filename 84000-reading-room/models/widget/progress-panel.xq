@@ -30,11 +30,7 @@ return
             $common:app-id,
             (
                 $request,
-                $publication-status,
-                <replace-text xmlns="http://read.84000.co/ns/1.0">
-                    <value key="#commsSiteUrl">{ $common:environment/m:url[@id eq 'communications-site'][1]/text() }</value>
-                    <value key="#readingRoomSiteUrl">{ $common:environment/m:url[@id eq 'reading-room'][1]/text() }</value>
-                </replace-text>
+                $publication-status
             )
         )
     

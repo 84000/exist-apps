@@ -5,20 +5,23 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 import module namespace common="http://read.84000.co/common" at "modules/common.xql";
-import module namespace download="http://read.84000.co/download" at "modules/download.xql";
 import module namespace log = "http://read.84000.co/log" at "modules/log.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "modules/tei-content.xql";
-import module namespace functx="http://www.functx.com";
+import module namespace translation = "http://read.84000.co/translation" at "modules/translation.xql";
+(:import module namespace store="http://read.84000.co/store" at "modules/store.xql";:)
+(:import module namespace functx="http://www.functx.com";:)
 
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
-declare variable $path := lower-case(substring-before($exist:path, $exist:resource));
-declare variable $resource-id := lower-case(replace($exist:resource, '\..*', ''));
-declare variable $resource-suffix := string-join(subsequence(tokenize($exist:resource, '\.') ! lower-case(.), 2), '.');
-declare variable $collection-path := lower-case(tokenize($exist:path, '/')[2]);
+declare variable $resource-id := $exist:resource[matches(., '\.')][. gt ''] ! tokenize(., '\.')[1] ! lower-case(.);
+declare variable $resource-suffix := string-join(subsequence(tokenize($exist:resource, '\.'), 2), '.') ! lower-case(.);
+(: ISSUE - path parameters are case sensitive :)
+declare variable $path := ($resource-id ! substring-before($exist:path, $exist:resource), $exist:path)[1];
+declare variable $path-tokens := tokenize(replace($path, '^/', ''), '/');
+declare variable $collection-path := tokenize($exist:path, '/')[2] ! lower-case(.);
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 declare variable $user-name := common:user-name();
 declare variable $api-version := (request:get-parameter('api-version', '')[. = ('0.1.0','0.2.0','0.3.0','0.4.0')], '0.4.0')[1];
@@ -49,6 +52,7 @@ declare variable $var-debug :=
 declare function local:dispatch($model as xs:string?, $view as xs:string?, $parameters as node()?) as element() {
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
     {
+        
         (: Model optional :)
         if($model)then
             <forward url="{concat($exist:controller, $model)}">
@@ -59,6 +63,7 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
             </forward>
         else ()
         ,
+        
         (: View optional :)
         if($view)then
             <view>
@@ -84,7 +89,9 @@ declare function local:dispatch($model as xs:string?, $view as xs:string?, $para
             </view>
         else ()
         ,
-        if($resource-suffix eq 'html') then
+        
+        (: Error page :)
+        if($resource-suffix = ('html','pdf','epub')) then
             <error-handler>
                 <forward servlet="XSLTServlet">
                     <set-attribute name="xslt.stylesheet" value="{concat($exist:root, $exist:controller, "/views/html/error.xsl")}"/>
@@ -121,7 +128,7 @@ declare function local:redirect-purl(){
             where $tei
             return 
                 if(matches($exist:resource,  '^wae', 'i') and $tei-publication-status eq 'published') then
-                    local:redirect($common:environment/m:url[@id eq 'reading-room'] || '/translation/' || $toh-key || '.html')
+                    local:redirect(concat($common:environment/m:url[@id eq 'reading-room'], translation:href($toh-key, (), (), (), ())))
                 else
                     let $tei := tei-content:tei($toh-key, 'translation')
                     let $bibl := tei-content:source-bibl($tei, $toh-key)
@@ -168,7 +175,7 @@ declare function local:auth($redirect){
 let $log-request := ()
     (:log:log-request(
         concat($exist:controller, $exist:path), 
-        lower-case(substring-after($exist:controller, "/")), 
+        substring-after($exist:controller, "/") ! lower-case(.), 
         $collection-path, 
         $resource-id, 
         $resource-suffix
@@ -178,16 +185,21 @@ let $log-request := ()
 return
 
     (: Robots :)
-    if (lower-case($exist:resource) = ('robots.txt')) then
+    if ($exist:resource ! lower-case(.) = ('robots.txt')) then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="../../../system/config/db/system/robots.txt"/>
         </dispatch>
-        
+    
+    else if ($exist:resource ! lower-case(.) = ('robots-public.txt')) then
+        local:dispatch("/models/robots-public.xq", "", 
+            <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+        )
+    
     (: Accept the client error without 404. It is logged above. :)
-    else if (lower-case($exist:resource) eq "log-error.html") then (
+    else if ($exist:resource ! lower-case(.) eq "log-error.html") then (
         log:log-request(
             concat($exist:controller, $exist:path), 
-            lower-case(substring-after($exist:controller, "/")), 
+            substring-after($exist:controller, "/") ! lower-case(.), 
             $collection-path, 
             $resource-id, 
             $resource-suffix
@@ -200,30 +212,34 @@ return
     (: If environment wants login then check there is some authentication :)
     else if(not(common:auth-path($collection-path)) or sm:is-authenticated()) then
         
+        (: Sitemap :)
+        if ($exist:resource ! lower-case(.) = ('sitemap.xml')) then
+            local:dispatch("/models/sitemap.xq", "", ())
+        
         (: Resource redirects :)
-        if ($redirects//m:resource/id(lower-case($exist:resource))) then
-            local:redirect($redirects//m:resource/id(lower-case($exist:resource))[1]/parent::m:redirect/@target)
+        else if ($redirects//m:resource/id($exist:resource ! lower-case(.))) then
+            local:redirect($redirects//m:resource/id($exist:resource ! lower-case(.))[1]/parent::m:redirect/@target)
         
         (: Restrict view to single resource :)
         else if($redirects/m:redirect[@user-name eq $user-name][not(@resource-id eq $resource-id)]) then
             local:redirect($redirects/m:redirect[@user-name eq $user-name][1]/@target)
             
         (: Trap no path :) (: Trap index/home :)
-        else if ($exist:path = ('', '/') or lower-case($collection-path) = ('old-app')) then
+        else if ($exist:path = ('', '/') or $collection-path ! lower-case(.) = ('old-app')) then
             local:dispatch("/models/section.xq", "", 
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-id" value="lobby"/>
                     <add-parameter name="resource-suffix" value="html"/>
                 </parameters>
             )
-            
+        
         (: Exist environment debug :)
-        else if (lower-case($exist:resource) eq "exist-debug.xml" and $common:environment/m:enable[@type eq 'debug']) then
+        else if ($exist:resource ! lower-case(.) eq "exist-debug.xml" and $common:environment/m:enable[@type eq 'debug']) then
             $var-debug
         
         (: iOS universal links :)
-        else if ($collection-path eq ".well-known" and $resource-id = ('apple-app-site-association', 'assetlinks')) then
-            if($resource-id eq 'apple-app-site-association') then
+        else if ($collection-path eq ".well-known" and $path-tokens[2] = ('apple-app-site-association', 'assetlinks')) then
+            if($path-tokens[2] eq 'apple-app-site-association') then
                 local:dispatch("/models/apple-app-site-association.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
                 )
@@ -237,11 +253,11 @@ return
         (: Check for app subdomain and forward to the download page - do this after iOS universal links so these are still active on the app subdomain :)
         else if (
             $common:environment/m:url[@id eq 'communications-site'][text()]
-            and $common:environment/m:url[@id eq 'app'][text()]
+            (:and $common:environment/m:url[@id eq 'app'][text()]:)
             and request:get-header('X-Forwarded-Host') gt ''
             and matches(
-                    $common:environment/m:url[@id eq 'app']/text(), 
-                    concat('^https?://', functx:escape-for-regex(request:get-header('X-Forwarded-Host'))),
+                    request:get-header('X-Forwarded-Host'), 
+                    '^https?://app\.84000(\.co|\-translate\.org|\.local)',
                     'i'
                 )
         
@@ -249,11 +265,12 @@ return
             local:redirect($common:environment/m:url[@id eq 'communications-site'] || '/mobile')
         
         (: These are URIs redirected from purl.84000.co :)
-        else if ($path = ('/resource/core/', '/resource/id/')) then
+        else if ($path ! lower-case(.) = ('/resource/core/', '/resource/id/')) then
             local:redirect-purl()
         
         (: Translation :)
         else if ($collection-path eq "translation") then
+        
             (: xml model -> json view :)
             if ($resource-suffix eq 'json') then 
                 
@@ -261,7 +278,7 @@ return
                 if($api-version eq '0.1.0') then
                     local:dispatch("/models/translation.xq", "/views/json/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <add-parameter name="resource-suffix" value="json"/>
                             <set-header name="Content-Type" value="application/json"/>
                             <set-header name="Content-Disposition" value="attachment"/>
@@ -272,7 +289,7 @@ return
                 else if($api-version eq '0.2.0') then
                     local:dispatch("/models/translation.xq", "/views/json/0.2.0/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <add-parameter name="resource-suffix" value="json"/>
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
@@ -282,7 +299,7 @@ return
                 else if($api-version eq '0.3.0') then
                     local:dispatch("/views/json/0.3.0/translation.xq", "",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
                     )
@@ -291,19 +308,22 @@ return
                 else 
                     local:dispatch("/models/translation.xq", "/views/json/0.4.0/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <add-parameter name="resource-suffix" value="xhtml"/><!-- pass xhtml to json/0.4.0/translation.xq -->
                             <add-parameter name="view-mode" value="app"/>
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
                     )
-                
+            
             (: xml model -> pdf view :)
-            else if ($resource-suffix eq 'pdf') then (: placeholder - this is incomplete :)
-                local:dispatch("/models/translation.xq", "/views/pdf/translation-fo.xq",
+            else if ($resource-suffix eq 'pdf') then 
+                local:dispatch("/views/pdf/translation.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                         <add-parameter name="resource-suffix" value="pdf"/>
+                        <add-parameter name="resource-requested" value="{ $exist:resource }"/>
+                        <!--<set-header name="Content-Type" value="application/pdf"/>-->
+                        <!--<set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>-->
                     </parameters>
                 )
             
@@ -311,8 +331,11 @@ return
             else if ($resource-suffix eq 'epub') then
                 local:dispatch("/models/translation.xq", "/views/epub/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                         <add-parameter name="resource-suffix" value="epub"/>
+                        <add-parameter name="resource-requested" value="{ $exist:resource }"/>
+                        <!--<set-header name="Content-Type" value="application/epub+zip"/>-->
+                        <!--<set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>-->
                     </parameters>
                 )
             
@@ -320,7 +343,7 @@ return
             else if ($resource-suffix eq 'txt') then
                 local:dispatch("/models/translation.xq", "/views/txt/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-en(\-plain)?$', '') }"/>
+                        <add-parameter name="resource-id" value="{ replace(., '\-en(\-plain)?$', '') }"/>
                         <add-parameter name="resource-suffix" value="{ if(matches($resource-id, '\-en\-plain$')) then 'plain.txt' else 'txt' }"/>
                         <set-header name="Content-Type" value="text/plain"/>
                         <set-header name="Content-Disposition" value="attachment"/>
@@ -331,16 +354,18 @@ return
             else if ($resource-suffix eq 'rdf') then
                 local:dispatch("/models/translation.xq", "/views/rdf/translation.xsl",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                         <add-parameter name="resource-suffix" value="rdf"/>
                     </parameters>
                 )
             
             (: xml model -> model sets view :)
-            else if ($resource-suffix = ('tei', 'xml', 'cache', 'html')) then
+            else if ($resource-suffix = ('tei', 'xml', 'cache', 'glossary-locations.xml')) then
                 local:dispatch("/models/translation.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ ($path-tokens[2][. gt ''], tokenize($resource-id, '_'))[1] }"/>
+                        <add-parameter name="part" value="{ $path-tokens[3] }"/>
+                        <add-parameter name="commentary" value="{ $path-tokens[4] }"/>
                         <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                     </parameters>
                 )
@@ -349,7 +374,9 @@ return
             else
                 local:dispatch("/models/translation.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ ($path-tokens[2][. gt ''], tokenize($resource-id, '_'))[1] }"/>
+                        <add-parameter name="part" value="{ $path-tokens[3] }"/>
+                        <add-parameter name="commentary" value="{ $path-tokens[4] }"/>
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
@@ -360,7 +387,7 @@ return
             if ($resource-suffix = ('xml', 'html')) then
                 local:dispatch("/models/passage.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                         <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                     </parameters>
                 )
@@ -368,7 +395,7 @@ return
             else if ($resource-suffix eq 'json') then
                 local:dispatch("/models/passage.xq", "/views/json/passage.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                         <add-parameter name="resource-suffix" value="json"/>
                     </parameters>
                 )
@@ -377,7 +404,7 @@ return
             else
                 local:dispatch("/models/passage.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
@@ -414,13 +441,13 @@ return
                 )
             
             (: xml model -> atom view :)
-            else if ($resource-suffix = ('navigation.atom', 'acquisition.atom')) then
+            (:else if ($resource-suffix = ('navigation.atom', 'acquisition.atom')) then
                 local:dispatch("/models/section.xq", "/views/atom/section.xsl", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                     </parameters>
-                )
+                ):)
             
             (: xml model -> model sets view :)
             else if ($resource-suffix = ('tei', 'xml', 'html')) then
@@ -468,7 +495,8 @@ return
             else if ($resource-suffix = ('xml', 'html', 'resources')) then
                 local:dispatch("/models/source.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ ($path-tokens[2][. gt ''], $resource-id)[1] }"/>
+                        <add-parameter name="ref-index" value="{ $path-tokens[4] }"/>
                         <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                     </parameters>
                 )(::)
@@ -477,11 +505,12 @@ return
             else
                 local:dispatch("/models/source.xq", "", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ ($path-tokens[2][. gt ''], $resource-id)[1] }"/>
+                        <add-parameter name="ref-index" value="{ $path-tokens[4] }"/>
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
-        
+                
         (: About :)
         else if ($collection-path eq "about") then 
             if ($resource-suffix eq 'json') then
@@ -524,29 +553,62 @@ return
                 </parameters>
             )
         
+        (: TM search :)
+        else if ($collection-path eq "tm" and $resource-id eq 'search' and $resource-suffix eq 'json') then
+            local:dispatch("/views/json/0.4.0/tm-search.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <set-header name="Content-Type" value="application/json"/>
+                </parameters>
+            )
+        
         (: Glossary :)
-        else if ($collection-path eq "glossary") then
-            if($resource-id = ("search", "downloads")) then
+        else if ($collection-path = ("glossary", "glossary-embedded")) then
+            if($resource-id eq 'search' and $resource-suffix eq 'json') then
+                local:dispatch("/views/json/0.4.0/glossary-search.xq", "",
+                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                        <set-header name="Content-Type" value="application/json"/>
+                    </parameters>
+                )
+            
+            else if($resource-id = ("search", "downloads")) then
                 local:dispatch("/models/glossary.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
                         <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
+                        {
+                            if($collection-path eq "glossary-embedded") then
+                                <add-parameter name="template" value="embedded"/>
+                            else ()
+                        }
                     </parameters>
                 )
             
             else
                 local:dispatch("/models/glossary-entry.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
+                        <add-parameter name="resource-id" value="{ ($path-tokens[2][. gt ''], $resource-id)[1] }"/>
                         <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'html')], 'html')[1] }"/>
+                        {
+                            if($collection-path eq "glossary-embedded") then
+                                <add-parameter name="template" value="embedded"/>
+                            else ()
+                        }
                     </parameters>
                 )
-                
+        
         (: Glossary downloads :)
         else if ($resource-id eq "glossary-download") then
             local:dispatch("/models/glossary-download.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'xlsx', 'txt', 'dict')], 'xml')[1] }"/>
+                </parameters>
+            )
+        
+        (: Other Rest endpoints :)
+        else if ($collection-path eq "rest" and $resource-id = ('texts-status') and $resource-suffix eq 'json') then
+            local:dispatch(concat("/views/json/0.4.0/", $resource-id, ".xq"), "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <set-header name="Content-Type" value="application/json"/>
                 </parameters>
             )
         
@@ -556,10 +618,29 @@ return
                 <forward url="{ concat($common:data-collection, $exist:path) }"/>
             </dispatch>
         
+        (: Stylesheets, javascript and other front-end :)
+        else if($collection-path eq 'frontend' and $resource-suffix = ('css','js','min.js','svg','png','ttf','otf','eot','svg','woff','woff2')) then 
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{ string-join(($common:static-content-collection, $exist:path)) }">
+                    <set-header name="Content-Type" value="{ 
+                        if($resource-suffix eq 'css') then 'text/css'
+                        else if($resource-suffix eq 'svg') then 'image/svg+xml'
+                        else if($resource-suffix eq 'png') then 'image/png'
+                        else if($resource-suffix eq 'ttf') then 'font/ttf'
+                        else if($resource-suffix eq 'otf') then 'font/otf'
+                        else if($resource-suffix eq 'eot') then 'application/vnd.ms-fontobject'
+                        else if($resource-suffix eq 'svg') then 'image/svg+xml'
+                        else if($resource-suffix eq 'woff') then 'font/woff'
+                        else if($resource-suffix eq 'woff2') then 'font/woff2'
+                        else 'text/javascript'
+                    }"/>
+                </forward>
+            </dispatch>
+        
         (: Audio / images :)
         else if ($collection-path = ("audio", "images")) then
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{ concat($common:data-collection, $exist:path) }"/>
+                <forward url="{ string-join(($common:static-content-collection, $exist:path)) }"/>
             </dispatch>
         
         (: Search :)
@@ -587,7 +668,16 @@ return
                         <add-parameter name="resource-suffix" value="html"/>
                     </parameters>
                 )
-                
+        
+        else if ($resource-id eq "search-tm-embedded") then
+            local:dispatch("/models/search.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
+                    <add-parameter name="template" value="embedded"/>
+                    <add-parameter name="search-type" value="tm"/>
+                </parameters>
+            )
+        
         (: Downloads - used on Dist to get Collab files :)
         else if ($resource-id eq "downloads") then
             (: return the xml :)
@@ -602,6 +692,13 @@ return
             else
                 local:redirect(concat($common:environment/m:url[@id eq 'reading-room'], '/glossary/search.html'))
         
+        (: work-ids :)
+        else if ($resource-id eq "work-ids") then
+            (: return the xml :)
+            local:dispatch("/models/work-ids.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist"/>
+            )
+        
         (: Editor :)
         (: Module located in operations app :)
         else if ($resource-id = ("tei-editor", "edit-entity", "edit-glossary", "create-article") and $common:environment/m:url[@id eq 'operations'](: and common:user-in-group('operations'):)) then
@@ -611,50 +708,50 @@ return
                 </forward>
             </dispatch>
         
-        else
-            (: It's data :)
-            (:if($resource-suffix eq 'html') then
+        (:else
+            (\: It's data :\)
+            (\:if($resource-suffix eq 'html') then
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{ download:file-path($exist:resource) }">
                         <set-header name="Content-Type" value="text/html"/>
                     </forward>
                 </dispatch>
-            else:) 
+            else:\) 
             if($resource-suffix eq 'pdf') then
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ download:file-path($exist:resource) }">
+                    <forward url="{ store:download-file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/pdf"/>
                         <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
                     </forward>
                 </dispatch>
-             
+            
             else if ($resource-suffix eq 'epub') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ download:file-path($exist:resource) }">
+                    <forward url="{ store:download-file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/epub+zip"/>
                         <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
                     </forward>
                 </dispatch>
-             
+            
             else if ($resource-suffix eq 'rdf') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ download:file-path($exist:resource) }">
+                    <forward url="{ store:download-file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/rdf+xml"/>
                         <set-header name="Content-Disposition" value="attachment"/>
                     </forward>
                 </dispatch>
-             
+            
             else if ($resource-suffix eq 'json') then
                  <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ download:file-path($exist:resource) }">
+                    <forward url="{ store:download-file-path($exist:resource) }">
                         <set-header name="Content-Type" value="application/json"/>
                         <set-header name="Content-Disposition" value="attachment"/>
                     </forward>
-                </dispatch>
-            
-            else
-                (: Return an error :)
-                local:dispatch((),(),())
+                </dispatch>:)
+        
+        else
+            (: Return an error :)
+            local:dispatch((),(),())
                 
     else
         (: Auth required and not given. Show login. :)

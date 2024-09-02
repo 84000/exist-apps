@@ -7,6 +7,7 @@ import module namespace store="http://read.84000.co/store" at "../../84000-readi
 
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
+import module namespace translation="http://read.84000.co/translation" at "../../84000-reading-room/modules/translation.xql";
 import module namespace translations="http://read.84000.co/translations" at "../../84000-reading-room/modules/translations.xql";
 import module namespace deploy="http://read.84000.co/deploy" at "../../84000-reading-room/modules/deploy.xql";
 
@@ -51,11 +52,6 @@ let $store-file :=
         (: Get files from master :)
         if($store-conf[@type eq 'client'][m:translations-master-host]) then 
             store:download-master($store-file-name, $store-conf/m:translations-master-host, true())
-        
-        (: Create files :)
-        else if($store-conf[@type eq 'master']) then
-            store:create($store-file-name)
-            
         else ()
 
 (: If this is a client doing a version diff then first get translation versions in MASTER database for comparison :)
@@ -88,7 +84,7 @@ let $translations-local :=
                     $local-text
             }
             
-    else if($request-page-filter = ('search') and ($request/m:parameter[@name eq 'toh-min']/text() gt '' or $request/m:parameter[@name eq 'toh-max']/text() gt '')) then
+    else if($request-page-filter = ('search') and ($request/m:parameter[@name eq 'toh-min'][text() gt ''] or $request/m:parameter[@name eq 'toh-max'][text() gt ''])) then
         
         (: Search Toh range :)
         translations:filtered-texts('all', (), '', '', '', '', ($request/m:parameter[@name eq 'toh-min']/text(), '')[1], ($request/m:parameter[@name eq 'toh-max']/text(), '')[1], 'toh', '', '')

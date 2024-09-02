@@ -1,6 +1,6 @@
 xquery version "3.0" encoding "UTF-8";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace file-upload="http://operations.84000.co/file-upload" at "../modules/file-upload.xql";
 import module namespace translation-status="http://operations.84000.co/translation-status" at "../modules/translation-status.xql";
 
@@ -57,7 +57,7 @@ return
 
     (: return html data :)
     if($resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/edit-text-submission.xsl'))
+        common:html($xml-response, concat(helper:app-path(), '/views/edit-text-submission.xsl'))
     )
     
     (: return xml data :)

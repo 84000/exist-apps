@@ -8,6 +8,10 @@
         <!-- Range indexes -->
         <range>
             
+            <!-- file-versions.xml -->
+            <create qname="@file-name" type="xs:string"/>
+            <create qname="@version" type="xs:string"/>
+            
             <!-- translation-status.xml -->
             <create qname="@text-id" type="xs:string"/>
             <create qname="@status-id" type="xs:string"/>

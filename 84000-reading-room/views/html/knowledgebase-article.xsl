@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" exclude-result-prefixes="#all" version="3.0">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="#all" version="3.0">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
     <!-- Look up environment variables -->
-    <xsl:variable name="environment" select="/m:response/m:environment"/>
+    <!--<xsl:variable name="environment" select="/m:response/m:environment"/>-->
     <xsl:variable name="front-end-path" select="$environment/m:url[@id eq 'front-end']/text()"/>
     <xsl:variable name="render-status" select="$environment/m:render/m:status[@type eq 'article']/@status-id"/>
     
@@ -285,14 +285,14 @@
                                                                                 <xsl:choose>
                                                                                     <xsl:when test="$text/@status eq '1'">
                                                                                         <a>
-                                                                                            <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/m:toh/@key, '.html')"/>
+                                                                                            <xsl:attribute name="href" select="m:translation-href($text/m:toh/@key, (), (), ())"/>
                                                                                             <xsl:attribute name="target" select="concat($text/@id, '.html')"/>
                                                                                             <xsl:value-of select="$title"/>
                                                                                         </a>
                                                                                     </xsl:when>
                                                                                     <xsl:otherwise>
                                                                                         <a>
-                                                                                            <xsl:attribute name="href" select="common:internal-link(concat('/section/', m:parent[1]/@id, '.html'), (), $text/m:toh/@key ! concat('#', .), /m:response/@lang)"/>
+                                                                                            <xsl:attribute name="href" select="common:internal-href(concat('/section/', m:parent[1]/@id, '.html'), (), $text/m:toh/@key ! concat('#', .), /m:response/@lang)"/>
                                                                                             <xsl:value-of select="$title"/>
                                                                                         </a>
                                                                                     </xsl:otherwise>
@@ -789,8 +789,9 @@
             <xsl:with-param name="page-title" select="concat($article-title, ' | 84000 Knowledge Base')"/>
             <xsl:with-param name="page-description" select="normalize-space(data($article/m:page/m:summary/tei:p[1]))"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
+            <xsl:with-param name="additional-tags">
                 <script src="https://code.highcharts.com/highcharts.js"/>
+                <script src="https://code.highcharts.com/modules/accessibility.js"/>
             </xsl:with-param>
         </xsl:call-template>
         

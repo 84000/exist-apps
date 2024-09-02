@@ -182,11 +182,20 @@ blockquote {
     margin-bottom: 0;
     border-left: 3px solid #ccc;
 }
+blockquote blockquote {
+    border-left: none;
+}
 blockquote p {
     padding-left: 12pt;
 }
+blockquote blockquote p {
+    padding-left: 24pt;
+}
 blockquote .line-group .line {
     padding-left: 34pt;
+}
+blockquote blockquote .line-group .line {
+    padding-left: 46pt;
 }
 
 /* text section */
@@ -342,7 +351,7 @@ br+.rw > p,
 .rw-trailer > p,
 .rw.rw-label+.rw > p,
 .rw.rw-list-head+.rw > p,
-blockquote > .rw-paragraph:first-child {
+blockquote > .rw:first-child > p {
     text-indent: 0;
 }
 

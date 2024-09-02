@@ -8,7 +8,7 @@ declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace tmx="http://www.lisa.org/tmx14";
 
-import module namespace local="http://operations.84000.co/local" at "../modules/local.xql";
+import module namespace helper="http://operations.84000.co/helper" at "../modules/helper.xql";
 import module namespace common="http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace glossary="http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace entities="http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
@@ -263,7 +263,7 @@ return
 
     (: return html data :)
     if($request/@resource-suffix eq 'html') then (
-        common:html($xml-response, concat(local:app-path(), '/views/source-utils.xsl'))
+        common:html($xml-response, concat(helper:app-path(), '/views/source-utils.xsl'))
     )
     
     (: return xml data :)

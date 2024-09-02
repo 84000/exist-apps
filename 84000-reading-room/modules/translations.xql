@@ -355,8 +355,8 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
     let $document-path := substring-before($document-url, concat('/', $file-name))
     let $archive-path := 
         if(contains($document-path, $common:archive-path)) then
-            substring-after($document-path, concat($common:archive-path, '/'))
-        else ''
+            substring-after($document-path, concat($common:archive-path, '/'))[. gt '']
+        else ()
     
     return
         element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -367,7 +367,7 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             attribute archive-path { $archive-path },
             attribute last-modified { tei-content:last-modified($tei) },
             attribute locked-by-user { tei-content:locked-by-user($tei) },
-            attribute page-url { translation:canonical-html($toh/@key, $archive-path) },
+            (:attribute page-url { translation:canonical-html($toh/@key, $archive-path ! concat('id=', .)) },:)
             attribute status { tei-content:publication-status($tei) },
             attribute status-group { tei-content:publication-status-group($tei) },
             $toh,
@@ -396,59 +396,50 @@ declare function translations:versioned($include-downloads as xs:string, $includ
     let $translations := $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition/text()]
     
     return
-        <translations xmlns="http://read.84000.co/ns/1.0">
-        {
+        element { QName('http://read.84000.co/ns/1.0','translations') } {
             for $toh-key in $translations//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                 let $tei := $translations[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($toh-key)]]
             return
                 translations:filtered-text($tei, $toh-key, false(), $include-downloads, $include-folios)
         }
-        </translations>
     
 };
 
 declare function translations:sponsored-texts() as element() {
     
-    <sponsored-texts xmlns="http://read.84000.co/ns/1.0">
-    {
+    element { QName('http://read.84000.co/ns/1.0','sponsored-texts') } {
         for $tei in $tei-content:translations-collection//tei:teiHeader//tei:titleStmt[tei:sponsor]/ancestor::tei:TEI
         return
             translations:filtered-text($tei, '', true(), '', false())
     }
-    </sponsored-texts>
 
 };
 
 declare function translations:sponsorship-texts() as element() {
     
-    <sponsorship-texts xmlns="http://read.84000.co/ns/1.0">
-    {
+    element { QName('http://read.84000.co/ns/1.0','sponsorship-texts') } {
         let $available-sponsorship-ids := sponsorship:text-ids('available')
         for $tei in $tei-content:translations-collection//tei:teiHeader//tei:idno/id($available-sponsorship-ids)/ancestor::tei:TEI
         return
             translations:filtered-text($tei, '', false(), '', false())
     }
-    </sponsorship-texts>
 
 };
 
 declare function translations:translation-status-texts($status as xs:string*) as element() {
     
-    <translation-status-texts xmlns="http://read.84000.co/ns/1.0">
-    {
+    element { QName('http://read.84000.co/ns/1.0','translation-status-texts') } {
         for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = $status]]
             for $toh-key in $tei//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
         return
             translations:filtered-text($tei, $toh-key, false(), '', false())
     }
-    </translation-status-texts>
 
 };
 
 declare function translations:downloads($resource-ids as xs:string*) as element() {
 
-    <translations xmlns="http://read.84000.co/ns/1.0">
-    {
+    element { QName('http://read.84000.co/ns/1.0','translations') } {
         for $tei in 
             if($resource-ids = 'versioned') then
                 $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition[text()]]
@@ -469,19 +460,18 @@ declare function translations:downloads($resource-ids as xs:string*) as element(
                 attribute document-url { base-uri($tei) },
                 attribute locked-by-user { tei-content:locked-by-user($tei) },
                 attribute file-name { util:unescape-uri(replace(base-uri($tei), ".+/(.+)$", "$1"), 'UTF-8') },
-                attribute translation-status { $publication-status },(: Deprecate this attribute when on Distribution :)
                 attribute publication-status { $publication-status },
-                for $resource-id in 
+                for $source-key in 
                     if($resource-ids = ('versioned', 'translations', 'placeholders')) then
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                     else
                         $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key = $resource-ids]/@key
                 return
-                    translation:downloads($tei, $resource-id, 'all'),
-                    tei-content:status-updates($tei)
+                    translation:downloads($tei, $source-key, 'all')
+                ,
+                tei-content:status-updates($tei)
             }
     }
-    </translations>
     
 };
 

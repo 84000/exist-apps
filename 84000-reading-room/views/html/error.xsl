@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -18,7 +18,7 @@
                             <ul class="breadcrumb">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="common:internal-link('/section/lobby.html', (), '', ((/m:response/@lang), '')[1])"/>
+                                        <xsl:attribute name="href" select="common:internal-href('/section/lobby.html', (), (), ((/m:response/@lang), '')[1])"/>
                                         <xsl:value-of select="'The Collection'"/>
                                     </a>
                                 </li>
@@ -31,7 +31,7 @@
                             <div class="center-vertical pull-right">
                                 <div>
                                     <a class="center-vertical">
-                                        <xsl:attribute name="href" select="common:internal-link('/section/all-translated.html', (), '', ((/m:response/@lang), '')[1])"/>
+                                        <xsl:attribute name="href" select="common:internal-href('/section/all-translated.html', (), (), ((/m:response/@lang), '')[1])"/>
                                         <span>
                                             <span class="btn-round sml">
                                                 <i class="fa fa-list"/>
@@ -59,10 +59,10 @@
                                 <hr/>
                                 <h2>Debug information:</h2>
                                 <p class="text-bold">
-                                    <xsl:value-of select="exception/path"/>
+                                    <xsl:value-of select="(exception/path, /m:response/m:exception/m:path)[1]"/>
                                 </p>
                                 <p>
-                                    <xsl:value-of select="exception/message"/>
+                                    <xsl:value-of select="(exception/message, /m:response/m:exception/m:message)[1]"/>
                                 </p>
                             </xsl:if>
                         </main>
@@ -90,8 +90,9 @@
             <xsl:with-param name="page-title" select="'Error | 84000 Translating the Words of the Buddha'"/>
             <xsl:with-param name="page-description" select="'Sorry, there was an error.'"/>
             <xsl:with-param name="content" select="$content"/>
-            <xsl:with-param name="additional-links">
+            <xsl:with-param name="additional-tags">
                 <script src="https://code.highcharts.com/highcharts.js"/>
+                <script src="https://code.highcharts.com/modules/accessibility.js"/>
             </xsl:with-param>
         </xsl:call-template>
         

@@ -109,7 +109,7 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     
     (: Check the request to see if it's a phrase :)
     let $search-is-phrase := matches($search, '^\s*["“].+["”]\s*$')
-    let $search-no-quotes := replace($search, '("|“|”|''|/)', '')
+    let $search-no-quotes := replace($search, '("|“|”|/)', '')
     (:let $search-is-bo := common:string-is-bo($search):)
     let $search-no-quotes :=
         if(devanagari:string-is-dev($search)) then
@@ -359,8 +359,8 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                     $tm-units[ft:query(tmx:tuv, concat('bo:(', $search-regex, ')'), map { "fields": ("bo") })][tmx:tuv[@xml:lang eq 'en']]
                 else
                     $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })][tmx:tuv[@xml:lang eq 'bo']]
-                return
-                    local:some-matches($matches, 1)
+            return
+                local:some-matches($matches, 1)
             ,
             if($include-glossary) then
                 if($search-lang eq 'bo') then
@@ -444,7 +444,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                     
                                         attribute type { 'tm-unit' },
                                         attribute type-id { $result/@id },
-                                        attribute location { concat('/translation/', $toh-key, '.html', if($location-id) then concat('#', $location-id) else '') },
+                                        attribute location { translation:href($toh-key, (), (), (), $location-id) },
                                         
                                         if($result-tmx/tmx:header[@creationtool = ('linguae-dharmae/84000')]) then
                                             element flag { attribute type { 'machine-alignment' } }
@@ -480,7 +480,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                                     
                                     (: Include surfeits, just don't link :)
                                     if($result[not(@mode eq 'surfeit')]) then
-                                        attribute location { concat('/translation/', $toh-key, '.html#', $result/@xml:id) }
+                                        attribute location { translation:href($toh-key, (), (), (), $result/@xml:id) }
                                     else (),
                                     
                                     let $result-bo := $result/tei:term[@xml:lang eq "bo"]
@@ -610,23 +610,27 @@ declare function local:result-header($content as element()) as element() {
     
     let $resource-id := 
         if(lower-case(local-name($content)) eq 'tei') then
-            tei-content:id($content)
+            ($content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key])[1]/@key
         else if(local-name($content) eq 'entity') then
             $content/@xml:id
         else ()
     
     let $target-resource-id :=
         if($type eq 'translation' and $render-type eq 'section') then
-            $content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id][1]/@parent-id
+            ($content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:idno[@parent-id])[1]/@parent-id
         else 
             $resource-id
     
-    let $fragment-id := 
+    let $fragment := 
         if($type eq 'translation' and $render-type eq 'section') then
-            $content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key][1]/@key
+            ($content//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key])[1]/@key
         else ()
         
-    let $page-link := concat('/', $render-type, '/', $target-resource-id, '.html', $fragment-id ! concat('#', .))
+    let $page-link := 
+        if($render-type eq 'translation') then
+            translation:href($target-resource-id, (), (), (), $fragment)
+        else
+            concat('/', $render-type, '/', $target-resource-id, '.html', $fragment ! concat('#', .))
     
     where $type
     return

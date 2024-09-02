@@ -28,10 +28,10 @@
         </xsl:choose>
     </xsl:variable>
     <xsl:variable name="glossary" select="$response/m:glossary[1]"/>
-    <xsl:variable name="glossary-cache" select="$response/m:glossary-cache[1]"/>
-    <xsl:variable name="cache-slow" select="if($glossary-cache/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
-    <xsl:variable name="cache-glosses-behind" select="$glossary-cache/m:gloss[not(@tei-version eq $text/@tei-version)][m:location]"/>
-    <xsl:variable name="cache-glosses-new-locations" select="$glossary-cache/m:gloss[m:location/@initial-version = $text/@tei-version]"/>
+    <xsl:variable name="glossary-cached-locations" select="$response/m:glossary-cached-locations[1]"/>
+    <xsl:variable name="cache-slow" select="if($glossary-cached-locations/@seconds-to-build ! xs:decimal(.) gt 120) then true() else false()" as="xs:boolean"/>
+    <xsl:variable name="cache-glosses-behind" select="$glossary-cached-locations/m:gloss[not(@tei-version eq $text/@tei-version)][m:location]"/>
+    <xsl:variable name="cache-glosses-new-locations" select="$glossary-cached-locations/m:gloss[m:location/@initial-version = $text/@tei-version]"/>
     
     <xsl:template match="/m:response">
         
@@ -57,7 +57,7 @@
                         
                         <div class="h3">
                             <a>
-                                <xsl:attribute name="href" select="concat($reading-room-path, '/translation/', $text/@id, '.html')"/>
+                                <xsl:attribute name="href" select="m:translation-href(($text/m:toh/@key)[1], (), (), (), (), $reading-room-path)"/>
                                 <xsl:attribute name="target" select="concat(($text/m:toh/@key)[1], '.html')"/>
                                 <xsl:value-of select="string-join(($text/m:toh/m:full, $main-title), ' / ')"/>
                             </a>
@@ -72,7 +72,7 @@
                     <!-- Links -->
                     <xsl:call-template name="text-links-list">
                         <xsl:with-param name="text" select="$text"/>
-                        <xsl:with-param name="exclude-links" select="('edit-glossary')"/>
+                        <xsl:with-param name="disable-links" select="('edit-glossary')"/>
                         <xsl:with-param name="text-status" select="$response/m:text-statuses/m:status[@status-id eq $text/@status]"/>
                         <xsl:with-param name="glossary-filter" select="$request-filter"/>
                     </xsl:call-template>
@@ -164,7 +164,7 @@
                                                         </a>
                                                     </span>
                                                 </xsl:when>
-                                                <xsl:when test="count($glossary-cache/m:gloss) eq 0">
+                                                <xsl:when test="count($glossary-cached-locations/m:gloss) eq 0">
                                                     <span class="label label-default">
                                                         <xsl:value-of select="'No glossary cache'"/>
                                                     </span>
@@ -176,7 +176,7 @@
                                                 </xsl:otherwise>
                                             </xsl:choose>
                                             
-                                            <xsl:if test="$glossary-cache/m:gloss[not(m:location)]">
+                                            <xsl:if test="$glossary-cached-locations/m:gloss[not(m:location)]">
                                                 <span class="label label-danger">
                                                     <a>
                                                         <xsl:attribute name="href">
@@ -185,7 +185,7 @@
                                                             </xsl:call-template>
                                                         </xsl:attribute>
                                                         <xsl:attribute name="data-loading" select="'Loading...'"/>
-                                                        <xsl:value-of select="concat(format-number(count($glossary-cache/m:gloss[not(m:location)]), '#,###'), ' missing')"/>
+                                                        <xsl:value-of select="concat(format-number(count($glossary-cached-locations/m:gloss[not(m:location)]), '#,###'), ' missing')"/>
                                                     </a>
                                                 </span>
                                             </xsl:if>
@@ -262,9 +262,15 @@
                                             <!-- Disable if processing -->
                                             <xsl:otherwise>
                                                 <li>
-                                                    <span class="label label-danger">
-                                                        <xsl:value-of select="'Job running, please wait...'"/>
-                                                    </span>
+                                                    <a title="Re-load status" data-loading="Loading...">
+                                                        <xsl:attribute name="href">
+                                                            <xsl:call-template name="link-href"/>
+                                                        </xsl:attribute>
+                                                        <xsl:attribute name="data-autoclick-seconds" select="120"/>
+                                                        <span class="label label-danger">
+                                                            <xsl:value-of select="'Job running, please wait...'"/>
+                                                        </span>
+                                                    </a>
                                                 </li>
                                             </xsl:otherwise>
                                             
@@ -284,7 +290,7 @@
                                     <ul class="no-bottom-margin">
                                         
                                         <!-- Cache locations -->
-                                        <xsl:if test="count($cache-glosses-behind) gt 0 and count($cache-glosses-behind) lt count($glossary-cache/m:gloss)">
+                                        <xsl:if test="count($cache-glosses-behind) gt 0 and count($cache-glosses-behind) lt count($glossary-cached-locations/m:gloss)">
                                             <li>
                                                 <a target="_self" class="underline small" data-loading="Caching locations...">
                                                     <xsl:attribute name="href" select="concat('edit-glossary.html?resource-id=', $request-resource-id, '&amp;resource-type=', $request-resource-type, '&amp;form-action=cache-locations-version&amp;filter=new-locations')"/>
@@ -300,16 +306,16 @@
                                                 <xsl:value-of select="'Re-cache locations of all entries'"/>
                                             </a>
                                             
-                                            <xsl:if test="$glossary-cache[@seconds-to-build]">
+                                            <xsl:if test="$glossary-cached-locations[@seconds-to-build]">
                                                 <xsl:choose>
                                                     <xsl:when test="$cache-slow">
                                                         <span class="label label-warning">
-                                                            <xsl:value-of select="concat('previously this took: ', format-number(($glossary-cache/@seconds-to-build ! xs:decimal(.) div 60), '#,##0.##'), ' minutes')"/>
+                                                            <xsl:value-of select="concat('previously this took: ', format-number(($glossary-cached-locations/@seconds-to-build ! xs:decimal(.) div 60), '#,##0.##'), ' minutes')"/>
                                                         </span>
                                                     </xsl:when>
                                                     <xsl:otherwise>
                                                         <span class="label label-info">
-                                                            <xsl:value-of select="concat('previously this took: ', format-number($glossary-cache/@seconds-to-build, '#,##0.##'), ' seconds')"/>
+                                                            <xsl:value-of select="concat('previously this took: ', format-number($glossary-cached-locations/@seconds-to-build, '#,##0.##'), ' seconds')"/>
                                                         </span>
                                                     </xsl:otherwise>
                                                 </xsl:choose>
@@ -652,7 +658,7 @@
                                 
                                 <xsl:variable name="loop-glossary" select="."/>
                                 <xsl:variable name="loop-glossary-id" select="($loop-glossary/@id, 'new-glossary')[1]"/>
-                                <xsl:variable name="loop-glossary-cache" select="$glossary-cache/m:gloss[@id eq $loop-glossary-id]"/>
+                                <xsl:variable name="loop-glossary-cached-locations-gloss" select="$glossary-cached-locations/m:gloss[@id eq $loop-glossary-id]"/>
                                 
                                 <xsl:variable name="loop-glossary-instance" select="key('entity-instance', $loop-glossary/@id, $root)[1]"/>
                                 <xsl:variable name="loop-glossary-entity" select="$loop-glossary-instance/parent::m:entity"/>
@@ -790,10 +796,10 @@
                                         <!-- Panel: Show locations of this glossary in the text-->
                                         <xsl:if test="$request-filter = ('check-locations', 'check-all', 'new-locations', 'no-locations', 'cache-behind') and $loop-glossary/m:locations">
                                             
-                                            <xsl:variable name="locations-cache-new" select="$loop-glossary-cache/m:location[@initial-version eq $text/@tei-version]"/>
-                                            <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $loop-glossary-id, $root)"/>
-                                            <xsl:variable name="locations-not-cached" select="$loop-glossary/m:locations/m:location[not(@id = $glossary-cache-gloss/m:location/@id)]"/>
-                                            <xsl:variable name="locations-cache-behind" select="$loop-glossary-cache[m:location] and $cache-glosses-behind[@id eq $loop-glossary-id]"/>
+                                            <xsl:variable name="locations-cache-new" select="$loop-glossary-cached-locations-gloss/m:location[@initial-version eq $text/@tei-version]"/>
+                                            <xsl:variable name="glossary-locations-gloss" select="key('glossary-locations-gloss', $loop-glossary-id, $root)"/>
+                                            <xsl:variable name="locations-not-cached" select="$loop-glossary/m:locations/m:location[not(@id = $glossary-locations-gloss/m:location/@id)]"/>
+                                            <xsl:variable name="locations-cache-behind" select="$loop-glossary-cached-locations-gloss[m:location] and $cache-glosses-behind[@id eq $loop-glossary-id]"/>
                                             
                                             <xsl:call-template name="expand-item">
                                                 
@@ -812,7 +818,7 @@
                                                             </span>
                                                             <span class="badge badge-notification">
                                                                 <xsl:choose>
-                                                                    <xsl:when test="$loop-glossary-cache[m:location/@initial-version = $text/@tei-version]">
+                                                                    <xsl:when test="$loop-glossary-cached-locations-gloss[m:location/@initial-version = $text/@tei-version]">
                                                                         <xsl:attribute name="class" select="'badge badge-notification'"/>
                                                                     </xsl:when>
                                                                     <xsl:when test="$loop-glossary[m:locations[m:location]]">
@@ -839,7 +845,7 @@
                                                             </span>
                                                         </div>
                                                         
-                                                        <xsl:if test="not($loop-glossary-cache/m:location)">
+                                                        <xsl:if test="not($loop-glossary-cached-locations-gloss/m:location)">
                                                             <div>
                                                                 <span class="label label-danger">
                                                                     <xsl:value-of select="'Not cached'"/>
@@ -2219,8 +2225,8 @@
         
         <xsl:variable name="location-id" select="@id"/>
         <xsl:variable name="glossary" select="parent::m:locations/parent::m:entry"/>
-        <xsl:variable name="glossary-cache-gloss" select="key('glossary-cache-gloss', $glossary/@id, $root)"/>
-        <xsl:variable name="cache-location" select="$glossary-cache-gloss/m:location[@id eq $location-id][1]"/>
+        <xsl:variable name="glossary-locations-gloss" select="key('glossary-locations-gloss', $glossary/@id, $root)"/>
+        <xsl:variable name="cache-location" select="$glossary-locations-gloss/m:location[@id eq $location-id][1]"/>
         
         <xsl:variable name="cache-location-status" as="xs:string?">
             <xsl:choose>
@@ -2270,7 +2276,7 @@
                     <xsl:when test="$cache-location-status eq 'behind'">
                         <li>
                             <span class="text-warning underline">
-                                <xsl:value-of select="concat('Cached in ', ($glossary-cache-gloss/@tei-version, 'previous version')[1])"/>
+                                <xsl:value-of select="concat('Cached in ', ($glossary-locations-gloss/@tei-version, 'previous version')[1])"/>
                             </span>
                         </li>
                     </xsl:when>
@@ -2324,7 +2330,7 @@
         
         <xsl:element name="a">
             
-            <xsl:copy-of select="@*[not(name(.) = ('href', 'class', 'data-bookmark', 'target', 'title'))]"/>
+            <xsl:copy-of select="@*[not(name(.) = ('href', 'class', 'target', 'title', 'data-bookmark'))]"/>
             
             <xsl:variable name="link-href-tokenized" select="tokenize($link/@href, '#')"/>
             <xsl:variable name="link-href-query" select="concat($link-href-tokenized[1], concat(if(contains($link-href-tokenized[1], '?')) then '&amp;' else '?', 'glossary-id=', $glossary-entry/@id))"/>
