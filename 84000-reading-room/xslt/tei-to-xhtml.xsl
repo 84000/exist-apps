@@ -355,8 +355,8 @@
                     <xsl:when test="$folio-ref-index and $toh-key">
                         <xsl:choose>
                             
-                            <!-- If it's html then add a link -->
-                            <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
+                            <!-- If it's html then add a relative link -->
+                            <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
                                 
                                 <a>
                                     <xsl:call-template name="class-attribute">
@@ -378,10 +378,30 @@
                                 
                             </xsl:when>
                             
+                            <xsl:when test="$view-mode[@client = ('pdf')]">
+                                
+                                <a>
+                                    <xsl:call-template name="class-attribute">
+                                        <xsl:with-param name="base-classes" select="'ref folio-ref'"/>
+                                    </xsl:call-template>
+                                    <!-- define an anchor so we can link back to this point -->
+                                    <xsl:attribute name="id" select="$ref/@xml:id"/>
+                                    <!-- Maintain old links for now -->
+                                    <xsl:attribute name="href" select="concat('https://read.84000.co', '/', 'source', '/', $toh-key, '.html', '?ref-index=', $folio-ref-index)"/>
+                                    <!-- TO DO: implement new links
+                                    <xsl:attribute name="href" select="concat('https://read.84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> -->
+                                    <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                                </a>
+                                
+                            </xsl:when>
+                            
                             <xsl:otherwise>
                                 
                                 <span class="ref">
-                                    <xsl:attribute name="data-href" select="m:source-href($toh-key, $folio-ref-index, ())"/>
+                                    <!-- Maintain old links for now -->
+                                    <xsl:attribute name="data-href" select="concat('https://read.84000.co', '/', 'source', '/', $toh-key, '.html', '?ref-index=', $folio-ref-index)"/>
+                                    <!-- TO DO: implement new links
+                                    <xsl:attribute name="data-href" select="concat('https://read.84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> -->
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </span>
                                 
@@ -407,7 +427,16 @@
             <xsl:when test="$ref[@target]">
                 <a target="_blank">
                     
-                    <xsl:attribute name="href" select="replace($ref/@target, '^https?://read\.84000\.co', '', 'i')"/>
+                    <xsl:choose>
+                        <!-- Same domain, make relative -->
+                        <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
+                            <xsl:attribute name="href" select="replace($ref/@target, '^https?://read\.84000\.co', '', 'i') ! replace(., '\s+', '%20', '')"/>
+                        </xsl:when>
+                        <!-- External domain -->
+                        <xsl:otherwise>
+                            <xsl:attribute name="href" select="$ref/@target ! replace(., '\s+', '%20', '')"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     
                     <xsl:choose>
                         
@@ -1472,7 +1501,7 @@
                         <div class="gtr">
                             <xsl:choose>
                                 
-                                <xsl:when test="$view-mode[not(@client = ('ebook', 'app', 'pdf'))]">
+                                <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
                                     
                                     <xsl:call-template name="bookmark-link">
                                         <xsl:with-param name="bookmark-target-hash" select="$glossary-item/@xml:id"/>
@@ -2680,7 +2709,7 @@
                                 <xsl:choose>
                                     
                                     <!-- show a relative link -->
-                                    <xsl:when test="$view-mode[not(@client = ('ebook', 'app', 'pdf'))]">
+                                    <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
                                         
                                         <xsl:call-template name="bookmark-link">
                                             <xsl:with-param name="bookmark-target-hash" select="$milestone/@xml:id"/>
@@ -2765,7 +2794,7 @@
                             <xsl:choose>
                                 
                                 <!-- show a link -->
-                                <xsl:when test="$view-mode[not(@client = ('ebook', 'app', 'pdf'))] and $part[@id]">
+                                <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))] and $part[@id]">
                                     <xsl:call-template name="bookmark-link">
                                         <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
                                         <xsl:with-param name="bookmark-target-part" select="$part/@id"/>
@@ -2834,7 +2863,7 @@
         <xsl:param name="node" required="yes"/>
         
         <!-- If an id is present then set the id attribute -->
-        <xsl:if test="(:not($view-mode[@client = ('ebook', 'app')]) and:) not($node/ancestor-or-self::m:part[@content-status][1][@content-status eq 'preview'])">
+        <xsl:if test="not($node/ancestor-or-self::m:part[@content-status][1][@content-status eq 'preview'])">
             
             <xsl:variable name="id">
                 <xsl:choose>
@@ -3156,15 +3185,30 @@
                                 <!-- Link to reload for commentary -->
                                 <xsl:if test="not($requested-commentary eq $commentary-resource)">
                                     <div class="bottom-margin">
-                                        <a class="text-danger">
-                                            
-                                            <!-- Send the milestone-id to the server so it returns the correct part -->
-                                            <xsl:attribute name="href" select="m:translation-href($requested-resource, ()(:$requested-part:), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))))"/>
-                                            <xsl:attribute name="target" select="'_self'"/>
-                                            <xsl:attribute name="data-loading" select="concat('Reloading as root text for commentary', '...')"/>
-                                            <xsl:value-of select="'Reload this text to be read alongside this commentary'"/>
-                                            
-                                        </a>
+                                        <xsl:choose>
+                                            <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
+                                                <a class="text-danger">
+                                                    
+                                                    <!-- Send the milestone-id to the server so it returns the correct part -->
+                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, ()(:$requested-part:), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))))"/>
+                                                    <xsl:attribute name="target" select="'_self'"/>
+                                                    <xsl:attribute name="data-loading" select="concat('Reloading as root text for commentary', '...')"/>
+                                                    <xsl:value-of select="'Reload this text to be read alongside this commentary'"/>
+                                                    
+                                                </a>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <a class="printable">
+                                                
+                                                    <!-- Send the milestone-id to the server so it returns the correct part -->
+                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, ()(:$requested-part:), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))), (), 'https://read.84000.co')"/>
+                                                    <xsl:attribute name="target" select="concat('translation-', $commentary-resource)"/>
+                                                    <xsl:value-of select="'Open this passage'"/>
+                                                    
+                                                </a>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                        
                                     </div>
                                 </xsl:if>
                                 
@@ -3252,7 +3296,7 @@
             </xsl:choose>
         </xsl:variable>
         
-        <xsl:if test="$tei-editor and $view-mode[not(@client = ('ebook', 'app'))] and $id gt ''">
+        <xsl:if test="$tei-editor and $view-mode[not(@client = ('pdf', 'ebook', 'app'))] and $id gt ''">
             
             <!-- Knowledge base only -->
             <xsl:variable name="resource-type" select="if($article) then 'knowledgebase' else 'translation'"/>
@@ -4286,7 +4330,7 @@
             <!-- If there's a match output -->
             <xsl:when test="$matching-glossary">
                 <xsl:choose>
-                    <xsl:when test="$view-mode[not(@client = ('ebook', 'app'))]">
+                    <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
                         <a>
                             
                             <xsl:call-template name="href-attribute">
@@ -4526,7 +4570,7 @@
         
         <xsl:choose>
             
-            <xsl:when test="($view-mode[not(@client = ('ebook', 'app'))] or not($view-mode))">
+            <xsl:when test="($view-mode[not(@client = ('pdf', 'ebook', 'app'))] or not($view-mode))">
                 <a>
                     
                     <xsl:variable name="location-id" as="xs:string">

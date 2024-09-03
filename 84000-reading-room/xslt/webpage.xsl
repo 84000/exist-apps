@@ -58,7 +58,7 @@
                 </xsl:when>
             </xsl:choose>
         </xsl:variable>
-        <xsl:value-of select="$view-mode-id ! concat($prefix, 'view-mode=',.)"/>
+        <xsl:value-of select="$view-mode-id[. gt ''] ! concat($prefix, 'view-mode=', .)"/>
     </xsl:function>
     
     <!-- Archive path parameter supports access to archived copies of the TEI -->
@@ -132,7 +132,7 @@
         <head>
             
             <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0"/>
             <meta name="description">
                 <xsl:attribute name="content" select="$page-description"/>
             </meta>
@@ -298,11 +298,11 @@
                 </xsl:attribute>
                 
                 <!-- Environment alert -->
-                <xsl:if test="$environment/m:label/text()">
+                <!--<xsl:if test="$environment/m:label/text()">
                     <div class="environment-warning">
-                        <xsl:value-of select="$environment/m:label/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
+                        <xsl:value-of select="string-join(($environment/m:label/text(), @user-name, $app-version, @exist-version), ' / ')"/>
                     </div>
-                </xsl:if>
+                </xsl:if>-->
                 
                 <!-- Alert -->
                 <aside id="page-alert" class="fixed-footer fix-height collapse">
@@ -356,11 +356,11 @@
                 <xsl:attribute name="class" select="string-join(($page-class, $view-mode/@id ! concat(.,'-mode')), ' ')"/>
                 
                 <!-- Environment alert -->
-                <xsl:if test="$environment/m:label/text()">
+                <!--<xsl:if test="$environment/m:label/text()">
                     <div class="environment-warning">
-                        <xsl:value-of select="$environment/m:label/text()"/> / <xsl:value-of select="@user-name"/> / <xsl:value-of select="$app-version"/> / <xsl:value-of select="@exist-version"/>
+                        <xsl:value-of select="string-join(($environment/m:label/text(), @user-name, $app-version, @exist-version), ' / ')"/>
                     </div>
-                </xsl:if>
+                </xsl:if>-->
                 
                 <!-- Alert -->
                 <aside id="page-alert" class="fixed-footer fix-height collapse">
@@ -462,7 +462,7 @@
     <xsl:function name="m:translation-url-parameters" as="xs:string">
         <xsl:param name="resource-id" as="xs:string"/>
         <xsl:param name="append-parameters" as="xs:string*"/>
-        <xsl:variable name="view-mode-parameter" select="m:view-mode-parameter()"/>
+        <xsl:variable name="view-mode-parameter" select="if($view-mode[not(@client = ('pdf', 'ebook', 'app'))]) then m:view-mode-parameter() else ()"/>
         <xsl:variable name="archive-path-parameter" select="if($resource-id = ($text-id, $toh-key) and $archive-path gt '') then concat('archive-path=', $archive-path) else ()"/>
         <xsl:value-of select="string-join(($view-mode-parameter, $archive-path-parameter, $append-parameters)[. gt ''], '&amp;')[. gt ''] ! concat('?', .)"/>
     </xsl:function>

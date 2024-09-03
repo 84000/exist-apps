@@ -115,8 +115,11 @@ return
     else if($request[@resource-suffix eq 'glossary-locations.xml']) then 
         glossary:cached-locations($tei, false())
     else if($request[@resource-suffix eq 'cache']) then 
-        transform:transform(glossary:cached-locations($tei, false()), doc(concat($common:app-path, "/views/xml/glossary-locations-legacy.xsl")), <parameters/>)
-    
+        let $glossary-cached-locations := glossary:cached-locations($tei, false())
+        let $glossary-cached-locations-legacy := transform:transform($glossary-cached-locations, doc(concat($common:app-path, "/views/xml/glossary-locations-legacy.xsl")), <parameters/>)
+        return
+            common:serialize-xml($glossary-cached-locations-legacy)
+            
     (: Compile response :)
     else
 

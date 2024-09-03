@@ -660,6 +660,10 @@ declare function webflow:translation-updates($tei as element(tei:TEI)) {
     
     let $text-id := tei-content:id($tei)
     let $api-status := translation:api-status($tei)
+    let $execute-options := 
+        <option>
+            <workingDir>/{ $common:environment//eft:env-vars/eft:var[@id eq 'home']/text() }/</workingDir>
+        </option>
     
     for $api-call in $api-status/eft:api-call[@type eq 'webflow-api'][@linked eq 'true'][@publish eq 'true']
     return (

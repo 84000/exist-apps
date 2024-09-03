@@ -167,7 +167,7 @@
                     <xsl:value-of select="'Project status'"/>
                 </div>
                 
-                <p class="text-muted sml-margin top">
+                <p class="text-muted small sml-margin top">
                     <xsl:value-of select="'Options for managing the status of the translation project'"/>
                 </p>
                 
@@ -327,7 +327,7 @@
                                     <div class="col-sm-9">
                                         <textarea class="form-control" name="progress-note" id="progress-note" placeholder="Notes about the status of the translation...">
                                             <xsl:attribute name="rows" select="common:textarea-rows($translation-status/m:text/m:progress-note, 4, 70)"/>
-                                            <xsl:sequence select="normalize-space($translation-status/m:text/m:progress-note)"/>
+                                            <xsl:sequence select="$translation-status/m:text/m:progress-note/text()"/>
                                         </textarea>
                                         <xsl:if test="$translation-status/m:text/m:progress-note/@last-edited">
                                             <div class="small text-muted sml-margin top">
@@ -345,7 +345,7 @@
                                     <div class="col-sm-9">
                                         <textarea class="form-control" name="text-note" id="text-note" placeholder="Notes about the text itself...">
                                             <xsl:attribute name="rows" select="common:textarea-rows($translation-status/m:text/m:text-note, 4, 70)"/>
-                                            <xsl:sequence select="normalize-space($translation-status/m:text/m:text-note)"/>
+                                            <xsl:sequence select="$translation-status/m:text/m:text-note/text()"/>
                                         </textarea>
                                         <xsl:if test="$translation-status/m:text/m:text-note/@last-edited">
                                             <div class="small text-muted sml-margin top">
@@ -500,7 +500,7 @@
                     <xsl:value-of select="'Contributors'"/>
                 </div>
                 
-                <p class="text-muted sml-margin top">
+                <p class="text-muted small sml-margin top">
                     <xsl:value-of select="'Specify the contributors to the translation project'"/>
                 </p>
                 
@@ -843,7 +843,7 @@
                     
                 </div>
                 
-                <p class="text-muted sml-margin top">
+                <p class="text-muted small sml-margin top">
                     <xsl:value-of select="'Upload draft translations'"/>
                 </p>
                 
@@ -994,7 +994,7 @@
                     
                 </div>
                 
-                <p class="text-muted sml-margin top">
+                <p class="text-muted small sml-margin top">
                     <xsl:value-of select="'Once all revisions to a text have been completed and signed off, use these options to publish the updates to the public site'"/>
                 </p>
                 

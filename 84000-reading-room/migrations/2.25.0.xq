@@ -165,12 +165,12 @@ declare function local:store-entity-pages() {
     let $target-file := concat($entity/@xml:id,'.html')
     where $glossary-entries and not(util:binary-doc-available(concat($target-folder, '/', $target-file)))
     return (
-        $source-html(:,:)
-        (:store:http-download($source-html, $target-folder, $target-file, $store:permissions-group),
-        process:execute(('sleep', '0.5'), $exec-options) ! ():)
-    )(:,
+        (:$source-html,:)
+        store:http-download($source-html, $target-folder, $target-file, $store:permissions-group),
+        process:execute(('sleep', '0.5'), $exec-options) ! ()
+    ),
     
-    deploy:push('data-static', (), 'store-glossary-named-entity-pages', ()):)
+    deploy:push('data-static', (), 'store-glossary-named-entity-pages', ())
     
 };
 
@@ -191,7 +191,7 @@ else (
     (:local:merge-version-files(),:)
     (:local:trigger-published-tei(),:)
     (:local:store-publication-files(),:)
-    local:store-entity-pages(),
+    (:local:store-entity-pages(),:)
     
     'Reconfigure scheduled tasks',
     'Remove deprecated files'

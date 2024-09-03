@@ -121,7 +121,7 @@
                     <xsl:value-of select="'Titles'"/>
                 </div>
                 
-                <p class="text-muted sml-margin top">
+                <p class="text-muted small sml-margin top">
                     <xsl:value-of select="'Add and edit the titles of the text'"/>
                 </p>
                 
@@ -297,7 +297,7 @@
                     <xsl:value-of select="'Source'"/>
                 </div>
                 
-                <p class="text-muted sml-margin top">
+                <p class="text-muted small sml-margin top">
                     <xsl:value-of select="'Specify the details of the Tibetan source text'"/>
                 </p>
                 

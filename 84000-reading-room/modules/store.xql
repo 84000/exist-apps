@@ -501,7 +501,7 @@ declare function store:store-new-json($file-path as xs:string, $tei-version as x
 
 declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string, $permissions-group as xs:string) as item()* {
     
-    (:try {:)
+    try {
         
         let $file-suffix := tokenize($file-name, '\.')[last()]
                 
@@ -611,12 +611,12 @@ declare function store:http-download($file-url as xs:string, $collection as xs:s
                     {$head}
                 </error>
                 
-    (:}
+    }
     catch * {
         <error xmlns="http://read.84000.co/ns/1.0">
             <message>Oops, something went wrong!</message>
         </error>
-    }:)
+    }
 };
 
 declare function store:http-download-to-filesystem($file-url as xs:string, $target-path as xs:string, $file-name as xs:string) as item()* {
@@ -790,16 +790,16 @@ declare function store:publication-files($tei as element(tei:TEI), $store-file-g
                 else ()
                 ,
                 
-                process:execute(('sleep', '0.5'), $execute-options) ! ()
+                process:execute(('sleep', '0.5'), $execute-options) ! ((: return empty :))
                 
             )
         
         let $deploy-files := 
             if($store-files) then (
-                (:deploy:push('data-static', (), $commit-msg, ()),
-                deploy:push('data-rdf', (), $commit-msg, ()),
-                deploy:push('data-json', (), $commit-msg, ()),
-                process:execute(('sleep', '0.5'), $execute-options) ! ():)
+                deploy:push('data-static', (), $commit-msg, ()),
+                (:deploy:push('data-rdf', (), $commit-msg, ()),
+                deploy:push('data-json', (), $commit-msg, ()),:)
+                process:execute(('sleep', '0.5'), $execute-options) ! ((: return empty :))
             )
             else()
         
@@ -837,7 +837,7 @@ declare function store:glossary-downloads() as element()* {
             let $glossary-xml := glossary:glossary-combined()
             return (
                 store:file($glossary-download-xml/@collection, $glossary-download-xml/@filename, $glossary-xml, 'application/xml'),
-                process:execute(('sleep', '1'), $execute-options) ! ()
+                process:execute(('sleep', '1'), $execute-options) ! ((: return empty :))
             )
         )
         else 
@@ -857,7 +857,7 @@ declare function store:glossary-downloads() as element()* {
             where $spreadsheet-data
             return (
                 store:file($glossary-download-xlsx/@collection, $glossary-download-xlsx/@filename, $spreadsheet-zip, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
-                process:execute(('sleep', '1'), $execute-options) ! ()
+                process:execute(('sleep', '1'), $execute-options) ! ((: return empty :))
             )
         )
         else 
@@ -872,7 +872,7 @@ declare function store:glossary-downloads() as element()* {
                 let $glossary-txt := string-join($glossary-txt, '')
                 return (
                     store:file($glossary-download-txt/@collection, $glossary-download-txt/@filename, $glossary-txt, 'text/plain'),
-                    process:execute(('sleep', '1'), $execute-options) ! ()
+                    process:execute(('sleep', '1'), $execute-options) ! ((: return empty :))
                 )
                 
             else 
@@ -886,7 +886,7 @@ declare function store:glossary-downloads() as element()* {
                 let $glossary-dict := glossary:combined-dict($key)
                 return (
                     store:file($glossary-download-dict/@collection, $glossary-download-dict/@filename, $glossary-dict, 'application/zip'),
-                    process:execute(('sleep', '1'), $execute-options) ! ()
+                    process:execute(('sleep', '1'), $execute-options) ! ((: return empty :))
                 )
                 
             else 

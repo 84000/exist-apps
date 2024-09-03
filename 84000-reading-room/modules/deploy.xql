@@ -12,7 +12,6 @@ import module namespace functx="http://www.functx.com";
 
 declare variable $deploy:snapshot-conf := $common:environment//m:snapshot-conf;
 declare variable $deploy:deployment-conf := $common:environment//m:deployment-conf;
-
 declare variable $deploy:git-config := $common:environment/m:git-config;
 
 declare function deploy:exist-options() as element() {
