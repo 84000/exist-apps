@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <eft-footer xmlns="http://read.84000.co/ns/1.0">
     <translation id="copyright">
-        <text xml:lang="en">Copyright © 2011-2022</text>
-        <text xml:lang="zh">著作權 </text>
+        <text xml:lang="en">Copyright © 2011-2024</text>
+        <text xml:lang="zh">著作權</text>
     </translation>
     <translation id="org-name">
-        <text xml:lang="en">84000: Translating the Words of the Buddha</text>
+        <text xml:lang="en">84000</text>
         <text xml:lang="zh">【八萬四千 • 佛典傳譯】</text>
     </translation>
     <translation id="rights-reserved">
         <text xml:lang="en"> - All Rights Reserved</text>
-        <text xml:lang="zh"> 版權所有</text>
+        <text xml:lang="zh">版權所有</text>
     </translation>
     <translation id="contact-link">
         <text xml:lang="en">https://84000.co/about/contact</text>

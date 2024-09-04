@@ -11,6 +11,7 @@
     <xsl:variable name="toh-number" select="$translation/m:toh/@key ! replace(., '^toh', '')" as="xs:string?"/>
     <xsl:variable name="request-glossary-id" select="$request/@glossary-id" as="xs:string?"/>
     <xsl:variable name="back-link" select="$source/m:back-link[@url]"/>
+    <xsl:variable name="folio-title" select="($translation/m:folio-content/@start-ref[. gt ''], $source/m:page[1]/@folio-in-etext ! concat('Folio ', .))[1]"/>
     
     <xsl:template match="/m:response">
         
@@ -29,89 +30,96 @@
         
         <xsl:variable name="content">
             
-            <!-- Breadcrumbs -->
-            <xsl:if test="$translation[m:parent]">
-                <div class="title-band hidden-print hidden-iframe">
+            <!-- Main content -->
+            <main>
+                
+                <!-- Breadcrumbs -->
+                <xsl:if test="$translation[m:parent]">
+                    <div class="title-band hidden-print hidden-iframe">
+                        <div class="container">
+                            <div class="center-vertical center-aligned text-center">
+                                <nav role="navigation" aria-label="Breadcrumbs">
+                                    <ul id="outline" class="breadcrumb">
+                                        <li>
+                                            <a>
+                                                <xsl:attribute name="href" select="'/'"/>
+                                                <xsl:value-of select="'84000'"/>
+                                            </a>
+                                        </li>
+                                        <xsl:sequence select="common:breadcrumb-items($translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
+                                        <li>
+                                            <a>
+                                                <xsl:attribute name="href" select="$back-link/@url"/>
+                                                <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
+                                                <xsl:apply-templates select="$translation/m:source/m:toh"/>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <xsl:apply-templates select="$folio-title"/>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </xsl:if>
+                
+                <!-- Text title -->
+                <div class="content-band content-band-gray text-center hidden-iframe">
                     <div class="container">
-                        <div class="center-vertical center-aligned text-center">
-                            <nav role="navigation" aria-label="Breadcrumbs">
-                                <ul id="outline" class="breadcrumb">
-                                    <xsl:sequence select="common:breadcrumb-items($translation/m:parent/descendant-or-self::m:parent, /m:response/@lang)"/>
-                                </ul>
-                            </nav>
+                        <div class="row top-margin bottom-margin">
+                            <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
+                                <div class="ornamental-panel">
+                                    
+                                    <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'bo']">
+                                        <div class="panel-row text-bo">
+                                            <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'bo']"/>
+                                        </div>
+                                    </xsl:if>
+                                    
+                                    <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'bo']">
+                                        <h1 class="panel-row title main-title">
+                                            <xsl:value-of select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
+                                            <br/>
+                                            <span class="dot-parenth">
+                                                <xsl:value-of select="' '"/>
+                                                <xsl:value-of select="$folio-title"/>
+                                                <xsl:value-of select="' '"/>
+                                            </span>
+                                        </h1>
+                                    </xsl:if>
+                                    
+                                    <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']">
+                                        <div class="panel-row text-sa">
+                                            <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
+                                        </div>
+                                    </xsl:if>
+                                    
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </xsl:if>
-            
-            <!-- Main content -->
-            <main id="source-content" class="content-band">
                 
                 <!-- Output folios -->
-                <div>
+                <div id="folio-content" class="content-band">
                     
                     <xsl:for-each select="$source/m:page">
-                        <div>
+                        <section>
                             
-                            <xsl:variable name="folio-string" as="xs:string">
-                                <xsl:choose>
-                                    <xsl:when test="$translation/m:folio-content[@start-ref gt '']">
-                                        <xsl:value-of select="$translation/m:folio-content/@start-ref"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="concat('folio ', @folio-in-etext)"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:variable>
-                            
-                            <!-- Text title -->
-                            <div class="text-center hidden-iframe">
-                                
-                                <div class="container">
-                                    <div class="row top-margin bottom-margin">
-                                        <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
-                                            
-                                            <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'bo']">
-                                                <h2 class="title text-bo">
-                                                    <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'bo']"/>
-                                                </h2>
-                                            </xsl:if>
-                                            
-                                            <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'bo']">
-                                                <hr/>
-                                                <h2 class="title main-title">
-                                                    <xsl:value-of select="$translation/m:titles/m:title[@xml:lang eq 'en']"/>
-                                                </h2>
-                                            </xsl:if>
-                                            
-                                            <xsl:if test="$translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']">
-                                                <hr/>
-                                                <h2 class="title text-sa">
-                                                    <xsl:apply-templates select="$translation/m:titles/m:title[@xml:lang eq 'Sa-Ltn']"/>
-                                                </h2>
-                                            </xsl:if>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <hr/>
-                                
-                            </div>
+                            <xsl:variable name="folio-string" select="($translation/m:folio-content/@start-ref[. gt ''], concat('folio ', @folio-in-etext))[1]" as="xs:string"/>
                             
                             <!-- Page title (folio) -->
-                            <div id="folio-content" class="container text-center">
-                                <h1 class="title" id="popup-title">
-                                    <xsl:value-of select="concat('Degé ', $work-string, ' volume ', @volume, ', ', $folio-string)"/>
-                                </h1>
-                            </div>
+                            <header id="popup-title" class="title h1 text-center">
+                                <xsl:value-of select="concat($folio-string, ', ', ' volume ', @volume, ', Degé ', $work-string)"/>
+                            </header>
                             
                             <!-- Content -->
                             <div class="container relative">
                                 <xsl:apply-templates select="m:language[@xml:lang eq 'bo']"/>
                             </div>
                             
-                        </div>
+                        </section>
                     </xsl:for-each>
                     
                     <!-- Pagination -->
@@ -124,10 +132,10 @@
                                 <xsl:if test="$request/@ref-index ! xs:integer(.) gt  1">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="m:source-href($toh-key, 1, ())"/>
-                                            <!--<xsl:attribute name="data-ajax-target" select="'#source-content'"/>-->
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, 1, 'folio-content')"/>
                                             <xsl:attribute name="title" select="'first page (1)'"/>
                                             <xsl:attribute name="target" select="'_self'"/>
+                                            <xsl:attribute name="data-ajax-target" select="'#folio-content'"/>
                                             <xsl:attribute name="data-loading" select="'Loading first page...'"/>
                                             <!--<xsl:value-of select="'page 1'"/>-->
                                             <i class="fa fa-step-backward"/>
@@ -135,9 +143,10 @@
                                     </li>
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="m:source-href($toh-key, ($current-page - 1), ())"/>
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, ($current-page - 1), 'folio-content')"/>
                                             <xsl:attribute name="title" select="concat('previous page (', format-number(($current-page - 1), '#,###'), ')')"/>
                                             <xsl:attribute name="target" select="'_self'"/>
+                                            <xsl:attribute name="data-ajax-target" select="'#folio-content'"/>
                                             <xsl:attribute name="data-loading" select="'Loading previous page...'"/>
                                             <i class="fa fa-chevron-left"/>
                                         </a>
@@ -153,18 +162,20 @@
                                 <xsl:if test="$current-page lt $count-pages">
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="m:source-href($toh-key, ($current-page + 1), ())"/>
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, ($current-page + 1), 'folio-content')"/>
                                             <xsl:attribute name="title" select="concat('next page (', format-number(($current-page + 1), '#,###'), ')')"/>
                                             <xsl:attribute name="target" select="'_self'"/>
+                                            <xsl:attribute name="data-ajax-target" select="'#folio-content'"/>
                                             <xsl:attribute name="data-loading" select="'Loading next page...'"/>
                                             <i class="fa fa-chevron-right"/>
                                         </a>
                                     </li>
                                     <li>
                                         <a>
-                                            <xsl:attribute name="href" select="m:source-href($toh-key, $count-pages, ())"/>
+                                            <xsl:attribute name="href" select="m:source-href($toh-key, $count-pages, 'folio-content')"/>
                                             <xsl:attribute name="title" select="concat('last page (', format-number($count-pages, '#,###'), ')')"/>
                                             <xsl:attribute name="target" select="'_self'"/>
+                                            <xsl:attribute name="data-ajax-target" select="'#folio-content'"/>
                                             <xsl:attribute name="data-loading" select="'Loading last page...'"/>
                                             <i class="fa fa-step-forward"/>
                                         </a>
@@ -221,10 +232,9 @@
                 
                 <!-- Link to translation - keep outside of ajax data -->
                 <xsl:if test="$back-link">
-                    <div class="hidden-iframe">
-                        <hr class="no-margin"/>
+                    <div class="content-band hidden-iframe">
                         <div class="container top-margin bottom-margin">
-                            <p class="text-center small">
+                            <p class="text-center">
                                 <xsl:call-template name="local-text">
                                     <xsl:with-param name="local-key" select="'backlink-label'"/>
                                 </xsl:call-template>
@@ -232,7 +242,7 @@
                                 <a>
                                     <xsl:attribute name="href" select="$back-link/@url"/>
                                     <xsl:attribute name="target" select="concat(m:translation/@id, '.html')"/>
-                                    <xsl:value-of select="$back-link/@url"/>
+                                    <xsl:value-of select="concat('https://read.84000.co', $back-link/@url)"/>
                                 </a>
                             </p>
                         </div>

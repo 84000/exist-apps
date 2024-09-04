@@ -23,20 +23,20 @@
             <!-- Title band -->
             <div class="title-band hidden-iframe">
                 <div class="container">
-                    <div class="center-vertical-sm full-width">
+                    <div class="center-vertical center-aligned text-center">
                         
                         <nav role="navigation" aria-label="Breadcrumbs">
                             <ul class="breadcrumb">
                                 <li>
                                     <a>
-                                        <xsl:attribute name="href" select="common:internal-href('/section/lobby.html', (), (), /m:response/@lang)"/>
-                                        <xsl:value-of select="'The Collection'"/>
+                                        <xsl:attribute name="href" select="'/'"/>
+                                        <xsl:value-of select="'84000'"/>
                                     </a>
                                 </li>
                                 <li>
                                     <a>
                                         <xsl:attribute name="href" select="common:internal-href('/glossary/search.html', (), (), /m:response/@lang)"/>
-                                        <xsl:value-of select="'Glossary'"/>
+                                        <xsl:value-of select="'Glossary of Terms'"/>
                                     </a>
                                 </li>
                                 <li>
@@ -47,7 +47,7 @@
                             </ul>
                         </nav>
                         
-                        <div>
+                        <!--<div>
                             <div class="center-vertical pull-right">
                                 
                                 <div>
@@ -64,7 +64,7 @@
                                     </a>
                                 </div>
                                 
-                                <!--<div>
+                                <!-\-<div>
                                     <a href="#bookmarks-sidebar" id="bookmarks-btn" class="show-sidebar center-vertical" role="button" aria-haspopup="true" aria-expanded="false">
                                         <span>
                                             <span class="btn-round sml">
@@ -76,10 +76,10 @@
                                             <xsl:value-of select="'Bookmarks'"/>
                                         </span>
                                     </a>
-                                </div>-->
+                                </div>-\->
                                 
                             </div>
-                        </div>
+                        </div>-->
                         
                     </div>
                 </div>
@@ -93,40 +93,38 @@
             </xsl:variable>
             <xsl:apply-templates select="$bookmarks-sidebar"/>-->
             
-            <main id="combined-glossary" class="content-band">
+            <!-- Page title -->
+            <!--<div class="section-title row hidden-iframe">
+                <div class="col-sm-offset-2 col-sm-8">
+                    <div class="h1 title main-title">
+                        <xsl:value-of select="'84000 Glossary of Terms'"/>
+                    </div>
+                    <hr/>
+                    <p class="no-bottom-margin">
+                        <xsl:value-of select="'Our trilingual glossary combining entries from all of our publications into one useful resource, giving translations and definitions of thousands of terms, people, places, and texts from the Buddhist canon.'"/>
+                    </p>
+                </div>
+            </div>-->
+            
+            <!-- Title -->
+            <!--<h1 class="sr-only text-bo" lang="bo">
+                <xsl:value-of select="normalize-space($request-entity-data/m:label[@type eq 'primary']/text())"/>
+            </h1>-->
+            
+            <!-- Tabs -->
+            <!--<div class="hidden-iframe">
+                <xsl:call-template name="glossary-tabs">
+                    <xsl:with-param name="page-url" select="$page-url"/>
+                    <xsl:with-param name="term-langs" select="m:request/m:term-langs"/>
+                    <xsl:with-param name="entity-flags" select="m:entity-flags"/>
+                    <xsl:with-param name="entry-label" select="$request-entity-data/m:label[@type eq 'primary']"/>
+                </xsl:call-template>
+            </div>-->
+            
+            <main id="combined-glossary" class="content-band content-band-gray">
                 <div class="container">
-                    
-                    <!-- Page title -->
-                    <!--<div class="section-title row hidden-iframe">
-                        <div class="col-sm-offset-2 col-sm-8">
-                            <div class="h1 title main-title">
-                                <xsl:value-of select="'84000 Glossary of Terms'"/>
-                            </div>
-                            <hr/>
-                            <p class="no-bottom-margin">
-                                <xsl:value-of select="'Our trilingual glossary combining entries from all of our publications into one useful resource, giving translations and definitions of thousands of terms, people, places, and texts from the Buddhist canon.'"/>
-                            </p>
-                        </div>
-                    </div>-->
-                    
-                    <!-- Title -->
-                    <!--<h1 class="sr-only text-bo" lang="bo">
-                        <xsl:value-of select="normalize-space($request-entity-data/m:label[@type eq 'primary']/text())"/>
-                    </h1>-->
-                    
-                    <!-- Tabs -->
-                    <!--<div class="hidden-iframe">
-                        <xsl:call-template name="glossary-tabs">
-                            <xsl:with-param name="page-url" select="$page-url"/>
-                            <xsl:with-param name="term-langs" select="m:request/m:term-langs"/>
-                            <xsl:with-param name="entity-flags" select="m:entity-flags"/>
-                            <xsl:with-param name="entry-label" select="$request-entity-data/m:label[@type eq 'primary']"/>
-                        </xsl:call-template>
-                    </div>-->
-                    
                     <xsl:choose>
                         <xsl:when test="$request-entity">
-                            
                             <div id="entity-requested">
                                 
                                 <xsl:variable name="related-entries" select="key('related-entries', $request-entity/m:instance/@id, $root)"/>
@@ -150,7 +148,7 @@
                                                         <xsl:sort select="string-join(tokenize(text(), '\s+') ! normalize-unicode(.), ' ')"/>
                                                         
                                                         <li>
-                                                            <span class="h2">
+                                                            <span class="h1">
                                                                 <xsl:call-template name="glossary-term">
                                                                     <xsl:with-param name="term-text" select="text()"/>
                                                                     <xsl:with-param name="term-lang" select="@xml:lang"/>
@@ -212,7 +210,8 @@
                                             
                                         </div>
                                     </div>
-                                    
+                            
+                                    <!-- body -->
                                     <div class="entity-body" id="{ concat($item-id, '-body') }">
                                         
                                         <xsl:call-template name="editor-summary">
@@ -398,7 +397,7 @@
                                                                 </div>
                                                                 
                                                             </xsl:for-each>
-                                                                
+                                                            
                                                         </xsl:if>
                                                         
                                                         <xsl:if test="$related-entity-entries">
@@ -466,7 +465,7 @@
                                                                 </div>
                                                                 
                                                             </xsl:for-each>
-                                                        
+                                                            
                                                         </xsl:if>
                                                         
                                                     </div>
@@ -481,7 +480,6 @@
                                 </div>
                                 
                             </div>
-                            
                         </xsl:when>
                         <xsl:otherwise>
                             <div id="entity-requested">
@@ -498,7 +496,7 @@
                             </div>
                         </xsl:otherwise>
                     </xsl:choose>
-                    
+            
                 </div>
             </main>
             
@@ -509,7 +507,7 @@
         <!-- Compile with page template -->
         <xsl:call-template name="reading-room-page">
             <xsl:with-param name="page-url" select="concat('https://84000.co', $page-url)"/>
-            <xsl:with-param name="page-class" select="'reading-room section'"/>
+            <xsl:with-param name="page-class" select="'reading-room glossary-entry'"/>
             <xsl:with-param name="page-title" select="$page-title || ' | 84000 Reading Room'"/>
             <xsl:with-param name="page-description" select="$page-title"/>
             <xsl:with-param name="content" select="$content"/>

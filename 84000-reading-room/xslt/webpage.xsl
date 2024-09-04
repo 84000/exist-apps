@@ -112,9 +112,9 @@
     
     <xsl:variable name="local-comms-url" select="$communications-site-path" as="xs:string"/>
     <xsl:variable name="local-reading-room-url" select="''" as="xs:string"/>
-    <xsl:variable name="local-front-end-url" select="'/frontend'" as="xs:string"/>
+    <!--<xsl:variable name="local-front-end-url" select="'/frontend'" as="xs:string"/>-->
     <!-- Dev url -->
-    <!--<xsl:variable name="local-front-end-url" select="'http://fe.84000.local/frontend'" as="xs:string"/>-->
+    <xsl:variable name="local-front-end-url" select="'http://fe.84000.local/frontend'" as="xs:string"/>
     <xsl:variable name="default-search-form-target" select="'reading-room'" as="xs:string"/>
     
     <xsl:output method="html" indent="no" doctype-system="about:legacy-compat" omit-xml-declaration="yes"/>
