@@ -8,13 +8,7 @@ declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace json="http://www.json.org";
 
 import module namespace common = "http://read.84000.co/common" at "../../../modules/common.xql";
-import module namespace tei-content = "http://read.84000.co/tei-content" at "../../../modules/tei-content.xql";
-import module namespace translation = "http://read.84000.co/translation" at "../../../modules/translation.xql";
-import module namespace glossary = "http://read.84000.co/glossary" at "../../../modules/glossary.xql";
-import module namespace entities = "http://read.84000.co/entities" at "../../../modules/entities.xql";
-import module namespace devanagari = "http://read.84000.co/devanagari" at "../../../modules/devanagari.xql";
-import module namespace eft-json = "http://read.84000.co/json" at "../eft-json.xql";
-import module namespace json-types = "http://read.84000.co/json-types" at "../types.xql";
+import module namespace search = "http://read.84000.co/search" at "../../../modules/search.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option output:method "json";
@@ -63,7 +57,7 @@ declare function local:search() as element()* {
     let $matching-units := $tm-units[ft:query(tmx:tuv, concat($lang-field, ':(', $search-regex, ')'), map { "fields": ($lang-field) })][tmx:tuv[@xml:lang eq $local:input-lang]]
     
     (: Don't return all, but do return some :)
-    let $matching-units := local:some-matches($matching-units, 1)
+    let $matching-units := search:some-matches($matching-units, 1)
     
     (: Sort matches :)
     let $matching-units :=
@@ -110,26 +104,6 @@ declare function local:search() as element()* {
         }
 };
 
-(: Recurr search, lowering the threshold, until it finds something :)
-declare function local:some-matches($matches as element(tmx:tu)*, $min-score as xs:float) as element(tmx:tu)* {
-    
-    let $matches-count-target := 10
-    let $min-score-increment := 0.25
-    
-    let $matches-for-score := 
-        for $match in $matches
-        let $score := ft:score($match)
-        where $score ge $min-score
-        return
-            $match
-    
-    return
-        if(count($matches-for-score) lt $matches-count-target and $min-score - $min-score-increment gt 0) then
-            local:some-matches($matches, $min-score - $min-score-increment)
-        else 
-            $matches-for-score
-            
-};
 
 element tm-search {
 

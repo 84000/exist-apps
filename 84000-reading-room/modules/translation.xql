@@ -189,9 +189,11 @@ declare function translation:publication($tei as element(tei:TEI)) as element(m:
     return
         element {QName('http://read.84000.co/ns/1.0', 'publication')} {
             
-            for $contribution in ($fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][@xml:id])[1]
+            let $contribution-id := ($fileDesc/tei:titleStmt/tei:author[@role eq 'translatorMain'][@xml:id])[1]/@xml:id
+            let $contributor-id := ($contributors:contributors//m:team[m:instance/@id = $contribution-id])[1]/@xml:id
+            where $contributor-id
             return
-                $contributors:contributors//m:instance[@id eq $contribution/@xml:id]/parent::m:team ! contributors:team(@xml:id, false(), false())
+                contributors:team($contributor-id, false(), false())
             ,
             
             element contributors {

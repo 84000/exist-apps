@@ -220,15 +220,15 @@ declare function local:entities-content($entities as element(m:entity)*, $conten
             let $tei := $gloss/ancestor::tei:TEI
             let $text-id := tei-content:id($tei)
             group by $text-id
-            
-            let $text-type := tei-content:type($tei[1])
+            let $tei-first := $tei[1]
+            let $text-type := tei-content:type($tei-first)
             where $text-type eq 'translation'
             
-            let $glossary-status := $tei[1]//tei:div[@type eq 'glossary']/@status
-            where not($glossary-status = $exclude-status)
+            let $glossary-status := $tei-first//tei:div[@type eq 'glossary']/@status
+            where not($glossary-status/string() = $exclude-status)
             
-            let $text-type := tei-content:type($tei[1])
-            let $glossary-cached-locations := glossary:cached-locations($tei[1], (), true())
+            let $text-type := tei-content:type($tei-first)
+            let $glossary-cached-locations := glossary:cached-locations($tei-first, (), true())
             
             return
                 element { QName('http://read.84000.co/ns/1.0', 'text') } {
@@ -237,29 +237,31 @@ declare function local:entities-content($entities as element(m:entity)*, $conten
                     attribute type { $text-type },
                     (:attribute count-glosses { count($gloss) },:)
                     
-                    $tei[1]//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
+                    $tei-first//tei:div[@type eq 'glossary']/@status ! attribute glossary-status { . },
                     
-                    tei-content:titles-all($tei[1]),
+                    tei-content:titles-all($tei-first),
                     
                     if($text-type eq 'translation') then 
-                        translation:publication($tei[1])
-                    else (),
+                        translation:publication($tei-first)
+                    else ()
+                    ,
                     
                     (: Add Toh :)
-                    for $toh-key in $tei[1]//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
+                    for $toh-key in $tei-first//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
                     return
                         (: Must group these in m:bibl to keep track of @key group :)
                         element bibl {
-                            translation:toh($tei[1], $toh-key),
-                            tei-content:ancestors($tei[1], $toh-key, 1)
+                            translation:toh($tei-first, $toh-key),
+                            tei-content:ancestors($tei-first, $toh-key, 1)
                         }
                     ,
                     
                     for $gloss-single in $gloss
                     let $gloss-id := $gloss-single/@xml:id
                     group by $gloss-id
+                    let $gloss-first := $gloss-single[1]
                     return
-                        glossary:glossary-entry($gloss-single[1], false())
+                        glossary:glossary-entry($gloss-first, false())
                     ,
                     
                     element glossary-cached-locations {

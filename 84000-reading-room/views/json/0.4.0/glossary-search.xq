@@ -51,7 +51,6 @@ declare function local:search() as element()* {
         else
             common:normalized-chars($search-string)
 
-    
     (: Select TEI glossaries :)
     let $glossaries := $glossary:tei//tei:back/tei:div[@type eq 'glossary'][not(@status = 'excluded')]
     
@@ -88,7 +87,7 @@ declare function local:search() as element()* {
             order by $matching-instance-count descending
             return
                 $entity[1]
-
+    
     (: Select subset of enities :)
     let $start-item := (($local:result-page - 1) * $local:items-per-page) + 1
     let $end-item := $start-item + ($local:items-per-page - 1)
@@ -103,7 +102,9 @@ declare function local:search() as element()* {
             element pagesCount { attribute json:literal { true() }, $count-pages },
             element searchString { $search-string },
             
+            (: Output the enities :)
             for $entity at $index in $entities
+            
             (: Parse all the glosses related to this entity :)
             let $entity-glosses :=
                 for $instance in $entity/eft:instance
@@ -137,7 +138,7 @@ declare function local:search() as element()* {
                             }
                         (:,
                         
-                        $gloss/tei:note[@type eq 'definition'] ! element definition { @rend, string-join(tei:p ! string-join(text()) ! normalize-space(.), ' ') ! element value { . } },
+                        $gloss/tei:note[@type eq 'definition'] ! element definition { @rend, string-join(tei:p ! string-join(descendant::text()) ! normalize-space(.), ' ') ! element value { . } },
                         
                         $gloss-tei ! tei-content:titles-all(.),
                         
@@ -152,6 +153,7 @@ declare function local:search() as element()* {
                 
                     attribute json:array { true() },
                     
+                    (: Output groups of terms :)
                     for $lang in ('En', 'Bo', 'Sa')
                     let $lang-terms := 
                         if($lang eq 'Sa') then
@@ -179,12 +181,13 @@ declare function local:search() as element()* {
                             }
                     ,
                     
+                    (: Details of the entiy :)
                     element entity {
                         $entity/@xml:id ! attribute xmlId { string() },
                         element label { ($entity/eft:label[@xml:lang eq 'en'],$entity/eft:label)[1] ! string-join(text()) ! normalize-space(.) },
                         element countTexts { attribute json:literal { true() }, count(distinct-values($entity-glosses/@text-id)) },
-                        $entity/eft:content[@type eq 'glossary-definition'] ! element definition { attribute rend { 'shared' }, string-join(descendant::text()) ! normalize-space(.) ! element value { . } }(:,
-                        $glosses:)
+                        $entity/eft:content[@type eq 'glossary-definition'] ! element definition { attribute rend { 'shared' }, string-join(descendant::text()) ! normalize-space(.) ! element value { . } }
+                        ,$entity-glosses
                     }
                     
                 }

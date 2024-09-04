@@ -124,7 +124,8 @@ declare function contributors:teams($include-hidden as xs:boolean, $include-pers
 
 declare function contributors:team($team-id as xs:string, $include-acknowledgements as xs:boolean, $include-persons as xs:boolean) as element(m:team)? {
     
-    let $team := $contributors:contributors/id(lower-case($team-id))[self::m:team]
+    let $team-id := lower-case($team-id)
+    let $team := $contributors:contributors/id($team-id)
     
     let $team-texts := 
         if($include-acknowledgements or $include-persons) then
@@ -134,10 +135,12 @@ declare function contributors:team($team-id as xs:string, $include-acknowledgeme
     where $team
     return
         element { node-name($team) } {
+        
             $team/@*[not(local-name() = ('start-letter', 'sort-name'))],
             attribute start-letter { upper-case(substring(normalize-space(replace($team/m:label, $contributors:team-prefixes, '')), 1, 1)) },
             element sort-name { lower-case(replace($team/m:label, concat($contributors:team-prefixes, '\s+'), '')) },
             $team/*,
+            
             if($include-acknowledgements) then
                 for $tei in $team-texts
                 let $text-id := tei-content:id($tei)

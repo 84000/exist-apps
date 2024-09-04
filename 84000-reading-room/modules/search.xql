@@ -360,7 +360,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
                 else
                     $tm-units[ft:query(tmx:tuv, concat('en:(', $search, ')'), map { "fields": ("en") })][tmx:tuv[@xml:lang eq 'bo']]
             return
-                local:some-matches($matches, 1)
+                search:some-matches($matches, 1)
             ,
             if($include-glossary) then
                 if($search-lang eq 'bo') then
@@ -521,7 +521,7 @@ declare function search:tm-search($search as xs:string, $search-lang as xs:strin
 };
 
 (: Recurr search, lowering the threshold, until it finds something :)
-declare function local:some-matches($matches as element(tmx:tu)*, $min-score as xs:float) as element(tmx:tu)* {
+declare function search:some-matches($matches as element(tmx:tu)*, $min-score as xs:float) as element(tmx:tu)* {
     
     let $matches-count-target := 10
     let $min-score-increment := 0.25
@@ -535,7 +535,7 @@ declare function local:some-matches($matches as element(tmx:tu)*, $min-score as 
     
     return
         if(count($matches-for-score) lt $matches-count-target and $min-score - $min-score-increment gt 0) then
-            local:some-matches($matches, $min-score - $min-score-increment)
+            search:some-matches($matches, $min-score - $min-score-increment)
         else 
             $matches-for-score
             
