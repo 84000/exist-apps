@@ -1204,7 +1204,7 @@ declare function glossary:downloads() as element(m:downloads) {
                     attribute type { $type },
                     (:attribute url { '/glossary/search.html' },:)
                     (:attribute download-url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },:)
-                    attribute url { concat('/glossary-download', '.', $type, $key[. gt ''] ! concat('?key=', $key)) },
+                    attribute url { concat('/glossary-download', $key[. gt ''] ! concat('-', $key), '.', $type) },
                     attribute collection { $collection },
                     attribute filename { $file-name },
                     attribute last-modified { $file-last-modified },

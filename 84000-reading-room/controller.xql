@@ -598,9 +598,10 @@ return
                 )
         
         (: Glossary downloads :)
-        else if ($resource-id eq "glossary-download") then
+        else if ($resource-id = ("glossary-download", "glossary-download-bo", "glossary-download-wy")) then
             local:dispatch("/models/glossary-download.xq", "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{ $resource-id }"/>
                     <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'xlsx', 'txt', 'dict')], 'xml')[1] }"/>
                 </parameters>
             )

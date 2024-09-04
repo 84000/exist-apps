@@ -10,6 +10,7 @@ declare namespace xls="urn:schemas-microsoft-com:office:spreadsheet";
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace glossary="http://read.84000.co/glossary" at "../modules/glossary.xql";
 
+let $resource-id := request:get-parameter('resource-id', '')
 let $resource-suffix := request:get-parameter('resource-suffix', '')
 
 let $request := 
@@ -19,7 +20,7 @@ let $request :=
         attribute resource-suffix { $resource-suffix },
         (: Add key for txt and dict :)
         if($resource-suffix = ('txt', 'dict')) then
-            attribute key { (request:get-parameter('key', 'bo')[. = ('bo', 'wy')], 'bo')[1] }
+            attribute key { (tokenize($resource-id, '\-')[last()][. = ('wy', 'bo')], 'bo')[1] }
         else ()
     }
     
