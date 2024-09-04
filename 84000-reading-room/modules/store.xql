@@ -850,6 +850,7 @@ declare function store:glossary-downloads() as element()* {
             $glossary-download-xml/@last-modified[. gt ''] ! xs:dateTime(.)
     
     let $glossary-download-xlsx := $glossary-downloads/m:download[@type eq 'xlsx']
+    
     let $update-xlsx := 
         if($glossary-download-xlsx[not(@last-modified[. gt ''])] or $glossary-download-xlsx/@last-modified[. gt ''] ! xs:dateTime(.) lt $xml-last-modified) then (
             let $spreadsheet-data := glossary:spreadsheet-data()
