@@ -31,13 +31,14 @@ else if ($exist:path = ('', '/') or $exist:resource = ('index.html', 'index.htm'
     </dispatch>
 
 (: Stylesheets, javascript and other front-end :)
-else if($collection-path eq 'frontend' and $resource-suffix = ('css','js','min.js','svg','png','ttf','otf','eot','svg','woff','woff2')) then
+else if($collection-path eq 'frontend' and $resource-suffix = ('css','js','json','min.js','svg','png','ttf', 'ico','otf','eot','svg','woff','woff2')) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{ string-join(('/84000-static', $exist:path)) }">
             <set-header name="Content-Type" value="{ 
                 if($resource-suffix eq 'css') then 'text/css'
                 else if($resource-suffix eq 'svg') then 'image/svg+xml'
                 else if($resource-suffix eq 'png') then 'image/png'
+                else if($resource-suffix eq 'ico') then 'image/x-icon'
                 else if($resource-suffix eq 'ttf') then 'font/ttf'
                 else if($resource-suffix eq 'otf') then 'font/otf'
                 else if($resource-suffix eq 'eot') then 'application/vnd.ms-fontobject'

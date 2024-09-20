@@ -33,7 +33,7 @@ declare function local:after-update-document-functions($doc) {
     
     (# exist:batch-transaction #) {
         
-        if($doc[tei:TEI/tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:idno[@xml:id]]) then (
+        if($doc//tei:publicationStmt/tei:idno[@xml:id]) then (
             
             local:permanent-ids($doc),
             (:local:remove-temporary-ids($doc),:)

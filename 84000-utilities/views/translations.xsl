@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -455,7 +455,7 @@
                                                 <!-- editor mode -->
                                                 <li>
                                                     <a>
-                                                        <xsl:attribute name="href" select="m:translation-href(m:toh/@key, (), (), (), 'view-mode=editor', $reading-room-path)"/>
+                                                        <xsl:attribute name="href" select="m:translation-href(m:toh/@key, (), (), (), '?view-mode=editor', $reading-room-path)"/>
                                                         <xsl:attribute name="target" select="concat(m:toh/@key, '.html')"/>
                                                         <xsl:attribute name="title" select="'View this text in editor mode'"/>
                                                         <xsl:value-of select="'editor mode'"/>
@@ -954,7 +954,7 @@
                                             <td>
                                                 <h4 class="no-top-margin no-bottom-margin">
                                                     <a>
-                                                        <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), (), 'view-mode=editor', $reading-room-path)"/>
+                                                        <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), (), '?view-mode=editor', $reading-room-path)"/>
                                                         <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
                                                         <xsl:attribute name="title" select="concat('Open ', $toh-key, '.html in the Reading Room')"/>
                                                         <xsl:value-of select="'Toh ' || string-join(m:toh/m:base, ' / ') || ' (' || @id || ') '"/>

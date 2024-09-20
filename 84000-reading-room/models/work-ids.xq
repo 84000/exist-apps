@@ -15,5 +15,5 @@ element { QName('http://read.84000.co/ns/1.0', 'work-ids') }{
     let $text-id := tei-content:id($tei)
     order by $text-id
     return
-        $tei//tei:sourceDesc/tei:bibl[@key] ! element work-id { attribute json:array { true() }, attribute source { $text-id }, attribute destination { @key/string() } }
+        $tei//tei:sourceDesc/tei:bibl[@key] ! element workId { attribute json:array { true() }, attribute source { $text-id }, attribute destination { @key/string() } }
 }

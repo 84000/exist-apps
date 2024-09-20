@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
 
@@ -379,7 +379,7 @@
                                                 </xsl:for-each>
                                                 
                                                 <xsl:if test="$translation[@status eq '1']">
-                                                    <xsl:variable name="app-href" select="concat('https://app.84000.co/translation/', $toh-key)"/>
+                                                    <xsl:variable name="app-href" select="concat('https://app.84000.co/translation/', $toh-key, '.html')"/>
                                                     <tr>
                                                         <td class="icon">
                                                             <a target="_blank">
@@ -1271,7 +1271,7 @@
                                             <xsl:with-param name="type" select="'app'"/>
                                         </xsl:call-template>
                                     </xsl:attribute>
-                                    <xsl:attribute name="href" select="concat('https://app.84000.co/translation/', $toh-key)"/>
+                                    <xsl:attribute name="href" select="concat('https://app.84000.co/translation/', $toh-key, '.html')"/>
                                     <xsl:attribute name="class" select="'btn-round log-click'"/>
                                     <xsl:call-template name="download-icon">
                                         <xsl:with-param name="type" select="'app'"/>

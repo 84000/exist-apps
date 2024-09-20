@@ -545,11 +545,8 @@ declare function glossary:glossary-combined() as element(m:glossary-combined) {
 declare function glossary:cache-combined-xml($request-xml as element(m:request), $cache-key as xs:string) as xs:boolean {
     
     (: This needs generating in a different way as it exceeds the limit for output in exist :)
-    
-    let $glossary-cobined := glossary:glossary-combined()
-    
+    let $glossary-combined := glossary:glossary-combined()
     let $cache-put := common:cache-put($request-xml, $glossary-combined, $cache-key)
-    
     return 
         true()
             

@@ -77,6 +77,7 @@ declare function local:move-static-files() {
 
 declare function local:move-glossary-cached-locations() {
     
+    let $target-path := $glossary:cached-locations-path
     let $target-path-validated := store:create-missing-collection($glossary:cached-locations-path)
     let $source-path := string-join(($common:data-path, 'cache'), '/')
     
@@ -128,28 +129,31 @@ declare function local:merge-version-files() {
 declare function local:trigger-published-tei() {
 
     for $tei in $tei-content:translations-collection//tei:TEI
-    (:where tei-content:id($tei) = ('UT22084-001-001'):)
-    return
-        trigger:after-update-document(base-uri($tei))
-    
+    let $text-id := tei-content:id($tei)
+    let $document-uri := base-uri($tei)
+    where $text-id eq 'UT23703-093-001'
+    return (
+        $document-uri,
+        trigger:after-update-document($document-uri)
+    )
 };
 
 declare function local:store-publication-files() {
     
     let $translations-tei := $tei-content:translations-collection//tei:TEI
-    (:let $translations-tei := subsequence($translations-tei, 1, 50):)
+    let $translations-tei := subsequence($translations-tei, 1, 50)
     
     for $tei in $translations-tei
     (:where tei-content:id($tei) = ('UT22084-066-009', 'UT23703-113-010', 'UT22084-029-001'):)
     return
-        store:publication-files($tei, ('translation-html'(:,'translation-files','source-html',:)(:'glossary-html','glossary-files','publications-list':)), ())
+        store:publication-files($tei, ('translation-html'(:,'translation-files':),'source-html'(:,'glossary-html','glossary-files','publications-list':)), ())
     
 };
 
 declare function local:store-entity-pages() {
     
     let $entities := $entities:entities/eft:entity
-    (:let $entities := subsequence($entities, 1,2):)
+    let $entities := subsequence($entities, 1, 100)
     
     let $glossaries := $tei-content:translations-collection//tei:back/tei:div[@type eq 'glossary'][not(@status = 'excluded')]
     
@@ -166,6 +170,7 @@ declare function local:store-entity-pages() {
     where $glossary-entries and not(util:binary-doc-available(concat($target-folder, '/', $target-file)))
     return (
         (:$source-html,:)
+        util:log('INFO', $target-file),
         store:http-download($source-html, $target-folder, $target-file, $store:permissions-group),
         process:execute(('sleep', '0.5'), $exec-options) ! ()
     ),
@@ -191,7 +196,7 @@ else (
     (:local:merge-version-files(),:)
     (:local:trigger-published-tei(),:)
     (:local:store-publication-files(),:)
-    (:local:store-entity-pages(),:)
+    local:store-entity-pages(),
     
     'Reconfigure scheduled tasks',
     'Remove deprecated files'

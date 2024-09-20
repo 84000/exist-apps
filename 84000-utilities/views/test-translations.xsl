@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/webpage.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -54,7 +54,7 @@
                         </li>
                         <li>
                             <a>
-                                <xsl:attribute name="href" select="m:translation-href($text-id, (), (), (), 'view-mode=tests', $test-domain)"/>
+                                <xsl:attribute name="href" select="m:translation-href($text-id, (), (), (), '?view-mode=tests', $test-domain)"/>
                                 <xsl:attribute name="target" select="concat($text-id, '.html')"/>
                                 <xsl:value-of select="'html'"/>
                             </a>
@@ -195,7 +195,7 @@
                         <tr>
                             <td>
                                 <a>
-                                    <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), (), 'view-mode=tests', $test-domain)"/>
+                                    <xsl:attribute name="href" select="m:translation-href($toh-key, (), (), (), '?view-mode=tests', $test-domain)"/>
                                     <xsl:attribute name="title" select="$text-title"/>
                                     <xsl:attribute name="target" select="concat($toh-key, '.html')"/>
                                     <xsl:value-of select="m:toh/m:full"/>

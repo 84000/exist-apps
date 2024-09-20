@@ -213,12 +213,8 @@ return
     (: If environment wants login then check there is some authentication :)
     else if(not(common:auth-path($collection-path)) or sm:is-authenticated()) then
         
-        (: Sitemap :)
-        if ($exist:resource ! lower-case(.) = ('sitemap.xml')) then
-            local:dispatch("/models/sitemap.xq", "", ())
-        
         (: Resource redirects :)
-        else if ($redirects//m:resource/id($exist:resource ! lower-case(.))) then
+        if ($redirects//m:resource/id($exist:resource ! lower-case(.))) then
             local:redirect($redirects//m:resource/id($exist:resource ! lower-case(.))[1]/parent::m:redirect/@target)
         
         (: Restrict view to single resource :)
@@ -271,9 +267,13 @@ return
         
         (: Translation :)
         else if ($collection-path eq "translation") then
-        
+            
+            (: Sitemap :)
+            if ($exist:resource ! lower-case(.) = ('sitemap.xml')) then
+                local:dispatch("/models/sitemap-translations.xq", "", ())
+            
             (: xml model -> json view :)
-            if ($resource-suffix eq 'json') then 
+            else if ($resource-suffix eq 'json') then 
                 
                 (: 0.1.0 get xml, pass to json view, and download :)
                 if($api-version eq '0.1.0') then
@@ -430,6 +430,7 @@ return
         
         (: Section :)
         else if ($collection-path eq "section") then
+        
             (: xml model -> json view :)
             (: default to "/views/json/0.0.3/section.xq" :)
             if ($resource-suffix eq 'json') then
@@ -470,8 +471,13 @@ return
         
         (: Source texts :)
         else if ($collection-path eq "source") then
+        
+            (: Sitemap :)
+            if ($exist:resource ! lower-case(.) = ('sitemap.xml')) then
+                local:dispatch("/models/sitemap-source.xq", "", ())
+            
             (: xml model -> json view :)
-            if ($resource-suffix eq 'json') then
+            else if ($resource-suffix eq 'json') then
                 local:dispatch("/models/source.xq", "/views/json/source.xq", 
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ $resource-id }"/>
@@ -564,7 +570,12 @@ return
         
         (: Glossary :)
         else if ($collection-path = ("glossary", "glossary-embedded")) then
-            if($resource-id eq 'search' and $resource-suffix eq 'json') then
+            
+            (: Sitemap :)
+            if ($exist:resource ! lower-case(.) = ('sitemap.xml')) then
+                local:dispatch("/models/sitemap-glossary.xq", "", ())
+            
+            else if($resource-id eq 'search' and $resource-suffix eq 'json') then
                 local:dispatch("/views/json/0.4.0/glossary-search.xq", "",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <set-header name="Content-Type" value="application/json"/>
@@ -621,13 +632,14 @@ return
             </dispatch>
         
         (: Stylesheets, javascript and other front-end :)
-        else if($collection-path eq 'frontend' and $resource-suffix = ('css','js','min.js','svg','png','ttf','otf','eot','svg','woff','woff2')) then 
+        else if($collection-path eq 'frontend' and $resource-suffix = ('css','js','json','min.js','svg','png','ttf', 'ico','otf','eot','svg','woff','woff2')) then 
             <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                 <forward url="{ string-join(($common:static-content-collection, $exist:path)) }">
                     <set-header name="Content-Type" value="{ 
                         if($resource-suffix eq 'css') then 'text/css'
                         else if($resource-suffix eq 'svg') then 'image/svg+xml'
                         else if($resource-suffix eq 'png') then 'image/png'
+                        else if($resource-suffix eq 'ico') then 'image/x-icon'
                         else if($resource-suffix eq 'ttf') then 'font/ttf'
                         else if($resource-suffix eq 'otf') then 'font/otf'
                         else if($resource-suffix eq 'eot') then 'application/vnd.ms-fontobject'

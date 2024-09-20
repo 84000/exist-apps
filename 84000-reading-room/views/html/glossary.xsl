@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:util="http://exist-db.org/xquery/util" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/glossary.xsl"/>
     
@@ -475,7 +475,7 @@
                                                         <!-- Entity title / link -->
                                                         <a class="entity-title block-link opener-link log-click">
                                                             
-                                                            <xsl:attribute name="href" select="common:internal-href(concat('/', $url-folder, '/', $item-id, '.html'), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter()), concat('#', $item-id, '-detail'), $root/m:response/@lang)"/>
+                                                            <xsl:attribute name="href" select="common:internal-href(concat('/glossary/', $item-id, '.html'), (if($tei-editor and $flagged gt '') then concat('flagged=', $flagged) else (), m:view-mode-parameter()), concat('#', $item-id, '-detail'), $root/m:response/@lang)"/>
                                                             <xsl:attribute name="data-ajax-target" select="concat('#', $item-id, '-detail')"/>
                                                             <xsl:attribute name="data-toggle-active" select="concat('#', $item-id)"/>
                                                             <xsl:attribute name="data-ajax-loading" select="'Loading detail...'"/>

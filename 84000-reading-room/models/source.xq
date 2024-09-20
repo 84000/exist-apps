@@ -56,7 +56,8 @@ let $request :=
         attribute resource-suffix { $resource-suffix },
         attribute lang { common:request-lang() },
         attribute ref-index { $ref-index },
-        request:get-parameter('glossary-id', '')[not(. eq '')][1] ! attribute glossary-id { . }
+        request:get-parameter('glossary-id', '')[not(. eq '')][1] ! attribute glossary-id { . },
+        <view-mode xmlns="http://read.84000.co/ns/1.0" id="default" client="browser"/>
     }
 
 (: Suppress cache if there's a highlight :)

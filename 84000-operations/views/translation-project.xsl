@@ -1056,7 +1056,7 @@
                     
                     <div>
                         
-                        <xsl:if test="$text/m:files[@glossary-locations-timestamp[. gt '']][@glossary-locations-timestamp ! xs:dateTime(.) lt @tei-timestamp ! xs:dateTime(.)]">
+                        <xsl:if test="$text/m:files[@glossary-locations-timestamp[. gt '']][@glossary-locations-timestamp[.gt ''] ! xs:dateTime(.) lt @tei-timestamp ! xs:dateTime(.)]">
                             <div class="center-vertical align-left">
                                 <span class="icon">
                                     <i class="fa fa-exclamation-circle" title="Warning"/>
@@ -1068,7 +1068,7 @@
                                 </span>
                                 <span>
                                     <a class="underline small" target="84000-glossary-editor">
-                                        <xsl:attribute name="href" select="concat('http://operations.84000.local/edit-glossary.html?resource-id=', $text/@id)"/>
+                                        <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id)"/>
                                         <xsl:value-of select="'Glossary editor'"/>
                                     </a>
                                 </span>
@@ -1352,7 +1352,7 @@
                         </td>
                         <td>
                             <xsl:choose>
-                                <xsl:when test="@up-to-date">
+                                <xsl:when test="@up-to-date and @timestamp[not(. = ('none', ''))]">
                                     <span class="label label-default">
                                         <span class="monospace">
                                             <xsl:value-of select="format-dateTime(@timestamp, '[D01] [MNn,*-3] [Y0001] [H01]:[m01]')"/>

@@ -181,8 +181,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
 declare function store:stored-version-str($file-collection as xs:string, $file-name as xs:string) as xs:string {
     
     (: Get document version in data store :)
-    let $log := util:log('INFO', $file-collection)
-    let $log := util:log('INFO', $file-name)
+    (:let $log := util:log('INFO', concat('stored-version-str: ', $file-collection, '/', $file-name)):)
     let $file-version := $store:file-versions/m:file-version[@file-name eq $file-name]
     let $file-extension := tokenize($file-name, '\.')[last()]
     
@@ -797,8 +796,8 @@ declare function store:publication-files($tei as element(tei:TEI), $store-file-g
         let $deploy-files := 
             if($store-files) then (
                 deploy:push('data-static', (), $commit-msg, ()),
-                (:deploy:push('data-rdf', (), $commit-msg, ()),
-                deploy:push('data-json', (), $commit-msg, ()),:)
+                deploy:push('data-rdf', (), $commit-msg, ()),
+                deploy:push('data-json', (), $commit-msg, ()),
                 process:execute(('sleep', '0.5'), $execute-options) ! ((: return empty :))
             )
             else()

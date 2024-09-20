@@ -39,7 +39,7 @@ declare option output:indent "yes";
                 for $bibl in $tei-content:translations-collection//tei:fileDesc[tei:publicationStmt/tei:availability/@status = '1']/tei:sourceDesc/tei:bibl[@key]
                 order by $bibl/@key ! replace(., '^toh(\d+)([a-zA-Z]*)\-*(\d*)([a-zA-Z]*)', '$1')[. gt ''] ! xs:integer(.), $bibl/@key
                 return
-                    <paths>{ translation:href($bibl/@key/string(), (), (), (), ()) }</paths>
+                    <paths>{ (:translation:href($bibl/@key/string(), (), (), (), ()):) concat('/translation/', $bibl/@key/string(), '.html') }</paths>
             }
         </details>
     </applinks>

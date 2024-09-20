@@ -26,13 +26,13 @@
                 <param name="inputMethod" type="java.lang.String" value="unicode"/>
                 <param name="stopFilename" type="java.lang.String" value=""/>
             </analyzer>
-            <analyzer id="sa" class="io.bdrc.lucene.sa.SanskritAnalyzer">
+            <!--<analyzer id="sa" class="io.bdrc.lucene.sa.SanskritAnalyzer">
                 <param name="mode" type="java.lang.String" value="word"/>
                 <param name="inputEncoding" type="java.lang.String" value="roman"/>
                 <param name="mergePrepositions" type="boolean" value="false"/>
                 <param name="filterGeminates" type="boolean" value="true"/>
                 <param name="lenient" type="java.lang.String" value="query"/>
-            </analyzer>
+            </analyzer>-->
             <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="2">
                 <field name="bo-titles" if="@xml:lang='bo'" analyzer="bo"/>
                 <!--<field name="sa-titles" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>-->

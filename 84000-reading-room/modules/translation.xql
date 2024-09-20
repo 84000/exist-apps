@@ -534,8 +534,34 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                 
                 if($publication-status-group eq 'published') then (
                     
-                    if($groups = 'translation-html') then 
+                    (: Generate pdfs and epubs first so that they can be referenced in the HTML :)
+                    if($groups = 'translation-files') then (
                     
+                        (: PDF :)
+                        local:generated-file(
+                            'pdf',
+                            'translation-files',
+                            concat('/translation/', $source-key, '.pdf'),
+                            concat($common:static-content-path, '/translation/', $source-key),
+                            concat($source-key, '.pdf'),
+                            $tei-timestamp
+                        ),
+                        
+                        (: EPUB :)
+                        local:generated-file(
+                            'epub',
+                            'translation-files',
+                            concat('/translation/', $source-key, '.epub'),
+                            concat($common:static-content-path, '/translation/', $source-key),
+                            concat($source-key, '.epub'),
+                            $tei-timestamp
+                        )
+                        
+                    )
+                    else (),
+                    
+                    if($groups = 'translation-html') then (
+                        
                         for $commentary-key in ('_none', $commentary-keys)
                         return (
                         
@@ -562,36 +588,22 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                                 )
                             
                         )
+                        
+                    )
                     else ()
                     ,
                     
-                    if($groups = 'translation-files') then (
-                    
-                        (: PDF :)
+                    if($groups = 'source-html') then (
+                        
                         local:generated-file(
-                            'pdf',
-                            'translation-files',
-                            concat('/translation/', $source-key, '.pdf'),
-                            concat($common:static-content-path, '/translation/', $source-key),
-                            concat($source-key, '.pdf'),
+                            'xml',
+                            'source-html',
+                            '/source/sitemap.xml',
+                            concat($common:static-content-path, '/source'),
+                            'sitemap.xml',
                             $tei-timestamp
                         ),
                         
-                        (: EPUB :)
-                        local:generated-file(
-                            'epub',
-                            'translation-files',
-                            concat('/translation/', $source-key, '.epub'),
-                            concat($common:static-content-path, '/translation/', $source-key),
-                            concat($source-key, '.epub'),
-                            $tei-timestamp
-                        )
-                        
-                    )
-                    else (),
-                    
-                    if($groups = 'source-html') then 
-                    
                         (: Source HTML :)
                         for $folio in $source-folios
                         return
@@ -603,10 +615,24 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                                 concat('folio-', $folio/@index-in-resource, '.html'),
                                 $tei-timestamp
                             )
-                            
+                        
+                        
+                    )
                     else ()
                     
                 )
+                
+                (: If not published generate text stub :)
+                else if($groups = 'translation-html') then 
+                    local:generated-file(
+                        'html', 
+                        'translation-html',
+                        concat('/translation/', $source-key, '.html'),
+                        concat($common:static-content-path, '/translation/', $source-key),
+                        concat('index', '.html'),
+                        $tei-timestamp
+                    )
+                
                 else ()
                 ,
                 
@@ -658,8 +684,17 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             
             if($publication-status-group eq 'published') then (
                 
-                if($groups = 'glossary-html') then 
-                
+                if($groups = 'glossary-html') then (
+                    
+                    local:generated-file(
+                        'xml',
+                        'glossary-html',
+                        '/glossary/sitemap.xml',
+                        concat($common:static-content-path, '/glossary'),
+                        'sitemap.xml',
+                        $tei-timestamp
+                    ),
+                    
                     (: Glossary HTML :)
                     for $entity in $entities/m:entity
                     return
@@ -671,7 +706,9 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                             concat($entity/@xml:id, '.html'),
                             $tei-timestamp
                         )
-                        
+                    
+                    
+                )
                 else ()
                 ,
                 
@@ -696,13 +733,22 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                 ,:)
                 
                 if($groups = 'publications-list') then (
-                
+                    
+                    local:generated-file(
+                        'xml',
+                        'publications-list',
+                        '/translation/sitemap.xml',
+                        concat($common:static-content-path, '/translation'),
+                        'sitemap.xml',
+                        $tei-timestamp
+                    ),
+                    
                     (: Publication manifest files :)
                     local:generated-file(
                         'json',
                         'publications-list',
                         '/.well-known/apple-app-site-association',
-                        concat($common:static-content-path, '/catalogue'),
+                        concat($common:static-content-path, '/mobile-app'),
                         'apple-app-site-association.json',
                         $tei-timestamp
                     ),
@@ -722,15 +768,6 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                         '/section/lobby.json?api-version=0.2.0',
                         concat($common:static-content-path, '/catalogue'),
                         'lobby.json',
-                        $tei-timestamp
-                    ),
-                    
-                    local:generated-file(
-                        'xml',
-                        'publications-list',
-                        '/sitemap.xml',
-                        concat($common:static-content-path, '/catalogue'),
-                        'sitemap.xml',
                         $tei-timestamp
                     ),
                     
