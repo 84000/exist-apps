@@ -690,7 +690,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                         'xml',
                         'glossary-html',
                         '/glossary/sitemap.xml',
-                        concat($common:static-content-path, '/glossary'),
+                        concat($common:static-content-path, '/glossary/named-entities'),
                         'sitemap.xml',
                         $tei-timestamp
                     ),
