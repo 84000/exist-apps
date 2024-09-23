@@ -504,7 +504,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             $tei//tei:sourceDesc/tei:bibl[@key]
     
     let $glossary-ids := 
-        if($groups = ('glossary-html','glossary-files')) then
+        if($publication-status-group eq 'published' and $groups = ('glossary-html','glossary-files')) then
             $tei/tei:text/tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss[not(@mode eq 'surfeit')]/@xml:id
         else ()
     
@@ -682,7 +682,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             else ()
             ,
             
-            if($publication-status-group eq 'published') then (
+            if($entities[m:entity]) then (
                 
                 if($groups = 'glossary-html') then (
                     
@@ -706,7 +706,6 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                             concat($entity/@xml:id, '.html'),
                             $tei-timestamp
                         )
-                    
                     
                 )
                 else ()

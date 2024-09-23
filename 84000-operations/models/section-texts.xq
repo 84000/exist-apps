@@ -16,7 +16,8 @@ let $xml-response :=
         'operations/section-texts',
         'operations',
         (
-            section:texts($section-id, $published-only, $include-descendants)
+            section:texts($section-id, $published-only, $include-descendants),
+            doc(concat($common:data-path, '/local/webflow-api.xml'))
         )
     )
 
