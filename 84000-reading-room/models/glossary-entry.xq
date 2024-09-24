@@ -85,7 +85,7 @@ return
             element { QName('http://read.84000.co/ns/1.0', 'entities')} {
                 $request-entity,
                 element related {
-                    entities:related($request-entity, false(), ('glossary','knowledgebase'), $exclude-flagged, $exclude-status)
+                    entities:related($request-entity, false(), ('glossary'(:,'knowledgebase':)), $exclude-flagged, $exclude-status)
                 }
             }
         

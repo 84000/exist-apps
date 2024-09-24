@@ -197,7 +197,8 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                 element { QName('','data') } {
                     if($webflow-collection[@id eq 'catalogue-collections']) then
                         element fieldData {
-                            $section/eft:titles/eft:title[@xml:lang eq 'en'][text()] ! element name { string-join(text()) ! normalize-space(.) },
+                            element xmlid { $section-id },
+                            ($section/eft:page/eft:titles/eft:title[@type eq 'articleTitle'][text()], $section/eft:titles/eft:title[@xml:lang eq 'en'][text()])[1] ! element name { string-join(text()) ! normalize-space(.) },
                             $section/eft:titles/eft:title[@xml:lang eq 'bo'][text()] ! element tibetan-title { string-join(text()) ! normalize-space(.) },
                             $section/eft:titles/eft:title[@xml:lang eq 'zh'][text()] ! element chinese-title { string-join(text()) ! normalize-space(.) },
                             $publications-summary/eft:texts/@total[string()] ! element texts-count { attribute json:literal {'true'}, xs:integer(.) },
@@ -214,7 +215,8 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                     
                     else if($webflow-collection[@id eq 'catalogue-sections']) then
                         element fieldData {
-                            $section/eft:titles/eft:title[@xml:lang eq 'en'][text()] ! element name { string-join(text()) ! normalize-space(.) },
+                            element xmlid { $section-id },
+                            ($section/eft:page/eft:titles/eft:title[@type eq 'articleTitle'][text()], $section/eft:titles/eft:title[@xml:lang eq 'en'][text()])[1] ! element name { string-join(text()) ! normalize-space(.) },
                             $section/eft:titles/eft:title[@xml:lang eq 'bo'][text()] ! element tibetan-title { string-join(text()) ! normalize-space(.) },
                             $section/eft:titles/eft:title[@xml:lang eq 'Sa-Ltn'][text()] ! element sanskrit-title { string-join(text()) ! normalize-space(.) },
                             element toh-first { attribute json:literal {'true'}, min($section/descendant-or-self::eft:section/@toh-number-first[string()] ! xs:integer(.)) },
@@ -226,21 +228,6 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                             $abstract-html-string ! element section-description { . },
                             $webflow:conf//webflow:item[@id = $section/eft:section/@id] ! element subsections { attribute json:array {'true'}, @webflow-id/string() }:)
                         }
-                    
-                    (:else if($webflow-collection[@id eq 'tengyur-sections']) then
-                        element fieldData {
-                            $section/eft:titles/eft:title[@xml:lang eq 'en'][text()] ! element name { string-join(text()) ! normalize-space(.) },
-                            $section/eft:titles/eft:title[@xml:lang eq 'bo'][text()] ! element tibetan-title { string-join(text()) ! normalize-space(.) },
-                            $section/eft:titles/eft:title[@xml:lang eq 'Sa-Ltn'][text()] ! element sanskrit-title { string-join(text()) ! normalize-space(.) },
-                            element toh-first { attribute json:literal {'true'}, min($section/descendant-or-self::eft:section/@toh-number-first[string()] ! xs:integer(.)) },
-                            element toh-last { attribute json:literal {'true'}, max($section/descendant-or-self::eft:section/@toh-number-last[string()] ! xs:integer(.)) },
-                            $publications-summary/eft:texts/@total[string()] ! element texts-stats { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:texts/@published[string()] ! element texts-published { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:texts/@translated[string()] ! element texts-in-progress { attribute json:literal {'true'}, xs:integer(.) + $publications-summary/eft:texts/@in-translation ! xs:integer(.) },
-                            $publications-summary/eft:texts/@not-started[string()] ! element texts-not-begun { attribute json:literal {'true'}, xs:integer(.) },
-                            $abstract-html-string ! element section-description { . }(\:,
-                            $webflow:conf//webflow:item[@id = $section/eft:section/@id] ! element subsections { attribute json:array {'true'}, @webflow-id/string() }:\)
-                        }:)
                     
                     else ()
                 }
@@ -419,7 +406,7 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
             'Not Begun'
     
     return
-        element { QName('http://read.84000.co/ns/1.0', 'webflow-text-data') } {
+        element { QName('', 'webflow-text-data') } {
             element slug { 
                 attribute seed-data { 'true' },
                 translation:filename($tei, $source-key) 
@@ -471,6 +458,9 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
             element pages-published { 
                 attribute json:literal { 'true' }, 
                 sum($publication-status[@status-group eq 'published']/@count-pages ! xs:integer(.)) 
+            },
+            element published-date { 
+                string-join($tei/tei:teiHeader//tei:publicationStmt/tei:date/text()) ! normalize-space(.)
             },
             element section-description { 
                 attribute seed-data { 'true' },

@@ -14,7 +14,7 @@ import module namespace webflow = "http://read.84000.co/webflow-api" at "/db/app
 import module namespace functx = "http://www.functx.com";
 
 declare variable $local:section-work-id := (:'UT4CZ5369':)'UT23703';
-declare variable $local:section-tei := collection($common:translations-path)//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = $local:section-work-id];
+declare variable $local:section-tei := collection($common:translations-path)//tei:TEI(:[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/tei:location/@work = $local:section-work-id]:);
 
 (:declare function local:text($tei as element(tei:TEI), $source-id as xs:string) as element(eft:catalogueWork) {
     
@@ -68,7 +68,7 @@ declare function local:letter-to-integer($letter as xs:string) as xs:integer? {
 };
 
 let $section-texts := 
-    for $bibl in $local:section-tei//tei:sourceDesc/tei:bibl[tei:location[@work = $local:section-work-id]](:[@key = ('toh1-1','toh8','toh21','toh999')]:)
+    for $bibl in $local:section-tei//tei:sourceDesc/tei:bibl(:[tei:location[@work = $local:section-work-id]]:)[@key = ('toh1691','toh1648','toh2656','toh3749','toh2657','toh2887','toh2214','toh3063','toh3785','toh2739')]
     let $tei := $bibl/ancestor::tei:TEI
     return
         webflow:text-data($tei, $bibl/@key)

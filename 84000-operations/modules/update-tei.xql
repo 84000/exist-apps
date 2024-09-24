@@ -1074,6 +1074,7 @@ declare function update-tei:cache-glossary-locations($tei as element(tei:TEI), $
     
     (: Record build time - only if it's the whole set :)
     let $end-time := util:system-dateTime()
+    
     (: Get the file again :)
     let $glossary-cached-locations := glossary:cached-locations($tei, false())
     let $duration-attribute := $glossary-cached-locations/@seconds-to-build
@@ -1086,11 +1087,11 @@ declare function update-tei:cache-glossary-locations($tei as element(tei:TEI), $
                 update insert $duration-attribute-new into $glossary-cached-locations
         else ()
     
-    (: Also store file version!!! :)
+    (: Store file version :)
+    let $store-file-version := store:store-version-str(concat($text-id, '.xml'), $tei-version)
     
-    return
+    return 
         $cache-glossary-chunks
-
 };
 
 declare function local:cache-glossary-chunk($tei as element(tei:TEI), $glossary-ids as xs:string*, $chunk as xs:integer) as element()* {

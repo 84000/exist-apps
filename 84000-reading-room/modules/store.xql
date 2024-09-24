@@ -112,7 +112,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
                 $store-file-name,
                 'tei'
             ),
-            local:store-version-str(
+            store:store-version-str(
                 $store-file-name,
                 $master-cache/@version
             ),
@@ -159,7 +159,7 @@ declare function store:download-master($file-name as xs:string, $translations-ma
                 )
             
             let $store-version-string := 
-                local:store-version-str(
+                store:store-version-str(
                     $store-file-name, 
                     $master-file/@version
                 )
@@ -708,7 +708,7 @@ declare function store:create-missing-collection($collection as xs:string) as xs
         
 };
 
-declare function local:store-version-str($file-name as xs:string, $tei-version as xs:string) as element()? {
+declare function store:store-version-str($file-name as xs:string, $tei-version as xs:string) as element()? {
     
     let $current := $store:file-versions/m:file-version[@file-name eq $file-name]
     let $new :=
@@ -785,7 +785,7 @@ declare function store:publication-files($tei as element(tei:TEI), $store-file-g
                 ,
                 
                 if($file/@group = ('translation-files')) then
-                    local:store-version-str($file/@target-file, $tei-version)
+                    store:store-version-str($file/@target-file, $tei-version)
                 else ()
                 ,
                 

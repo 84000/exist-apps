@@ -12,7 +12,7 @@ declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
 
 declare function local:store-unpublished-html() {
     
-    let $translations-tei := $tei-content:translations-collection//tei:TEI(:[not(descendant::tei:publicationStmt/tei:availability/@status = ('1', '1.a'))]:)
+    let $translations-tei := $tei-content:translations-collection//tei:TEI[descendant::tei:publicationStmt/tei:availability/@status = ('1', '1.a')]
     
     for $tei in $translations-tei
     return (

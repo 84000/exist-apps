@@ -237,7 +237,7 @@ return
         let $matched-entities-subset := subsequence($matched-entities, $first-record, $request/@records-per-page)
         
         (: Get related entities :)
-        let $entities-related := entities:related($matched-entities-subset, false(), ('glossary','knowledgebase'), $exclude-flagged, $exclude-status)
+        let $entities-related := entities:related($matched-entities-subset, false(), ('glossary'(:,'knowledgebase':)), $exclude-flagged, $exclude-status)
         
         let $downloads := 
             if($request[@resource-id eq 'downloads']) then

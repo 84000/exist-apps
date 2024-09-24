@@ -121,6 +121,7 @@ declare function tei-content:title-any($tei as element(tei:TEI)) as xs:string? {
     let $titles := $tei//tei:fileDesc/tei:titleStmt/tei:title
     
     return (
+        $titles[@type eq 'articleTitle'][@xml:lang eq 'en'],
         $titles[@type eq 'mainTitle'][@xml:lang eq 'en'],
         $titles[@xml:lang eq 'en'],
         $titles[@type eq 'mainTitle'][@xml:lang eq 'Sa-Ltn'],

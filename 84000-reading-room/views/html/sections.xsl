@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:webflow="http://read.84000.co/webflow-api" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:webflow="http://read.84000.co/webflow-api" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
@@ -205,7 +205,7 @@
                                         </xsl:when>
                                         <xsl:when test="$webflow-api-item">
                                             <span class="label label-default">
-                                                <xsl:value-of select="concat('Webflow CMS last updated ', (format-dateTime($webflow-api-item/@updated, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
+                                                <xsl:value-of select="concat('Lastest update to Webflow CMS ', (format-dateTime($webflow-api-item/@updated, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
                                             </span>
                                         </xsl:when>
                                         <xsl:otherwise>
@@ -218,14 +218,14 @@
                                 <xsl:if test="$webflow-api-item[@updated ! xs:dateTime(.) lt $translation-summary/@last-modified ! xs:dateTime(.)]">
                                     <span>
                                         <span class="label label-warning">
-                                            <xsl:value-of select="concat('Content updated ', (format-dateTime($translation-summary/@last-modified, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
+                                            <xsl:value-of select="concat('Latest update in this section ', (format-dateTime($translation-summary/@last-modified, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
                                         </span>
                                     </span>
                                 </xsl:if>
                                 <xsl:if test="$texts-webflow-id-missing">
                                     <span>
                                         <span class="label label-danger">
-                                            <xsl:value-of select="concat(count($texts-webflow-id-missing), ' texts not linked to webflow')"/>
+                                            <xsl:value-of select="concat(count($texts-webflow-id-missing), ' texts not linked to Webflow CMS')"/>
                                         </span>
                                     </span>
                                 </xsl:if>

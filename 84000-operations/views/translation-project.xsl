@@ -1005,7 +1005,7 @@
                                     <xsl:value-of select="format-number($count-updates, '#,###')"/>
                                 </span>
                                 <span class="text-danger small">
-                                    <xsl:value-of select="($count-updates[. eq 1] ! ' update to publish', ' updates to publish')[1]"/>
+                                    <xsl:value-of select="($count-updates[. eq 1] ! ' file to compile and publish', ' files to compile and publish')[1]"/>
                                 </span>
                             </span>
                         </xsl:if>
@@ -1035,7 +1035,7 @@
                         <xsl:if test="$response/scheduler:job">
                             <span>
                                 <span class="label label-danger">
-                                    <xsl:value-of select="'Publishing...'"/>
+                                    <xsl:value-of select="'Compiling files and publishing...'"/>
                                 </span>
                             </span>
                             <span>
@@ -1282,7 +1282,7 @@
                                                     <xsl:attribute name="class" select="'btn btn-danger disabled'"/>
                                                     <xsl:attribute name="disabled" select="'disabled'"/>
                                                 </xsl:if>
-                                                <xsl:value-of select="'Publish updates'"/>
+                                                <xsl:value-of select="'Publish files'"/>
                                             </button>
                                         </span>
                                     </xsl:when>
