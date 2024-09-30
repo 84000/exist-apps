@@ -57,7 +57,7 @@ declare function local:parse-translation() {
         let $location := local:persistent-location($node)
         let $location-id := ($location/@xml:id, $location/@id)[. gt ''][1]
         let $location-milestone-pre-processed := $local:text-outline/m:pre-processed[@type eq 'milestones']/m:milestone[@id eq $location-id]
-        let $location-milestone-part := $local:text-outline/m:pre-processed[@type eq 'parts']//m:part[@id eq ($location-milestone-pre-processed/@part-id, $location-id)[1]]
+        let $location-milestone-part := $local:text-outline/m:pre-processed[@type eq 'parts']//m:part[@id eq ($location-milestone-pre-processed/@label-part-id, $location-milestone-pre-processed/@part-id, $location-id)[1]]
         let $location-group := ($node/ancestor-or-self::tei:div[1] | $node/ancestor-or-self::m:part[1])[1]
         group by $location-id
         order by $text-node-index[1] ascending

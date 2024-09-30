@@ -117,7 +117,7 @@ declare function eft-json:label($location as element(), $location-id as xs:strin
         else if($location[self::tei:gloss]) then 
             $text-outline//eft:part[@type eq 'glossary'][1][@prefix] ! concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1])) 
         else 
-            $text-outline//eft:part[@id eq $location-pre-processed/@part-id][1][@prefix] ! concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1]))
+            $text-outline//eft:part[@id eq ($location-pre-processed/@label-part-id, $location-pre-processed/@part-id)[1]][1][@prefix] ! concat(@prefix, $location-pre-processed[1] ! concat('.', (@label, @index)[1]))
     
 };
 

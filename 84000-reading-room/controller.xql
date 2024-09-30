@@ -344,7 +344,7 @@ return
             else if ($resource-suffix eq 'txt') then
                 local:dispatch("/models/translation.xq", "/views/txt/translation.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ replace(., '\-en(\-plain)?$', '') }"/>
+                        <add-parameter name="resource-id" value="{ replace($resource-id, '\-en(\-plain)?$', '') }"/>
                         <add-parameter name="resource-suffix" value="{ if(matches($resource-id, '\-en\-plain$')) then 'plain.txt' else 'txt' }"/>
                         <set-header name="Content-Type" value="text/plain"/>
                         <set-header name="Content-Disposition" value="attachment"/>

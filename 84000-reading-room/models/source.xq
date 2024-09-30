@@ -118,7 +118,7 @@ return
                 element { QName('http://read.84000.co/ns/1.0', 'source') } {
                 
                     attribute work { $tei-location/@work },
-                    attribute canonical-html { concat('https://read.84000.co', source:href($tei-location/@key, $ref-index, (), ())) },
+                    attribute canonical-html { concat('https://84000.co', source:href($tei-location/@key, $ref-index, (), ())) },
                     attribute cache-key { $cache-key },
                     
                     (: Get a page of text :)

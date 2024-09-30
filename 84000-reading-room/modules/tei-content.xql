@@ -559,8 +559,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
         for $part in 
             $tei/tei:text/tei:front/tei:div[@type]
             | $tei/tei:text/tei:body/tei:div[@type = ('translation', 'article')]/tei:div[@type]
-            | $tei/tei:text/tei:back/tei:div[@type eq 'appendix']/tei:div[@type]
-            | $tei/tei:text/tei:back/tei:div[not(@type eq 'appendix')]
+            | $tei/tei:text/tei:back/tei:div[@type]
             
             let $part-id := ($part/@xml:id, $part/@type)[1]
             
@@ -574,7 +573,8 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
                 return
                     element { QName('http://read.84000.co/ns/1.0', $element-name) } {
                         attribute id { $element/@xml:id },
-                        attribute part-id { ($element/ancestor::tei:div[@prefix][1]/@xml:id, $part-id)[1] (:$part-id:) },
+                        attribute part-id { $part-id },
+                        attribute label-part-id { ($element/ancestor::tei:div[@prefix][1]/@xml:id, $part-id)[1] },
                         attribute index { $index },
                         if($element[@n gt '']) then
                             attribute label { $element/@n }
@@ -604,7 +604,7 @@ declare function local:elements-pre-processed($tei as element(tei:TEI), $element
         (: Re-label based on pre-labelled elements :)
         else if($element-name eq 'milestone') then
             for $element in $elements
-            let $part-id := $element/@part-id/string()
+            let $part-id := $element/@label-part-id/string()
             group by $part-id
             return (
                 for $element-single at $index in $element[not(@label)]

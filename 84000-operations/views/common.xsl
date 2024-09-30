@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:markdown="http://read.84000.co/markdown" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="functions.xsl"/>
     
@@ -1882,7 +1882,7 @@
             
             <xsl:if test="$text[@id][@resource-type eq 'translation']">
                 <li>
-                    <a data-loading="Loading headers form...">
+                    <a data-loading="Loading translation project form...">
                         <xsl:attribute name="href" select="concat('/translation-project.html?id=', $text/@id)"/>
                         <xsl:if test="$disable-links[. eq 'translation-project']">
                             <xsl:attribute name="class" select="'disabled'"/>
@@ -1894,7 +1894,7 @@
             
             <xsl:if test="$text[@id][@resource-type eq 'translation']">
                 <li>
-                    <a data-loading="Loading headers form...">
+                    <a data-loading="Loading TEI headers form...">
                         <xsl:attribute name="href" select="concat('/edit-text-header.html?id=', $text/@id)"/>
                         <xsl:if test="$disable-links[. eq 'edit-text-header']">
                             <xsl:attribute name="class" select="'disabled'"/>

@@ -2706,14 +2706,14 @@
                     <xsl:if test="$milestone and not($mode eq 'no-milestone')">
                         
                         <!-- Add a milestone anchor -->
-                        <xsl:variable name="part" select="$element/ancestor::m:part[@prefix][1]"/>
                         <xsl:variable name="milestones-pre-processed" select="key('milestones-pre-processed', $milestone/@xml:id, $root)[1]" as="element(m:milestone)?"/>
+                        <xsl:variable name="milestones-part" select="key('text-parts', ($milestones-pre-processed/@label-part-id, $milestones-pre-processed/@part-id)[1], $root)[1]" as="element(m:part)?"/>
                         
                         <xsl:if test="$milestones-pre-processed">
                             
                             <xsl:variable name="milestone-label">
                                 <xsl:call-template name="bookmark-label">
-                                    <xsl:with-param name="prefix" select="($part/@prefix, '?')[1]"/>
+                                    <xsl:with-param name="prefix" select="($milestones-part/@prefix, '?')[1]"/>
                                     <xsl:with-param name="index" select="($milestones-pre-processed/@label, $milestones-pre-processed/@index)[1]"/>
                                 </xsl:call-template>
                             </xsl:variable>
@@ -2726,7 +2726,7 @@
                                         
                                         <xsl:call-template name="bookmark-link">
                                             <xsl:with-param name="bookmark-target-hash" select="$milestone/@xml:id"/>
-                                            <xsl:with-param name="bookmark-target-part" select="$part/@id"/>
+                                            <xsl:with-param name="bookmark-target-part" select="$milestones-part/@id"/>
                                             <xsl:with-param name="bookmark-label" select="$milestone-label"/>
                                             <xsl:with-param name="link-class" select="'milestone from-tei'"/>
                                         </xsl:call-template>
@@ -4050,7 +4050,7 @@
                     <xsl:sequence select="key('text-parts', $translation/m:part[@type eq 'glossary']/@id, $root)[1]"/>
                 </xsl:when>
                 <xsl:when test="$target-element[self::m:milestone][@index]">
-                    <xsl:sequence select="key('text-parts', $target-element/@part-id, $root)[1]"/>
+                    <xsl:sequence select="key('text-parts', ($target-element/@label-part-id, $target-element/@part-id)[1], $root)[1]"/>
                 </xsl:when>
                 <xsl:when test="$target-element[self::m:part]">
                     <xsl:sequence select="$target-element"/>

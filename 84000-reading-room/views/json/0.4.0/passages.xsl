@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/common.xsl"/>
     
     <xsl:param name="annotate" select="true()"/>
     <xsl:param name="api-version" select="'0.4.0'"/>
+    
+    <xsl:key name="locations" match="xhtml:*[@data-location-id]" use="@data-location-id"/>
     
     <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
     
@@ -30,7 +32,7 @@
         <xsl:param name="parent-id" as="xs:string"/>
         <xsl:param name="elements" as="element()*"/>
         
-        <xsl:variable name="gutter" select="($elements/xhtml:div[matches(@class, '(^|\s)gtr(\s|$)')])[1]" as="element(xhtml:div)?"/>
+        <xsl:variable name="gutter" select="key('locations', $passage-id, $root)/xhtml:div[matches(@class, '(^|\s)gtr(\s|$)')][1]" as="element(xhtml:div)?"/>
         
         <passage>
             

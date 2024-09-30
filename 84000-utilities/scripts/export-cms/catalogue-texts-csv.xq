@@ -63,24 +63,29 @@ declare variable $local:section-tei := collection($common:translations-path)//te
 
 };:)
 
-declare function local:letter-to-integer($letter as xs:string) as xs:integer? {
+(:declare function local:letter-to-integer($letter as xs:string) as xs:integer? {
     $letter[. gt ''] ! lower-case(.) ! fn:string-to-codepoints(.)[1] ! . - 96
-};
+};:)
 
-let $section-texts := 
-    for $bibl in $local:section-tei//tei:sourceDesc/tei:bibl(:[tei:location[@work = $local:section-work-id]]:)[@key = ('toh1691','toh1648','toh2656','toh3749','toh2657','toh2887','toh2214','toh3063','toh3785','toh2739')]
-    let $tei := $bibl/ancestor::tei:TEI
+let $text-items := 
+    for $tei in $local:section-tei[not(descendant::tei:titleStmt/tei:title[@type eq 'mainTitle'][@xml:lang eq 'Sa-Ltn'][text()])]
     return
-        webflow:text-data($tei, $bibl/@key)
+        for $bibl in $tei/descendant::tei:sourceDesc/tei:bibl[@key](:[tei:location[@work = $local:section-work-id]]:)(:[@key = ('toh1691','toh1648','toh2656','toh3749','toh2657','toh2887','toh2214','toh3063','toh3785','toh2739')]:)
+        return
+            element item {
+                element item-id { $webflow:conf//webflow:item[@id eq $bibl/@key]/@webflow-id/string() },
+                element toh-key { $bibl/@key/string() },
+                element sanskrit-title { '' }
+            }
 
 return (
 
-    (:$section-texts:)
+    (:$text-items:)
     
-    string-join($section-texts[1]/* ! local-name(.), ','),
+    string-join($text-items[1]/* ! local-name(.), ','),
     
-    for $section-text in $section-texts
+    for $text-item in $text-items
     return
-        string-join($section-text/* ! concat('"', replace(string(), '"', '""'), '"'), ',')
+        string-join($text-item/* ! concat('"', replace(string(), '"', '""'), '"'), ',')
 
 )

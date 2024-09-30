@@ -113,7 +113,7 @@ declare function local:output-nodes($output-nodes as node()*, $node-index as xs:
             
             let $node-location-part := 
                 if($node-location-milestone) then
-                    $local:text-outline/m:pre-processed[@type eq 'parts']//m:part[@id eq $node-location-milestone/@part-id]
+                    $local:text-outline/m:pre-processed[@type eq 'parts']//m:part[@id eq ($node-location-milestone/@label-part-id, $node-location-milestone/@part-id)[1]]
                 else 
                     $local:text-outline/m:pre-processed[@type eq 'parts']//m:part[@id eq $node-location-id]
             

@@ -164,6 +164,10 @@ declare function webflow:get-catalogue-section($section-id as xs:string) as elem
 (: webflow:patch-catalogue-section('O1JC114941JC14718') :)
 declare function webflow:patch-catalogue-section($section-id as xs:string) as element(webflow:patch-catalogue-section) {
     
+    let $tei := tei-content:tei($section-id, 'section')
+    let $webflow-item := $webflow:conf//webflow:item[@id eq $section-id]
+    where $tei and $webflow-item 
+    return
     element { QName('http://read.84000.co/webflow-api','patch-catalogue-section') } {
     
         try {
@@ -182,7 +186,6 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                     }
             ' :)
             
-            let $tei := tei-content:tei($section-id, 'section')
             let $section := section:section-tree($tei, true(), 'descendants')
             let $publications-summary := $section/eft:translation-summary[@section-id eq $section-id]/eft:publications-summary[@grouping eq 'toh'][@scope eq 'descendant']
             
@@ -190,7 +193,6 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
             let $abstract-html := $abstract ! transform:transform(*, doc(concat($common:app-path, '/xslt/tei-to-xhtml.xsl')), <parameters/>)
             let $abstract-html-string := string-join($abstract-html ! serialize(., $webflow:html5-serialization-parameters)) ! normalize-space(.) ! replace(., concat('^',functx:escape-for-regex('&lt;!DOCTYPE html&gt;'),'\s*'), '')
             
-            let $webflow-item := $webflow:conf//webflow:item[@id eq $section-id]
             let $webflow-collection := $webflow-item/parent::webflow:collection
             
             let $data := 
@@ -232,7 +234,7 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                     else ()
                 }
             
-            where $tei and $webflow-item and $data[fieldData]
+            where $data[fieldData]
             return
                 let $data-json := serialize($data, $webflow:json-serialization-parameters)
                 
