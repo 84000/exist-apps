@@ -106,6 +106,21 @@ declare function local:refresh-empty-sa-titles() {
 
 };
 
+declare function local:set-same-text-as() {
+    
+    let $translations-tei := $tei-content:translations-collection//tei:TEI[count(descendant::tei:sourceDesc/tei:bibl[@key]) gt 1]
+    (:let $translations-tei := subsequence($translations-tei, 2, 1):)
+    
+    for $bibl in $translations-tei//tei:sourceDesc/tei:bibl[@key]
+    return (
+        $bibl/tei:ref/text(),
+        util:log('INFO', concat('webflow-patch-text: ', $bibl/@key)),
+        webflow:patch-text($bibl/@key),
+        process:execute(('sleep', '0.5'), $local:exec-options) ! ()
+    )
+
+};
+
 (: Don't run if config incorrect :)
 if(not(doc('/db/apps/84000-reading-room/xslt/webpage.xsl')//xsl:variable[@name eq "local-front-end-url"][@select eq "'/frontend'"])) then (
     doc('/db/apps/84000-reading-room/xslt/webpage.xsl')//xsl:variable[@name eq "local-front-end-url"],
@@ -113,6 +128,6 @@ if(not(doc('/db/apps/84000-reading-room/xslt/webpage.xsl')//xsl:variable[@name e
 )
 
 else 
-    local:refresh-empty-sa-titles()
+    local:set-same-text-as()
     
     

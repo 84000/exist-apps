@@ -975,14 +975,15 @@
                 <xsl:with-param name="title">
                     
                     <xsl:variable name="count-files" select="count($text/m:files/m:file) + count($text/m:api-status/m:api-call)"/>
-                    <xsl:variable name="count-updates" select="count(($text/m:files/m:file[@publish], $text/m:api-status/m:api-call[@publish]))"/>
+                    <xsl:variable name="count-missing" select="count(($text/m:files/m:file[@publish][not(@timestamp[not(. = ('none',''))])], $text/m:api-status/m:api-call[@publish][not(@timestamp[not(. = ('none',''))])]))"/>
+                    <xsl:variable name="count-updates" select="count(($text/m:files/m:file[@publish], $text/m:api-status/m:api-call[@publish])) - $count-missing"/>
                     <xsl:variable name="count-manual" select="count(($text/m:files/m:file[@action eq 'manual'][not(@up-to-date)], $text/m:api-status/m:api-call[@action eq 'manual'][not(@up-to-date)]))"/>
                     <xsl:variable name="count-scheduled" select="count(($text/m:files/m:file[@action eq 'scheduled'][not(@up-to-date)], $text/m:api-status/m:api-call[@action eq 'scheduled'][not(@up-to-date)]))"/>
                     
                     <div class="center-vertical align-left">
                         
                         <span class="h4">
-                            <xsl:value-of select="'Published content'"/>
+                            <xsl:value-of select="'Publish content'"/>
                         </span>
                         
                         <span>
@@ -994,18 +995,29 @@
                     </div>
                     
                     <p class="text-muted small sml-margin top">
-                        <xsl:value-of select="'Once all revisions to a text have been completed and signed off, use these options to publish the updates to the public site'"/>
+                        <xsl:value-of select="'Once all revisions to a text have been completed and signed off, use these options to generate publication files. Updated files are be published to the public site once a day.'"/>
                     </p>
                     
                     <div class="center-vertical align-left bottom-margin">
                         
-                        <xsl:if test="$count-updates gt 0">
+                        <xsl:if test="$count-missing gt 0">
                             <span>
                                 <span class="label label-danger">
-                                    <xsl:value-of select="format-number($count-updates, '#,###')"/>
+                                    <xsl:value-of select="format-number($count-missing, '#,###')"/>
                                 </span>
                                 <span class="text-danger small">
-                                    <xsl:value-of select="($count-updates[. eq 1] ! ' file to compile and publish', ' files to compile and publish')[1]"/>
+                                    <xsl:value-of select="concat(($count-missing[. eq 1] ! ' file', ' files')[1], ' to be created')"/>
+                                </span>
+                            </span>
+                        </xsl:if>
+                        
+                        <xsl:if test="$count-updates gt 0">
+                            <span>
+                                <span class="label label-warning">
+                                    <xsl:value-of select="format-number($count-updates, '#,###')"/>
+                                </span>
+                                <span class="text-warning small">
+                                    <xsl:value-of select="concat(($count-updates[. eq 1] ! ' file', ' files')[1], ' older than the TEI timestamp')"/>
                                 </span>
                             </span>
                         </xsl:if>
@@ -1035,7 +1047,7 @@
                         <xsl:if test="$response/scheduler:job">
                             <span>
                                 <span class="label label-danger">
-                                    <xsl:value-of select="'Compiling files and publishing...'"/>
+                                    <xsl:value-of select="'Generating files and publishing...'"/>
                                 </span>
                             </span>
                             <span>
@@ -1099,16 +1111,16 @@
                             </xsl:choose>
                         </div>
                         
-                        <form method="POST" data-loading="Initiating updates...">
+                        <form method="POST" data-loading="Initiating file generation...">
                             
                             <xsl:attribute name="action" select="concat('/translation-project.html?id=', $text/@id)"/>
                             
-                            <input type="hidden" name="form-action" value="generate-files"/>
+                            <input type="hidden" name="form-action" value="publish-content"/>
                             
                             <div class="list-group accordion accordion-bordered" role="tablist" aria-multiselectable="false" id="generated-files-accordion">
                                 
                                 <!-- Translation files -->
-                                <xsl:for-each select="('translation-html', 'translation-files', 'source-html', 'glossary-html', 'glossary-files', 'publications-list')">
+                                <xsl:for-each select="('translation-html', 'translation-files', 'source-html', 'glossary-html')">
                                     
                                     <xsl:variable name="files-group-name" select="."/>
                                     <xsl:variable name="files-group" select="$text/m:files/m:file[@group eq $files-group-name]"/>
@@ -1139,25 +1151,16 @@
                                                     <span>
                                                         <xsl:choose>
                                                             <xsl:when test="$files-group-name eq 'translation-html'">
-                                                                <xsl:value-of select="'Translation HTML pages'"/>
+                                                                <xsl:value-of select="'Translation pages'"/>
                                                             </xsl:when>
                                                             <xsl:when test="$files-group-name eq 'translation-files'">
                                                                 <xsl:value-of select="'Translation files (PDF, EPUB etc.)'"/>
                                                             </xsl:when>
                                                             <xsl:when test="$files-group-name eq 'source-html'">
-                                                                <xsl:value-of select="'Source HTML pages'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$files-group-name eq 'catalogue-html'">
-                                                                <xsl:value-of select="'Catalogue sections HTML pages'"/>
+                                                                <xsl:value-of select="'Source pages'"/>
                                                             </xsl:when>
                                                             <xsl:when test="$files-group-name eq 'glossary-html'">
-                                                                <xsl:value-of select="'Glossary HTML pages'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$files-group-name eq 'glossary-files'">
-                                                                <xsl:value-of select="'Combined glossary files'"/>
-                                                            </xsl:when>
-                                                            <xsl:when test="$files-group-name eq 'publications-list'">
-                                                                <xsl:value-of select="'Publications listings'"/>
+                                                                <xsl:value-of select="'Glossary pages'"/>
                                                             </xsl:when>
                                                             <xsl:otherwise>
                                                                 <xsl:value-of select="concat($files-group-name, ' pages')"/>
@@ -1170,22 +1173,17 @@
                                                         </span>
                                                     </span>
                                                     <xsl:choose>
-                                                        <xsl:when test="not($files-group[@publish])">
-                                                            <span>
-                                                                <input type="hidden" name="exclude-file-group[]" value="{ $files-group-name }"/>
-                                                            </span>
-                                                        </xsl:when>
-                                                        <xsl:when test="not($files-group-name = ('translation-html'))">
+                                                        <xsl:when test="$files-group[@publish]">
                                                             <span>
                                                                 <div class="checkbox-inline">
-                                                                    <label>
-                                                                        <input type="checkbox" name="exclude-file-group[]" value="{ $files-group-name }">
+                                                                    <label class="small text-danger">
+                                                                        <input type="checkbox" name="publish-file-group[]" value="{ $files-group-name }">
                                                                             <xsl:if test="$response/scheduler:job">
                                                                                 <xsl:attribute name="disabled" select="'disabled'"/>
                                                                                 <xsl:attribute name="class" select="'disabled'"/>
                                                                             </xsl:if>
                                                                         </input>
-                                                                        <xsl:value-of select="'exclude'"/>
+                                                                        <xsl:value-of select="' include'"/>
                                                                     </label>
                                                                 </div>
                                                             </span>
@@ -1205,23 +1203,114 @@
                                     
                                 </xsl:for-each>
                                 
+                            </div>
+                            
+                            <div class="bottom-margin text-right">
+                                <xsl:choose>
+                                    <xsl:when test="$text/m:files/m:file[@group = ('translation-html', 'translation-files', 'source-html', 'glossary-html')][@publish]">
+                                        <button type="submit" class="btn btn-danger">
+                                            <xsl:if test="$response/scheduler:job">
+                                                <xsl:attribute name="class" select="'btn btn-danger disabled'"/>
+                                                <xsl:attribute name="disabled" select="'disabled'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Generate files'"/>
+                                        </button>
+                                    </xsl:when>
+                                </xsl:choose>
+                            </div>
+                            
+                        </form>
+                        
+                        <form method="POST" data-loading="Initiating listings update...">
+                            
+                            <xsl:attribute name="action" select="concat('/translation-project.html?id=', $text/@id)"/>
+                            
+                            <input type="hidden" name="form-action" value="publish-content"/>
+                            
+                            <div class="list-group accordion accordion-bordered" role="tablist" aria-multiselectable="false" id="publication-listings-accordion">
+                                
+                                <!-- Translation listings -->
+                                <xsl:variable name="files-group-name" select="'publications-list'"/>
+                                <xsl:variable name="files-group" select="$text/m:files/m:file[@group eq $files-group-name]"/>
+                                
+                                <xsl:if test="$files-group">
+                                    <xsl:call-template name="expand-item">
+                                        
+                                        <xsl:with-param name="accordion-selector" select="'#publication-listings-accordion'"/>
+                                        <xsl:with-param name="id" select="'publication-listings-publications-list'"/>
+                                        <xsl:with-param name="active" select="false()"/>
+                                        <xsl:with-param name="persist" select="true()"/>
+                                        
+                                        <xsl:with-param name="title">
+                                            <div class="center-vertical align-left">
+                                                <span class="icon">
+                                                    <xsl:choose>
+                                                        <xsl:when test="count($files-group[@up-to-date]) eq count($files-group)">
+                                                            <i class="fa fa-check-circle" title="Files published"/>
+                                                        </xsl:when>
+                                                        <xsl:when test="count($files-group[@action = ('scheduled','manual') or @timestamp[not(. = ('none', ''))]]) eq count($files-group)">
+                                                            <i class="fa fa-exclamation-circle" title="Updates scheduled"/>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <i class="fa fa-times-circle" title="Updates remaining"/>
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                </span>
+                                                <span>
+                                                    <xsl:value-of select="'Publication listings'"/>
+                                                </span>
+                                                <span>
+                                                    <span class="badge badge-notification badge-muted">
+                                                        <xsl:value-of select="format-number(count($files-group), '#,###')"/>
+                                                    </span>
+                                                </span>
+                                                <xsl:choose>
+                                                    <xsl:when test="$files-group[@publish]">
+                                                        <span>
+                                                            <div class="checkbox-inline">
+                                                                <label class="small text-danger">
+                                                                    <input type="checkbox" name="publish-file-group[]" value="{ $files-group-name }">
+                                                                        <xsl:if test="$response/scheduler:job">
+                                                                            <xsl:attribute name="disabled" select="'disabled'"/>
+                                                                            <xsl:attribute name="class" select="'disabled'"/>
+                                                                        </xsl:if>
+                                                                    </input>
+                                                                    <xsl:value-of select="' include'"/>
+                                                                </label>
+                                                            </div>
+                                                        </span>
+                                                    </xsl:when>
+                                                </xsl:choose>
+                                            </div>
+                                        </xsl:with-param>
+                                        
+                                        <xsl:with-param name="content">
+                                            <xsl:call-template name="status-table">
+                                                <xsl:with-param name="items" select="$files-group"/>
+                                            </xsl:call-template>
+                                        </xsl:with-param>
+                                        
+                                    </xsl:call-template>
+                                </xsl:if>
+                                
                                 <!-- API status -->
                                 <xsl:variable name="api-calls" select="$text/m:api-status/m:api-call[@type eq 'webflow-api']"/>
                                 <xsl:call-template name="expand-item">
                                     
-                                    <xsl:with-param name="accordion-selector" select="'#generated-files-accordion'"/>
-                                    <xsl:with-param name="id" select="'webflow-cms-api'"/>
+                                    <xsl:with-param name="accordion-selector" select="'#publication-listings-accordion'"/>
+                                    <xsl:with-param name="id" select="'publication-listings-webflow-api'"/>
                                     <xsl:with-param name="active" select="false()"/>
                                     <xsl:with-param name="persist" select="true()"/>
                                     
                                     <xsl:with-param name="title">
                                         <div class="center-vertical align-left">
+                                            
                                             <span class="icon">
                                                 <xsl:choose>
                                                     <xsl:when test="count($api-calls[@up-to-date]) eq count($api-calls)">
                                                         <i class="fa fa-check-circle" title="Updates published"/>
                                                     </xsl:when>
-                                                    <xsl:when test="count($api-calls[@action eq 'scheduled' or @up-to-date]) eq count($api-calls)">
+                                                    <xsl:when test="count($api-calls[@action eq 'scheduled' or @timestamp[not(. = ('none', ''))]]) eq count($api-calls)">
                                                         <i class="fa fa-exclamation-circle" title="Updates scheduled"/>
                                                     </xsl:when>
                                                     <xsl:otherwise>
@@ -1229,35 +1318,33 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </span>
+                                            
                                             <span>
                                                 <xsl:value-of select="'Webflow CMS updates'"/>
                                             </span>
+                                            
                                             <span>
                                                 <span class="badge badge-notification badge-muted">
                                                     <xsl:value-of select="format-number(count($api-calls), '#,###')"/>
                                                 </span>
                                             </span>
+                                            
                                             <xsl:choose>
                                                 <xsl:when test="not($api-calls[@publish])">
                                                     <span>
-                                                        <input type="hidden" name="exclude-file-group[]" value="webflow-api"/>
-                                                    </span>
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    <span>
                                                         <div class="checkbox-inline">
-                                                            <label>
-                                                                <input type="checkbox" name="exclude-file-group[]" value="webflow-api">
+                                                            <label class="small text-danger">
+                                                                <input type="checkbox" name="publish-file-group[]" value="webflow-api">
                                                                     <xsl:if test="$response/scheduler:job">
                                                                         <xsl:attribute name="disabled" select="'disabled'"/>
                                                                         <xsl:attribute name="class" select="'disabled'"/>
                                                                     </xsl:if>
                                                                 </input>
-                                                                <xsl:value-of select="'exclude'"/>
+                                                                <xsl:value-of select="' include'"/>
                                                             </label>
                                                         </div>
                                                     </span>
-                                                </xsl:otherwise>
+                                                </xsl:when>
                                             </xsl:choose>
                                             
                                         </div>
@@ -1273,18 +1360,16 @@
                                 
                             </div>
                             
-                            <div class="center-vertical align-right">
+                            <div class="bottom-margin text-right">
                                 <xsl:choose>
-                                    <xsl:when test="($text/m:files/m:file[@publish], $text/m:api-status/m:api-call[@publish])">
-                                        <span>
-                                            <button type="submit" class="btn btn-danger">
-                                                <xsl:if test="$response/scheduler:job">
-                                                    <xsl:attribute name="class" select="'btn btn-danger disabled'"/>
-                                                    <xsl:attribute name="disabled" select="'disabled'"/>
-                                                </xsl:if>
-                                                <xsl:value-of select="'Publish files'"/>
-                                            </button>
-                                        </span>
+                                    <xsl:when test="($text/m:files/m:file[@group eq 'publications-list'][@publish], $text/m:api-status/m:api-call[@publish])">
+                                        <button type="submit" class="btn btn-danger">
+                                            <xsl:if test="$response/scheduler:job">
+                                                <xsl:attribute name="class" select="'btn btn-danger disabled'"/>
+                                                <xsl:attribute name="disabled" select="'disabled'"/>
+                                            </xsl:if>
+                                            <xsl:value-of select="'Update listings'"/>
+                                        </button>
                                     </xsl:when>
                                 </xsl:choose>
                             </div>
@@ -1329,9 +1414,20 @@
                 <xsl:for-each select="$items">
                     <tr class="vertical-middle">
                         <td>
-                            <span class="monospace small">
-                                <xsl:value-of select="@source"/>
-                            </span>
+                            <xsl:choose>
+                                <xsl:when test="@source[. gt ''] and @target-file[. gt ''] and @target-url[. gt '']">
+                                    <a class="monospace small">
+                                        <xsl:attribute name="href" select="concat($reading-room-path, @source)"/>
+                                        <xsl:attribute name="target" select="concat('source-', @target-file)"/>
+                                        <xsl:value-of select="@source"/>
+                                    </a>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <span class="monospace small">
+                                        <xsl:value-of select="@source"/>
+                                    </span>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </td>
                         <xsl:if test="$items[@linked]">
                             <td class="icon">
@@ -1346,9 +1442,27 @@
                             </td>
                         </xsl:if>
                         <td>
-                            <span class="monospace small">
-                                <xsl:value-of select="(@target-call, string-join((@target-folder, @target-file), '/'))[1]"/>
-                            </span>
+                            <xsl:choose>
+                                <xsl:when test="@target-file[. gt ''] and @target-url[. gt '']">
+                                    <a class="monospace small">
+                                        <xsl:attribute name="href" select="@target-url"/>
+                                        <xsl:attribute name="target" select="concat('target-', @target-file)"/>
+                                        <xsl:value-of select="string-join((@target-folder, @target-file), '/')"/>
+                                    </a>
+                                </xsl:when>
+                                <xsl:when test="@target-file[. gt '']">
+                                    <span class="monospace small">
+                                        <xsl:value-of select="string-join((@target-folder, @target-file), '/')"/>
+                                    </span>
+                                </xsl:when>
+                                <xsl:when test="@target-call[. gt '']">
+                                    <span class="monospace small">
+                                        <xsl:value-of select="string-join((@target-call, @target-id), '/')"/>
+                                    </span>
+                                </xsl:when>
+                                
+                            </xsl:choose>
+                            
                         </td>
                         <td>
                             <xsl:choose>

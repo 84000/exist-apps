@@ -16,7 +16,7 @@ declare function local:check-translations() {
     (:where $text-id = ('UT22084-066-009', 'UT23703-001-001', 'UT22084-040-003'):)
     return
         for $source-key in $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key
-        let $translation-files := translation:files($tei, ((::)'translation-html'(:,'translation-files','source-html','glossary-html','glossary-files','publications-list':)), $source-key)
+        let $translation-files := translation:files($tei, ((::)'translation-html'(:,'translation-files','source-html','glossary-html','publications-list':)), $source-key)
         where $translation-files/eft:file[not(@timestamp gt '')]
         return
             concat($index, ' - ', $source-key/string())

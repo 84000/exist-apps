@@ -194,9 +194,11 @@
                                     <xsl:value-of select="$translation-summary/@document-url"/>
                                 </span>
                             </div>
-                            <div class="center-vertical align-left">
+                            <ul class="list-unstyled">
+                                
                                 <xsl:variable name="webflow-api-item" select="$webflow-api//webflow:item[@id eq $translation-summary/@section-id]"/>
-                                <span>
+                                
+                                <li>
                                     <xsl:choose>
                                         <xsl:when test="$webflow-api-item and $webflow-api-item[not(@updated gt '')]">
                                             <span class="label label-warning">
@@ -214,22 +216,25 @@
                                             </span>
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                </span>
+                                </li>
+                                
                                 <xsl:if test="$webflow-api-item[@updated ! xs:dateTime(.) lt $translation-summary/@last-modified ! xs:dateTime(.)]">
-                                    <span>
+                                    <li>
                                         <span class="label label-warning">
                                             <xsl:value-of select="concat('Latest update in this section ', (format-dateTime($translation-summary/@last-modified, '[D01] [MNn,*-3] [Y] [H01]:[m01]:[s01]'), '[unknown]')[1])"/>
                                         </span>
-                                    </span>
+                                    </li>
                                 </xsl:if>
+                                
                                 <xsl:if test="$texts-webflow-id-missing">
-                                    <span>
+                                    <li>
                                         <span class="label label-danger">
                                             <xsl:value-of select="concat(count($texts-webflow-id-missing), ' texts not linked to Webflow CMS')"/>
                                         </span>
-                                    </span>
+                                    </li>
                                 </xsl:if>
-                            </div>
+                                
+                            </ul>
                         </div>
                     </xsl:with-param>
                 </xsl:call-template>

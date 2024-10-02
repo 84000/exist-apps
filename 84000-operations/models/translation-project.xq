@@ -74,15 +74,15 @@ let $publication-status-group := tei-content:publication-status-group($tei)
 
 (: Generate new versions of associated files :)
 let $scheduled-job-name := string-join(('store-publication-files', $text-id), '-')
-let $generate-files :=
-    if($form-action eq 'generate-files' and $text-id gt '' and $store:conf)then
+let $publish-content :=
+    if($form-action eq 'publish-content' and $text-id gt '' and $store:conf)then
         
         helper:async-script(
             'store-publication-files',
             $scheduled-job-name,
             <parameters xmlns="">
                 <param name="resource-id" value="{ $text-id }"/>
-                <param name="exclude-file-group" value="{ string-join(request:get-parameter('exclude-file-group[]',''), ',') }"/>
+                <param name="publish-file-group" value="{ string-join(request:get-parameter('publish-file-group[]',''), ',') }"/>
             </parameters>
         )
             

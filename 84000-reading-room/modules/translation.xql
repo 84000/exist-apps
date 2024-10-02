@@ -75,7 +75,7 @@ declare variable $translation:stopwords := (
 
 declare variable $translation:linked-data := collection(concat($common:data-path, '/config/linked-data'));
 
-declare variable $translation:file-groups := ('translation-html','translation-files','source-html','glossary-html','glossary-files','publications-list');
+declare variable $translation:file-groups := ('translation-html','translation-files','source-html','glossary-html','publications-list');
 
 declare function translation:title($tei as element(tei:TEI), $source-key as xs:string?) as xs:string? {
     
@@ -504,12 +504,12 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             $tei//tei:sourceDesc/tei:bibl[@key]
     
     let $glossary-ids := 
-        if($publication-status-group eq 'published' and $groups = ('glossary-html','glossary-files')) then
+        if($publication-status-group eq 'published' and $groups = ('glossary-html')) then
             $tei/tei:text/tei:back/tei:div[@type eq 'glossary'][not(@status eq 'excluded')]//tei:gloss[not(@mode eq 'surfeit')]/@xml:id
         else ()
     
     let $attribution-ids := 
-        if($groups = ('glossary-html','glossary-files')) then
+        if($groups = ('glossary-html')) then
             $source-bibls ! tei-content:source($tei, @key)/m:attribution/@xml:id
         else ()
     
@@ -544,6 +544,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                             concat('/translation/', $source-key, '.pdf'),
                             concat($common:static-content-path, '/translation/', $source-key),
                             concat($source-key, '.pdf'),
+                            concat('https://84000.co/translation/', $source-key, '.pdf'),
                             $tei-timestamp
                         ),
                         
@@ -554,6 +555,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                             concat('/translation/', $source-key, '.epub'),
                             concat($common:static-content-path, '/translation/', $source-key),
                             concat($source-key, '.epub'),
+                            concat('https://84000.co/translation/', $source-key, '.epub'),
                             $tei-timestamp
                         )
                         
@@ -572,6 +574,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                                 concat('/translation/', $source-key, '.html', $commentary-key[not(. eq '_none')] ! concat('?commentary=', .)),
                                 concat($common:static-content-path, '/translation/', $source-key, $commentary-key[not(. eq '_none')] ! concat('/commentary-', .)),
                                 concat('index', '.html'),
+                                concat('https://84000.co/translation/', $source-key, $commentary-key[not(. eq '_none')] ! concat('/index/', .)),
                                 $tei-timestamp
                             ),
                             
@@ -584,6 +587,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                                     concat('/translation/', $source-key, '.html?part=', $part/@id, $commentary-key[not(. eq '_none')] ! concat('&amp;commentary=', .)),
                                     concat($common:static-content-path, '/translation/', $source-key, $commentary-key[not(. eq '_none')] ! concat('/commentary-', .)),
                                     concat($part/@id, '.html'),
+                                    concat('https://84000.co/translation/', $source-key, $commentary-key[not(. eq '_none')] ! concat('/index/', .), '#', $part/@id),
                                     $tei-timestamp
                                 )
                             
@@ -601,6 +605,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                             '/source/sitemap.xml',
                             concat($common:static-content-path, '/source'),
                             'sitemap.xml',
+                            (),
                             $tei-timestamp
                         ),
                         
@@ -613,6 +618,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                                 concat('/source/', $source-key, '.html?ref-index=', $folio/@index-in-resource),
                                 concat($common:static-content-path, '/source/', $source-key),
                                 concat('folio-', $folio/@index-in-resource, '.html'),
+                                concat('https://84000.co/source/', $source-key, '/folio/', $folio/@index-in-resource),
                                 $tei-timestamp
                             )
                         
@@ -630,6 +636,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                         concat('/translation/', $source-key, '.html'),
                         concat($common:static-content-path, '/translation/', $source-key),
                         concat('index', '.html'),
+                        concat('https://84000.co/translation/', $source-key),
                         $tei-timestamp
                     )
                 
@@ -645,6 +652,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                         concat('/translation/', $source-key, '.rdf'),
                         concat($common:static-content-path, '/rdf/translation'),
                         concat($source-key, '.rdf'),
+                        (),
                         $tei-timestamp
                     )
                 
@@ -662,6 +670,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                     concat('/translation/', $text-id, '.json?api-version=0.4.0&amp;annotate=false'),
                     concat($common:static-content-path, '/json/translation'),
                     concat($text-id, '.json'),
+                    (),
                     $tei-timestamp
                 ),
                 
@@ -673,6 +682,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                         concat('/translation/', $text-id, '.glossary-locations.xml'),
                         $glossary:cached-locations-path,
                         concat($text-id, '.xml'),
+                        (),
                         $tei-timestamp,
                         'manual'
                     )
@@ -682,122 +692,88 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             else ()
             ,
             
-            if($entities[m:entity]) then (
+            if($groups = 'glossary-html' and $entities[m:entity]) then (
                 
-                if($groups = 'glossary-html') then (
-                    
+                local:generated-file(
+                    'xml',
+                    'glossary-html',
+                    '/glossary/sitemap.xml',
+                    concat($common:static-content-path, '/glossary/named-entities'),
+                    'sitemap.xml',
+                    (),
+                    $tei-timestamp
+                ),
+                
+                (: Glossary HTML :)
+                for $entity in $entities/m:entity
+                return
                     local:generated-file(
-                        'xml',
+                        'html',
                         'glossary-html',
-                        '/glossary/sitemap.xml',
+                        concat('/glossary/', $entity/@xml:id, '.html'),
                         concat($common:static-content-path, '/glossary/named-entities'),
-                        'sitemap.xml',
-                        $tei-timestamp
-                    ),
-                    
-                    (: Glossary HTML :)
-                    for $entity in $entities/m:entity
-                    return
-                        local:generated-file(
-                            'html',
-                            'glossary-html',
-                            concat('/glossary/', $entity/@xml:id, '.html'),
-                            concat($common:static-content-path, '/glossary/named-entities'),
-                            concat($entity/@xml:id, '.html'),
-                            $tei-timestamp
-                        )
-                    
-                )
-                else ()
-                ,
-                
-                (: Glossary files :)
-                (:if($glossary-ids and $groups = 'glossary-files') then (
-                
-                    let $glossary-files := glossary:downloads()
-                    for $glossary-file in $glossary-files/m:download
-                    return 
-                        local:generated-file(
-                            $glossary-file/@type,
-                            'glossary-files',
-                            $glossary-file/@url,
-                            concat($common:static-content-path, '/glossary/combined'),
-                            concat('84000-glossary', $glossary-file/@lang-key ! concat('-',.), '.', $glossary-file/@type),
-                            $tei-timestamp,
-                            'scheduled'
-                        )
-                        
-                )
-                else ()
-                ,:)
-                
-                if($groups = 'publications-list') then (
-                    
-                    local:generated-file(
-                        'xml',
-                        'publications-list',
-                        '/translation/sitemap.xml',
-                        concat($common:static-content-path, '/translation'),
-                        'sitemap.xml',
-                        $tei-timestamp
-                    ),
-                    
-                    (: Publication manifest files :)
-                    local:generated-file(
-                        'json',
-                        'publications-list',
-                        '/.well-known/apple-app-site-association',
-                        concat($common:static-content-path, '/mobile-app'),
-                        'apple-app-site-association.json',
-                        $tei-timestamp
-                    ),
-                    
-                    local:generated-file(
-                        'json',
-                        'publications-list',
-                        '/section/all-translated.json?api-version=0.2.0',
-                        concat($common:static-content-path, '/catalogue'),
-                        'all-translated.json',
-                        $tei-timestamp
-                    ),
-                    
-                    local:generated-file(
-                        'json',
-                        'publications-list',
-                        '/section/lobby.json?api-version=0.2.0',
-                        concat($common:static-content-path, '/catalogue'),
-                        'lobby.json',
-                        $tei-timestamp
-                    ),
-                    
-                    local:generated-file(
-                        'txt',
-                        'publications-list',
-                        '/robots-public.txt',
-                        concat($common:static-content-path, '/catalogue'),
-                        'robots.txt',
+                        concat($entity/@xml:id, '.html'),
+                        concat('https://84000.co/glossary/', replace($entity/@xml:id, '^entity\-', '')),
                         $tei-timestamp
                     )
                     
                 )
-                else ()
                 
-                (:for $bibl in $tei//tei:sourceDesc/tei:bibl[@key]
-                let $source-key := $bibl/@key
-                let $catalogue-sections := tei-content:ancestors($tei, $source-key, 1)
-                return (
-                    (\: Section HTML :\)
-                    for $section in $catalogue-sections/descendant-or-self::m:parent[@type eq 'section'][not(@id eq 'LOBBY')]
-                    let $section-webflow-item := $webflow-api-config//webflow:item[@id eq $section/@id]
-                    return
-                        element file {
-                            attribute type { 'json' },
-                            attribute group {'publication-files'},
-                            attribute source { concat('/section/', $section/@id, '.json') },
-                            attribute target { concat($section/@id, '.json') },
-                            attribute timestamp { 'none' }
-                        }
-                ):)
+            else()
+            ,
+            
+            if($groups = 'publications-list') then (
+                
+                local:generated-file(
+                    'xml',
+                    'publications-list',
+                    '/translation/sitemap.xml',
+                    concat($common:static-content-path, '/translation'),
+                    'sitemap.xml',
+                    (),
+                    $tei-timestamp
+                ),
+                
+                (: Publication manifest files :)
+                local:generated-file(
+                    'json',
+                    'publications-list',
+                    '/.well-known/apple-app-site-association',
+                    concat($common:static-content-path, '/mobile-app'),
+                    'apple-app-site-association.json',
+                    (),
+                    $tei-timestamp
+                ),
+                
+                local:generated-file(
+                    'json',
+                    'publications-list',
+                    '/section/all-translated.json?api-version=0.2.0',
+                    concat($common:static-content-path, '/catalogue'),
+                    'all-translated.json',
+                    (),
+                    $tei-timestamp
+                ),
+                
+                local:generated-file(
+                    'json',
+                    'publications-list',
+                    '/section/lobby.json?api-version=0.2.0',
+                    concat($common:static-content-path, '/catalogue'),
+                    'lobby.json',
+                    (),
+                    $tei-timestamp
+                ),
+                
+                local:generated-file(
+                    'txt',
+                    'publications-list',
+                    '/robots-public.txt',
+                    concat($common:static-content-path, '/catalogue'),
+                    'robots.txt',
+                    (),
+                    $tei-timestamp
+                )
                 
             )
             else ()
@@ -805,13 +781,13 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
     
 };
 
-declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $tei-timestamp as xs:dateTime) as element(m:file) {
+declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $target-url as xs:string?, $tei-timestamp as xs:dateTime) as element(m:file) {
 
-    local:generated-file($file-type, $file-group, $source-url, $target-folder, $target-file, $tei-timestamp, ())
+    local:generated-file($file-type, $file-group, $source-url, $target-folder, $target-file, $target-url, $tei-timestamp, ())
 
 };
 
-declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $tei-timestamp as xs:dateTime, $action as xs:string?) as element(m:file) {
+declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $target-url as xs:string?, $tei-timestamp as xs:dateTime, $action as xs:string?) as element(m:file) {
     
     let $target := string-join(($target-folder, $target-file), '/')
     
@@ -834,6 +810,7 @@ declare function local:generated-file($file-type as xs:string, $file-group as xs
           attribute source { $source-url },
           attribute target-folder { $target-folder },
           attribute target-file { $target-file },
+          $target-url[. gt ''] ! attribute target-url { . },
           attribute timestamp { $file-timestamp },
           if($file-up-to-date) then attribute up-to-date { true() } else (),
           if($action = ('scheduled','manual')) then attribute action { $action } else (),
@@ -866,6 +843,7 @@ declare function translation:api-status($tei as element(tei:TEI)) as element(m:a
                     attribute source { $source-key },
                     (:attribute target { $text-webflow-item ! concat('https://api.webflow.com/v2/collections/', parent::webflow:collection/@webflow-id, '/items/', @webflow-id) },:)
                     attribute target-call { 'patch-text' },
+                    attribute target-id { $text-webflow-item/@webflow-id },
                     attribute linked { if($text-webflow-item) then true() else false() },
                     attribute timestamp { ($text-webflow-item/@updated, 'none')[1] },
                     if($text-webflow-item/@updated[xs:dateTime(.) ge $tei-timestamp]) then attribute up-to-date { true() }
@@ -882,6 +860,7 @@ declare function translation:api-status($tei as element(tei:TEI)) as element(m:a
                         attribute source { $section/@id },
                         (:attribute target { $section-webflow-item ! concat('https://api.webflow.com/v2/collections/', parent::webflow:collection/@webflow-id, '/items/', @webflow-id) },:)
                         attribute target-call { 'patch-catalogue-section' },
+                        attribute target-id { $section-webflow-item/@webflow-id },
                         attribute linked { if($section-webflow-item) then true() else false() },
                         attribute timestamp { ($section-webflow-item/@updated, 'none')[1] },
                         if($section-webflow-item/@updated[xs:dateTime(.) ge $tei-timestamp]) then attribute up-to-date { true() }

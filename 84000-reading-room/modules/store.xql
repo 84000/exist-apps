@@ -200,304 +200,6 @@ declare function store:stored-version-str($file-collection as xs:string, $file-n
     
 };
 
-(:declare function store:create($file-name as xs:string) as element() {
-    
-    let $file-name-tokenized := tokenize($file-name, '\.')
-    let $resource-id := $file-name-tokenized[1]
-    let $file-extension := lower-case($file-name-tokenized[last()])
-    
-    (\: Get TEI document version :\)
-    let $tei := tei-content:tei($resource-id, 'translation')
-    let $tei-version := tei-content:version-str($tei)
-    let $text-id := tei-content:id($tei)
-    
-    (\: Select which file types to process :\)
-    let $file-types := ('pdf', 'epub', 'rdf', 'cache', 'json')
-    let $file-types := 
-        (\: Validate the file extension :\)
-        if($file-types[. = $file-extension]) then
-            $file-extension
-        
-        (\: Default to all formats :\)
-        else
-            $file-types
-    
-    (\: Loop over Tohs if UT number is passed :\)
-    let $toh-keys := 
-        if($tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)]) then
-            (\: It's a valid Toh :\)
-            $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl[@key eq lower-case($resource-id)]/@key ! string()
-        else
-            (\: It's not a valid Toh but it got the tei so it must be a valid UT :\)
-            $tei/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl/@key ! string()
-    
-    let $updates := 
-        
-        (\: loop through one or all file types :\)
-        for $file-type in $file-types
-        return
-            if($file-type eq 'cache') then
-            
-                (\: Set the cache version number, assuming it's up to date :\)
-                let $file-name := concat($text-id, '.cache')
-                let $update-version-str := 
-                    store:store-version-str(
-                        concat($common:data-path, '/cache'), 
-                        $file-name, 
-                        $tei-version
-                    )
-                return
-                    <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', concat($common:data-path, '/cache/', $file-name)) }</stored>
-            
-            else if($file-type eq 'json') then
-                
-                let $file-path := concat($common:data-path, '/json/', $text-id, '.json')
-                return (
-                    store:store-new-json($file-path, $tei-version),
-                    deploy:push('data-json', (), concat('Sync ', $text-id, '.json'), ())
-                )
-            
-            else
-                (\: Loop through one or more Toh keys :\)
-                for $toh-key in $toh-keys
-                return
-                    
-                    if($file-type eq 'pdf') then
-                        (\:'Store new pdf':\)
-                        let $file-path := concat($common:data-path, '/pdf/', $toh-key, '.pdf')
-                        return
-                            store:store-new-pdf($file-path, $tei-version)
-                    
-                    else if($file-type eq 'epub') then
-                        (\:'Store new epub':\)
-                        let $epub-file-path := concat($common:data-path, '/epub/', $toh-key, '.epub')
-                        return 
-                            store:store-new-epub($epub-file-path, $tei-version)
-                    
-                    else if($file-type eq 'rdf') then
-                        (\:'Store new rdf':\)
-                        let $file-path := concat($common:data-path, '/rdf/', $toh-key, '.rdf')
-                        return (
-                            store:store-new-rdf($file-path, $tei-version),
-                            deploy:push('data-rdf', (), concat('Sync ', $toh-key, '.rdf'), ())
-                        )
-                        
-                    else
-                        <error xmlns="http://read.84000.co/ns/1.0">
-                            <message>{ 'Unknown file type' }</message>
-                        </error>
-                
-    return
-        <updated xmlns="http://read.84000.co/ns/1.0" update="create-file" resource-id="{ $resource-id }">
-        {
-            $updates
-        }
-        </updated>
-        
-};:)
-
-(:declare function store:store-new-pdf($file-path as xs:string, $tei-version as xs:string) as element() {
-    
-    let $pdf-config := $store:conf/m:pdfs
-    
-    return
-        if($pdf-config) then
-            
-            let $file-path-tokenized := tokenize($file-path, '/')
-            let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
-            let $file-name := lower-case($file-path-tokenized[last()])
-            let $resource-id := substring-before($file-name, '.pdf')
-            let $url := concat($pdf-config/m:pdf-source-url/text(), '/translation/', $file-name)
-            
-            (\: Get document version in data store :\)
-            let $store-version := store:stored-version-str($resource-id, 'pdf')
-            
-            return
-                if(compare($store-version, $tei-version) ne 0) then
-                    
-                    let $log := util:log('info', concat('store-new-pdf:', $file-name))
-                    
-                    let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
-                    
-                    return
-                        if(name($download) eq 'stored') then
-                            let $store-version-number := store:store-version-str($file-collection, $file-name, $tei-version)
-                            return
-                                <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
-                         
-                         else if(name($download) eq 'error') then
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('PDF generation failed: ', $download/m:message, ' (', $url, ')') }</message>
-                            </error>
-                         
-                         else
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('PDF generation failed: (', $file-path, ')') }</message>
-                            </error>
-                
-                else
-                    <error xmlns="http://read.84000.co/ns/1.0">
-                        <message>{ concat('The version of ', $file-name, ' in the store is up to date') }</message>
-                    </error>
-                    
-        else
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>{ 'PDF generation config not found' }</message>
-            </error>
-            
-};
-
-declare function store:store-new-epub($file-path as xs:string, $tei-version as xs:string) as element() {
-    
-    let $ebook-config := $store:conf/m:ebooks
-    
-    return
-        if($ebook-config) then
-        
-            let $file-path-tokenized := tokenize($file-path, '/')
-            let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
-            let $file-name := lower-case($file-path-tokenized[last()])
-            let $resource-id := substring-before($file-name, '.epub')
-            let $url := concat($ebook-config/m:epub-source-url/text(), '/translation/', $file-name)
-            
-            (\: Get document version in data store :\)
-            let $store-version := store:stored-version-str($resource-id, 'epub')
-            
-            return
-                if(compare($store-version, $tei-version) ne 0) then
-                        
-                    let $log := util:log('info', concat('store-new-epub:', $file-name))
-                    
-                    let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
-                    
-                    return
-                        if(name($download) eq 'stored') then
-                            let $store-version-number := store:store-version-str($file-collection, $file-name, $tei-version)
-                            return
-                                <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
-                                
-                        else if(name($download) eq 'error') then
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('Epub generation failed: ', $download/m:message, ' (', $file-path, ')') }</message>
-                            </error>
-                            
-                        else
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('Epub generation failed (', $url, ')') }</message>
-                            </error>
-                            
-                 else
-                    <error xmlns="http://read.84000.co/ns/1.0">
-                        <message>{ concat('The version of ', $file-name, ' in the store is up to date') }</message>
-                    </error>
-                    
-         else
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>{ 'Epub generation failed: Ebook generation config not found (', $file-path, ')' }</message>
-            </error>
-};
-
-declare function store:store-new-rdf($file-path as xs:string, $tei-version as xs:string) as element() {
-    
-    let $rdf-url := $store:conf/m:rdf-url/text()
-    
-    return
-        if($rdf-url) then
-        
-            let $file-path-tokenized := tokenize($file-path, '/')
-            let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
-            let $file-name := lower-case($file-path-tokenized[last()])
-            let $resource-id := substring-before($file-name, '.rdf')
-            let $url := concat($rdf-url, '/translation/', $file-name)
-            
-            (\: Get document version in data store :\)
-            let $store-version := store:stored-version-str($resource-id, 'rdf')
-            
-            return
-                if(compare($store-version, $tei-version) ne 0) then
-                    
-                    let $log := util:log('info', concat('store-new-rdf:', $file-name))
-                    
-                    let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
-                    return
-                        if(name($download) eq 'stored') then
-                            let $store-version-number := store:store-version-str($file-collection, $file-name, $tei-version)
-                            return
-                                <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
-                                
-                        else if(name($download) eq 'error') then
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('RDF generation failed: ', $download/m:message, '(', $url,')') }</message>
-                            </error>
-                            
-                        else
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('RDF generation failed: (', $file-path,')') }</message>
-                            </error>
-                            
-                 else
-                    <error xmlns="http://read.84000.co/ns/1.0">
-                        <message>{ concat('The version of ', $file-name, ' in the store is up to date') }</message>
-                    </error>
-                 
-         else
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>{ concat('RDF generation failed: RDF generation config not found (', $file-path,')') }</message>
-            </error>
-};
-
-declare function store:store-new-json($file-path as xs:string, $tei-version as xs:string) as element() {
-    
-    let $json-url := $store:conf/m:json-url/text()
-    
-    return
-        if($json-url) then
-        
-            let $file-path-tokenized := tokenize($file-path, '/')
-            let $file-collection := string-join(subsequence($file-path-tokenized, 1, count($file-path-tokenized) - 1), '/')
-            let $file-name := $file-path-tokenized[last()]
-            let $resource-id := substring-before($file-name, '.json')
-            let $url := concat($json-url, '/translation/', $file-name, '?annotate=false')
-            
-            (\: Get document version in data store :\)
-            let $store-version := store:stored-version-str($resource-id, 'json')
-            
-            return
-                if(compare($store-version, $tei-version) ne 0) then
-                    
-                    let $log := util:log('info', concat('store-new-json:', $file-name))
-                    
-                    let $download := store:http-download($url, $file-collection, $file-name, $store:file-group)
-                    
-                    return
-                        if(name($download) eq 'stored') then
-                            let $store-version-number := store:store-version-str($file-collection, $file-name, $tei-version)
-                            return
-                                <stored xmlns="http://read.84000.co/ns/1.0">{ concat('New version saved as ', $file-path) }</stored>
-                                
-                        else if(name($download) eq 'error') then
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('JSON generation failed: ', $download/m:message, '(', $url,')') }</message>
-                            </error>
-                            
-                        else
-                            <error xmlns="http://read.84000.co/ns/1.0">
-                                <message>{ concat('JSON generation failed: (', $file-path,')') }</message>
-                            </error>
-                 
-                 else
-                    <error xmlns="http://read.84000.co/ns/1.0">
-                        <message>{ concat('The version of ', $file-name, ' in the store is up to date') }</message>
-                    </error>
-                    
-         else
-            <error xmlns="http://read.84000.co/ns/1.0">
-                <message>{ concat('JSON generation failed: JSON generation config not found (', $json-url,')') }</message>
-            </error>
-         
-};
-:)
-
 declare function store:http-download($file-url as xs:string, $collection as xs:string, $file-name as xs:string, $permissions-group as xs:string) as item()* {
     
     try {
@@ -726,24 +428,6 @@ declare function store:store-version-str($file-name as xs:string, $tei-version a
             
 };
 
-(:declare function store:download-file-path($requested-file as xs:string) as xs:string {
-    
-    (\: Sanitize the file name i.e. toh and extension only :\)
-    
-    let $file-name := replace(lower-case($requested-file), '_.*\.', '.')
-    let $file-name-tokenized := tokenize($file-name, '\.')
-    let $resource-id := lower-case($file-name-tokenized[1])
-    let $file-extension := lower-case($file-name-tokenized[last()])
-    
-    return
-        if($file-extension = ('rdf','json')) then
-            string-join(($common:data-path, $file-extension, $file-name),'/')
-        else if($file-extension = ('pdf','epub')) then
-            string-join(($common:static-content-path, 'translation', $resource-id, $file-name),'/')
-        else ()
-        
-};:)
-
 declare function store:publication-file($tei as element(tei:TEI), $file-type as xs:string, $file-group as xs:string) {
     
     let $translation-files := translation:files($tei, $file-group, ())//m:file[@type eq $file-type]
@@ -764,48 +448,35 @@ declare function store:publication-files($tei as element(tei:TEI), $store-file-g
         <option>
             <workingDir>/{ $common:environment//m:env-vars/m:var[@id eq 'home']/text() }/</workingDir>
         </option>
-    let $commit-msg := concat('Publication: ', string-join(($text-id, $tei-version, $tei-timestamp ! format-dateTime(., '[Y0001]-[M01]-[D01] [H01]:[m01]')), ' / '))
     
     where $store:conf[@source-url]
-    return
-        let $log-request := util:log('info', concat('store-publication-files:', $text-id))
+    return (
+    
+        util:log('info', concat('store-publication-files:', $text-id)),
         
-        let $store-files :=
-            for $file in $translation-files/m:file
-            let $source-url := concat($store:conf/@source-url, $file/@source)
-            let $target-folder := $file/@target-folder
-            where $file[@publish][not(@up-to-date)][@group = $store-file-groups][not($store-file-name) or @target-file eq $store-file-name]
-            return (
-                
-                util:log('info', concat('store-publication-files:', $file/@target-file)),
-                
-                if($file[not(@action = ('scheduled','manual'))]) then
-                    store:http-download($source-url, $target-folder, $file/@target-file, $store:permissions-group)
-                else ()
-                ,
-                
-                if($file/@group = ('translation-files')) then
-                    store:store-version-str($file/@target-file, $tei-version)
-                else ()
-                ,
-                
-                process:execute(('sleep', '0.5'), $execute-options) ! ((: return empty :))
-                
-            )
-        
-        let $deploy-files := 
-            if($store-files) then (
-                deploy:push('data-static', (), $commit-msg, ()),
-                deploy:push('data-rdf', (), $commit-msg, ()),
-                deploy:push('data-json', (), $commit-msg, ()),
-                process:execute(('sleep', '0.5'), $execute-options) ! ((: return empty :))
-            )
-            else()
-        
+        for $file in $translation-files/m:file
+        let $source-url := concat($store:conf/@source-url, $file/@source)
+        let $target-folder := $file/@target-folder
+        where $file[@publish][not(@up-to-date)][@group = $store-file-groups][not($store-file-name) or @target-file eq $store-file-name]
         return (
-            $store-files,
-            $deploy-files
+            
+            util:log('info', concat('store-publication-files:', $file/@target-file)),
+            
+            if($file[not(@action = ('scheduled','manual'))]) then
+                store:http-download($source-url, $target-folder, $file/@target-file, $store:permissions-group)
+            else ()
+            ,
+            
+            if($file/@group = ('translation-files')) then
+                store:store-version-str($file/@target-file, $tei-version)
+            else ()
+            ,
+            
+            process:execute(('sleep', '0.5'), $execute-options) ! ((: return empty :))
+            
         )
+        
+    )
 };
 
 declare function store:file($collection as xs:string, $filename as xs:string, $data as item(), $mime-type as xs:string) as element() {

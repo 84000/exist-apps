@@ -544,8 +544,24 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
                         }
                     } ! serialize(.)
                 
-            }
+            },
             
+            let $other-bibls := $tei/tei:teiHeader//tei:sourceDesc/tei:bibl[@key] except $tei-bibl
+            return
+                if($other-bibls) then (
+                    for $other-bibl in $other-bibls
+                    let $other-webflow-item := $webflow:conf//webflow:item[@id eq $other-bibl/@key]
+                    where $other-webflow-item
+                    return
+                        element same-text-as {
+                            attribute json:array {'true'},
+                            $other-webflow-item/@webflow-id/string()
+                        }
+                )
+                else 
+                    element same-text-as {
+                        attribute json:array {'true'}
+                    }
         }
         
 };
