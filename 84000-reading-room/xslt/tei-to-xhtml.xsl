@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -2703,49 +2703,60 @@
                     </xsl:call-template>
                     
                     <!-- If there's a milestone add a gutter and milestone link -->
-                    <xsl:if test="$milestone and not($mode eq 'no-milestone')">
-                        
-                        <!-- Add a milestone anchor -->
-                        <xsl:variable name="milestones-pre-processed" select="key('milestones-pre-processed', $milestone/@xml:id, $root)[1]" as="element(m:milestone)?"/>
-                        <xsl:variable name="milestones-part" select="key('text-parts', ($milestones-pre-processed/@label-part-id, $milestones-pre-processed/@part-id)[1], $root)[1]" as="element(m:part)?"/>
-                        
-                        <xsl:if test="$milestones-pre-processed">
+                    <xsl:variable name="milestone-gutter" as="element(xhtml:div)?">
+                        <xsl:if test="$milestone and not($mode eq 'no-milestone')">
                             
-                            <xsl:variable name="milestone-label">
-                                <xsl:call-template name="bookmark-label">
-                                    <xsl:with-param name="prefix" select="($milestones-part/@prefix, '?')[1]"/>
-                                    <xsl:with-param name="index" select="($milestones-pre-processed/@label, $milestones-pre-processed/@index)[1]"/>
-                                </xsl:call-template>
-                            </xsl:variable>
+                            <!-- Add a milestone anchor -->
+                            <xsl:variable name="milestones-pre-processed" select="key('milestones-pre-processed', $milestone/@xml:id, $root)[1]" as="element(m:milestone)?"/>
+                            <xsl:variable name="milestones-part" select="key('text-parts', ($milestones-pre-processed/@label-part-id, $milestones-pre-processed/@part-id)[1], $root)[1]" as="element(m:part)?"/>
                             
-                            <div class="gtr">
-                                <xsl:choose>
-                                    
-                                    <!-- show a relative link -->
-                                    <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
+                            <xsl:if test="$milestones-pre-processed">
+                                
+                                <xsl:variable name="milestone-label">
+                                    <xsl:call-template name="bookmark-label">
+                                        <xsl:with-param name="prefix" select="($milestones-part/@prefix, '?')[1]"/>
+                                        <xsl:with-param name="index" select="($milestones-pre-processed/@label, $milestones-pre-processed/@index)[1]"/>
+                                    </xsl:call-template>
+                                </xsl:variable>
+                                
+                                <div class="gtr">
+                                    <xsl:choose>
                                         
-                                        <xsl:call-template name="bookmark-link">
-                                            <xsl:with-param name="bookmark-target-hash" select="$milestone/@xml:id"/>
-                                            <xsl:with-param name="bookmark-target-part" select="$milestones-part/@id"/>
-                                            <xsl:with-param name="bookmark-label" select="$milestone-label"/>
-                                            <xsl:with-param name="link-class" select="'milestone from-tei'"/>
-                                        </xsl:call-template>
+                                        <!-- show a relative link -->
+                                        <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
+                                            
+                                            <xsl:call-template name="bookmark-link">
+                                                <xsl:with-param name="bookmark-target-hash" select="$milestone/@xml:id"/>
+                                                <xsl:with-param name="bookmark-target-part" select="$milestones-part/@id"/>
+                                                <xsl:with-param name="bookmark-label" select="$milestone-label"/>
+                                                <xsl:with-param name="link-class" select="'milestone from-tei'"/>
+                                            </xsl:call-template>
+                                            
+                                        </xsl:when>
                                         
-                                    </xsl:when>
-                                    
-                                    <!-- or just the text -->
-                                    <xsl:otherwise>
+                                        <!-- or just the text -->
+                                        <xsl:otherwise>
+                                            
+                                            <xsl:value-of select="$milestone-label"/>
+                                            
+                                        </xsl:otherwise>
                                         
-                                        <xsl:value-of select="$milestone-label"/>
-                                        
-                                    </xsl:otherwise>
-                                    
-                                </xsl:choose>
-                            </div>
+                                    </xsl:choose>
+                                </div>
+                                
+                            </xsl:if>
                             
                         </xsl:if>
-                        
-                    </xsl:if>
+                    </xsl:variable>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$milestone-gutter">
+                            <xsl:sequence select="$milestone-gutter"/>
+                        </xsl:when>
+                        <!--<xsl:otherwise>
+                            <xsl:attribute name="data-section-index" select="string-join($element/ancestor::m:part[not(@type eq 'translation')][@section-index gt ''] ! (@prefix, @section-index)[1], '-')"/>
+                        </xsl:otherwise>-->
+                    </xsl:choose>
                     
                     <!-- Output the content -->
                     <xsl:sequence select="$content"/>
@@ -2801,35 +2812,48 @@
                         <xsl:with-param name="node" select="$part"/>
                     </xsl:call-template>
                     
+                    <xsl:attribute name="data-head-type" select="$head/@type"/>
+                    
                     <!-- Add a milestone .gtr -->
-                    <xsl:if test="$part[@prefix]">
-                        <div class="gtr">
-                            <xsl:choose>
-                                
-                                <!-- show a link -->
-                                <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))] and $part[@id]">
-                                    <xsl:call-template name="bookmark-link">
-                                        <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
-                                        <xsl:with-param name="bookmark-target-part" select="$part/@id"/>
-                                        <xsl:with-param name="bookmark-label">
-                                            <xsl:call-template name="bookmark-label">
-                                                <xsl:with-param name="prefix" select="$part/@prefix"/>
-                                            </xsl:call-template>
-                                        </xsl:with-param>
-                                        <xsl:with-param name="bookmark-title" select="$head/data()"/>
-                                    </xsl:call-template>
-                                </xsl:when>
-                                
-                                <!-- or just the text -->
-                                <xsl:otherwise>
-                                    <xsl:call-template name="bookmark-label">
-                                        <xsl:with-param name="prefix" select="$part/@prefix"/>
-                                    </xsl:call-template>
-                                </xsl:otherwise>
-                                
-                            </xsl:choose>
-                        </div>
-                    </xsl:if>
+                    <xsl:variable name="milestone-gutter" as="element(xhtml:div)?">
+                        <xsl:if test="$part[@prefix]">
+                            <div class="gtr">
+                                <xsl:choose>
+                                    
+                                    <!-- show a link -->
+                                    <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))] and $part[@id]">
+                                        <xsl:call-template name="bookmark-link">
+                                            <xsl:with-param name="bookmark-target-hash" select="$part/@id"/>
+                                            <xsl:with-param name="bookmark-target-part" select="$part/@id"/>
+                                            <xsl:with-param name="bookmark-label">
+                                                <xsl:call-template name="bookmark-label">
+                                                    <xsl:with-param name="prefix" select="$part/@prefix"/>
+                                                </xsl:call-template>
+                                            </xsl:with-param>
+                                            <xsl:with-param name="bookmark-title" select="$head/data()"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    
+                                    <!-- or just the text -->
+                                    <xsl:otherwise>
+                                        <xsl:call-template name="bookmark-label">
+                                            <xsl:with-param name="prefix" select="$part/@prefix"/>
+                                        </xsl:call-template>
+                                    </xsl:otherwise>
+                                    
+                                </xsl:choose>
+                            </div>
+                        </xsl:if>
+                    </xsl:variable>
+                    
+                    <xsl:choose>
+                        <xsl:when test="$milestone-gutter">
+                            <xsl:sequence select="$milestone-gutter"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="data-section-index" select="string-join($head/ancestor::m:part[not(@type eq 'translation')][@section-index gt ''] ! (@prefix, @section-index)[1], '-')"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     
                     <xsl:call-template name="quotes-inbound">
                         <xsl:with-param name="location-id" select="$part/@id"/>

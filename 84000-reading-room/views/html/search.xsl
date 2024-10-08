@@ -5,7 +5,7 @@
     
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="url-resource" select="if($request/@template eq 'embedded' and $request/@search-type eq 'tm') then '/search-tm-embedded.html' else '/search.html'"/>
-    <xsl:variable name="base-url" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
+    <xsl:variable name="base-url" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), $request[@search-glossary gt ''] ! concat('search-glossary=', @search-glossary), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
     <xsl:variable name="specified-text" select="/m:response/m:tei-search/m:request/m:header"/>
     
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>

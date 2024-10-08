@@ -599,16 +599,6 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                     
                     if($groups = 'source-html') then (
                         
-                        local:generated-file(
-                            'xml',
-                            'source-html',
-                            '/source/sitemap.xml',
-                            concat($common:static-content-path, '/source'),
-                            'sitemap.xml',
-                            (),
-                            $tei-timestamp
-                        ),
-                        
                         (: Source HTML :)
                         for $folio in $source-folios
                         return
@@ -659,7 +649,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                 )
                 else ()
                 
-            ),
+            ), (:end of $source-key loop:)
             
             if($groups = 'translation-files') then (
             
@@ -692,17 +682,20 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             else ()
             ,
             
-            if($groups = 'glossary-html' and $entities[m:entity]) then (
-                
+            if($groups = 'source-html' and $publication-status-group eq 'published') then 
                 local:generated-file(
                     'xml',
-                    'glossary-html',
-                    '/glossary/sitemap.xml',
-                    concat($common:static-content-path, '/glossary/named-entities'),
+                    'source-html',
+                    '/source/sitemap.xml',
+                    concat($common:static-content-path, '/source'),
                     'sitemap.xml',
                     (),
                     $tei-timestamp
-                ),
+                )
+            else ()
+            ,
+            
+            if($groups = 'glossary-html' and $entities[m:entity]) then (
                 
                 (: Glossary HTML :)
                 for $entity in $entities/m:entity
@@ -716,9 +709,19 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                         concat('https://84000.co/glossary/', replace($entity/@xml:id, '^entity\-', '')),
                         $tei-timestamp
                     )
-                    
+                ,
+                
+                local:generated-file(
+                    'xml',
+                    'glossary-html',
+                    '/glossary/sitemap.xml',
+                    concat($common:static-content-path, '/glossary/named-entities'),
+                    'sitemap.xml',
+                    (),
+                    $tei-timestamp
                 )
                 
+            )
             else()
             ,
             

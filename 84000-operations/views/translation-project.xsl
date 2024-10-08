@@ -62,7 +62,7 @@
                             <span class="small">
                                 <xsl:value-of select="'TEI version: '"/>
                             </span>
-                            <span class="label label-info monospace">
+                            <span class="label label-default monospace">
                                 <xsl:value-of select="if($text[@tei-version gt '']) then $text/@tei-version else '[none]'"/>
                             </span>
                         </span>
@@ -1000,6 +1000,28 @@
                     
                     <div class="center-vertical align-left bottom-margin">
                         
+                        <span>
+                            <xsl:choose>
+                                <xsl:when test="$text/m:files/@tei-timestamp[not(. = ('none', ''))]">
+                                    <span class="label label-default">
+                                        <span class="monospace">
+                                            <xsl:value-of select="format-dateTime($text/m:files/@tei-timestamp, '[D01] [MNn,*-3] [Y0001] [H01]:[m01]')"/>
+                                        </span>
+                                    </span>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <span class="label label-default">
+                                        <span class="monospace">
+                                            <xsl:value-of select="'[unknown]'"/>
+                                        </span>
+                                    </span>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <span class="small">
+                                <xsl:value-of select="' TEI timestamp'"/>
+                            </span>
+                        </span>
+                        
                         <xsl:if test="$count-missing gt 0">
                             <span>
                                 <span class="label label-danger">
@@ -1069,47 +1091,28 @@
                     <div>
                         
                         <xsl:if test="$text/m:files[@glossary-locations-timestamp[. gt '']][@glossary-locations-timestamp ! xs:dateTime(.) lt @tei-timestamp ! xs:dateTime(.)]">
-                            <div class="center-vertical align-left">
-                                <span class="icon">
-                                    <i class="fa fa-exclamation-circle" title="Warning"/>
-                                </span>
+                            <div class="center-vertical align-left bottom-margin">
                                 <span>
+                                    <span class="label label-warning">
+                                        <span class="monospace">
+                                            <xsl:value-of select="format-dateTime($text/m:files/@glossary-locations-timestamp, '[D01] [MNn,*-3] [Y0001] [H01]:[m01]')"/>
+                                        </span>
+                                    </span>
                                     <span class="text-warning small">
-                                        <xsl:value-of select="concat('The TEI has been updated since the last glossary locations cache (', format-dateTime($text/m:files/@glossary-locations-timestamp, '[D01] [MNn,*-3] [Y0001] [H01]:[m01]'), '). Consider re-caching the glossary locations.')"/>
+                                        <xsl:value-of select="' glossary locations cache timestamp'"/>
                                     </span>
                                 </span>
                                 <span>
+                                    <span class="text-warning small">
+                                        <xsl:value-of select="'Consider re-caching the glossary locations: '"/>
+                                    </span>
                                     <a class="underline small" target="84000-glossary-editor">
                                         <xsl:attribute name="href" select="concat('/edit-glossary.html?resource-id=', $text/@id)"/>
-                                        <xsl:value-of select="'Glossary editor'"/>
+                                        <xsl:value-of select="'open glossary editor'"/>
                                     </a>
                                 </span>
                             </div>
                         </xsl:if>
-                        
-                        <!--<hr class="sml-margin"/>-->
-                        
-                        <div class="sml-margin top bottom text-right">
-                            <span class="small">
-                                <xsl:value-of select="'TEI timestamp: '"/>
-                            </span>
-                            <xsl:choose>
-                                <xsl:when test="$text/m:files/@tei-timestamp[not(. = ('none', ''))]">
-                                    <span class="label label-info">
-                                        <span class="monospace">
-                                            <xsl:value-of select="format-dateTime($text/m:files/@tei-timestamp, '[D01] [MNn,*-3] [Y0001] [H01]:[m01]')"/>
-                                        </span>
-                                    </span>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <span class="label label-default">
-                                        <span class="monospace">
-                                            <xsl:value-of select="'[unknown]'"/>
-                                        </span>
-                                    </span>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </div>
                         
                         <form method="POST" data-loading="Initiating file generation...">
                             
@@ -1221,6 +1224,12 @@
                             
                         </form>
                         
+                        <hr class="sml-margin"/>
+                        
+                        <p class="text-muted small">
+                            <xsl:value-of select="'Once you have confirmed that the target server has been updated, use the options below to activate the publication on the website, app and in search engines.'"/>
+                        </p>
+                        
                         <form method="POST" data-loading="Initiating listings update...">
                             
                             <xsl:attribute name="action" select="concat('/translation-project.html?id=', $text/@id)"/>
@@ -1330,7 +1339,7 @@
                                             </span>
                                             
                                             <xsl:choose>
-                                                <xsl:when test="not($api-calls[@publish])">
+                                                <xsl:when test="$api-calls[@publish]">
                                                     <span>
                                                         <div class="checkbox-inline">
                                                             <label class="small text-danger">
