@@ -27,6 +27,12 @@ declare variable $source:tengyur-work := 'UT23703';
 declare variable $source:etengyur-path := string-join(($source:source-data-path, $source:tengyur-work), '/');
 declare variable $source:etengyur-volume-offset := 316;
 
+declare function source:work-name($work as xs:string) as xs:string {
+    if($work eq $source:kangyur-work) then 'kangyur' 
+    else if($work eq $source:tengyur-work) then 'tengyur'
+    else 'unknown'
+};
+
 declare function source:etext-path($work as xs:string) as xs:string {
     if($work eq $source:kangyur-work) then
         $source:ekangyur-path

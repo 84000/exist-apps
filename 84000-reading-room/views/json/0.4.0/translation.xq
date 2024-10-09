@@ -4,15 +4,17 @@ declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
-declare namespace json="http://www.json.org";
+declare namespace json = "http://www.json.org";
 
 import module namespace common = "http://read.84000.co/common" at "../../../modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../../modules/tei-content.xql";
 import module namespace translation = "http://read.84000.co/translation" at "../../../modules/translation.xql";
 import module namespace glossary = "http://read.84000.co/glossary" at "../../../modules/glossary.xql";
+import module namespace source = "http://read.84000.co/source" at "../../../modules/source.xql";
 import module namespace eft-json = "http://read.84000.co/json" at "../eft-json.xql";
 import module namespace json-types = "http://read.84000.co/json-types" at "../types.xql";
-import module namespace functx="http://www.functx.com";
+import module namespace json-types-v = "http://read.84000.co/json-types/0.4.0" at "types.xql"; (: variations to json-types for this version :)
+import module namespace functx = "http://www.functx.com";
 
 declare option output:method "json";
 declare option output:media-type "application/json";
@@ -196,7 +198,9 @@ let $work-annotations :=
     )
     else ()
 
-let $work := json-types:work($local:api-version, $local:text-id, 'eft:translation', $work-titles, (), (), $work-annotations, $local:annotate)
+let $source-works := $local:translation/tei:bibl/tei:location/@work ! source:work-name(.)
+
+let $work := json-types-v:work($local:api-version, $local:text-id, $source-works, $work-titles, (), (), $work-annotations, $local:annotate)
 
 return
     element translation {

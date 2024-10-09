@@ -17,19 +17,27 @@ declare variable $local:exOptions :=
     <option>
         <workingDir>{ $common:environment//eft:backup-conf/@exist-path/string() }/</workingDir>
     </option>;
+declare variable $local:sync-path := $common:environment//eft:git-config/eft:push/eft:repo[@id eq 'data-json']/@path/string();
 
-for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc[tei:sourceDesc/tei:bibl[@key = ('toh21')]]/tei:publicationStmt/tei:availability/@status = $translation:published-status-ids]
-let $text-id := tei-content:id($tei)
-let $target-file-name := concat($text-id, '.', $local:file-type)
-let $tei-version := tei-content:version-str($tei)
-let $source-url := concat($store:conf/@source-url, '/translation/', $text-id, '.json?api-version=0.4.0&amp;annotate=false')
-let $target-file-name := concat($text-id, '.', $local:file-type)
-return (
+if($store:conf[@source-url] and $local:sync-path) then (
+
+    for $tei in $local:tei//tei:TEI[tei:teiHeader/tei:fileDesc[tei:sourceDesc/tei:bibl[@key = ('toh1-1')]]/tei:publicationStmt/tei:availability/@status = $translation:published-status-ids]
+    let $text-id := tei-content:id($tei)
+    let $target-file-name := concat($text-id, '.', $local:file-type)
+    let $tei-version := tei-content:version-str($tei)
+    let $source-url := concat($store:conf/@source-url, '/translation/', $text-id, '.json?api-version=0.4.0&amp;annotate=false')
+    let $target-file-name := concat($text-id, '.', $local:file-type)
+    return (
+        
+        $source-url || ' / ' || $tei-version,
+        util:log('info', concat('generate-published-json(', $source-url, ')')),
+        store:http-download($source-url, $local:target-collection, $target-file-name, $store:permissions-group),
+        store:store-version-str($target-file-name, $tei-version),
+        process:execute(('sleep', '1'), $local:exOptions)
+        
+    ),
     
-    $source-url || ' / ' || $tei-version,
-    util:log('info', concat('generate-published-json(', $source-url, ')')),
-    store:http-download($source-url, $local:target-collection, $target-file-name, $store:permissions-group),
-    store:store-version-str($target-file-name, $tei-version),
-    process:execute(('sleep', '2'), $local:exOptions)
+    file:sync($local:target-collection, $local:sync-path, ())
     
 )
+else ()
