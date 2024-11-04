@@ -526,15 +526,18 @@ declare function tei-content:version-date($tei as element(tei:TEI)) as xs:string
 
 (: The full version string :)
 declare function tei-content:version-str($tei as element(tei:TEI)) as xs:string {
+    ($tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition ! tei-content:edition-str(.), '')[1]
+};
+declare function tei-content:edition-str($edition as element(tei:edition)) as xs:string {
     replace(
         replace(
             normalize-space(
                 string-join(
-                    $tei/tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition//text()   (: Get all text :)
-                , ' ')                                          (: Make sure they don't concatenate :)
-            )                                                   (: Normalize the whitespace :)
-        , '[^a-zA-Z0-9\s\.]', '')                               (: Remove all but the alpanumeric, points and spaces :)
-    , '\s', '-')                                                (: Replace the spaces with hyphens :)
+                    $edition//text()   (: Get all text :)
+                , ' ')                 (: Make sure they don't concatenate :)
+            )                          (: Normalize the whitespace :)
+        , '[^a-zA-Z0-9\s\.]', '')      (: Remove all but the alpanumeric, points and spaces :)
+    , '\s', '-')                       (: Replace the spaces with hyphens :)
 };
 
 declare function tei-content:end-notes-pre-processed($tei as element(tei:TEI)) as element(m:pre-processed) {

@@ -196,7 +196,7 @@ declare function store:stored-version-str($file-collection as xs:string, $file-n
         if($file-exists and $file-version) then
             $file-version/@version
         else
-            '0'
+            ''
     
 };
 
@@ -411,13 +411,20 @@ declare function store:create-missing-collection($collection as xs:string) as xs
 };
 
 declare function store:store-version-str($file-name as xs:string, $tei-version as xs:string) as element()? {
+    store:store-version-str($file-name, $tei-version, ())
+};
+
+declare function store:store-version-str($file-name as xs:string, $tei-version as xs:string, $status as xs:string?) as element()? {
     
     let $current := $store:file-versions/m:file-version[@file-name eq $file-name]
+    
     let $new :=
-        <file-version xmlns="http://read.84000.co/ns/1.0" 
-            timestamp="{ current-dateTime() }"
-            file-name="{ $file-name }"
-            version="{ $tei-version }"/>
+        element { QName('http://read.84000.co/ns/1.0', 'file-version') }{
+            attribute timestamp { current-dateTime() },
+            attribute file-name { $file-name },
+            attribute version { $tei-version },
+            $status ! attribute status { . }
+        }
     
     where $store:file-versions
     return
@@ -443,6 +450,7 @@ declare function store:publication-files($tei as element(tei:TEI), $store-file-g
     let $text-id := tei-content:id($tei)
     let $tei-version := tei-content:version-str($tei)
     let $tei-timestamp := tei-content:last-modified($tei)
+    let $publication-status := ($tei//tei:publicationStmt/tei:availability/@status[. gt '']/string(), '')[1]
     let $translation-files := translation:files($tei, $store-file-groups, ())
     let $execute-options := 
         <option>
@@ -468,7 +476,7 @@ declare function store:publication-files($tei as element(tei:TEI), $store-file-g
             ,
             
             if($file/@group = ('translation-files')) then
-                store:store-version-str($file/@target-file, $tei-version)
+                store:store-version-str($file/@target-file, $tei-version, $publication-status)
             else ()
             ,
             

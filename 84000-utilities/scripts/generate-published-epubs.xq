@@ -31,7 +31,7 @@ let $missing-file-maps :=
         let $file-map := map:put($file-map, 'file-version', $file-version)
         let $file-map := map:put($file-map, 'tei-version', $tei-version-str)
         (: Check if there's an existing file-version :)
-        where not($file-version gt '0')
+        where not($file-version gt '')
         return 
             $file-map
 
@@ -40,5 +40,5 @@ for $file-map at $index in $missing-file-maps
 where $index le 10
 return (
     (:$file-map('file-path') || ' - ' || $file-map('file-version') || ' - ' || $file-map('tei-version'),:)
-    store:store-new-epub($file-map('file-path'), $file-map('tei-version'))
+    (:store:store-new-epub($file-map('file-path'), $file-map('tei-version')):)
 )

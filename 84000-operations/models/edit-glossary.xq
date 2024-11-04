@@ -216,7 +216,6 @@ return
                 attribute first-record { $first-record },
                 attribute max-records { $max-records },
                 attribute records-assigned-entities { count($glossary-entities-assigned) },
-                attribute tei-version-cached { store:stored-version-str(concat($common:data-path, '/cache'), concat($resource-id, '.cache')) },
                 
                 $tei//tei:div[@type eq 'glossary']/@status,
                 

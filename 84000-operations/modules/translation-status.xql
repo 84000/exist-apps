@@ -257,7 +257,7 @@ declare function translation-status:glossary-count($tei as element(tei:TEI)) as 
     local:translation-status-value($tei, 'glossary-count')
 };
 
-declare function local:translation-status-value($tei as element(tei:TEI), $name as xs:string) {
+declare function local:translation-status-value($tei as element(tei:TEI), $key as xs:string) {
 
     let $text-id := tei-content:id($tei)
     let $tei-version-str := tei-content:version-str($tei)
@@ -267,12 +267,11 @@ declare function local:translation-status-value($tei as element(tei:TEI), $name 
     
     let $cached-count := 
         if($translation-status) then 
-            if($name eq 'word-count') then
+            if($key eq 'word-count') then
                 $translation-status/@word-count 
-            else if($name eq 'glossary-count') then
+            else if($key eq 'glossary-count') then
                 $translation-status/@glossary-count 
-            else
-                0
+            else 0
         else ''
     
     return
@@ -281,12 +280,11 @@ declare function local:translation-status-value($tei as element(tei:TEI), $name 
         else
             let $create-new-translation-status := translation-status:update($text-id)
             return
-                if($name eq 'word-count') then
+                if($key eq 'word-count') then
                     $create-new-translation-status//m:text/@word-count 
-                else if($name eq 'glossary-count') then
+                else if($key eq 'glossary-count') then
                     $create-new-translation-status//m:text/@glossary-count 
-                else
-                    0
+                else 0
 };
 
 declare function translation-status:update($text-id as xs:string) as element()? {

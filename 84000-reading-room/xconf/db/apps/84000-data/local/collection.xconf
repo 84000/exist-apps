@@ -1,21 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<collection xmlns="http://exist-db.org/collection-config/1.0">
     
     <!-- /db/apps/84000-data/local/ -->
     
-    <index xmlns:m="http://read.84000.co/ns/1.0">
+    <index xmlns:eft="http://read.84000.co/ns/1.0" xmlns:webflow="http://read.84000.co/webflow-api" xmlns:xs="http://www.w3.org/2001/XMLSchema">
         
         <!-- Range indexes -->
         <range>
             
             <!-- file-versions.xml -->
-            <create qname="@file-name" type="xs:string"/>
-            <create qname="@version" type="xs:string"/>
+            <create qname="eft:file-version">
+                <field name="file-version-name" match="@file-name" type="xs:string"/>
+                <field name="file-version-version" match="@version" type="xs:string"/>
+                <field name="file-version-status" match="@status" type="xs:string"/>
+                <field name="file-version-timestamp" match="@timestamp" type="xs:dateTime"/>
+            </create>
             
             <!-- translation-status.xml -->
-            <create qname="@text-id" type="xs:string"/>
-            <create qname="@status-id" type="xs:string"/>
-            <create qname="@date-time" type="xs:dateTime"/>
+            <create qname="eft:text">
+                <field name="translation-status-text" match="@text-id" type="xs:string"/>
+                <field name="translation-status-version" match="@version" type="xs:string"/>
+            </create>
+            <create qname="eft:target-date">
+                <field name="target-date-status" match="@status-id" type="xs:string"/>
+                <field name="target-date-target" match="@date-time" type="xs:dateTime"/>
+            </create>
+            
+            <!-- webflow-api.xml -->
+            <create qname="webflow:item">
+                <field name="webflow-item-id" match="@id" type="xs:string"/>
+                <field name="webflow-item-version" match="@version" type="xs:string"/>
+                <field name="webflow-item-status" match="@status" type="xs:string"/>
+                <field name="webflow-item-timestamp" match="@updated" type="xs:dateTime"/>
+            </create>
             
         </range>
         

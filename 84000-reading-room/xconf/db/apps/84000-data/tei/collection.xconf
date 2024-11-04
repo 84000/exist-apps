@@ -33,14 +33,19 @@
                 <param name="filterGeminates" type="boolean" value="true"/>
                 <param name="lenient" type="java.lang.String" value="query"/>
             </analyzer>-->
+            
+            <!--<module uri="http://read.84000.co/tei-content" prefix="tei-content" at="../../84000-reading-room/modules/tei-content.xql"/>-->
+            
             <text match="//tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title" boost="2">
                 <field name="bo-titles" if="@xml:lang='bo'" analyzer="bo"/>
                 <!--<field name="sa-titles" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>-->
             </text>
+            
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:bibl" boost="1.5">
                 <inline qname="tei:ref"/>
                 <ignore qname="tei:biblScope"/>
             </text>
+            
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:biblScope"/>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:author" boost="1.5"/>
             <text match="//tei:teiHeader/tei:fileDesc/tei:sourceDesc//tei:editor" boost="1.5"/>
@@ -53,11 +58,17 @@
             <text match="//tei:text//tei:ab"/>
             <text match="//tei:text//tei:trailer"/>
             <text match="//tei:back//tei:bibl"/>
+            
             <text match="//tei:back//tei:gloss/tei:term">
                 <field name="bo-terms" if="@xml:lang='bo'" analyzer="bo"/>
                 <!--<field name="sa-terms" if="@xml:lang='Sa-Ltn'" analyzer="sa"/>-->
                 <field name="full-terms" analyzer="no-stopwords"/>
             </text>
+            
+            <!--<text match="//tei:teiHeader/tei:fileDesc/tei:editionStmt">
+                <field name="version-str" expression="tei-content:edition-str(tei:edition)"/>
+            </text>-->
+            
         </lucene>
         
         <range>

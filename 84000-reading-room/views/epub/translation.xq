@@ -125,7 +125,7 @@ declare function local:generate-epub() as xs:base64Binary? {
         <entry name="OEBPS/image/CC_logo.png" type="binary">{ common:epub-resource('image/CC_logo.png') }</entry>,
         for $image-url in distinct-values($data/eft:response/eft:translation/eft:part//tei:media[@mimeType eq 'image/png']/@url)[not(matches(., '^http', 'i'))]
         return
-            <entry name="OEBPS/image{ $image-url }" type="binary">{ util:binary-doc(xs:anyURI(concat($common:data-path, $image-url))) }</entry>
+            <entry name="OEBPS/image{ $image-url }" type="binary">{ util:binary-doc(xs:anyURI(concat($common:static-content-path, $image-url))) }</entry>
         ,
         <entry name="OEBPS/fonts/Jomolhari-Regular.ttf" type="binary">{ common:epub-resource('fonts/Jomolhari-Regular.ttf') }</entry>,
         <entry name="OEBPS/fonts/IndUni-P-Regular.otf" type="binary">{ common:epub-resource('fonts/IndUni-P-84000-Regular.otf') }</entry>,

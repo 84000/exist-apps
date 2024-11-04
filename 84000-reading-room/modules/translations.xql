@@ -5,6 +5,7 @@ module namespace translations="http://read.84000.co/translations";
 declare namespace o = "http://www.tbrc.org/models/outline";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace m = "http://read.84000.co/ns/1.0";
+declare namespace webflow="http://read.84000.co/webflow-api";
 
 import module namespace common="http://read.84000.co/common" at "common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "tei-content.xql";
@@ -13,9 +14,12 @@ import module namespace sponsors="http://read.84000.co/sponsors" at "sponsors.xq
 import module namespace sponsorship="http://read.84000.co/sponsorship" at "sponsorship.xql";
 import module namespace source="http://read.84000.co/source" at "source.xql";
 import module namespace entities="http://read.84000.co/entities" at "entities.xql";
+import module namespace store="http://read.84000.co/store" at "store.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $translations:total-kangyur-pages as xs:integer := 70000;
+declare variable $translations:webflow-collection := doc(string-join(($common:data-path, 'local', 'webflow-api.xml'),'/'))//webflow:collection[@id eq 'texts'];
+
 (:declare variable $translations:page-size-ranges := doc(concat($common:app-config, '/', 'page-size-ranges.xml'));:)
 
 declare function translations:work-tei($work as xs:string) as element(tei:TEI)* {
@@ -117,10 +121,13 @@ declare function translations:filtered-texts(
             $pages-upper
     
     (: Sponsorship filter :)
-    let $selected-sponsorship-group := $sponsorship:sponsorship-groups/m:group[@id eq $filter]
+    let $selected-sponsorship-filter := $sponsorship:sponsorship-groups/m:group[@id eq $filter]
     
     (: Entities filter :)
-    let $selected-entities-group := if($filter = ('entities-missing', 'entities-flagged-attention', 'using-entity-definition')) then $filter else ''
+    let $selected-entities-filter := $filter[. = ('entities-missing', 'entities-flagged-attention', 'using-entity-definition')]
+    
+    (: Published files filter :)
+    let $selected-published-filter := $filter[. = ('published-files-status', 'published-files-version', 'published-files-timestamp')]
     
     (: Toh range :)
     let $toh-min := 
@@ -139,8 +146,9 @@ declare function translations:filtered-texts(
         $selected-statuses[@selected eq 'selected'] 
         or $pages-min gt 0 
         or $pages-max lt $pages-upper 
-        or $selected-sponsorship-group 
-        or $selected-entities-group 
+        or $selected-sponsorship-filter 
+        or $selected-entities-filter 
+        or $selected-published-filter
         or $toh-max gt 0
         or $status-date-start gt ''
         or $status-date-end gt ''
@@ -169,6 +177,7 @@ declare function translations:filtered-texts(
             
             (: Filter by current status :)
             else if($selected-statuses[@selected eq 'selected'] ) then (
+            
                 (: Add tei with selected statuses :)
                 let $selected-status-ids := $selected-statuses[@selected eq 'selected']/@status-id
                 return
@@ -180,8 +189,9 @@ declare function translations:filtered-texts(
                 if(functx:is-value-in-sequence('0', $status)) then
                     $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability[@status = ('', '0') or not(@status)]]
                 else ()
-            )
                 
+            )
+            
             else
                 $teis
         
@@ -216,32 +226,42 @@ declare function translations:filtered-texts(
         (: Filter :)
         let $teis := 
             (: All tei WITHOUT sponsorship :)
-            if($selected-sponsorship-group/@id = 'no-status')then
-                let $sponsorship-group-text-ids := sponsorship:text-ids('all')
-                let $sponsorship-group-teis := $teis/id($sponsorship-group-text-ids)/self::tei:idno/ancestor::tei:TEI
+            if($selected-sponsorship-filter/@id = 'no-status')then
+                let $sponsorship-filter-text-ids := sponsorship:text-ids('all')
+                let $sponsorship-filter-teis := $teis/id($sponsorship-filter-text-ids)/self::tei:idno/ancestor::tei:TEI
                 return
-                    $teis except $sponsorship-group-teis
+                    $teis except $sponsorship-filter-teis
             
             (: With the selected sponsorship group :)
-            else if($selected-sponsorship-group) then
-                let $sponsorship-group-text-ids := sponsorship:text-ids($selected-sponsorship-group/@id)
+            else if($selected-sponsorship-filter) then
+                let $sponsorship-filter-text-ids := sponsorship:text-ids($selected-sponsorship-filter/@id)
                 return
-                    $teis/id($sponsorship-group-text-ids)/ancestor::tei:TEI
+                    $teis/id($sponsorship-filter-text-ids)/ancestor::tei:TEI
             
             (: Has glossaries missing entities :)
-            else if($selected-entities-group eq 'entities-missing') then
+            else if($selected-entities-filter eq 'entities-missing') then
                 let $instance-ids := $entities:entities//m:entity/m:instance/@id
                 let $glosses-with-entities := $teis/id($instance-ids)
                 return 
                     $teis[tei:text/tei:back//tei:gloss[not(@mode eq 'surfeit')] except $glosses-with-entities]
             
             (: Has glossaries requiring attention :)
-            else if($selected-entities-group eq 'entities-flagged-attention') then
+            else if($selected-entities-filter eq 'entities-flagged-attention') then
                 let $instances-requiring-attention := $entities:entities//m:instance[m:flag/@type = 'requires-attention']
                 return
                     $teis/id($instances-requiring-attention/@id/string())/ancestor::tei:TEI
- 
-            (: Get them all :)
+            
+            (: Published files statuses are other than the TEI status :)
+            else if($selected-published-filter = ('published-files-status', 'published-files-version', 'published-files-timestamp')) then
+    
+                for $tei in $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability]
+                let $file-mismatches := local:file-mismatches($tei, $selected-published-filter)
+                where 
+                    $file-mismatches
+                return
+                    $tei
+            
+            (: Return them all :)
             else
                 $teis
         
@@ -262,20 +282,20 @@ declare function translations:filtered-texts(
                 $teis
         
         (: Include sponsors? :)
-        let $include-sponsors := not(empty($selected-sponsorship-group))
+        let $include-sponsors := not(empty($selected-sponsorship-filter))
         
         (: Return result per Toh or per text :)
         let $texts := 
             for $tei in $teis
-                let $publication-status := tei-content:publication-status($tei)
-                let $include-downloads := if ($common:environment/m:render/m:status[@type eq 'translation'][@status-id eq $publication-status]) then 'all' else ''
+            let $publication-status := tei-content:publication-status($tei)
+            (:let $include-downloads := if ($common:environment/m:render/m:status[@type eq 'translation'][@status-id eq $publication-status]) then 'all' else '':)
             return
                 if($deduplicate = ('text', 'sponsorship')) then
-                    translations:filtered-text($tei, '', $include-sponsors, $include-downloads, false())
+                    translations:filtered-text($tei, '', $include-sponsors, 'all', false())
                 else
                     for $bibl in $tei//tei:sourceDesc/tei:bibl[tei:location[$work eq 'all' or @work eq $work]]
                     return
-                        translations:filtered-text($tei, $bibl/@key, $include-sponsors, $include-downloads, false())
+                        translations:filtered-text($tei, $bibl/@key, $include-sponsors, 'all', false())
         
         (: Max 1024 results in a set - this is an underlying restriction in eXist :)
         let $texts :=
@@ -303,6 +323,37 @@ declare function translations:filtered-texts(
                 translations:sorted-texts($texts, $sort)
                 
             }
+};
+
+declare function local:file-mismatches($tei as element(tei:TEI), $selected-published-filter as xs:string){
+
+    let $text-id := tei-content:id($tei)
+    let $source-keys := $tei//tei:sourceDesc/tei:bibl/@key
+    let $tei-status := $tei//tei:publicationStmt/tei:availability/@status
+    let $tei-version := tei-content:version-str($tei)
+    let $tei-timestamp := tei-content:last-modified($tei)
+    let $file-name-variants := 
+        for $resource-id in ($text-id, $source-keys)
+        return
+            for $file-type in ('pdf', 'epub', 'rdf', 'xml', 'json')
+            return
+                string-join(($resource-id, $file-type), '.')
+    let $file-name-regex := concat('^(',string-join(($text-id, $source-keys) ! functx:escape-for-regex(.), '|'),')\.')
+    return (
+        if($selected-published-filter eq 'published-files-status') then (
+            $store:file-versions/m:file-version[range:field('file-version-name', 'eq', $file-name-variants)][not(range:field('file-version-status', 'eq', $tei-status))],
+            $translations:webflow-collection/webflow:item[range:field('webflow-item-id', 'eq', $source-keys)][not(range:field('webflow-item-status', 'eq', $tei-status))]
+        )
+        else if($selected-published-filter eq 'published-files-version') then (
+            $store:file-versions/m:file-version[range:field('file-version-name', 'eq', $file-name-variants)][not(range:field('file-version-version', 'eq', $tei-version))],
+            $translations:webflow-collection/webflow:item[range:field('webflow-item-id', 'eq', $source-keys)][not(range:field('webflow-item-version', 'eq', $tei-version))]
+        )
+        else if($selected-published-filter eq 'published-files-timestamp') then (
+            $store:file-versions/m:file-version[range:field('file-version-name', 'eq', $file-name-variants)][range:field('file-version-timestamp', 'lt', $tei-timestamp)],
+            $translations:webflow-collection/webflow:item[range:field('webflow-item-id', 'eq', $source-keys)][range:field('webflow-item-timestamp', 'lt', $tei-timestamp)]
+        )
+        else ()
+    )
 };
 
 declare function translations:sorted-texts($texts as element(m:text)*, $sort as xs:string) as element(m:text)* {
@@ -380,11 +431,12 @@ declare function translations:filtered-text($tei as element(tei:TEI), $toh-key a
             translation:contributors($tei, false()),
             translation:summary($tei, 'show', (), $lang),
             tei-content:status-updates($tei),
+            translation:downloads($tei, $toh/@key, $include-downloads),
+            translation:api-status($tei),
             sponsorship:text-status($text-id, false()),
             if($include-sponsors) then
                 translation:sponsors($tei, true())
             else (),
-            translation:downloads($tei, $toh/@key, $include-downloads),
             if($include-folios) then
                 translation:folios($tei, $toh-key)
             else ()

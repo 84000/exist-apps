@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/common.xsl"/>
     
@@ -18,7 +18,7 @@
                 <xsl:call-template name="passage">
                     <xsl:with-param name="passage-id" select="@data-location-id"/>
                     <xsl:with-param name="parent-id" select="ancestor::xhtml:section/@id"/>
-                    <xsl:with-param name="parent-type" select="(@data-head-type[. = ('summary', 'acknowledgment', 'introduction', 'prelude', 'prologue', 'translation', 'main', 'colophon', 'appendix')] ! concat(., 'Header'), ancestor::xhtml:section/@data-part-type[not(. = ('section', 'chapter'))], 'translation')[1]"/>
+                    <xsl:with-param name="parent-type" select="(@data-head-type ! replace(., '\-', '') ! concat(., 'Header'), ancestor::xhtml:section/@data-part-type[not(. = ('section', 'chapter'))], 'translation')[1]"/>
                     <xsl:with-param name="elements" select="current-group()"/>
                 </xsl:call-template>
             </xsl:for-each-group>

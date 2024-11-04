@@ -1052,6 +1052,7 @@ declare function update-tei:cache-glossary-locations($tei as element(tei:TEI), $
     (: Get data :)
     let $glossary-cached-locations := glossary:cached-locations($tei, (), true())
     let $tei-version := tei-content:version-str($tei)
+    let $publication-status := ($tei//tei:publicationStmt/tei:availability/@status[. gt '']/string(), '')[1]
 
     (: TEI glossary items :)
     let $tei-glossary := $tei//tei:back//tei:list[@type eq 'glossary']//tei:gloss[@xml:id][not(@mode eq 'surfeit')]
@@ -1088,7 +1089,7 @@ declare function update-tei:cache-glossary-locations($tei as element(tei:TEI), $
         else ()
     
     (: Store file version :)
-    let $store-file-version := store:store-version-str(concat($text-id, '.xml'), $tei-version)
+    let $store-file-version := store:store-version-str(concat($text-id, '.xml'), $tei-version, $publication-status)
     
     return 
         $cache-glossary-chunks

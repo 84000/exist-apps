@@ -176,6 +176,26 @@
                                                     <xsl:value-of select="'Entities requiring attention'"/>
                                                 </option>
                                             </optgroup>
+                                            <optgroup label="Published files">
+                                                <option value="published-files-version">
+                                                    <xsl:if test="$texts[@filter eq 'published-files-version']">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Version updated since last published'"/>
+                                                </option>
+                                                <option value="published-files-status">
+                                                    <xsl:if test="$texts[@filter eq 'published-files-status']">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'Status changed since last published'"/>
+                                                </option>
+                                                <option value="published-files-timestamp">
+                                                    <xsl:if test="$texts[@filter eq 'published-files-timestamp']">
+                                                        <xsl:attribute name="selected" select="'selected'"/>
+                                                    </xsl:if>
+                                                    <xsl:value-of select="'TEI edited since last published'"/>
+                                                </option>
+                                            </optgroup>
                                         </select>
                                     </div>
                                 </div>
@@ -709,11 +729,49 @@
                                                 </div>
                                             </xsl:if>
                                             
-                                            <xsl:if test="$text[@status-group eq 'published'] and $text/m:downloads/m:download[@timestamp[. gt ''] ! xs:dateTime(.) lt parent::m:downloads/@tei-timestamp ! xs:dateTime(.)]">
+                                            <!-- Publication alerts -->
+                                            <xsl:variable name="publication-alerts" as="element(xhtml:li)*">
+                                                <xsl:variable name="file-version-stale" select="$text/m:downloads/m:download[not(@version eq parent::m:downloads/@tei-version)]"/>
+                                                <xsl:variable name="file-status-stale" select="$text/m:downloads/m:download[not(@status eq parent::m:downloads/@tei-status)]"/>
+                                                <xsl:variable name="file-timestamp-stale" select="$text/m:downloads/m:download[@timestamp[. gt ''] ! xs:dateTime(.) lt parent::m:downloads/@tei-timestamp[. gt ''] ! xs:dateTime(.)]"/>
+                                                <xsl:variable name="api-version-stale" select="$text/m:api-status/m:api-call[@group eq 'translation'][not(@version eq parent::m:api-status/@tei-version)]"/>
+                                                <xsl:variable name="api-status-stale" select="$text/m:api-status/m:api-call[@group eq 'translation'][not(@status eq parent::m:api-status/@tei-status)]"/>
+                                                <xsl:choose>
+                                                    <xsl:when test="$file-version-stale or $api-version-stale or $file-status-stale or $api-status-stale">
+                                                        <xsl:if test="$file-version-stale or $api-version-stale">
+                                                            <li class="text-danger">
+                                                                <i class="fa fa-exclamation-circle"/>
+                                                                <small>
+                                                                    <xsl:value-of select="' Version updated since last published'"/>
+                                                                </small>
+                                                            </li>
+                                                        </xsl:if>
+                                                        <xsl:if test="$file-status-stale or $api-status-stale">
+                                                            <li class="text-danger">
+                                                                <i class="fa fa-exclamation-circle"/>
+                                                                <small>
+                                                                    <xsl:value-of select="' Status changed since last published'"/>
+                                                                </small>
+                                                            </li>
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when test="$file-timestamp-stale">
+                                                        <li class="text-warning">
+                                                            <i class="fa fa-exclamation-circle"/>
+                                                            <small>
+                                                                <xsl:value-of select="' TEI edited since last published'"/>
+                                                            </small>
+                                                        </li>
+                                                    </xsl:when>
+                                                </xsl:choose>
+                                            </xsl:variable>
+                                            
+                                            <xsl:if test="$publication-alerts">
                                                 <hr/>
-                                                <div class="text-warning small">
-                                                    <i class="fa fa-exclamation-circle"/>
-                                                    <xsl:value-of select="' TEI updated since files were generated'"/>
+                                                <div>
+                                                    <ul class="list-inline inline-dots">
+                                                        <xsl:sequence select="$publication-alerts"/>
+                                                    </ul>
                                                 </div>
                                             </xsl:if>
                                             

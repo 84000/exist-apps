@@ -43,22 +43,22 @@ declare variable $translation:translated-status-ids := $translation:status-statu
 declare variable $translation:in-translation-status-ids := $translation:status-statuses[@group = ('in-translation')]/@status-id;
 declare variable $translation:in-progress-status-ids := $translation:translated-status-ids | $translation:in-translation-status-ids;
 declare variable $translation:marked-up-status-ids := $translation:status-statuses[@marked-up = 'true']/@status-id;
-declare variable $translation:type-labels := map {
-    'summary':        map {'prefix':'s', 'label':'Summary'},
-    'acknowledgment': map {'prefix':'ac','label':'Acknowledgements'},
-    'preface':        map {'prefix':'pf','label':'Preface'},
-    'introduction':   map {'prefix':'i', 'label':'Introduction'},
-    'translation':    map {'prefix':'tr','label':'The Translation'},
-    'prelude':        map {'prefix':'pl','label':'Prelude'},
-    'prologue':       map {'prefix':'p', 'label':'Prologue'},
-    'colophon':       map {'prefix':'c', 'label':'Colophon'},
-    'homage':         map {'prefix':'h', 'label':'Homage'},
-    'appendix':       map {'prefix':'ap','label':'Appendix'},
-    'abbreviations':  map {'prefix':'ab','label':'Abbreviations'},
-    'end-notes':      map {'prefix':'n', 'label':'Notes'},
-    'bibliography':   map {'prefix':'b', 'label':'Bibliography'},
-    'glossary':       map {'prefix':'g', 'label':'Glossary'},
-    'citation-index': map {'prefix':'ci','label':'Citation Index'}
+declare variable $translation:part-labels := map {
+    'summary':        map {'prefix':'s', 'label':'Summary',         'head-type': 'summaryHeader'},
+    'acknowledgment': map {'prefix':'ac','label':'Acknowledgements','head-type': 'acknowledgmentHeader'},
+    'preface':        map {'prefix':'pf','label':'Preface',         'head-type': 'prefaceHeader'},
+    'introduction':   map {'prefix':'i', 'label':'Introduction',    'head-type': 'introductionHeader'},
+    'translation':    map {'prefix':'tr','label':'The Translation', 'head-type': 'translationHeader'},
+    'prelude':        map {'prefix':'pl','label':'Prelude',         'head-type': 'preludeHeader'},
+    'prologue':       map {'prefix':'p', 'label':'Prologue',        'head-type': 'prologueHeader'},
+    'colophon':       map {'prefix':'c', 'label':'Colophon',        'head-type': 'colophonHeader'},
+    'homage':         map {'prefix':'h', 'label':'Homage',          'head-type': 'homageHeader'},
+    'appendix':       map {'prefix':'ap','label':'Appendix',        'head-type': 'appendixHeader'},
+    'abbreviations':  map {'prefix':'ab','label':'Abbreviations',   'head-type': 'abbreviationsHeader'},
+    'end-notes':      map {'prefix':'n', 'label':'Notes',           'head-type': 'endnotesHeader'},
+    'bibliography':   map {'prefix':'b', 'label':'Bibliography',    'head-type': 'bibliographyHeader'},
+    'glossary':       map {'prefix':'g', 'label':'Glossary',        'head-type': 'glossaryHeader'},
+    'citation-index': map {'prefix':'ci','label':'Citation Index',  'head-type': 'citationindexHeader'}
 };
 
 (: Exclude any very common words from being single tokens :)
@@ -442,6 +442,7 @@ declare function translation:canonical-html($source-key as xs:string, $part-id a
 declare function translation:downloads($tei as element(tei:TEI), $source-key as xs:string, $include as xs:string) as element(m:downloads) {
     
     let $tei-version := tei-content:version-str($tei)
+    let $tei-status := ($tei//tei:publicationStmt/tei:availability/@status[. gt '']/string(), '')[1]
     let $tei-timestamp := tei-content:last-modified($tei)
     let $download-file-name := translation:filename($tei, $source-key)
     let $translation-files := translation:files($tei, 'translation-files', $source-key)
@@ -450,6 +451,7 @@ declare function translation:downloads($tei as element(tei:TEI), $source-key as 
         element {QName('http://read.84000.co/ns/1.0', 'downloads')} {
         
             attribute resource-id { $source-key },
+            attribute tei-status { $tei-status },
             attribute tei-version { $tei-version },
             attribute tei-timestamp { $tei-timestamp },
             
@@ -458,7 +460,6 @@ declare function translation:downloads($tei as element(tei:TEI), $source-key as 
             let $file-collection := $file/@target-folder
             let $file-source-tokens := tokenize($file/@source, '/')
             let $glossary-locations := if(matches($file-source-tokens[last()], '\.glossary\-locations\.xml$', 'i')) then true() else false()
-            let $stored-version-str := store:stored-version-str($file-collection, $file/@target-file)
             where (
                 ($include eq 'all')                                        (: return all types :)
                 or ($include eq 'any-version' and $file/@timestamp gt '')  (: return if there is any version :)
@@ -467,8 +468,9 @@ declare function translation:downloads($tei as element(tei:TEI), $source-key as 
             return
                 element download {
                     attribute type { if($glossary-locations) then 'cache' else $file/@type },
-                    attribute version { $stored-version-str },
-                    attribute timestamp { $file/@timestamp },
+                    attribute timestamp { ($file/@timestamp, '')[1] },
+                    attribute version { ($file/@version, '')[1] },
+                    attribute status { ($file/@status, '')[1] },
                     if(not($glossary-locations)) then (
                         attribute url { $file/@source },
                         attribute download-url { string-join((subsequence($file-source-tokens, 1, count($file-source-tokens)-1), replace($file-source-tokens[last()], '^[^\.]*\.', concat($download-file-name, '.'), 'i')),'/') },
@@ -476,6 +478,7 @@ declare function translation:downloads($tei as element(tei:TEI), $source-key as 
                     )
                     else 
                         attribute url { replace($file/@source, '\.glossary\-locations\.xml$', '.cache', 'i') }
+                    
                 }
         }
 };
@@ -484,7 +487,7 @@ declare function translation:files($tei as element(tei:TEI)) as element(m:files)
     translation:files($tei, $translation:file-groups, ())
 };
 
-declare function translation:files($tei as element(tei:TEI), $groups as xs:string*, $source-key as xs:string?) as element(m:files) {
+declare function translation:files($tei as element(tei:TEI), $groups as xs:string*, $request-source-key as xs:string?) as element(m:files) {
     
     let $text-id := tei-content:id($tei)
     let $tei-timestamp := tei-content:last-modified($tei)
@@ -498,8 +501,8 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
     let $commentary-keys := $parts[@type eq 'citation-index'] ! translation:commentary-keys($tei, tei:ptr)
     
     let $source-bibls := 
-        if($source-key) then
-            $tei//tei:sourceDesc/tei:bibl[@key eq $source-key]
+        if($request-source-key) then
+            $tei//tei:sourceDesc/tei:bibl[@key eq $request-source-key]
         else 
             $tei//tei:sourceDesc/tei:bibl[@key]
     
@@ -515,12 +518,11 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
     
     let $entities := translation:entities((), distinct-values(($glossary-ids, $attribution-ids)))
     
-    let $translation-single-page := translation:single-page($tei)
-    
     return
     
         element {QName('http://read.84000.co/ns/1.0', 'files')} {
             
+            attribute tei-status { ($tei//tei:publicationStmt/tei:availability/@status[. gt '']/string(), '')[1] },
             attribute tei-version { tei-content:version-str($tei) },
             attribute tei-timestamp { $tei-timestamp },
             attribute glossary-locations-timestamp { xmldb:last-modified($glossary:cached-locations-path, concat($text-id, '.xml')) },
@@ -528,7 +530,6 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
             for $bibl in $source-bibls
             
             let $source-key := $bibl/@key
-            let $source-folios := translation:folio-refs-sorted($tei, $source-key)
             
             return (
                 
@@ -563,7 +564,9 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                     else (),
                     
                     if($groups = 'translation-html') then (
-                        
+                    
+                        let $translation-single-page := translation:single-page($tei)
+    
                         for $commentary-key in ('_none', $commentary-keys)
                         return (
                         
@@ -600,6 +603,7 @@ declare function translation:files($tei as element(tei:TEI), $groups as xs:strin
                     if($groups = 'source-html') then (
                         
                         (: Source HTML :)
+                        let $source-folios := translation:folio-refs-sorted($tei, $source-key)
                         for $folio in $source-folios
                         return
                             local:generated-file(
@@ -793,8 +797,9 @@ declare function local:generated-file($file-type as xs:string, $file-group as xs
 declare function local:generated-file($file-type as xs:string, $file-group as xs:string, $source-url as xs:string, $target-folder as xs:string, $target-file as xs:string, $target-url as xs:string?, $tei-timestamp as xs:dateTime, $action as xs:string?) as element(m:file) {
     
     let $target := string-join(($target-folder, $target-file), '/')
+    let $file-version := $store:file-versions/m:file-version[@file-name eq $target-file]
     
-    let $file-timestamp := (:file:directory-list($target-folder, $target-file)/file:file[1]/@modified:)
+    let $file-timestamp := 
         if($file-type = $store:binary-types) then
             if(util:binary-doc-available($target)) then 
                 xmldb:last-modified($target-folder, $target-file)
@@ -807,31 +812,36 @@ declare function local:generated-file($file-type as xs:string, $file-group as xs
     let $file-up-to-date := ($file-timestamp ! xs:dateTime(.) ge $tei-timestamp)
     
     return
-      element { QName('http://read.84000.co/ns/1.0','file') } {
-          attribute type { $file-type },
-          attribute group { $file-group },
-          attribute source { $source-url },
-          attribute target-folder { $target-folder },
-          attribute target-file { $target-file },
-          $target-url[. gt ''] ! attribute target-url { . },
-          attribute timestamp { $file-timestamp },
-          if($file-up-to-date) then attribute up-to-date { true() } else (),
-          if($action = ('scheduled','manual')) then attribute action { $action } else (),
-          if(not($file-up-to-date) and not($action = ('scheduled','manual'))) then attribute publish { true() } else ()
-      }
+        element { QName('http://read.84000.co/ns/1.0','file') } {
+            attribute type { $file-type },
+            attribute group { $file-group },
+            attribute source { $source-url },
+            attribute target-folder { $target-folder },
+            attribute target-file { $target-file },
+            $target-url[. gt ''] ! attribute target-url { . },
+            attribute timestamp { ($file-timestamp, '')[1] },
+            $file-version/@version,
+            $file-version/@status,
+            if($file-up-to-date) then attribute up-to-date { true() } else (),
+            if($action = ('scheduled','manual')) then attribute action { $action } else (),
+            if(not($file-up-to-date) and not($action = ('scheduled','manual'))) then attribute publish { true() } else ()
+        }
 };
 
 declare function translation:api-status($tei as element(tei:TEI)) as element(m:api-status) {
     
     let $text-id := tei-content:id($tei)
     let $tei-timestamp := tei-content:last-modified($tei)
+    let $tei-status := ($tei//tei:publicationStmt/tei:availability/@status[. gt '']/string(), '')[1]
+    let $tei-version := tei-content:version-str($tei)
     let $webflow-api-config := doc(concat($common:data-path, '/local/webflow-api.xml'))
     
     return
         element {QName('http://read.84000.co/ns/1.0', 'api-status')} {
             
-            attribute tei-version { tei-content:version-str($tei) },
-            attribute tei-timestamp { tei-content:last-modified($tei) },
+            attribute tei-status { $tei-status },
+            attribute tei-version { $tei-version },
+            attribute tei-timestamp { $tei-timestamp },
             
             for $bibl in $tei//tei:sourceDesc/tei:bibl[@key]
             let $source-key := $bibl/@key
@@ -849,6 +859,8 @@ declare function translation:api-status($tei as element(tei:TEI)) as element(m:a
                     attribute target-id { $text-webflow-item/@webflow-id },
                     attribute linked { if($text-webflow-item) then true() else false() },
                     attribute timestamp { ($text-webflow-item/@updated, 'none')[1] },
+                    attribute status { ($text-webflow-item/@status, '')[1] },
+                    attribute version { ($text-webflow-item/@version, '')[1] },
                     if($text-webflow-item/@updated[xs:dateTime(.) ge $tei-timestamp]) then attribute up-to-date { true() }
                     else attribute publish { true() }
                 },
@@ -876,11 +888,10 @@ declare function translation:api-status($tei as element(tei:TEI)) as element(m:a
 };
 
 declare function translation:single-page($tei as element(tei:TEI)) as xs:boolean {
-
-    if(count($tei/tei:text/tei:body/tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]) le 1) then
-        true()
-    else
-        false()
+    
+    let $sections := $tei//tei:div[@type = ('section', 'chapter')]/parent::tei:div[@type eq 'translation']
+    return
+        if(count($sections) le 1) then true() else false()
 
 };
 
@@ -1436,7 +1447,7 @@ declare function translation:chapter-prefix($chapter as element(tei:div)) as xs:
     
     let $root-prefix :=
         if($root-part/@type = ('appendix')) then
-            $translation:type-labels($root-part/@type)('prefix')
+            $translation:part-labels($root-part/@type)('prefix')
             (:map:get($translation:type-prefixes, $root-part/@type):)
         else ()
     
@@ -1445,7 +1456,7 @@ declare function translation:chapter-prefix($chapter as element(tei:div)) as xs:
         if ($chapter/@prefix gt '') then 
             $chapter/@prefix
         else if ($chapter/@type = ('prelude', 'prologue', 'colophon', 'homage')) then 
-            $translation:type-labels($chapter/@type)('prefix')
+            $translation:part-labels($chapter/@type)('prefix')
             (:map:get($translation:type-prefixes, $chapter/@type):)
         else 
             functx:index-of-node($root-part/tei:div[not(@type = ('prelude', 'prologue', 'colophon', 'homage'))], $chapter)
@@ -1487,7 +1498,7 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
             'complete'
     
     return
-        translation:part($summary, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
+        translation:part($summary, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, $passage-id)
 
 };
 
@@ -1515,7 +1526,7 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
             'complete'
     
     return
-        translation:part($acknowledgment, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
+        translation:part($acknowledgment, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, $passage-id)
 };
 
 declare function translation:preface($tei as element(tei:TEI)) as element(m:part)? {
@@ -1542,7 +1553,7 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
             'preview'
 
     return
-        translation:part($preface, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
+        translation:part($preface, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, $passage-id)
 };
 
 declare function translation:introduction($tei as element(tei:TEI)) as element(m:part)? {
@@ -1569,7 +1580,7 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
             'preview'
 
     return
-        translation:part($introduction, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, $passage-id)
+        translation:part($introduction, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, $passage-id)
 };
 
 declare function translation:body($tei as element(tei:TEI)) as element(m:part)? {
@@ -1590,7 +1601,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
             attribute nesting { 0 },
             attribute section-index { 1 },
             attribute glossarize { 'mark' },
-            attribute prefix { $translation:type-labels($translation/@type)('prefix') },
+            attribute prefix { $translation:part-labels($translation/@type)('prefix') },
             
             $translation/tei:head[@type = ('translation', 'titleHon', 'titleMain', 'titleCatalogueSection', 'sub')],
             
@@ -1602,7 +1613,7 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                 (: If there's no section header derive one :)
                 let $part-title :=
                     if ($part/@type = ('prologue', 'prelude', 'colophon', 'homage') and not($part/tei:head[@type = $part/@type])) then
-                        text { $translation:type-labels($part/@type)('label') }
+                        text { $translation:part-labels($part/@type)('label') }
                     
                     else ()
                 
@@ -1654,7 +1665,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
         else
             'preview'
     
-    let $prefix := $translation:type-labels('appendix')('prefix')
+    let $prefix := $translation:part-labels('appendix')('prefix')
     
     where $appendix
     return
@@ -1672,7 +1683,7 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
             $appendix/tei:head[@type eq 'titleMain'],
             element {QName('http://www.tei-c.org/ns/1.0', 'head')} {
                 attribute type { 'supplementary' },
-                $translation:type-labels('appendix')('label')
+                $translation:part-labels('appendix')('label')
             },
             
             for $chapter at $chapter-index in $appendix/tei:div[@type = ('section', 'chapter', 'prologue')]
@@ -1701,7 +1712,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
             
             element { QName('http://www.tei-c.org/ns/1.0', 'head') } {
                 attribute type { $type },
-                text { $translation:type-labels($type)('label')}
+                text { $translation:part-labels($type)('label')}
             },
             
             (: If the abbreviations don't have a section container then add one :)
@@ -1731,7 +1742,7 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
     
     where $abbreviations[descendant::tei:list[@type eq $type]]
     return
-        translation:part($abbreviations, $content-directive, $type, $translation:type-labels($type)('prefix'), (), ())
+        translation:part($abbreviations, $content-directive, $type, $translation:part-labels($type)('prefix'), (), ())
 
 };
 
@@ -1772,7 +1783,7 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
         else ()
     
     return 
-        translation:part($end-notes, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, distinct-values(($passage-id, $top-note-ids, $preview-note-ids)))
+        translation:part($end-notes, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, distinct-values(($passage-id, $top-note-ids, $preview-note-ids)))
 
 };
 
@@ -1800,7 +1811,7 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
             'complete'
     
     return
-        translation:part($bibliography, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, ())
+        translation:part($bibliography, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, ())
 
 };
 
@@ -1852,7 +1863,7 @@ declare function translation:glossary($tei as element(tei:TEI), $passage-id as x
     
     where $glossary[tei:gloss]
     return 
-        translation:part($glossary, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
+        translation:part($glossary, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, distinct-values(($passage-id, $top-gloss, $location-cache-gloss)))
         
 };
 
@@ -1941,7 +1952,7 @@ declare function translation:citation-index($tei as element(tei:TEI), $passage-i
     
     where not($content-directive eq 'none') and $inbound-pointers (: and false() Disable this while incomplete :)
     return
-        translation:part($citation-index, $content-directive, $type, $translation:type-labels($type)('prefix'), text { $translation:type-labels($type)('label') }, ())
+        translation:part($citation-index, $content-directive, $type, $translation:part-labels($type)('prefix'), text { $translation:part-labels($type)('label') }, ())
 
 };
 
@@ -2019,11 +2030,11 @@ declare function translation:count-volume-pages($location as element(m:location)
 declare function translation:folio-refs($tei as element(tei:TEI), $source-key as xs:string) as element(tei:ref)* {
     
     (: Get the relevant folio refs refs :)
-    translation:refs($tei, $source-key, ('folio'))
+    local:refs($tei, $source-key, ('folio'))
 
 };
 
-declare function translation:refs($tei as element(tei:TEI), $source-key as xs:string, $types as xs:string*) as element(tei:ref)* {
+declare function local:refs($tei as element(tei:TEI), $source-key as xs:string, $types as xs:string*) as element(tei:ref)* {
     
     (: Validate the source-key :)
     let $source-key := translation:source-key($tei, $source-key)
@@ -2046,7 +2057,7 @@ declare function translation:folio-refs-sorted($tei as element(tei:TEI), $source
     
     (: Get the relevant refs :)
     let $refs-for-resource :=
-        for $ref at $index-in-resource in translation:refs($tei, $source-key, ('folio', 'volume'))
+        for $ref at $index-in-resource in local:refs($tei, $source-key, ('folio', 'volume'))
         return
             element { node-name($ref) } {
                 $ref/@*,

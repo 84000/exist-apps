@@ -200,7 +200,9 @@ let $work-annotations :=
 
 let $source-works := $local:translation/tei:bibl/tei:location/@work ! source:work-name(.)
 
-let $work := json-types-v:work($local:api-version, $local:text-id, $source-works, $work-titles, (), (), $work-annotations, $local:annotate)
+let $tantric-restriction := if($local:tei//tei:publicationStmt/descendant::tei:p[@type eq 'tantricRestriction']) then true() else false()
+
+let $work := json-types-v:work($local:api-version, $local:text-id, $source-works, $work-titles, (), $tantric-restriction, (), $work-annotations, $local:annotate)
 
 return
     element translation {

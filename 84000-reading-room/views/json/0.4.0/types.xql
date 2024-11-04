@@ -12,7 +12,7 @@ import module namespace translation = "http://read.84000.co/translation" at "../
 declare function json-types:work(
     $api-version as xs:string,
     $text-id as xs:string, $work-type as xs:string*,
-    $titles as element(eft:title)*, $bibliographic-scope as element(eft:bibliographicScope)?, 
+    $titles as element(eft:title)*, $bibliographic-scope as element(eft:bibliographicScope)?, $tantric-restriction as xs:boolean, 
     $content as element(eft:content)*, $annotations as element(eft:annotation)*, $annotate as xs:string
 ){
     element { QName('http://read.84000.co/ns/1.0', 'work') } {
@@ -20,7 +20,8 @@ declare function json-types:work(
         attribute workId { $text-id },
         attribute url { concat('/translation/', $text-id,'.json?api-version=', $api-version, '&amp;annotate=', $annotate) },
         attribute htmlUrl { translation:canonical-html($text-id, (), ()) },
-        $work-type ! element workType { attribute json:array {'true'}, . },
+        attribute tantricRestriction { $tantric-restriction },
+        distinct-values($work-type) ! element workType { attribute json:array {'true'}, . },
         $titles,
         $bibliographic-scope,
         $content,
