@@ -2,11 +2,16 @@ xquery version "3.1" encoding "UTF-8";
 
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
+import module namespace webflow="http://read.84000.co/webflow-api" at "/db/apps/84000-operations/modules/webflow-api.xql";
 import module namespace functx="http://www.functx.com";
 
 declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei="http://www.tei-c.org/ns/1.0";
-declare namespace webflow="http://read.84000.co/webflow-api";
+
+declare variable $local:exec-options := 
+    <option>
+        <workingDir>/{ $common:environment//eft:env-vars/eft:var[@id eq 'home']/text() }/</workingDir>
+    </option>;
 
 declare function local:extend-file-versions() {
 
@@ -53,4 +58,22 @@ declare function local:extend-file-versions() {
     
 };
 
+declare function local:patch-texts() {
+    
+    let $translations-tei := $tei-content:translations-collection//tei:TEI
+    
+    for $bibl in $translations-tei//tei:sourceDesc/tei:bibl[@key]
+    return (
+    
+        $bibl/tei:ref,
+        
+        util:log('INFO', concat('webflow-patch-text: ', $bibl/@key)),
+        webflow:patch-text($bibl/@key),
+        process:execute(('sleep', '0.5'), $local:exec-options) ! ()
+        
+    )
+    
+};
+
 local:extend-file-versions()
+(:local:patch-texts():)

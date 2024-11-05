@@ -397,13 +397,14 @@ declare function webflow:patch-text($source-key as xs:string) as element(webflow
 
 declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:string) as element(fieldData) {
     
+    let $text-id := tei-content:id($tei)
     let $tei-bibl := $tei/tei:teiHeader//tei:sourceDesc/tei:bibl[@key eq $source-key]
     let $text-toh := translation:toh($tei, $source-key)
     let $titles := translation:titles($tei, $source-key)
     let $title-variants := translation:title-variants($tei, $source-key)
     let $summary := translation:summary($tei)
     let $summary-html := $summary ! transform:transform(., doc(concat($common:app-path, '/xslt/tei-to-xhtml.xsl')), <parameters/>)
-    let $summary-html-string := $summary-html ! string-join(descendant::xhtml:p ! serialize(., $webflow:html5-serialization-parameters)) ! normalize-space(.) ! replace(., concat('^',functx:escape-for-regex('&lt;!DOCTYPE html&gt;'),'\s*'), '')
+    let $summary-html-string := $summary-html ! string-join(descendant-or-self::xhtml:p ! serialize(., $webflow:html5-serialization-parameters)) ! normalize-space(.) ! replace(., concat('^',functx:escape-for-regex('&lt;!DOCTYPE html&gt;'),'\s*'), '')
     let $source := tei-content:source($tei, $source-key)
     let $source-location := tei-content:location($tei-bibl)
     let $source-start-volume := min($source-location/eft:volume/@number ! xs:integer(.))
@@ -435,6 +436,9 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
             element tibetan-title {
                 ($titles/eft:title[@xml:lang eq 'bo'])[1] ! normalize-space(string-join(text()))
             },
+            element wylie-title {
+                ($titles/eft:title[@xml:lang eq 'Bo-Ltn'])[1] ! normalize-space(string-join(text()))
+            },
             element sanskrit-title {
                 ($titles/eft:title[@xml:lang eq 'Sa-Ltn'])[1] ! normalize-space(string-join(text()))
             },
@@ -443,6 +447,9 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
             },
             element toh-key {
                 $source-key
+            },
+            element xmlId { 
+                $text-id
             },
             element toh-first {
                 attribute json:literal { 'true' },
@@ -482,6 +489,9 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
             },
             element section-description { 
                 attribute seed-data { 'true' },
+                $summary-html-string
+            },
+            element rich-text-summary { 
                 $summary-html-string
             },
             element card-short-description { 
@@ -560,7 +570,7 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
                         }
                     } ! serialize(.)
                 
-            }(:,
+            },
             
             let $other-bibls := $tei/tei:teiHeader//tei:sourceDesc/tei:bibl[@key] except $tei-bibl
             return
@@ -569,15 +579,15 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
                     let $other-webflow-item := $webflow:conf//webflow:item[@id eq $other-bibl/@key]
                     where $other-webflow-item
                     return
-                        element same-text-as {
+                        element same-as-text {
                             attribute json:array {'true'},
                             $other-webflow-item/@webflow-id/string()
                         }
                 )
                 else 
-                    element same-text-as {
+                    element same-as-text {
                         attribute json:array {'true'}
-                    }:)
+                    }
         }
         
 };
