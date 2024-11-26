@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" xmlns:scheduler="http://exist-db.org/xquery/scheduler" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:ops="http://operations.84000.co" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../84000-reading-room/xslt/tei-to-xhtml.xsl"/>
     <xsl:import href="common.xsl"/>
@@ -662,7 +662,7 @@
                                 
                                 <xsl:variable name="loop-glossary-instance" select="key('entity-instance', $loop-glossary/@id, $root)[1]"/>
                                 <xsl:variable name="loop-glossary-entity" select="$loop-glossary-instance/parent::m:entity"/>
-                                <xsl:variable name="loop-glossary-entity-relations" select="$loop-glossary-entity/m:relation | $response/m:entities/m:related/m:entity[not(@xml:id = $loop-glossary-entity/m:relation/@id)]/m:relation[@id eq $loop-glossary-entity/@xml:id][not(@predicate eq 'sameAs')]"/>
+                                <xsl:variable name="loop-glossary-entity-relations" select="$loop-glossary-entity/m:relation | $response/m:entities/m:related/m:entity[not(@xml:id = $loop-glossary-entity/m:relation/@id)]/m:relation[@id eq $loop-glossary-entity/@xml:id][not(@predicate eq 'sameAs')]" as="element(m:relation)*"/>
                                 
                                 <div>
                                     
@@ -1187,6 +1187,8 @@
                                                                         <xsl:sort select="if(@predicate = ('isUnrelated', 'sameAs')) then 1 else 0"/>
                                                                         
                                                                         <xsl:variable name="relation" select="."/>
+                                                                        
+                                                                        <!-- Check if the relation is derived -->
                                                                         <xsl:variable name="relation-entity" as="element(m:entity)?">
                                                                             <xsl:choose>
                                                                                 <xsl:when test="$relation/@id eq $loop-glossary-entity/@xml:id">
@@ -1198,10 +1200,20 @@
                                                                             </xsl:choose>
                                                                         </xsl:variable>
                                                                         
+                                                                        <!-- Reverse the predicate if the relation is derived -->
+                                                                        <xsl:variable name="relation-predicate" as="element(m:predicate)?">
+                                                                            <xsl:variable name="reverse-predicate" as="element(m:predicate)?">
+                                                                                <xsl:if test="$relation/@id eq $loop-glossary-entity/@xml:id">
+                                                                                    <xsl:sequence select="$response/m:entity-predicates//m:predicate[@reverse eq $relation/@predicate]"/>
+                                                                                </xsl:if>
+                                                                            </xsl:variable>
+                                                                            <xsl:sequence select="($reverse-predicate, $response/m:entity-predicates//m:predicate[@xml:id eq $relation/@predicate])[1]"/>
+                                                                        </xsl:variable>
+                                                                        
                                                                         <xsl:call-template name="expand-item">
                                                                             
                                                                             <xsl:with-param name="accordion-selector" select="concat('#accordion-glossary-', $loop-glossary-id, '-relations')"/>
-                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', $relation/@id)"/>
+                                                                            <xsl:with-param name="id" select="concat('glossary-', $loop-glossary-id, '-relation-', ($relation-entity/@xml:id, $relation/@id)[1])"/>
                                                                             <xsl:with-param name="persist" select="true()"/>
                                                                             
                                                                             <xsl:with-param name="title">
@@ -1219,14 +1231,14 @@
                                                                                             <li>
                                                                                                 <span>
                                                                                                     <xsl:choose>
-                                                                                                        <xsl:when test="$relation/@predicate = ('isUnrelated', 'sameAs')">
+                                                                                                        <xsl:when test="$relation-predicate[@xml:id = ('isUnrelated', 'sameAs')]">
                                                                                                             <xsl:attribute name="class" select="'label label-default'"/>
                                                                                                         </xsl:when>
                                                                                                         <xsl:otherwise>
                                                                                                             <xsl:attribute name="class" select="'label label-success'"/>
                                                                                                         </xsl:otherwise>
                                                                                                     </xsl:choose>
-                                                                                                    <xsl:value-of select="$response/m:entity-predicates//m:predicate[@xml:id eq $relation/@predicate]/m:label"/>
+                                                                                                    <xsl:value-of select="$relation-predicate/m:label"/>
                                                                                                     <xsl:value-of select="':'"/>
                                                                                                 </span>
                                                                                             </li>

@@ -852,7 +852,9 @@
                                             <xsl:value-of select="concat('#', $part/@id)"/>
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            <xsl:value-of select="m:translation-href($requested-resource, $part/@id, $requested-commentary, $part/@id)"/>
+                                            <!-- Validate that this is a root part -->
+                                            <xsl:variable name="root-part" select="($part/ancestor-or-self::m:part[@id][@nesting eq '0'][not(@type = ('translation'))])[1]"/>
+                                            <xsl:value-of select="m:translation-href($requested-resource, $root-part/@id, $requested-commentary, $part/@id)"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </xsl:with-param>

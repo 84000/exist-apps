@@ -478,14 +478,23 @@ return
             
             (: xml model -> json view :)
             else if ($resource-suffix eq 'json') then
-                local:dispatch("/models/source.xq", "/views/json/source.xq", 
-                    <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                        <add-parameter name="resource-id" value="{ $resource-id }"/>
-                        <add-parameter name="resource-suffix" value="json"/>
-                        <set-header name="Content-Type" value="application/pdf"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
-                    </parameters>
-                )
+                (: 0.4.0 returns source text NOT based on Toh e.g. the whole Kangyur or Tengyur :)
+                if($api-version eq '0.4.0') then
+                    local:dispatch("/views/json/0.4.0/source.xq", "", 
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="work-id" value="{ $resource-id }"/>
+                            <set-header name="Content-Type" value="application/json"/>
+                        </parameters>
+                    )
+                else
+                    local:dispatch("/models/source.xq", "/views/json/source.xq", 
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{ $resource-id }"/>
+                            <add-parameter name="resource-suffix" value="json"/>
+                            <set-header name="Content-Type" value="application/pdf"/>
+                            <set-header name="Content-Disposition" value="attachment"/>
+                        </parameters>
+                    )
             
             (: xml model -> txt view :)
             else if ($resource-suffix eq'txt') then
@@ -618,7 +627,7 @@ return
             )
         
         (: Other Rest endpoints :)
-        else if ($collection-path eq "rest" and $resource-id = ('texts-status') and $resource-suffix eq 'json') then
+        else if ($collection-path eq "rest" and $resource-id = ('texts-status','authorities') and $resource-suffix eq 'json') then
             local:dispatch(concat("/views/json/0.4.0/", $resource-id, ".xq"), "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <set-header name="Content-Type" value="application/json"/>

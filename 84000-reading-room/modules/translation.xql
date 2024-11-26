@@ -889,7 +889,7 @@ declare function translation:api-status($tei as element(tei:TEI)) as element(m:a
 
 declare function translation:single-page($tei as element(tei:TEI)) as xs:boolean {
     
-    let $sections := $tei//tei:div[@type = ('section', 'chapter')]/parent::tei:div[@type eq 'translation']
+    let $sections := $tei//tei:div[@type eq 'translation']/tei:div[@type = ('section', 'chapter')]
     return
         if(count($sections) le 1) then true() else false()
 

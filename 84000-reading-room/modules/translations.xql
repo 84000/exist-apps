@@ -335,7 +335,7 @@ declare function local:file-mismatches($tei as element(tei:TEI), $selected-publi
     let $file-name-variants := 
         for $resource-id in ($text-id, $source-keys)
         return
-            for $file-type in ('pdf', 'epub', 'rdf', 'xml', 'json')
+            for $file-type in ('pdf', 'epub', 'json'(:, 'rdf', 'xml':))
             return
                 string-join(($resource-id, $file-type), '.')
     let $file-name-regex := concat('^(',string-join(($text-id, $source-keys) ! functx:escape-for-regex(.), '|'),')\.')

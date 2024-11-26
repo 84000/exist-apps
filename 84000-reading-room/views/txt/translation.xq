@@ -9,7 +9,7 @@ declare option exist:serialize "indent=no";
 
 declare variable $local:response := request:get-data()/m:response;
 (: For debugging - remove authorisation:)
-(:declare variable $local:request := <hc:request href="http://read.84000.local/translation/toh58.xml?view-mode=txt" method="GET"/>;
+(:declare variable $local:request := <hc:request href="http://read.84000.local/translation/toh8.xml?view-mode=txt" method="GET"/>;
 declare variable $local:send-request := hc:send-request($local:request);
 declare variable $local:response := $local:send-request[2]/m:response;:)
 
@@ -21,8 +21,11 @@ declare variable $local:output-style := if($local:response/m:request[@resource-s
 declare function local:parse-translation() as text()* {
 
     text { '{{translation:{id:' || $local:text-id || ',key:' || $local:toh-key || ',version:' || tei-content:strip-version-number($local:response/m:translation/m:publication/m:edition/text()[1]) || ',style:' || $local:output-style || '}}}' },
-    local:parse-elements($local:response/m:translation/m:part[@type eq 'translation'], 1, '')
-
+    local:parse-elements($local:response/m:translation/m:part[@type eq 'translation']/*[not(self::m:part)], 1, ''),
+    for $part in $local:response/m:translation/m:part[@type eq 'translation']/m:part
+    return
+        local:parse-elements($part, 1, $local:response/m:translation/m:part[@type eq 'translation']/@id)
+        
 };
 
 declare function local:parse-elements($elements as element()*, $element-index as xs:integer, $last-location-id as xs:string) as text()* {
@@ -54,12 +57,13 @@ declare function local:parse-elements($elements as element()*, $element-index as
         (: Output the content group :)
         if($output-nodes)then 
             (:text { '&#10;' || count($output-nodes) || ' nodes' }:)
-            let $chunk-size := 500
+            let $chunk-size := 100
             let $chunks-count := (count($output-nodes) div $chunk-size)  ! ceiling(.) ! xs:integer(.)
             for $chunk-index in 1 to $chunks-count
             let $chunk-start := (($chunk-index - 1) * $chunk-size) + 1
             let $chunk-end := $chunk-start + ($chunk-size - 1)
             let $subsequence := subsequence($output-nodes, $chunk-start, $chunk-size)
+            let $last-location-id := (local:last-location($output-nodes[$chunk-start - 1]), $last-location-id)[1]
             return
                 (:text { '&#10;' || $chunk-start || '-' || $chunk-end || ' ' || count($subsequence) || ' nodes' }:)
                 local:output-nodes($subsequence, 1, $last-location-id)
@@ -67,12 +71,13 @@ declare function local:parse-elements($elements as element()*, $element-index as
         (: Look for groups down the tree :) 
         else if($child-elements) then
             (:text { '&#10;' || count($child-elements) || ' elements' }:)
-            let $chunk-size := 500
+            let $chunk-size := 100
             let $chunks-count := (count($child-elements) div $chunk-size)  ! ceiling(.) ! xs:integer(.)
             for $chunk-index in 1 to $chunks-count
             let $chunk-start := (($chunk-index - 1) * $chunk-size) + 1
             let $chunk-end := $chunk-start + ($chunk-size - 1)
             let $subsequence := subsequence($child-elements, $chunk-start, $chunk-size)
+            let $last-location-id := (local:last-location($output-nodes[$chunk-start - 1]), $last-location-id)[1]
             return
                 (:text { '&#10;' || $chunk-start || '-' || $chunk-end || ' ' || count($subsequence) || ' nodes' }:)
                 local:parse-elements($subsequence, 1, $last-location-id)
@@ -83,21 +88,23 @@ declare function local:parse-elements($elements as element()*, $element-index as
         (: Recurse to next element :)
         if($element-index lt count($elements)) then
             
-            let $last-location := $output-nodes[last()] ! local:persistent-location(.)
-            
-            let $last-location-id := 
-                if($last-location[(@xml:id, @id)[. gt '']]) then
-                    ($last-location/@xml:id, $last-location/@id)[. gt ''][1]
-                else
-                    $last-location-id
-            
+            (:try{:)
+            let $last-location-id := (local:last-location($output-nodes), $last-location-id)[1]
             return
                 local:parse-elements($elements, $element-index + 1, $last-location-id)
-        
+            (:} catch * { text {'[[error]]'} }:)
+          
         else ()
         
     )
     
+};
+
+declare function local:last-location($output-nodes as node()*) as xs:string? {
+    let $last-location := $output-nodes[last()] ! local:persistent-location(.)
+    return 
+        ($last-location/@xml:id, $last-location/@id)[. gt ''][1]
+
 };
 
 declare function local:output-nodes($output-nodes as node()*, $node-index as xs:integer, $last-location-id as xs:string) as text()* {

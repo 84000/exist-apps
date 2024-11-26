@@ -448,7 +448,7 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
             element toh-key {
                 $source-key
             },
-            element xmlId { 
+            element xmlid { 
                 $text-id
             },
             element toh-first {

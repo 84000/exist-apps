@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- include navigation stylesheet -->
     <xsl:import href="84000-html.xsl"/>
@@ -477,20 +477,20 @@ posthog.init('phc_eyrjKik6EzA9Z6ezlfVfRUZCvT9Ug4VRddERszvpBV9',{api_host:'https:
     
     <xsl:function name="m:translation-href" as="xs:string">
         <xsl:param name="resource-id" as="xs:string"/>
-        <xsl:param name="part-id" as="xs:string?"/>
+        <xsl:param name="root-part-id" as="xs:string?"/>
         <xsl:param name="commentary-id" as="xs:string?"/>
         <xsl:param name="fragment" as="xs:string?"/>
-        <xsl:value-of select="m:translation-href($resource-id, $part-id, $commentary-id, $fragment, m:translation-url-parameters($resource-id, ()), ())"/>
+        <xsl:value-of select="m:translation-href($resource-id, $root-part-id, $commentary-id, $fragment, m:translation-url-parameters($resource-id, ()), ())"/>
     </xsl:function>
     
     <xsl:function name="m:translation-href" as="xs:string">
         <xsl:param name="resource-id" as="xs:string"/>
-        <xsl:param name="part-id" as="xs:string?"/>
+        <xsl:param name="root-part-id" as="xs:string?"/>
         <xsl:param name="commentary-id" as="xs:string?"/>
         <xsl:param name="fragment" as="xs:string?"/>
         <xsl:param name="url-parameters" as="xs:string?"/>
         <xsl:param name="host" as="xs:string?"/>
-        <xsl:value-of select="concat($host, '/', string-join(('translation', $resource-id, ($part-id[. gt ''], $commentary-id[. gt ''] ! 'index')[1], $commentary-id), '/'), $url-parameters, $fragment ! concat('#', .))"/>
+        <xsl:value-of select="concat($host, '/', string-join(('translation', $resource-id, ($root-part-id[. gt ''], $commentary-id[. gt ''] ! 'index')[1], $commentary-id), '/'), $url-parameters, $fragment ! concat('#', .))"/>
     </xsl:function>
     
     <xsl:function name="m:source-href" as="xs:string">

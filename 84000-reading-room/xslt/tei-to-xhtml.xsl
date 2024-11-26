@@ -3244,8 +3244,7 @@
                                             <xsl:when test="$view-mode[not(@client = ('pdf', 'ebook', 'app'))]">
                                                 <a class="text-danger">
                                                     
-                                                    <!-- Send the milestone-id to the server so it returns the correct part -->
-                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, ()(:$requested-part:), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))))"/>
+                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, (), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))))"/>
                                                     <xsl:attribute name="target" select="'_self'"/>
                                                     <xsl:attribute name="data-loading" select="concat('Reloading as root text for commentary', '...')"/>
                                                     <xsl:value-of select="'Reload this text to be read alongside this commentary'"/>
@@ -3255,8 +3254,7 @@
                                             <xsl:otherwise>
                                                 <a class="printable">
                                                 
-                                                    <!-- Send the milestone-id to the server so it returns the correct part -->
-                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, ()(:$requested-part:), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))), (), 'https://read.84000.co')"/>
+                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, (), $commentary-resource, concat($source-location, '/', encode-for-uri(concat('[data-quote-location=&#34;', $source-location, '&#34;]'))), (), 'https://read.84000.co')"/>
                                                     <xsl:attribute name="target" select="concat('translation-', $commentary-resource)"/>
                                                     <xsl:value-of select="'Open this passage'"/>
                                                     
@@ -3501,7 +3499,7 @@
                                 <a>
                                     
                                     <xsl:variable name="page" select="$part/ancestor-or-self::m:part[@id][@nesting eq '0'][1]/@id"/>
-                                    <xsl:variable name="anchor" select="if($part[not(@nesting eq '0') and not(@id = ('translation', 'appendix'))]) then concat('#', $part/@id) else ''"/>
+                                    <xsl:variable name="anchor" select="if($part[not(@nesting eq '0') and not(@type = ('translation', 'appendix'))]) then concat('#', $part/@id) else ''"/>
                                     <xsl:attribute name="href" select="concat($page, '.xhtml', $anchor)"/>
                                     
                                     <xsl:if test="$part[@type eq 'chapter'][@prefix]">
@@ -3629,19 +3627,22 @@
                                             
                                             <xsl:choose>
                                                 
-                                                <!-- Set href for crawlers, but override in Reading Room -->
-                                                <xsl:when test="$view-mode[@client = ('browser', 'ajax')]">
-                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, $part/@id, $requested-commentary, $part/@id)"/>
+                                                <!-- Set href for crawlers, but override in browser -->
+                                                <xsl:when test="$part[@content-status][not(@content-status eq 'complete')] and $view-mode[@client = ('browser', 'ajax')]">
+                                                    <xsl:variable name="root-part" select="($part/ancestor-or-self::m:part[@id][@nesting eq '0'][not(@type = ('translation'))])[1]"/>
+                                                    <xsl:attribute name="href" select="m:translation-href($requested-resource, $root-part/@id, $requested-commentary, $part/@id)"/>
                                                     <xsl:attribute name="data-href-override" select="concat('#', $part/@id)"/>
-                                                    <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                                 </xsl:when>
                                                 
-                                                <!-- PDFs use hash -->
                                                 <xsl:otherwise>
                                                     <xsl:attribute name="href" select="concat('#', $part/@id)"/>
                                                 </xsl:otherwise>
                                                 
                                             </xsl:choose>
+                                            
+                                            <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
+                                                <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
+                                            </xsl:if>
                                             
                                             <xsl:apply-templates select="$part-head/node()[not(self::tei:note)]"/>
                                             

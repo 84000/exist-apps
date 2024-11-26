@@ -2,6 +2,7 @@ xquery version "3.1" encoding "UTF-8";
 
 import module namespace common="http://read.84000.co/common" at "../modules/common.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "../modules/tei-content.xql";
+import module namespace store="http://read.84000.co/store" at "../modules/store.xql";
 import module namespace webflow="http://read.84000.co/webflow-api" at "/db/apps/84000-operations/modules/webflow-api.xql";
 import module namespace functx="http://www.functx.com";
 
@@ -26,12 +27,12 @@ declare function local:extend-file-versions() {
     
     let $update-file-versions := (
     
-        $file-versions//eft:file-version[starts-with(@file-name, $text-id)][not(@status eq $publication-status) or not(@version eq $publication-version)],
+        $file-versions//eft:file-version[starts-with(@file-name, $text-id)][not(@status)],
         
         for $bibl in $tei//tei:sourceDesc/tei:bibl[@key]
         let $source-key := $bibl/@key/string()
         return 
-            $file-versions//eft:file-version[starts-with(@file-name, $source-key)][not(@status eq $publication-status) or not(@version eq $publication-version)]
+            $file-versions//eft:file-version[starts-with(@file-name, $source-key)][not(@status)]
 
     )
     
@@ -39,7 +40,7 @@ declare function local:extend-file-versions() {
         for $bibl in $tei//tei:sourceDesc/tei:bibl[@key]
         let $source-key := $bibl/@key/string()
         return 
-            $webflow-conf//webflow:item[@id eq $source-key][not(@status eq $publication-status) or not(@version eq $publication-version)]
+            $webflow-conf//webflow:item[@id eq $source-key][not(@status) or not(@version)]
     
     return (
     
@@ -50,8 +51,12 @@ declare function local:extend-file-versions() {
         
         for $webflow-item in $update-webflow-items
         return (
-            update insert attribute status { $publication-status } into $webflow-item,
-            update insert attribute version { $publication-version } into $webflow-item
+            if($webflow-item[not(@status)]) then
+                update insert attribute status { $publication-status } into $webflow-item
+            else (),
+            if($webflow-item[not(@version)]) then
+                update insert attribute version { $publication-version } into $webflow-item
+            else ()
         )
         
     )
@@ -75,5 +80,8 @@ declare function local:patch-texts() {
     
 };
 
-local:extend-file-versions()
-(:local:patch-texts():)
+(:local:extend-file-versions():)
+local:patch-texts()
+
+
+

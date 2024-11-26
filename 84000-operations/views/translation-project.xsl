@@ -9,11 +9,11 @@
     <xsl:variable name="translation-status" select="$response/m:translation-status"/>
     
     <xsl:variable name="updates-required" as="element()*">
-        <xsl:sequence select="$text/m:files/m:file[@publish][not(@timestamp[not(. = ('none',''))])] | $text/m:files/m:file[@group = ('translation-html')][not(@up-to-date)] | $text/m:files/m:file[@group = ('translation-files')][@version gt ''][not(@version eq parent::m:files/@tei-version)]"/>
+        <xsl:sequence select="$text/m:files/m:file[@publish][not(@timestamp[not(. = ('none',''))])] | $text/m:files/m:file[@group = ('translation-html')][not(@up-to-date)] | $text/m:files/m:file[@group = ('translation-files')][not(@action eq 'manual')][@version gt ''][not(@version eq parent::m:files/@tei-version)]"/>
         <xsl:sequence select="$text/m:api-status/m:api-call[@publish][not(@timestamp[not(. = ('none',''))])] | $text/m:api-status/m:api-call[@status and not(@status eq parent::m:api-status/@tei-status)]"/>
     </xsl:variable>
     <xsl:variable name="updates-possible" as="element()*">
-        <xsl:sequence select="($text/m:files/m:file[@group = ('translation-files', 'source-html')][@publish][@status and not(@status eq parent::m:files/@tei-status)] | $text/m:files/m:file[@publish][not(@up-to-date)]) except $updates-required"/>
+        <xsl:sequence select="($text/m:files/m:file[@group = ('translation-files', 'source-html')][@publish][@status and not(@status eq parent::m:files/@tei-status)] | $text/m:files/m:file[@publish or @action eq 'manual'][not(@up-to-date)]) except $updates-required"/>
         <xsl:sequence select="($text/m:api-status/m:api-call[not(@action eq 'scheduled')][not(@up-to-date)]) except $updates-required"/>
     </xsl:variable>
     <xsl:variable name="updates-scheduled" as="element()*">

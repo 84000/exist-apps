@@ -184,7 +184,7 @@
                     <xsl:for-each select="m:results/m:translation">
                         
                         <xsl:sort select="count(m:tests/m:test[@pass eq '1'])" order="ascending"/>
-                        <xsl:sort select="number(@duration)" order="descending"/>
+                        <xsl:sort select="number(@duration-default-mode)" order="descending"/>
                         
                         <xsl:variable name="table-row" select="position()"/>
                         <xsl:variable name="toh-key" select="m:toh/@key"/>
@@ -209,11 +209,11 @@
                                     
                                     <xsl:choose>
                                         
-                                        <xsl:when test="number(@duration) gt 5">
+                                        <xsl:when test="number(@duration-default-mode) gt 5">
                                             <xsl:attribute name="class" select="'label label-danger'"/>
                                         </xsl:when>
                                         
-                                        <xsl:when test="number(@duration) gt 1">
+                                        <xsl:when test="number(@duration-default-mode) gt 1">
                                             <xsl:attribute name="class" select="'label label-warning'"/>
                                         </xsl:when>
                                         
@@ -223,7 +223,7 @@
                                         
                                     </xsl:choose>
                                     
-                                    <xsl:value-of select="concat(@duration, ' secs')"/>
+                                    <xsl:value-of select="concat(format-number(@duration-default-mode, '#,##0.0'), 's / ', format-number(@duration-test-mode, '#,##0.0'), 's')"/>
                                     
                                 </span>
                             </td>
