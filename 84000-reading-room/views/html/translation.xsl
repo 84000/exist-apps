@@ -861,7 +861,7 @@
                                 
                                 <!-- The javascript will intercept and use this in the RR, loading the part into the skeleton of the text -->
                                 <xsl:with-param name="href-override">
-                                    <xsl:if test="not($part[@content-status = ('complete')]) and $view-mode[@client = ('browser', 'ajax')]">
+                                    <xsl:if test="$part[@content-status eq 'preview'] and $view-mode[@client = ('browser', 'ajax')]">
                                         <xsl:value-of select="concat('#', $part/@id)"/>
                                     </xsl:if>
                                 </xsl:with-param>
