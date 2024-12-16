@@ -141,7 +141,16 @@
                 <xsl:value-of select="$page-title"/>
             </title>
             
-            <xsl:variable name="fe-version" select="'2.25.1'"/>
+            <xsl:variable name="fe-version" as="xs:string">
+                <xsl:choose>
+                    <xsl:when test="$toh-key eq 'toh00'">
+                        <xsl:value-of select="'2.25.1-dev'"/>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="'2.25.1'"/>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
             
             <link rel="stylesheet" type="text/css">
                 <xsl:choose>

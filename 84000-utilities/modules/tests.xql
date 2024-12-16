@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace tests="http://utilities.84000.co/tests";
 
@@ -691,42 +691,41 @@ declare function tests:refs($tei as element(tei:TEI)*, $html as document-node()*
 
 declare function tests:toc($html as document-node()*, $toh-key as xs:string) as element(m:test) {
     
+    let $html-ids :=  $html//@id/string()
+    let $partial-part-ids := ($html/descendant::xhtml:aside[common:contains-class(@class, 'partial')]/@id/string(), 'index') (: Add index to weed out commentaries :)
+    let $part-map-script := $html/descendant::xhtml:script[matches(text(), 'var\s+partMap')] ! string-join(text()) ! normalize-space(.)
+    let $part-map-json := replace($part-map-script, '^var\s+partMap\s+=\s+(\{[^\}]*\})(.*)', '$1', 'i')
+    let $parts-map := $part-map-json ! fn:parse-json(.)
+    
     (: If href="#*" then check the fragment id is in the html doc :)
-    let $id-links := $html//xhtml:a[matches(@href, '^#.+')][not(@data-bookmark)]
-    let $parts-map := $html//xhtml:script[matches(text(), 'var\s+partMap')] ! string-join(text()) ! normalize-space(.)
+    let $id-links := $html/descendant::xhtml:a[matches(@href, '^#.+')][not(@data-bookmark)]
     let $id-links-dead := 
         for $link in $id-links
-        let $link-target-id := replace($link/@href, '^#', '') ! tokenize(., '/')[1]
-        let $link-target := $html//xhtml:*[@id eq $link-target-id]
-        let $link-target := 
-            if(not($link-target) and $parts-map and matches($parts-map, functx:escape-for-regex($link-target-id))) then
-                $parts-map 
-            else
-                $link-target
-        where not($link-target)
+        let $link-id-valid := local:link-id-valid($link, $html-ids, $parts-map)
+        where not($link-id-valid)
         return
             $link
     
     (: If href="/translation/{toh-key}/{part-id}*" then check the part-id is a root part in the TEI :)
-    let $part-links := $html//xhtml:a[matches(@href, concat('^/translation/', functx:escape-for-regex($toh-key), '/.+'))]
-    let $partial-part-ids := $html//xhtml:aside[common:contains-class(@class, 'partial')]/@id/string()
+    let $part-links := $html/descendant::xhtml:a[matches(@href, concat('^/translation/', functx:escape-for-regex($toh-key), '/.+'))]
     let $part-links-dead := 
         for $link in $part-links
         let $link-target-part := replace($link/@href, concat('^/translation/', functx:escape-for-regex($toh-key), '/([^/#]+)(.*)'), '$1')
-        where not($partial-part-ids[. eq $link-target-part])
+        let $partial-part-id := $partial-part-ids[. eq $link-target-part]
+        let $link-id-valid := local:link-id-valid($link, $html-ids, $parts-map)
+        where not($partial-part-id) or not($link-id-valid)
         return
             $link
     
     let $dead-links := ($id-links-dead, $part-links-dead)
     
-    let $pass := if(count($dead-links) eq 0) then 1 else 0
-    
     return
-        <test xmlns="http://read.84000.co/ns/1.0" id="toc" pass="{ $pass }">
+        <test xmlns="http://read.84000.co/ns/1.0" id="toc" pass="{ if(count($dead-links) eq 0) then 1 else 0 }">
             <title>Table of contents test: the table of contents links correctly to the parts.</title>
             <details>
                 <detail>{ format-number(count($id-links), '#,###') } link(s) to ids in the HTML.</detail>
                 <detail>{ format-number(count($part-links), '#,###') } link(s) to other sections of the publication.</detail>
+                <detail>{ format-number(count($dead-links), '#,###') } dead link(s).</detail>
                 {
                     for $dead-link in $dead-links
                     return
@@ -734,6 +733,23 @@ declare function tests:toc($html as document-node()*, $toh-key as xs:string) as 
                 }
             </details>
         </test>
+        
+};
+
+declare function local:link-id-valid($link as element(xhtml:a), $html-ids as xs:string*, $parts-map as map(*)) as xs:boolean? {
+    
+    let $link-id := tokenize($link/@href, '#')[last()] ! tokenize(., '/')[1]
+    let $link-id-valid := $html-ids[. eq $link-id]
+    let $link-id-valid := 
+        if(not($link-id-valid)) then
+            if($parts-map($link-id)) then
+                $link-id
+            else ()
+        else
+            $link-id-valid
+    
+    return
+        if($link-id-valid) then true() else false()
         
 };
 

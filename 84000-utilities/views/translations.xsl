@@ -24,7 +24,7 @@
                 
                 <!-- Search form -->
                 <div class="col-sm-6">
-                    <form action="/translations.html" method="get" class="form-horizontal">
+                    <form action="/translations.html" method="get" class="form-horizontal labels-left">
                         
                         <xsl:attribute name="data-loading" select="'Loading...'"/>
                         
@@ -40,17 +40,17 @@
                                 <label for="toh-min" class="col-sm-2 control-label">
                                     <xsl:value-of select="'Tohoku:'"/>
                                 </label>
-                                <div class="col-sm-3">
+                                <div class="col-sm-2">
                                     <input type="number" name="toh-min" class="form-control" id="toh-min" maxlength="5" placeholder="min.">
                                         <xsl:attribute name="value" select="$toh-min"/>
                                     </input>
                                 </div>
-                                <div class="col-sm-3">
+                                <div class="col-sm-2">
                                     <input type="number" name="toh-max" class="form-control" id="toh-max" maxlength="5" placeholder="max.">
                                         <xsl:attribute name="value" select="$toh-max"/>
                                     </input>
                                 </div>
-                                <div class="col-sm-3">
+                                <div class="col-sm-2">
                                     <button type="submit" class="btn btn-primary">
                                         <xsl:value-of select="'Search'"/>
                                     </button>
@@ -98,6 +98,7 @@
                         </div>
                     </xsl:when>
                     
+                    <!--
                     <xsl:when test="$page-filter eq 'new-version-translations' and $environment/m:store-conf[@type eq 'client'] and $request/m:authenticated-user/m:group[@name eq 'git-push']">
                         <div class="col-sm-6">
                             <form method="post" class="form-horizontal bottom-margin">
@@ -174,7 +175,7 @@
                                 
                             </form>
                         </div>
-                    </xsl:when>
+                    </xsl:when> -->
                     
                 </xsl:choose>
             

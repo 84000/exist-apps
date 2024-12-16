@@ -119,30 +119,45 @@ declare function sponsors:update($sponsor as element(m:sponsor)?) as xs:string {
     let $country := request:get-parameter('country', '')
     
     let $new-value := 
-        <sponsor xmlns="http://read.84000.co/ns/1.0" 
-            xml:id="{ $sponsor-id }">
-            <label>{ $name }</label>
-            {
-                if($internal-name) then
-                    <internal-name>{ $internal-name }</internal-name>
-                else
-                    ()
-            }
-            {
-                if($country) then
-                    <country>{ $country}</country>
-                else
-                    ()
-            }
-            {
-                for $type in ('founding', 'matching-funds', 'sutra')
-                return
-                    if(request:get-parameter(concat($type, '-type'), '')) then
-                        <type id="{ $type }"/>
-                    else
-                        ()
-            }
-        </sponsor>
+        element { QName('http://read.84000.co/ns/1.0', 'sponsor') } {
+        
+            attribute xml:id { $sponsor-id },
+            attribute timestamp { current-dateTime() },
+            
+            common:ws(2),
+            element label { $name },
+            
+            if($internal-name) then (
+                common:ws(2),
+                element internal-name { $internal-name }
+            )
+            else ()
+            ,
+            
+            if($country) then (
+                common:ws(2),
+                element country { $country}
+            )
+            else ()
+            ,
+            
+            for $type in ('founding', 'matching-funds', 'sutra')
+            return
+                if(request:get-parameter(concat($type, '-type'), '')) then (
+                    common:ws(2),
+                    element type { attribute id { $type } }
+                )
+                else ()
+            ,
+            
+            for $element in $sponsor/*[not(local-name(.) = ('label','internal-name','country', 'type'))]
+            return (
+                common:ws(2),
+                $element
+            )
+            ,
+            common:ws(1)
+        }
     
     let $parent := $sponsors:sponsors/m:sponsors
     

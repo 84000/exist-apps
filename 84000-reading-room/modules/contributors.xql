@@ -304,6 +304,7 @@ declare function contributors:update-person($person as element(m:person)?) as xs
         element { QName('http://read.84000.co/ns/1.0', 'person') } {
         
             attribute xml:id { $person-id },
+            attribute timestamp { current-dateTime() },
             
             $common:line-ws,
             
@@ -376,6 +377,8 @@ declare function contributors:update-team($team as element(m:team)?) as xs:strin
         element { QName('http://read.84000.co/ns/1.0', 'team') } {
         
             attribute xml:id { $team-id },
+            attribute timestamp { current-dateTime() },
+            
             if(request:get-parameter('hidden', '') eq '1') then
                 attribute rend { 'hidden' }
             else ()
@@ -419,6 +422,8 @@ declare function contributors:update-institution($institution as element(m:insti
         element { QName('http://read.84000.co/ns/1.0','institution') } {
         
             attribute xml:id { $institution-id },
+            attribute timestamp { current-dateTime() },
+            
             attribute institution-type-id { request:get-parameter('institution-type-id', '') },
             attribute region-id { request:get-parameter('region-id', '') },
             

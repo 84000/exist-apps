@@ -366,7 +366,7 @@
                 </xsl:when>
                 <xsl:otherwise>
                     <div class="alert alert-danger small" role="alert">
-                        <xsl:value-of select="'To ensure these updates are deployed to the distribution server please increment the version number in the status section!!'"/>
+                        <xsl:value-of select="'To ensure these updates are deployed please increment the version number of the publication!!'"/>
                     </div>
                 </xsl:otherwise>
             </xsl:choose>

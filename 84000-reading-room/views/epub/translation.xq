@@ -16,7 +16,7 @@ declare variable $data := request:get-data();
 declare function local:generate-epub() as xs:base64Binary? {
     
     let $translation-title := $data//eft:translation/eft:titles/eft:title[@xml:lang eq 'en']/string()
-    let $epub-id := concat('http://read.84000.co/translation/', $data//eft:translation/eft:source/@key, '.epub')
+    let $epub-id := concat('https://84000.co/translation/', $data//eft:translation/eft:source/@key, '.epub')
     
     let $entries := (
         <entry name="mimetype" type="text" method="store">application/epub+zip</entry>,

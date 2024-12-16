@@ -117,7 +117,12 @@ declare function source:etext-full($location as element(m:location)) as element(
     element { QName('http://read.84000.co/ns/1.0', 'source') } {
         $location/@work,
         for $volume in $location/m:volume
-            for $page-in-volume at $page-index in xs:integer($volume/@start-page) to xs:integer($volume/@end-page)
+        let $text-count-pages := xs:integer($volume/@end-page) - xs:integer($volume/@start-page)
+        let $offset-in-work-volume := if($location/@work eq $source:tengyur-work) then 2 else 0
+        let $volume-start-page := (xs:integer($volume/@start-page) + $offset-in-work-volume)
+        let $volume-end-page := $volume-start-page + $text-count-pages
+        return
+            for $page-in-volume at $page-index in $volume-start-page to $volume-end-page
             return 
                 local:etext-page($location/@work, xs:integer($volume/@number), $page-in-volume, $page-index, false())
     }

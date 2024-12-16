@@ -386,10 +386,7 @@
                                     </xsl:call-template>
                                     <!-- define an anchor so we can link back to this point -->
                                     <xsl:attribute name="id" select="$ref/@xml:id"/>
-                                    <!-- Maintain old links for now -->
-                                    <xsl:attribute name="href" select="concat('https://read.84000.co', '/', 'source', '/', $toh-key, '.html', '?ref-index=', $folio-ref-index)"/>
-                                    <!-- TO DO: implement new links
-                                    <xsl:attribute name="href" select="concat('https://read.84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> -->
+                                    <xsl:attribute name="href" select="concat('https://84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> 
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </a>
                                 
@@ -398,10 +395,7 @@
                             <xsl:otherwise>
                                 
                                 <span class="ref">
-                                    <!-- Maintain old links for now -->
-                                    <xsl:attribute name="data-href" select="concat('https://read.84000.co', '/', 'source', '/', $toh-key, '.html', '?ref-index=', $folio-ref-index)"/>
-                                    <!-- TO DO: implement new links
-                                    <xsl:attribute name="data-href" select="concat('https://read.84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> -->
+                                    <xsl:attribute name="data-href" select="concat('https://84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> 
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </span>
                                 

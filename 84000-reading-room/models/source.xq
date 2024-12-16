@@ -137,7 +137,7 @@ return
             (: Get the whole text :)
             else 
                 source:etext-full($tei-location)
-                
+        
         (: Get glossary cache :)
         let $glossary-cached-locations := glossary:cached-locations($tei, (), false())
         (: Get tei outline :)

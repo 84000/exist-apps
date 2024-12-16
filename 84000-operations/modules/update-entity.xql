@@ -14,6 +14,7 @@ declare function update-entity:new-entity($label-lang as xs:string?, $label-text
     element { QName('http://read.84000.co/ns/1.0', 'entity') } {
     
         attribute xml:id { entities:next-id() },
+        attribute timestamp { current-dateTime() },
         
         common:ws(2),
         if($label-lang eq 'bo') then
@@ -86,6 +87,15 @@ declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:
         
 };
 
+declare function local:touch-entity($entity as element(m:entity)) {
+    
+    if($entity/@timestamp) then
+        update replace $entity/@timestamp with attribute timestamp { current-dateTime() }
+    else
+        update insert attribute timestamp { current-dateTime() } into $entity
+    
+};
+
 (: Update labels, types and content :)
 declare function update-entity:headers($entity-id as xs:string?) as element()? {
     
@@ -114,6 +124,7 @@ declare function update-entity:headers($entity-id as xs:string?) as element()? {
             element { QName('http://read.84000.co/ns/1.0', 'entity') } {
                 
                 attribute xml:id { $entity-id },
+                attribute timestamp { current-dateTime() },
                 
                 (: Labels for the entity :)
                 for $label-param in $entity-labels
@@ -286,9 +297,11 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
             else
                 $relation
         
-        return
-            common:update('entity-resolve', $relation, (), (), ())
-    
+        return (
+            common:update('entity-resolve', $relation, (), (), ()),
+            $relation/parent::m:entity ! local:touch-entity(.)
+        )
+        
     (: Set the predicate for the relationship :)
     else if($entities:predicates//m:predicate[@xml:id = $predicate]) then
     
@@ -307,10 +320,12 @@ declare function update-entity:resolve($entity-id as xs:string, $target-entity-i
             }
         
         where $entity and $target-entity
-        return
+        return (
             (: Update target :)
-            common:update('entity-resolve', $existing-relation, $new-relation, $entity, ())
-    
+            common:update('entity-resolve', $existing-relation, $new-relation, $entity, ()),
+            $entity ! local:touch-entity(.),
+            $target-entity ! local:touch-entity(.)
+        )
     else ()
     
 };
@@ -325,7 +340,9 @@ declare function update-entity:merge($entity-id as xs:string, $target-entity-id 
     let $merged-entity := 
         element { node-name($target-entity) } {
         
-            $target-entity/@*,
+            $target-entity/@*[not(local-name(.) eq 'timestamp')],
+            attribute timestamp { current-dateTime() },
+        
             
             (: TO DO: this can allow duplicate sameAs relations if labels are different :)
             for $entity-element in functx:distinct-deep(($entity/* | $target-entity/*))[not(./@predicate eq 'sameAs' and ./@id eq $target-entity-id)]
@@ -400,17 +417,19 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
         else ()
     
     where $new-instance
-    return
+    return (
         (: Update the entity :)
         (:common:update('entity-match-instance', $existing-instance, $new-instance, $entity, ()):)
         if($existing-instance) then
             update replace $existing-instance with $new-instance
         else 
             update insert ( text{ $common:chr-tab } , $new-instance, common:ws(1) ) into $entity
-            
+       ,
+       $entity ! local:touch-entity(.)
+    )
 };
 
-declare function update-entity:move-instance($instance-id as xs:string, $instance-type as xs:string, $instance-existing as element(m:instance)?, $target-element as element()*) {
+declare function update-entity:move-instance($instance-id as xs:string, $instance-type as xs:string, $instance-existing as element(m:instance)?, $target-entity as element(m:entity)?) {
     
     let $instance-new :=
         element { QName('http://read.84000.co/ns/1.0','instance') } {
@@ -424,15 +443,17 @@ declare function update-entity:move-instance($instance-id as xs:string, $instanc
         (: Adding new instance :)
         not($instance-existing) 
         (: Moving instance :)
-        or count($target-element | $instance-existing/parent::m:*) gt 1
+        or count($target-entity | $instance-existing/parent::m:*) gt 1
         (: Deleting instance :)
-        or not($target-element)
+        or not($target-entity)
         
     return (
         
         (: Insert new instance :)
-        if($target-element) then
-            update insert (text{ $common:chr-tab }, $instance-new, common:ws(1) ) into $target-element
+        if($target-entity) then (
+            update insert (text{ $common:chr-tab }, $instance-new, common:ws(1) ) into $target-entity,
+            local:touch-entity($target-entity)
+        )
         else (),
         
         (: Delete existing :)
@@ -453,9 +474,10 @@ declare function update-entity:remove-instance($instance-id as xs:string) as ele
     return (
         
         (: If there are other instances just remove this instance :)
-        if($entity/m:instance except $instance) then
-            common:update('entity-remove-instance', $instance, (), (), ())
-        
+        if($entity/m:instance except $instance) then (
+            common:update('entity-remove-instance', $instance, (), (), ()),
+            local:touch-entity($entity)
+        )
         (: Otherwise delete the whole entity :)
         else (
             (: Remove relations to the entity - Actually keep them :)
@@ -508,9 +530,12 @@ declare function local:set-flag($instance-id as xs:string, $type as xs:string, $
         }
     
     where $existing-instance and $new-instance
-    return
-        update replace $existing-instance with $new-instance
+    return (
         (:common:update('set-entity-flag', $existing-instance, $new-instance, (), ()):)
+        update replace $existing-instance with $new-instance,
+        local:touch-entity($existing-instance/parent::m:entity)
+    )
+    
 };
 
 (: Auto-assign entities to all glossary entries in a text :)
@@ -544,7 +569,7 @@ declare function update-entity:auto-assign-glossary($text-id as xs:string, $crea
                     if(count($search-terms-sa) gt 0) then
                         $glossary:tei//tei:back//tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]/parent::tei:gloss except $gloss
                     else ()
-                
+               
                 (: Is there a matching Tibetan term? :)
                 let $search-terms-bo := distinct-values($gloss/tei:term[@xml:lang eq 'Bo-Ltn']/text() ! normalize-space(.)) (:distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.))):)
                 let $regex-bo := string-join($search-terms-bo ! functx:escape-for-regex(.), '|') ! concat('^\s*(', ., ')\s*$')

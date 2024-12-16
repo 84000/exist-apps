@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:dc="http://purl.org/dc/terms/" version="3.0" exclude-result-prefixes="#default">
+<xsl:stylesheet xmlns="http://www.w3.org/2005/Atom" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/terms/" version="3.0" exclude-result-prefixes="#default">
     
     <xsl:import href="../../xslt/tei-to-xhtml.xsl"/>
     
@@ -167,7 +167,7 @@
             </title>
             
             <id>
-                <xsl:value-of select="concat('http://read.84000.co/section/', upper-case($sub-section/@id), '/', $feed-type)"/>
+                <xsl:value-of select="concat('https://84000.co/section/', upper-case($sub-section/@id), '/', $feed-type)"/>
             </id>
             
             <updated>
@@ -204,7 +204,7 @@
             </title>
             
             <id>
-                <xsl:value-of select="concat('http://read.84000.co/translation/', lower-case($text/@resource-id))"/>
+                <xsl:value-of select="concat('https://84000.co/translation/', lower-case($text/@resource-id))"/>
             </id>
             
             <updated>

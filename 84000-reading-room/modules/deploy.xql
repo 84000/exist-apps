@@ -108,7 +108,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                     concat($sub-dir, $resource-relative)
             
             (: There's a sub-directory defined so only commit that :)
-            else if(count($repo/m:sync[@sub-dir]) eq 1) then
+            else if(count($repo/m:sync) eq 1 and $repo/m:sync[@sub-dir]) then
                 $repo/m:sync[1]/@sub-dir/string()
             
             (: Default to all :)
@@ -124,7 +124,7 @@ declare function deploy:push($repo-id as xs:string, $admin-password as xs:string
                 
                 (: Sync the data for each $repo/m:sync :)
                 for $sync in $repo/m:sync[@collection]
-                    
+                
                 (: Sub directory to sync :)
                 let $sub-dir := $sync/@sub-dir ! concat('/',  .)
                 

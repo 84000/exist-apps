@@ -21,18 +21,37 @@ if($store:conf[@source-url]) then (
     
     for $tei at $tei-index in $published-tei
     let $text-id := tei-content:id($tei)
-    let $document-url := base-uri($tei)
+    (:let $document-url := base-uri($tei)
     let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')
-    let $document-path := substring-before($document-url, concat('/', $file-name))
-    (:let $single-page := translation:single-page($tei)
-    where not($single-page) (\:and $text-id eq 'UT22084-001-001':\):)
+    let $document-path := substring-before($document-url, concat('/', $file-name)):)
+    (:let $single-page := translation:single-page($tei):)
+    (:let $tei-last-modified := xmldb:last-modified($document-path, $file-name) ! xs:dateTime(.)
+    let $previous-touch := xs:dateTime('2024-11-27T15:00:06.225Z'):)
+    (:where (\:not($single-page) and:\) (\:$tei-last-modified lt $previous-touch and:\) $text-id eq 'UT22084-001-001':)
     return (
-        $tei//tei:sourceDesc/tei:bibl/tei:ref,
-        (:$document-path, $file-name,:)
-        xmldb:touch($document-path, $file-name),
+        (:$tei//tei:sourceDesc/tei:bibl/tei:ref,:)
+        (:$document-path, 
+        $file-name,:)
+        (:$tei-last-modified,
+        $previous-touch,
+        xmldb:touch($document-path, $file-name),:)
+        
+        $text-id,
         store:publication-files($tei, ('translation-html'), ()),
-        process:execute(('sleep', '1'), $local:exOptions) ! ()
+        process:execute(('sleep', '1'), $local:exOptions) ! (),
+        
+        for $toh-key in $tei//tei:sourceDesc/tei:bibl/@key
+        return
+            for $file-extension in ('pdf', 'epub')
+            let $file-name := concat($toh-key, '.', $file-extension)
+            return (
+                $file-name,
+                store:publication-files($tei, ('translation-files'), $file-name),
+                process:execute(('sleep', '1'), $local:exOptions) ! ()
+            )
+        
     )
     
 )
 else ()
+

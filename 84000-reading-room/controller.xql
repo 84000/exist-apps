@@ -497,7 +497,7 @@ return
                     )
             
             (: xml model -> txt view :)
-            else if ($resource-suffix eq'txt') then
+            else if ($resource-suffix eq 'txt') then
                 local:dispatch("/models/source.xq", "/views/txt/source.xq",
                     <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                         <add-parameter name="resource-id" value="{ replace($resource-id, '\-bo(\-plain)?$', '') }"/>
