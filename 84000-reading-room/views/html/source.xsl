@@ -13,6 +13,12 @@
     <xsl:variable name="back-link" select="$source/m:back-link[@url]"/>
     <xsl:variable name="folio-title" select="($translation/m:folio-content/@start-ref[. gt ''], $source/m:page[1]/@folio-in-etext ! concat('Folio ', .))[1]"/>
     
+    <xsl:variable name="glossary-prioritised-tibetan" as="element(tei:gloss)*">
+        <xsl:perform-sort select="$translation/m:part[@type eq 'glossary']//tei:gloss[@xml:id][tei:term[@xml:lang eq 'bo'][normalize-space(text())]]">
+            <xsl:sort select="max(tei:term[@xml:lang eq 'bo'] ! string-join(text()) ! normalize-space(.) ! string-length(.))" order="descending"/>
+        </xsl:perform-sort>
+    </xsl:variable>
+    
     <xsl:template match="/m:response">
         
         <xsl:variable name="work" select="$source/@work"/>
@@ -315,7 +321,7 @@
             </p>
             
             <!-- If editor the overlay with marked content -->
-            <xsl:if test="$glossary-prioritised">
+            <xsl:if test="$glossary-prioritised-tibetan">
                 <p class="source text continuous text-bo" aria-hidden="true">
                     
                     <xsl:variable name="text-normalized" as="text()">
@@ -323,7 +329,7 @@
                     </xsl:variable>
                     
                     <xsl:variable name="match-glossary-items" as="element(tei:gloss)*">
-                        <xsl:for-each select="$glossary-prioritised">
+                        <xsl:for-each select="$glossary-prioritised-tibetan">
                             
                             <xsl:variable name="terms" select="m:glossary-terms-to-match(., 'bo')"/>
                             
