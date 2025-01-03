@@ -254,7 +254,7 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                 
                 let $request-body := <hc:body media-type="application/json" method="text">{ $data-json }</hc:body>
                 
-                let $request := local:request(xs:anyURI(concat('https://api.webflow.com/v2/collections/', $webflow-collection/@webflow-id, '/items/', $webflow-item/@webflow-id)), 'PATCH', $request-body)
+                let $request := local:request(xs:anyURI(concat('https://api.webflow.com/v2/collections/', $webflow-collection/@webflow-id, '/items/', $webflow-item/@webflow-id, '/live')), 'PATCH', $request-body)
                 
                 let $send-request := hc:send-request($request)
                 
@@ -268,7 +268,7 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
                     $response ! element { 'catalogue-section' } { * },
                     
                     (: Publish the items :)
-                    local:publish-items($webflow-item/@webflow-id),
+                    (:local:publish-items($webflow-item/@webflow-id),:)
                     
                     (: Log timestamp of update :)
                     local:log-patch($webflow-item/@id)
@@ -341,26 +341,36 @@ declare function webflow:patch-text($source-key as xs:string) as element(webflow
     element { QName('http://read.84000.co/webflow-api','patch-text') } {
     
         try {
-                    
-            let $data := 
-                element data {
-                    element fieldData {
-                        webflow:text-data($tei, $source-key)/*[. gt ''][not(@seed-data)]
-                    }
-                }
             
-            (:return if(true()) then $data else:)
             
             let $webflow-item := $webflow:conf//webflow:item[@id eq $source-key]
             let $webflow-collection := $webflow-item/parent::webflow:collection
             
+            let $data := 
+                element data {
+                    (:for $locale in $webflow:conf//webflow:locale
+                    let $text-data := webflow:text-data($tei, $source-key)/*[. gt ''][not(@seed-data)]
+                    return
+                        element items {
+                            attribute json:array {'true'},
+                            element id { $webflow-item/@webflow-id/string() },
+                            element cmsLocaleId { $locale/@webflow-id/string() },
+                            element fieldData { $text-data }
+                        }:)
+                    element fieldData { webflow:text-data($tei, $source-key)/*[. gt ''][not(@seed-data)] }
+                }
+            
             where $tei and $webflow-item
+            
             return
+            
                 let $data-json := serialize($data, $webflow:json-serialization-parameters)
+                
+                (:return if(true()) then $data-json else:)
                 
                 let $request-body := <hc:body media-type="application/json" method="text">{ $data-json }</hc:body>
                 
-                let $request := local:request(xs:anyURI(concat('https://api.webflow.com/v2/collections/', $webflow-collection/@webflow-id, '/items/', $webflow-item/@webflow-id)), 'PATCH', $request-body)
+                let $request := local:request(xs:anyURI(concat('https://api.webflow.com/v2/collections/', $webflow-collection/@webflow-id, '/items/', $webflow-item/@webflow-id, '/live')), 'PATCH', $request-body)
                 
                 let $send-request := hc:send-request($request)
                 
@@ -378,7 +388,7 @@ declare function webflow:patch-text($source-key as xs:string) as element(webflow
                     if($response/fn:map[@key eq 'fieldData'])  then (
                     
                         (: Publish the items :)
-                        local:publish-items($webflow-item/@webflow-id),
+                        (:local:publish-items($webflow-item/@webflow-id),:)
                         
                         (: Log timestamp of update :)
                         local:log-patch($webflow-item/@id, $tei-version, $tei-status)
@@ -404,6 +414,7 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
     let $title-variants := translation:title-variants($tei, $source-key)
     let $summary := translation:summary($tei)
     let $summary-html := $summary ! transform:transform(., doc(concat($common:app-path, '/xslt/tei-to-xhtml.xsl')), <parameters/>)
+    let $summary-string := $summary-html ! string-join(descendant-or-self::xhtml:p//text()) ! normalize-space(.)
     let $summary-html-string := $summary-html ! string-join(descendant-or-self::xhtml:p ! serialize(., $webflow:html5-serialization-parameters)) ! normalize-space(.) ! replace(., concat('^',functx:escape-for-regex('&lt;!DOCTYPE html&gt;'),'\s*'), '')
     let $source := tei-content:source($tei, $source-key)
     let $source-location := tei-content:location($tei-bibl)
@@ -488,8 +499,8 @@ declare function webflow:text-data($tei as element (tei:TEI), $source-key as xs:
                 string-join($tei/tei:teiHeader//tei:publicationStmt/tei:date/text()) ! normalize-space(.)
             },
             element section-description { 
-                attribute seed-data { 'true' },
-                $summary-html-string
+                (:attribute seed-data { 'true' },:)
+                $summary-string
             },
             element rich-text-summary { 
                 $summary-html-string
@@ -678,7 +689,7 @@ declare function webflow:patch-article($article-id as xs:string) as element(webf
                 
                 let $request-body := <hc:body media-type="application/json" method="text">{ $data-json }</hc:body>
                 
-                let $request := local:request(xs:anyURI(concat('https://api.webflow.com/v2/collections/', $webflow-collection/@webflow-id, '/items/', $webflow-item/@webflow-id)), 'PATCH', $request-body)
+                let $request := local:request(xs:anyURI(concat('https://api.webflow.com/v2/collections/', $webflow-collection/@webflow-id, '/items/', $webflow-item/@webflow-id, '/live')), 'PATCH', $request-body)
                 
                 let $send-request := hc:send-request($request)
                 
@@ -692,7 +703,7 @@ declare function webflow:patch-article($article-id as xs:string) as element(webf
                     $response ! element { 'article' } { * },
                     
                     (: Publish the items :)
-                    local:publish-items($webflow-item/@webflow-id),
+                    (:local:publish-items($webflow-item/@webflow-id),:)
                     
                     (: Log timestamp of update :)
                     local:log-patch($webflow-item/@id)

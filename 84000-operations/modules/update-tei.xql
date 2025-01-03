@@ -2,6 +2,7 @@ module namespace update-tei = "http://operations.84000.co/update-tei";
 
 import module namespace update-entity = "http://operations.84000.co/update-entity" at "update-entity.xql";
 import module namespace translation-status = "http://operations.84000.co/translation-status" at "translation-status.xql";
+import module namespace helper="http://operations.84000.co/helper" at "helper.xql";
 
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
@@ -219,9 +220,24 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
                     $do-publication-date-update,
                     $do-version-increment,
                     
-                    (: Push to Github :)
-                    if($store:conf) then 
-                        deploy:push('data-tei', (), concat($text-id, ' / ',  $request-version-number-str), $document-url)
+                    (: Push to Github & push to static site :)
+                    if($store:conf) then (
+                        
+                        deploy:push('data-tei', (), concat($text-id, ' / ',  $request-version-number-str), $document-url),
+                        
+                        (: store-publication-files for unpublished texts :)
+                        if($availability[not(@status eq $translation:published-status-ids)]) then
+                            helper:async-script(
+                                'store-publication-files',
+                                string-join(('store-publication-files', $text-id), '-'),
+                                <parameters xmlns="">
+                                    <param name="resource-id" value="{ $text-id }"/>
+                                    <param name="publish-file-group" value="{ string-join(('translation-html','translation-files'), ',') }"/>
+                                </parameters>
+                            )
+                        
+                        else ()
+                    )
                     else ()
                     
                 )

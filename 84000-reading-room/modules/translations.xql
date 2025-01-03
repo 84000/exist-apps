@@ -256,8 +256,7 @@ declare function translations:filtered-texts(
     
                 for $tei in $teis[tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:availability]
                 let $file-mismatches := local:file-mismatches($tei, $selected-published-filter)
-                where 
-                    $file-mismatches
+                where $file-mismatches
                 return
                     $tei
             
@@ -399,7 +398,7 @@ declare function translations:sorted-texts($texts as element(m:text)*, $sort as 
 declare function translations:filtered-text($tei as element(tei:TEI), $toh-key as xs:string, $include-sponsors as xs:boolean, $include-downloads as xs:string, $include-folios as xs:boolean) as element(){
     
     let $text-id := tei-content:id($tei)
-    let $lang := request:get-parameter('lang', 'en')
+    let $lang := common:request-lang()
     let $toh := translation:toh($tei, $toh-key)
     let $document-url := base-uri($tei)
     let $file-name := util:unescape-uri(replace($document-url, ".+/(.+)$", "$1"), 'UTF-8')

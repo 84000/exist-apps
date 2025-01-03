@@ -7,6 +7,7 @@ declare namespace json="http://www.json.org";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
 import module namespace common = "http://read.84000.co/common" at "../../../modules/common.xql";
+import module namespace glossary = "http://read.84000.co/glossary" at "../../../modules/glossary.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../../modules/entities.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "../../../modules/tei-content.xql";
 import module namespace functx="http://www.functx.com";
@@ -59,9 +60,10 @@ declare function local:authority($xmlId as xs:string, $lastUpdated as xs:dateTim
     }
 };
 
-declare function local:annotation($xmlid as xs:string, $type as xs:string, $content as element()?, $datetime as xs:dateTime?, $userId as xs:string?) as element(eft:annotation) {
+declare function local:annotation($xmlId as xs:string, $subject-xmlId as xs:string, $type as xs:string, $content as element()?, $datetime as xs:dateTime?, $userId as xs:string?) as element(eft:annotation) {
     element { QName('http://read.84000.co/ns/1.0', 'annotation') } {
-        attribute subjectXmlid { $xmlid },
+        attribute xmlid { $xmlId },
+        attribute subjectXmlid { $subject-xmlId },
         attribute type { $type },
         attribute created_at { $datetime },
         attribute person { $userId },
@@ -71,10 +73,11 @@ declare function local:annotation($xmlid as xs:string, $type as xs:string, $cont
 
 declare function local:classification($type as xs:string, $name as xs:string, $description as xs:string?, $parent-type as xs:string?) as element(eft:authorityClassification) {
     element { QName('http://read.84000.co/ns/1.0', 'classification') } {
-        attribute xmlid { $type },
+        attribute xmlid { string-join(('classification', $type), '/') },
+        attribute type { $type },
         attribute name { $name },
         attribute description { $description },
-        attribute parentType { $parent-type }
+        attribute parent { $parent-type }
     }
 };
 
@@ -87,18 +90,18 @@ declare function local:classification($type as xs:string, $name as xs:string, $d
 
 declare function local:object-relation($subject-xmlid as xs:string, $relation as xs:string, $object-xmlid as xs:string) as element(eft:objectRelation) {
     element { QName('http://read.84000.co/ns/1.0', 'objectRelation') } {
-        attribute xmlid { string-join(($subject-xmlid, $relation, $object-xmlid), '/') },
+        attribute xmlid { string-join(($subject-xmlid, 'relation', $object-xmlid), '|') },
         attribute subjectXmlid { $subject-xmlid },
         attribute relation { $relation },
         attribute objectXmlid { $object-xmlid }
     }
 };
 
-declare function local:name($xmlid as xs:string, $language as xs:string, $type as xs:string, $content as xs:string) as element(eft:name) {
+declare function local:name($xmlId as xs:string, $language as xs:string, $type as xs:string, $content as xs:string) as element(eft:name) {
     element { QName('http://read.84000.co/ns/1.0', 'name') } {
-        attribute xmlid { $xmlid },
+        attribute xmlid { $xmlId },
         attribute language { $language },
-        attribute type { $type },
+        (:attribute type { $type },:)
         element content { $content }
     }
 };
@@ -130,9 +133,9 @@ declare function local:distinct-names($entity as element(), $name-type as xs:str
             else (: tei:sponsor, tei:author, tei:editor etc. :)
                 let $label-id := string-join(($entity/@xml:id, $entity/@xml:id), '/')
                 let $name-type := concat(lower-case(local-name($tei-target)), 'Name')
-                where $tei-target[normalize-space(text())]
+                where $tei-target[descendant::text()[normalize-space()]]
                 return
-                    local:name($label-id, ($default-lang, 'en')[1][1], $name-type, string-join($tei-target/text()) ! normalize-space(.))
+                    local:name($label-id, ($default-lang, 'en')[1], $name-type, string-join($tei-target/text()) ! normalize-space(.))
             
     )
         
@@ -185,6 +188,12 @@ declare function local:process-classifications() {
     group by $country-name-slug
     return
         local:classification('demographic/geo/' || $country-name-slug, string-join($country[1]/text()) ! normalize-space(.), concat('A person in the geo/social grouping: ', string-join($country[1]/text()) ! normalize-space(.)), 'demographic/geo')
+    ,
+    
+    local:classification('attestation', 'Attestation', 'Attestation in the source text', ()),
+    for $attestation-type in $glossary:attestation-types/eft:attestation-type
+    return
+        local:classification(string-join(('attestation', $attestation-type/@id), '/'), $attestation-type/eft:label/text(), $attestation-type/eft:description/text(), 'attestation')
     
 };
 
@@ -207,13 +216,13 @@ declare function local:process-entities() {
         for $entity-type-string in distinct-values($entity/eft:type/@type/string())
         let $classification := 
             if($entity-type-string eq 'eft-term') then
-                $local:classifications[@xmlid eq 'term']
+                $local:classifications[@type eq 'term']
             else if($entity-type-string eq 'eft-person') then
-                $local:classifications[@xmlid eq 'textual/person']
+                $local:classifications[@type eq 'textual/person']
             else if($entity-type-string eq 'eft-place') then
-                $local:classifications[@xmlid eq 'textual/location']
+                $local:classifications[@type eq 'textual/location']
             else if($entity-type-string eq 'eft-text') then
-                $local:classifications[@xmlid eq 'text']
+                $local:classifications[@type eq 'text']
             else 
                 local:classification(concat('error:', $entity-type-string), $entity-type-string, (), ())
         return
@@ -222,11 +231,11 @@ declare function local:process-entities() {
         ,
         
         (: content[@type="glossary-notes"] -> Annotation :)
-        $entity/eft:content[@type eq 'glossary-notes'][descendant::text()[normalize-space()]] ! local:annotation($entity/@xml:id, 'definitionNotes', element text { string-join(text()) ! normalize-space(.) }, @timestamp ! xs:dateTime(.), @user)
+        $entity/eft:content[@type eq 'glossary-notes'][descendant::text()[normalize-space()]] ! local:annotation(string-join(($entity/@xml:id, 'contentGlossaryNotes'),'/'), $entity/@xml:id, 'definitionNotes', element text { string-join(text()) ! normalize-space(.) }, @timestamp ! xs:dateTime(.), @user)
         ,
         
         (: content[@type="preferred-translation"] -> Annotation :)
-        $entity/eft:content[@type eq 'preferred-translation'][descendant::text()[normalize-space()]] ! local:annotation($entity/@xml:id, 'preferredTranslation', element text { string-join(text()) ! normalize-space(.) }, @timestamp ! xs:dateTime(.), @user)
+        $entity/eft:content[@type eq 'preferred-translation'][descendant::text()[normalize-space()]] ! local:annotation(string-join(($entity/@xml:id, 'contentPreferredTranslation'),'/'), $entity/@xml:id, 'preferredTranslation', element text { string-join(text()) ! normalize-space(.) }, @timestamp ! xs:dateTime(.), @user)
         ,
         
         (: <relations/> -> Object relation :)
@@ -269,16 +278,18 @@ declare function local:process-entities() {
                         let $term-text := string-join($term/text()) ! normalize-space(.)
                         let $term-lang := ($term/@xml:lang, 'en')[1]
                         let $name := $distinct-names[@language eq $term-lang][eft:content/text() eq $term-text]
-                        let $object-relation := local:object-relation($gloss/@xml:id, 'usesName', ($name/@xmlid, string-join(('error', $term-lang, $term-text), ':'))[1])
-                        let $relation-id := string-join(($gloss/@xml:id, $name/@xmlid), '/')
-                        return (
+                        let $relation := 
+                            if($term[@type eq 'translationMain']) then 
+                                'headName'
+                            else if($term[@type eq 'translationAlternative']) then 
+                                'hiddenName'
+                            else
+                                'usesName'
                         
+                        let $object-relation := local:object-relation($gloss/@xml:id, $relation, ($name/@xmlid, string-join(('error', $term-lang, $term-text), ':'))[1])
+                        return (
                             $object-relation,
-                            
-                            if($term[@type]) then
-                                local:annotation($object-relation/@xmlid, $term/@type, (), (), ())
-                            else ()
-                            
+                            $local:classifications[@type eq concat('attestation/', $term/@type)] ! local:object-relation($object-relation/@xmlid, 'classifiedAs', @xmlid)
                         )
                     )
                 )
@@ -317,15 +328,14 @@ declare function local:process-entities() {
                 
                 (: <flag/> -> Annotation :)
                 for $flag in $instance/eft:flag
-                let $annotation-type := 
-                    if($flag[@type eq 'requires-attention']) then
-                        'requiresAttention'
-                    else if($flag[@type eq 'hidden']) then
-                        'rendHidden'
-                    else
-                        $flag/@type
                 return
-                    local:annotation($instance-id, $annotation-type, (), $flag/@timestamp ! xs:dateTime(.), $flag/@user)
+                    if($flag[@type eq 'requires-attention']) then
+                        local:annotation(string-join(($instance-id, 'flagRequiresAttention'),'/'), $instance-id, 'flag', element text { 'requiresAttention' }, $flag/@timestamp ! xs:dateTime(.), $flag/@user)
+                    else if($flag[@type eq 'hidden']) then
+                        local:annotation(string-join(($instance-id, 'flagHidden'),'/'), $instance-id, 'access', element text { 'internal' }, $flag/@timestamp ! xs:dateTime(.), $flag/@user)
+                    else
+                        local:annotation(string-join(($instance-id, concat('flag', $flag/@type)),'/'), $instance-id, 'flag', element text { $flag/@type }, $flag/@timestamp ! xs:dateTime(.), $flag/@user)
+                
                     
             )
         )
@@ -347,9 +357,9 @@ declare function local:process-contributors() {
         for $affiliation-type-string in distinct-values($contributor/eft:affiliation/@type/string())
         let $classification := 
             if($affiliation-type-string eq 'academic') then
-                $local:classifications[@xmlid eq 'contributor/academic']
+                $local:classifications[@type eq 'contributor/academic']
             else if($affiliation-type-string eq 'practitioner') then
-                $local:classifications[@xmlid eq 'contributor/practitioner']
+                $local:classifications[@type eq 'contributor/practitioner']
             else 
                 local:classification(concat('error:', $affiliation-type-string), $affiliation-type-string, (), ())
         return
@@ -422,7 +432,7 @@ declare function local:process-teams() {
         
         local:authority($team/@xml:id, $team/@timestamp, ($team/eft:label)[1] ! string-join(text()) ! normalize-space(.), ()),
         
-        $local:classifications[@xmlid eq 'translation/team'] ! local:object-relation($team/@xml:id, 'classifiedAs', @xmlid)(:local:authority-classification($team/@xml:id, .):),
+        $local:classifications[@type eq 'translation/team'] ! local:object-relation($team/@xml:id, 'classifiedAs', @xmlid)(:local:authority-classification($team/@xml:id, .):),
         
         for $name in $distinct-names 
         return (
@@ -444,7 +454,7 @@ declare function local:process-teams() {
             local:object-relation($text-id, $relation-predicate, $team/@xml:id)
         ,
         
-        $team[@rend eq 'hidden'] ! local:annotation($team/@xml:id, 'rendHidden', (), (), ())
+        $team[@rend eq 'hidden'] ! local:annotation(string-join(($team/@xml:id, 'attributeRend'),'/'), $team/@xml:id, 'access', element text { 'internal' }, (), ())
         
     )
     
@@ -458,9 +468,9 @@ declare function local:process-institutions() {
     
         local:authority($institution/@xml:id, $institution/@timestamp, ($institution/eft:label)[1] ! string-join(text()) ! normalize-space(.), ()),
         
-        $local:classifications[@xmlid eq $institution/@institution-type-id ! concat('organisation-type/', .)] ! local:object-relation($institution/@xml:id, 'classifiedAs', @xmlid) (:local:authority-classification($institution/@xml:id, .):),
+        $local:classifications[@type eq $institution/@institution-type-id ! concat('organisation-type/', .)] ! local:object-relation($institution/@xml:id, 'classifiedAs', @xmlid) (:local:authority-classification($institution/@xml:id, .):),
         
-        $local:classifications[@xmlid eq $institution/@region-id ! concat('region/', .)] ! local:object-relation($institution/@xml:id, 'classifiedAs', @xmlid) (:local:authority-classification($institution/@xml:id, .):),
+        $local:classifications[@type eq $institution/@region-id ! concat('region/', .)] ! local:object-relation($institution/@xml:id, 'classifiedAs', @xmlid) (:local:authority-classification($institution/@xml:id, .):),
         
         let $distinct-names := local:distinct-names($institution, 'institutionName', 'en')
         for $name in $distinct-names 
@@ -481,38 +491,33 @@ declare function local:process-sponsors() {
         (: <sponsor/> -> authority :)
         local:authority($sponsor/@xml:id, $sponsor/@timestamp, ($sponsor/eft:label)[1] ! string-join(text()) ! normalize-space(.), ()),
         
-        (: <label/>, <internal-name/> -> Name & authorityName :)
-        let $names := (
-            
-            for $label at $label-index in $sponsor/eft:label
-            let $label-id := string-join(($sponsor/@xml:id, 'label', $label-index), '/')
-            return
-                local:name($label-id, 'en', 'personName', string-join($label/text()) ! normalize-space(.))
-            ,
-            
-            for $internal-name at $internal-name-index in $sponsor/eft:internal-name
-            let $label-id := string-join(($sponsor/@xml:id, 'internal', $internal-name-index), '/')
-            return (
-                local:name($label-id, 'en', 'personNameInternal', string-join($internal-name/text()) ! normalize-space(.))(:,
-                local:annotation($label-id, 'internalName', (), (), ()):)
-            )
-        )
-        for $name in $names
+        (: <internal-name/> -> name & object relation :)
+        for $label at $label-index in $sponsor/eft:label
+        let $label-id := string-join(($sponsor/@xml:id, 'label', $label-index), '/')
+        let $name := local:name($label-id, 'en', 'personName', string-join($label/text()) ! normalize-space(.))
         return (
             $name,
-            local:object-relation($name/@xmlid, 'isNameOf', $sponsor/@xml:id)(:,
-            local:names-group($name, $names):)
+            local:object-relation($name/@xmlid, 'isNameOf', $sponsor/@xml:id)
         ),
         
-        (: sponsor/@type -> classification & authorityClassification :)
+        (: <internal-name/> -> name & object relation :)
+        for $internal-name at $internal-name-index in $sponsor/eft:internal-name
+        let $label-id := string-join(($sponsor/@xml:id, 'internal', $internal-name-index), '/')
+        let $name := local:name($label-id, 'en', 'personName', string-join($internal-name/text()) ! normalize-space(.))
+        return (
+            $name,
+            local:object-relation($name/@xmlid, 'isInternalNameOf', $sponsor/@xml:id)
+        ),
+        
+        (: sponsor/@type -> classification & object relation :)
         for $sponsor-type-string in distinct-values($sponsor/eft:type/@id/string())
         let $classification := 
             if($sponsor-type-string eq 'sutra') then
-                $local:classifications[@xmlid eq 'sponsor/person/sutra']
+                $local:classifications[@type eq 'sponsor/person/sutra']
             else if($sponsor-type-string eq 'matching-funds') then
-                $local:classifications[@xmlid eq 'sponsor/person/matching-funds']
+                $local:classifications[@type eq 'sponsor/person/matching-funds']
             else if($sponsor-type-string eq 'founding') then
-                $local:classifications[@xmlid eq 'sponsor/person/founding']
+                $local:classifications[@type eq 'sponsor/person/founding']
             else 
                 local:classification(concat('error:', $sponsor-type-string), $sponsor-type-string, (), ())
         return
@@ -520,7 +525,7 @@ declare function local:process-sponsors() {
             local:object-relation($sponsor/@xml:id, 'classifiedAs', $classification/@xmlid)
         ,
         
-        (: <instance/> -> Object relation :)
+        (: <instance/> -> object relation :)
         for $instance in $sponsor/eft:instance
         let $instance-id := $instance/@id/string()
         let $relation-predicate := 
@@ -534,10 +539,10 @@ declare function local:process-sponsors() {
             local:object-relation($text-id, $relation-predicate, $sponsor/@xml:id)
         ,
         
-        (: <country/> -> Authority classification :)
+        (: <country/> -> object relation :)
         for $country in $sponsor/eft:country
         let $country-name-slug := local:slug(string-join($country/text()))
-        let $classification := $local:classifications[@xmlid eq 'demographic/geo/' || $country-name-slug]
+        let $classification := $local:classifications[@type eq 'demographic/geo/' || $country-name-slug]
         where $classification
         return
             (:local:authority-classification($sponsor/@xml:id, $classification):)
@@ -549,15 +554,28 @@ declare function local:process-sponsors() {
 
 declare variable $local:classifications := local:process-classifications();
 
-let $data := (
+declare function local:classifications-tree($xmlids as xs:string*) {
     
-    local:process-entities(),
-    local:process-contributors(),
-    local:process-teams(),
-    local:process-institutions(),
-    local:process-sponsors()
+    let $classifications := $local:classifications[@xmlid = $xmlids]
     
-)
+    return (
+        if($classifications[@parent gt '']) then
+            local:classifications-tree($local:classifications[@type = $classifications/@parent]/@xmlid)
+        else ()
+        ,
+        $classifications
+    )
+};
+
+let $data := 
+    if($local:request-data-mode = ('authorities', 'all')) then (
+        local:process-entities(),
+        local:process-contributors(),
+        local:process-teams(),
+        local:process-institutions(),
+        local:process-sponsors()
+    )
+    else ()
 
 return 
     element authorities {
@@ -571,22 +589,20 @@ return
         else ()
         ,
         
-        if($local:request-data-mode = ('classifications', 'all')) then (
-            $local:classifications[@xmlid = distinct-values($data[self::eft:objectRelation]/@subjectXmlid | $data[self::eft:objectRelation]/@objectXmlid)](:,
-            $data[self::eft:authorityClassification]:)
-        )
-        else ()
-        ,
-        
         if($local:request-data-mode = ('all')) then (
             $data[self::eft:name],
-            $data[self::eft:objectRelation]
+            $data[self::eft:objectRelation],
+            $data[self::eft:annotation]
         )
         else ()
         ,
         
-        if($local:request-data-mode = ('annotations', 'all')) then
-            $data[self::eft:annotation]
+        if($local:request-data-mode eq 'classifications') then
+            $local:classifications
+        
+        else if($local:request-data-mode = ('authorities', 'all')) then 
+            local:classifications-tree(distinct-values($data[self::eft:objectRelation]/@subjectXmlid | $data[self::eft:objectRelation]/@objectXmlid))
+        
         else ()
         
     }

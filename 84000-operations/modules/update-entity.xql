@@ -87,7 +87,7 @@ declare function update-entity:create($gloss as element(tei:gloss), $flag as xs:
         
 };
 
-declare function local:touch-entity($entity as element(m:entity)) {
+declare function local:touch-entity($entity as element()) {
     
     if($entity/@timestamp) then
         update replace $entity/@timestamp with attribute timestamp { current-dateTime() }
@@ -429,7 +429,7 @@ declare function update-entity:match-instance($entity-id as xs:string, $instance
     )
 };
 
-declare function update-entity:move-instance($instance-id as xs:string, $instance-type as xs:string, $instance-existing as element(m:instance)?, $target-entity as element(m:entity)?) {
+declare function update-entity:move-instance($instance-id as xs:string, $instance-type as xs:string, $instance-existing as element(m:instance)?, $target-entity as element()?) {
     
     let $instance-new :=
         element { QName('http://read.84000.co/ns/1.0','instance') } {
