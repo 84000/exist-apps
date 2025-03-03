@@ -80,8 +80,72 @@ declare function local:patch-texts() {
     
 };
 
-(:local:extend-file-versions():)
-local:patch-texts()
+declare function local:fix-import-notes() {
+    
+    (:$tei-content:translations-collection//tei:TEI/tei:teiHeader/tei:fileDesc/tei:notesStmt[tei:note[@type = 'title'][@update]]:)
+    
+    for $tei in subsequence($tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:revisionDesc/tei:change[@source][not(@type eq 'import')][tei:desc//text()]], 1, 50)
+    let $text-id := tei-content:id($tei)
+    let $fileDesc := $tei/tei:teiHeader/tei:fileDesc
+    let $revisionDesc :=  $fileDesc/tei:revisionDesc
+    let $notesStmt :=  $fileDesc/tei:notesStmt
+    let $existing-notes-count := count($notesStmt/tei:note)
+    let $changes-move := $revisionDesc/tei:change[@source][not(@type eq 'import')][tei:desc//text()]
+    
+    where $changes-move
+    
+    let $notesStmt-new := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'notesStmt') } { 
+            $notesStmt/@*,
+            for $note in $notesStmt/*
+            return (
+                common:ws(4),
+                $note
+            ),
+            for $change in $changes-move
+            let $change-text := string-join($change/tei:desc/text()) ! normalize-space(.)
+            where $change-text
+            return (
+                common:ws(4),
+                element { QName('http://www.tei-c.org/ns/1.0', 'note') }{
+                    attribute type { $change/@type/string() },
+                    attribute date-time { $change/@when/string() },
+                    attribute user { $change/@who/string() ! replace(., '^#', '') },
+                    attribute import { $change/@source/string() },
+                    text { $change-text }
+                }
+            ),
+            common:ws(3)
+        }
+    
+    let $revisionDesc-new := 
+        element { QName('http://www.tei-c.org/ns/1.0', 'revisionDesc') } { 
+            $revisionDesc/@*,
+            for $change in $revisionDesc/* except $changes-move
+            return (
+                common:ws(4),
+                $change
+            ),
+            common:ws(3)
+        }
+    
+    return (
+        (# exist:batch-transaction #) {
+            $text-id,
+            (:$notesStmt,
+            $revisionDesc,
+            $notesStmt-new,
+            $revisionDesc-new:)
+            update replace $notesStmt with $notesStmt-new,
+            update replace $revisionDesc with $revisionDesc-new,
+            process:execute(('sleep', '0.5'), $local:exec-options) ! ()
+        }
+    )
+    
+};
 
+(:local:extend-file-versions():)
+(:local:patch-texts():)
+local:fix-import-notes()
 
 

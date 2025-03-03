@@ -205,7 +205,7 @@
                                                         </td>
                                                         <td>
                                                             <a>
-                                                                <xsl:attribute name="href" select="@url"/>
+                                                                <xsl:attribute name="href" select="concat('/', $url-folder, @url)"/>
                                                                 <xsl:attribute name="download" select="@filename"/>
                                                                 <xsl:attribute name="class" select="'log-click'"/>
                                                                 <xsl:value-of select="@filename"/>

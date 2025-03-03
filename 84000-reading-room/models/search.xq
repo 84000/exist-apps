@@ -31,6 +31,16 @@ let $first-record :=
         request:get-parameter('first-record', 1)
     else 1
 
+let $max-records := 10
+    (:if(functx:is-a-number(request:get-parameter('max-records', 10))) then
+        request:get-parameter('max-records', 10)
+    else 10:)
+
+(:let $matches-batch := 
+    if(functx:is-a-number(request:get-parameter('matches-batch', 1))) then
+        request:get-parameter('matches-batch', 1)
+    else 1:)
+
 let $request := 
     element { QName('http://read.84000.co/ns/1.0', 'request')} {
         attribute model { 'search' },
@@ -43,7 +53,8 @@ let $request :=
             attribute search-glossary { '1' }
         else (),
         attribute first-record { $first-record },
-        attribute max-records { 10 },
+        attribute max-records { $max-records },
+        (:attribute matches-batch { $matches-batch },:)
         attribute specified-text { request:get-parameter('specified-text', '') },
         attribute template { request:get-parameter('template', 'website-page')[. = ('website-page','embedded')] },
         
@@ -57,7 +68,7 @@ let $results :=
     if($request[@search-type eq 'tm'] and compare($search, '') gt 0) then
         search:tm-search($search, $request/@search-lang, $request/@first-record, $request/@max-records, if($request/@search-glossary) then true() else false(), ())
     else if(compare($search, '') gt 0) then 
-        search:search($search, $search-data/m:type[@selected eq 'selected'], $request/@specified-text, $request/@first-record, $request/@max-records)
+        search:search($search, $search-data/m:type[@selected eq 'selected'], $request/@specified-text, $request/@first-record, $request/@max-records, 1)
     else ()
 
 (: Get related entities data :)
@@ -68,7 +79,7 @@ let $entities :=
             entities:related($results//m:header/m:entity, false(), ('glossary','knowledgebase'), ('requires-attention'), ('excluded'))
         }
     }
-            
+
 let $xml-response :=
     common:response(
         $request/@model,

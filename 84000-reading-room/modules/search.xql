@@ -31,11 +31,11 @@ declare variable $search:data-types :=
 
 declare function search:search($search as xs:string, $first-record as xs:double, $max-records as xs:double) as element() {
 
-    search:search($search, $search:data-types/m:type, '', $first-record, $max-records)
+    search:search($search, $search:data-types/m:type, '', $first-record, $max-records, 1)
     
 };
 
-declare function search:search($search as xs:string, $data-types as element(m:type)*, $resource-id as xs:string, $first-record as xs:integer, $max-records as xs:integer) as element(m:tei-search) {
+declare function search:search($search as xs:string, $data-types as element(m:type)*, $resource-id as xs:string, $first-record as xs:integer, $max-records as xs:integer, $matches-batch as xs:integer) as element(m:tei-search) {
     
     (: Search translations, sections, knowledgebase and shared definitions :)
     let $translations-tei := collection($common:translations-path)//tei:TEI
@@ -160,12 +160,13 @@ declare function search:search($search as xs:string, $data-types as element(m:ty
     let $results-count := count($results)
     
     let $max-matches := 200
+    let $start-matches := (($matches-batch - 1) * $max-matches) + 1
     
     let $results-triaged := 
         if($results-count gt $max-matches) then
             let $results-sorted := fn:sort($results, (), function($item) {-ft:score($item)})
             return
-                subsequence($results, 1, $max-matches)
+                subsequence($results, $start-matches, $max-matches)
         else
             $results
     

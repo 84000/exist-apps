@@ -27,7 +27,7 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 :)
 
 declare variable $local:api-version := (request:get-attribute('api-version'),'0.4.0')[1];
-declare variable $local:resource-id := request:get-parameter('resource-id', '');
+declare variable $local:resource-id := request:get-parameter('resource-id', 'UT22084-066-009');
 declare variable $local:annotate := request:get-parameter('annotate', 'true');
 declare variable $local:tei := tei-content:tei($local:resource-id, 'translation');
 declare variable $local:html := request:get-data()/xhtml:html;

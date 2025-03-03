@@ -13,7 +13,7 @@ declare variable $local:exec-options :=
         <workingDir>/{ $common:environment//eft:env-vars/eft:var[@id eq 'home']/text() }/</workingDir>
     </option>;
 
-for $collection in ((:'kangyur', :)'tengyur')
+for $collection in ((:'kangyur',:) 'tengyur')
 let $work-id := if($collection eq 'tengyur') then $source:tengyur-work else $source:kangyur-work
 let $source-data-path := source:etext-path($work-id)
 let $volumes-tei := collection($source-data-path)//tei:TEI
@@ -21,9 +21,10 @@ return
     for $volume-number in 1 to count($volumes-tei)
     let $resource-id := string-join(($collection, 'vol', $volume-number), '-')
     let $source-url := concat($store:conf/@source-url, '/source/', $collection, '.json?volume=', $volume-number, '&amp;api-version=0.4.0')
-    (:where $volume-number eq 1:)
+    (:where $volume-number eq 93:)
     return (
         $source-url,
-        store:http-download($source-url, '/db/apps/tibetan-source/json', concat($resource-id, '.json'), $store:permissions-group),
+        util:log('INFO', concat('Storing ', '/db/apps/tibetan-source/data/json/', concat($resource-id, '.json'))),
+        store:http-download($source-url, '/db/apps/tibetan-source/data/json', concat($resource-id, '.json'), $store:permissions-group),
         process:execute(('sleep', '0.5'), $local:exec-options) ! ()
 )

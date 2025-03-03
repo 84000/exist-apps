@@ -45,7 +45,7 @@
     <xsl:variable name="test-glossary-items-terms" as="xs:string*" select="m:glossary-terms-to-match($test-glossary-items)"/>
     
     <!-- Create a prologue with the first refs -->
-    <xsl:variable name="ref-1" select="($translation//tei:ref[@xml:id][@type eq 'folio'][not(@key) or @key eq $toh-key])[1]" as="element(tei:ref)?"/>
+    <xsl:variable name="ref-1" select="$view-mode[not(@client eq 'app')] ! ($translation//tei:ref[@xml:id][@type eq 'folio'][not(@key) or @key eq $toh-key])[1]" as="element(tei:ref)?"/>
     <xsl:variable name="ref-1-validated" select="if(key('folio-refs-pre-processed', $ref-1/@xml:id, $root)/@index-in-resource/string() = '1') then $ref-1 else ()" as="element(tei:ref)?"/>
     <xsl:variable name="ref-prologue" select="($ref-1-validated/../node()[self::tei:ref or self::tei:note or self::text()[not(matches(., '\w+'))]][not(preceding-sibling::node()[not(self::tei:ref or self::tei:note or self::text()[not(matches(., '\w+'))])])])"/>
     <xsl:variable name="ref-prologue-container" select="$ref-1-validated/ancestor::tei:*[self::tei:p | self::tei:lg | self::tei:q][1]"/>
@@ -260,6 +260,7 @@
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="lang" select="@xml:lang"/>
                 <xsl:with-param name="base-classes" as="xs:string*">
+                    <xsl:value-of select="'foreign'"/>
                     <xsl:if test="@xml:lang eq 'Sa-Ltn'">
                         <xsl:value-of select="'break'"/>
                     </xsl:if>
@@ -279,6 +280,9 @@
         <em>
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="lang" select="@xml:lang"/>
+                <xsl:with-param name="base-classes" as="xs:string*">
+                    <xsl:value-of select="'distinct'"/>
+                </xsl:with-param>
             </xsl:call-template>
             <xsl:apply-templates select="node()"/>
         </em>
@@ -288,6 +292,7 @@
         <em>
             <xsl:call-template name="class-attribute">
                 <xsl:with-param name="base-classes">
+                    <xsl:value-of select="'emph'"/>
                     <xsl:if test="@rend eq 'bold'">
                         <xsl:value-of select="'text-bold'"/>
                     </xsl:if>
@@ -328,6 +333,16 @@
             <!-- Target is a placeholder -->
             <xsl:when test="$ref[@rend eq 'pending']">
                 <span class="ref-pending">
+                    <xsl:choose>
+                        <xsl:when test="$view-mode[@client = ('app')]">
+                            <xsl:if test="$ref[@target]">
+                                <xsl:attribute name="data-href" select="$ref/@target"/>
+                            </xsl:if>
+                            <xsl:if test="$ref[@inst]">
+                                <xsl:attribute name="data-inst" select="$ref/@inst"/>
+                            </xsl:if>
+                        </xsl:when>
+                    </xsl:choose>
                     <xsl:apply-templates select="$ref/text()"/>
                 </span>
             </xsl:when>
@@ -394,7 +409,7 @@
                             
                             <xsl:otherwise>
                                 
-                                <span class="ref">
+                                <span class="ref folio-ref">
                                     <xsl:attribute name="data-href" select="concat('https://84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> 
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </span>
@@ -1223,6 +1238,7 @@
                     
                     <xsl:if test="$view-mode[@client = ('ebook', 'app')]">
                         <xsl:attribute name="epub:type" select="'noteref'"/>
+                        <xsl:attribute name="data-endnote-id" select="$note/@xml:id"/>
                     </xsl:if>
                     
                     <xsl:value-of select="$end-notes-pre-processed/@index"/>
@@ -3835,7 +3851,7 @@
                         <xsl:attribute name="href">
                             <xsl:choose>
                                 <xsl:when test="$resource-type eq 'translation'">
-                                    <xsl:value-of select="m:translation-href($resource-id, (), (), $fragment-id, (), 'https://read.84000.co/')"/>
+                                    <xsl:value-of select="m:translation-href($resource-id, (), (), $fragment-id, (), 'https://read.84000.co')"/>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:value-of select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', if($fragment-id) then concat('#', $fragment-id) else ())"/>
@@ -3868,7 +3884,7 @@
                         <xsl:attribute name="href">
                             <xsl:choose>
                                 <xsl:when test="$resource-type eq 'translation'">
-                                    <xsl:value-of select="m:translation-href($resource-id, (), (), $fragment-id, (), 'https://read.84000.co/')"/>
+                                    <xsl:value-of select="m:translation-href($resource-id, (), (), $fragment-id, (), 'https://read.84000.co')"/>
                                 </xsl:when>
                                 <xsl:otherwise>
                                     <xsl:value-of select="concat('https://read.84000.co/', $resource-type, '/', $resource-id, '.html', if($fragment-id) then concat('#', $fragment-id) else ())"/>

@@ -53,6 +53,7 @@ declare function helper:async-script($script-name as xs:string, $job-name as xs:
     return (
         (: Log so we can monitor :)
         util:log('info', concat('async-script:', $job-name)),
+        
         (: Schedule a one-off job :)
         scheduler:schedule-xquery-periodic-job(
             concat('/db/apps/84000-operations/scripts/', $script-name, '.xq'),
@@ -63,6 +64,7 @@ declare function helper:async-script($script-name as xs:string, $job-name as xs:
             0,
             true()
         )
+        
     )
 };
 

@@ -62,8 +62,6 @@ let $view-mode-validated := (
         $translation:view-modes/m:view-mode[@id eq 'ebook']
     else if($resource-suffix = ('txt', 'plain.txt')) then
         $translation:view-modes/m:view-mode[@id eq 'txt']
-    else if($resource-suffix = ('json')) then
-        $translation:view-modes/m:view-mode[@id eq 'json']
     
     (: Default to requested view mode :)
     else

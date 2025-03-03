@@ -24,7 +24,7 @@ declare variable $path-tokens := tokenize(replace($path, '^/', ''), '/');
 declare variable $collection-path := tokenize($exist:path, '/')[2] ! lower-case(.);
 declare variable $redirects := doc('/db/system/config/db/system/redirects.xml')/m:redirects;
 declare variable $user-name := common:user-name();
-declare variable $api-version := (request:get-parameter('api-version', '')[. = ('0.1.0','0.2.0','0.3.0','0.4.0')], '0.4.0')[1];
+declare variable $api-version := (request:get-parameter('api-version', '')[. = ('0.1.0','0.2.0','0.3.0','0.4.0','0.5.0')], '0.4.0')[1];
 declare variable $var-debug := 
     <debug>
         <var name="request:get-hostname()" value="{ request:get-hostname() }"/>
@@ -281,6 +281,7 @@ return
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                             <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <add-parameter name="resource-suffix" value="json"/>
+                            <add-parameter name="view-mode" value="json"/>
                             <set-header name="Content-Type" value="application/json"/>
                             <set-header name="Content-Disposition" value="attachment"/>
                         </parameters>
@@ -292,6 +293,7 @@ return
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                             <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <add-parameter name="resource-suffix" value="json"/>
+                            <add-parameter name="view-mode" value="json"/>
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
                     )
@@ -301,16 +303,28 @@ return
                     local:dispatch("/views/json/0.3.0/translation.xq", "",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                             <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
+                            <add-parameter name="view-mode" value="json"/>
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
                     )
                 
                 (: 0.4.0 get html, pass to json view :)
-                else 
+                else if($api-version eq '0.4.0') then
                     local:dispatch("/models/translation.xq", "/views/json/0.4.0/translation.xq",
                         <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                             <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
                             <add-parameter name="resource-suffix" value="xhtml"/><!-- pass xhtml to json/0.4.0/translation.xq -->
+                            <add-parameter name="view-mode" value="app"/>
+                            <set-header name="Content-Type" value="application/json"/>
+                        </parameters>
+                    )
+                
+                (: 0.5.0 get xml, pass to json view :)
+                else 
+                    local:dispatch("/models/translation.xq", "/views/json/0.5.0/translation.xq",
+                        <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                            <add-parameter name="resource-id" value="{ tokenize($resource-id, '_')[1] }"/>
+                            <add-parameter name="resource-suffix" value="json"/>
                             <add-parameter name="view-mode" value="app"/>
                             <set-header name="Content-Type" value="application/json"/>
                         </parameters>
@@ -577,6 +591,15 @@ return
                 </parameters>
             )
         
+        (: Glossary downloads !! Before testing $collection-path so it remains agnostic :)
+        else if ($resource-id = ("glossary-download", "glossary-download-bo", "glossary-download-wy")) then
+            local:dispatch("/models/glossary-download.xq", "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="{ $resource-id }"/>
+                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'xlsx', 'txt', 'dict')], 'xml')[1] }"/>
+                </parameters>
+            )
+            
         (: Glossary :)
         else if ($collection-path = ("glossary", "glossary-embedded")) then
             
@@ -617,18 +640,38 @@ return
                     </parameters>
                 )
         
-        (: Glossary downloads :)
-        else if ($resource-id = ("glossary-download", "glossary-download-bo", "glossary-download-wy")) then
-            local:dispatch("/models/glossary-download.xq", "",
+        (: Translation rest endpoint :)
+        else if ($collection-path eq "rest" and $resource-id = ('translation') and $resource-suffix eq 'json') then
+            local:dispatch("/models/translation.xq", "/views/json/0.5.0/translation.xq",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
-                    <add-parameter name="resource-id" value="{ $resource-id }"/>
-                    <add-parameter name="resource-suffix" value="{ ($resource-suffix[. = ('xml', 'xlsx', 'txt', 'dict')], 'xml')[1] }"/>
+                    <add-parameter name="resource-id" value="{ request:get-parameter('id', '') }"/>
+                    <add-parameter name="resource-suffix" value="json"/>
+                    <add-parameter name="view-mode" value="app"/>
+                    <set-header name="Content-Type" value="application/json"/>
                 </parameters>
             )
         
-        (: Other Rest endpoints :)
-        else if ($collection-path eq "rest" and $resource-id = ('texts-status','authorities') and $resource-suffix eq 'json') then
-            local:dispatch(concat("/views/json/0.4.0/", $resource-id, ".xq"), "",
+        (: Catalogue rest endpoint :)
+        else if ($collection-path eq "rest" and $resource-id = ('catalogue') and $resource-suffix eq 'json') then
+            local:dispatch("/views/json/0.5.0/catalogue.xq", "", 
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <add-parameter name="resource-id" value="LOBBY"/>
+                    <add-parameter name="resource-suffix" value="json"/>
+                    <set-header name="Content-Type" value="application/json"/>
+                </parameters>
+            )
+        
+        (: Texts-status rest endpoint :)
+        else if ($collection-path eq "rest" and $resource-id = ('texts-status') and $resource-suffix eq 'json') then
+            local:dispatch(concat("/views/json/0.5.0/", $resource-id, ".xq"), "",
+                <parameters xmlns="http://exist.sourceforge.net/NS/exist">
+                    <set-header name="Content-Type" value="application/json"/>
+                </parameters>
+            )
+        
+        (: Other rest endpoints :)
+        else if ($collection-path eq "rest" and $resource-id = ('authorities','authorities-annotations','authorities-classifications','classifications','creators','glossaries','names','object-relations','translation-projects','types') and $resource-suffix eq 'json') then
+            local:dispatch(concat("/views/json/0.5.0/", $resource-id, ".xq"), "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <set-header name="Content-Type" value="application/json"/>
                 </parameters>
@@ -730,47 +773,6 @@ return
                     <add-parameter name="resource-suffix" value="{ $resource-suffix }"/>
                 </forward>
             </dispatch>
-        
-        (:else
-            (\: It's data :\)
-            (\:if($resource-suffix eq 'html') then
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ download:file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="text/html"/>
-                    </forward>
-                </dispatch>
-            else:\) 
-            if($resource-suffix eq 'pdf') then
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ store:download-file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="application/pdf"/>
-                        <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
-                    </forward>
-                </dispatch>
-            
-            else if ($resource-suffix eq 'epub') then
-                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ store:download-file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="application/epub+zip"/>
-                        <set-header name='Content-Disposition' value='attachment; filename="{ $exist:resource }"'/>
-                    </forward>
-                </dispatch>
-            
-            else if ($resource-suffix eq 'rdf') then
-                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ store:download-file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="application/rdf+xml"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
-                    </forward>
-                </dispatch>
-            
-            else if ($resource-suffix eq 'json') then
-                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                    <forward url="{ store:download-file-path($exist:resource) }">
-                        <set-header name="Content-Type" value="application/json"/>
-                        <set-header name="Content-Disposition" value="attachment"/>
-                    </forward>
-                </dispatch>:)
         
         else
             (: Return an error :)

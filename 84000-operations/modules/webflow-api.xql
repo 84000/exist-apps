@@ -213,21 +213,34 @@ declare function webflow:patch-catalogue-section($section-id as xs:string) as el
             let $data := 
                 element { QName('','data') } {
                     if($webflow-collection[@id eq 'catalogue-collections']) then
-                        element fieldData {
-                            ($section/eft:page/eft:titles/eft:title[@type eq 'articleTitle'][text()], $section/eft:titles/eft:title[@xml:lang eq 'en'][text()])[1] ! element name { string-join(text()) ! normalize-space(.) },
-                            $section/eft:titles/eft:title[@xml:lang eq 'bo'][text()] ! element tibetan-title { string-join(text()) ! normalize-space(.) },
-                            $section/eft:titles/eft:title[@xml:lang eq 'zh'][text()] ! element chinese-title { string-join(text()) ! normalize-space(.) },
-                            $publications-summary/eft:texts/@total[string()] ! element texts-count { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:texts/@published[string()] ! element texts-published { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:texts/@translated[string()] ! element texts-in-progress { attribute json:literal {'true'}, xs:integer(.) + $publications-summary/eft:texts/@in-translation ! xs:integer(.) },
-                            $publications-summary/eft:texts/@not-started[string()] ! element texts-not-begun { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:pages/@total[string()] ! element pages-count { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:pages/@published[string()] ! element pages-published { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:pages/@in-translation[string()] ! element pages-in-progress { attribute json:literal {'true'}, xs:integer(.) },
-                            $publications-summary/eft:pages/@translated[string()] ! element pages-awaiting-publication { attribute json:literal {'true'}, xs:integer(.) }(:,
-                            $abstract-html-string ! element collection-description { . },
-                            $webflow:conf//webflow:item[@id = $section/eft:section/@id] ! element subsections { attribute json:array {'true'}, @webflow-id/string() }:)
-                        }
+                        
+                        let $pages-total := ($publications-summary/eft:pages/@total[functx:is-a-number(string())] ! xs:integer(.), 0)[1]
+                        let $pages-published := ($publications-summary/eft:pages/@published[functx:is-a-number(string())] ! xs:integer(.), 0)[1]
+                        let $pages-in-progress := ($publications-summary/eft:pages/@in-translation[functx:is-a-number(string())] ! xs:integer(.), 0)[1]
+                        let $pages-awaiting-publication := ($publications-summary/eft:pages/@translated[functx:is-a-number(string())] ! xs:integer(.), 0)[1]
+                        let $percentage-published := if ($pages-total gt 0) then ($pages-published div $pages-total) * 100 else 0
+                        let $percentage-in-progress := if ($pages-total gt 0) then ($pages-in-progress div $pages-total) * 100 else 0
+                        let $percentage-awaiting-publication := if ($pages-total gt 0) then ($pages-awaiting-publication div $pages-total) * 100 else 0
+                        
+                        return 
+                           element fieldData {
+                               ($section/eft:page/eft:titles/eft:title[@type eq 'articleTitle'][text()], $section/eft:titles/eft:title[@xml:lang eq 'en'][text()])[1] ! element name { string-join(text()) ! normalize-space(.) },
+                               $section/eft:titles/eft:title[@xml:lang eq 'bo'][text()] ! element tibetan-title { string-join(text()) ! normalize-space(.) },
+                               $section/eft:titles/eft:title[@xml:lang eq 'zh'][text()] ! element chinese-title { string-join(text()) ! normalize-space(.) },
+                               element pages-count { attribute json:literal {'true'}, $pages-total },
+                               element pages-published { attribute json:literal {'true'}, $pages-published },
+                               element pages-in-progress { attribute json:literal {'true'}, $pages-in-progress },
+                               element pages-awaiting-publication { attribute json:literal {'true'}, $pages-awaiting-publication },
+                               element percentage-published { attribute json:literal {'true'}, $percentage-published },
+                               element percentage-in-progress { attribute json:literal {'true'}, $percentage-in-progress },
+                               element percentage-awaiting-publication { attribute json:literal {'true'}, $percentage-awaiting-publication },
+                               $publications-summary/eft:texts/@total[string()] ! element texts-count { attribute json:literal {'true'}, xs:integer(.) },
+                               $publications-summary/eft:texts/@published[string()] ! element texts-published { attribute json:literal {'true'}, xs:integer(.) },
+                               $publications-summary/eft:texts/@translated[string()] ! element texts-in-progress { attribute json:literal {'true'}, xs:integer(.) + $publications-summary/eft:texts/@in-translation[string()] ! xs:integer(.) },
+                               $publications-summary/eft:texts/@not-started[string()] ! element texts-not-begun { attribute json:literal {'true'}, xs:integer(.) }
+                               (:$abstract-html-string ! element collection-description { . },
+                               $webflow:conf//webflow:item[@id = $section/eft:section/@id] ! element subsections { attribute json:array {'true'}, @webflow-id/string() }:)
+                           }
                     
                     else if($webflow-collection[@id eq 'catalogue-sections']) then
                         element fieldData {

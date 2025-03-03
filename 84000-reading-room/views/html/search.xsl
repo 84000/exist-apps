@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../xslt/webpage.xsl"/>
     
     <xsl:variable name="request" select="/m:response/m:request"/>
     <xsl:variable name="url-resource" select="if($request/@template eq 'embedded' and $request/@search-type eq 'tm') then '/search-tm-embedded.html' else '/search.html'"/>
-    <xsl:variable name="base-url" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), $request[@search-glossary gt ''] ! concat('search-glossary=', @search-glossary), concat('search=', $request/m:search)), (), /m:response/@lang)"/>
+    <xsl:variable name="base-url" select="common:internal-href($url-resource, (concat('search-type=', $request/@search-type), concat('search-lang=', $request/@search-lang), $request/m:search-data/m:type[@selected eq 'selected'] ! concat('search-data[]=', @id), $request[@search-glossary gt ''] ! concat('search-glossary=', @search-glossary), concat('search=', $request/m:search)(:, $request[@matches-batch gt ''] ! concat('matches-batch=', $request/@matches-batch):)), (), /m:response/@lang)"/>
     <xsl:variable name="specified-text" select="/m:response/m:tei-search/m:request/m:header"/>
     
     <xsl:key name="end-notes-pre-processed" match="m:pre-processed[@type eq 'end-notes']/m:end-note" use="@id"/>
@@ -281,7 +281,21 @@
                     
                     <xsl:if test="m:tei-search/m:results[@count-matches-processed lt @count-matches-all]">
                         <div class="alert alert-warning small top-margin no-bottom-margin" role="alert">
-                            <xsl:value-of select="concat('Please refine your search. This is a common term. Only the first ', format-number(m:tei-search/m:results/@count-matches-processed, '#,###'), ' of ',  format-number(m:tei-search/m:results/@count-matches-all, '#,###'), ' matches have been processed.')"/>
+                            <xsl:value-of select="concat('Please refine your search. This is a common term and only the first ', format-number(m:tei-search/m:results/@count-matches-processed, '#,###'), ' of ',  format-number(m:tei-search/m:results/@count-matches-all, '#,###'), ' matches have been processed.')"/>
+                            <!--<xsl:if test="$request[not(@template eq 'embedded')] and $request/@search-type eq 'tei'">
+                                <xsl:value-of select="' '"/>
+                                <a href="#" class="disabled">
+                                    <xsl:value-of select="'[1]'"/>
+                                </a>
+                                <xsl:value-of select="' '"/>
+                                <a href="#">
+                                    <xsl:value-of select="'[2]'"/>
+                                </a>
+                                <xsl:value-of select="' '"/>
+                                <a href="#">
+                                    <xsl:value-of select="'[3]'"/>
+                                </a>
+                            </xsl:if>-->
                         </div>
                     </xsl:if>
                     

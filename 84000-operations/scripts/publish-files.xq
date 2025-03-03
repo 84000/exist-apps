@@ -1,12 +1,12 @@
 xquery version "3.0" encoding "UTF-8";
 
-import module namespace store="http://read.84000.co/store" at "/db/apps/84000-reading-room/modules/store.xql";
 import module namespace deploy="http://read.84000.co/deploy" at "/db/apps/84000-reading-room/modules/deploy.xql";
 import module namespace tei-content="http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
 import module namespace translation="http://read.84000.co/translation" at "/db/apps/84000-reading-room/modules/translation.xql";
 import module namespace translations="http://read.84000.co/translations" at "/db/apps/84000-reading-room/modules/translations.xql";
 import module namespace webflow-api="http://read.84000.co/webflow-api" at "/db/apps/84000-operations/modules/webflow-api.xql";
-import module namespace functx="http://www.functx.com";
+(:import module namespace store="http://read.84000.co/store" at "/db/apps/84000-reading-room/modules/store.xql";:)
+(:import module namespace functx="http://www.functx.com";:)
 
 declare namespace eft="http://read.84000.co/ns/1.0";
 declare namespace webflow="http://read.84000.co/webflow-api";
@@ -34,13 +34,16 @@ return (
     let $tei := tei-content:tei($filtered-text/@id, 'translation')
     
     (: Check the files are not out of date :)
-    let $translation-files := translation:files($tei, ('translation-html','translation-files'), ())
-    where count($translation-files) eq count($translation-files[@up-to-date])
+    let $translation-files := translation:files($tei, ('translation-html', 'translation-files', 'publications-list'), ())
+    where count($translation-files/eft:file) eq count($translation-files/eft:file[@up-to-date])
     
     (: Update Webflow :)
     return (
-        (:$filtered-text/@id,:)
+        
+        (:$translation-files:)
+        (:$filtered-text/@id, :)
         webflow:translation-updates($tei)
+    
     )
     
     (:
@@ -73,4 +76,5 @@ return (
                 (\:webflow:translation-updates($tei[1]):\)
             
     ):)
+
 )

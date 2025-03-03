@@ -85,7 +85,7 @@ let $publish-content :=
                 <param name="publish-file-group" value="{ string-join(request:get-parameter('publish-file-group[]',''), ',') }"/>
             </parameters>
         )
-            
+    
     else ()
 
 let $scheduled-job := scheduler:get-scheduled-jobs()//scheduler:job[@name eq $scheduled-job-name][not(scheduler:trigger/state/text() eq 'COMPLETE')]

@@ -17,7 +17,7 @@ let $publish-file-groups := tokenize($local:publish-file-group, ',')
 
 where $tei
 return (
-
+    
     util:log('info', concat('store-publication-files:', $local:resource-id, ' / ', $local:publish-file-group)),
     
     store:publication-files($tei, $translation:file-groups[. = $publish-file-groups], ()),

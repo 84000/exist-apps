@@ -720,7 +720,7 @@ declare function glossary:item-count($tei as element(tei:TEI)) as xs:integer {
     
 };
 
-declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $test-glossary-ids as xs:string*) as element(m:response) {
+declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as xs:string, $resource-type as xs:string, $test-glossary-ids as xs:string*, $part-id as xs:string, $view-mode-id as xs:string) as element(m:response) {
     
     let $request := 
         (: Include request parameters :)
@@ -728,13 +728,13 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
             attribute resource-id { $resource-id },
             attribute resource-suffix { 'html' },
             attribute doc-type { 'html' },
-            attribute part { 'all' },
+            attribute part { $part-id },
             
             (: View mode :)
             if($resource-type eq 'knowledgebase') then 
-                $knowledgebase:view-modes/m:view-mode[@id eq 'glossary-check']
+                $knowledgebase:view-modes/m:view-mode[@id eq $view-mode-id]
             else
-                $translation:view-modes/m:view-mode[@id eq 'glossary-check']
+                $translation:view-modes/m:view-mode[@id eq $view-mode-id]
             ,
             
             (: Glossary ids to test :)
@@ -777,7 +777,7 @@ declare function glossary:xml-response($tei as element(tei:TEI), $resource-id as
                 $source,
                 translation:toh($tei, $source/@key),
                 translation:publication($tei),
-                translation:parts($tei, 'all', $translation:view-modes/m:view-mode[@id eq 'glossary-check'], ())
+                translation:parts($tei, $part-id, $translation:view-modes/m:view-mode[@id eq $view-mode-id], ())
             }
     
     (: Include caches - do not call glossary:cached-locations(), this causes a recursion problem :)
@@ -942,7 +942,7 @@ declare function glossary:locations($tei as element(tei:TEI), $resource-id as xs
     
     let $html := 
         transform:transform(
-            glossary:xml-response($tei, $resource-id, $resource-type, $glossary-ids),
+            glossary:xml-response($tei, $resource-id, $resource-type, $glossary-ids, 'all', 'glossary-check'),
             doc(concat($common:app-path, "/views/html/", if($resource-type eq 'knowledgebase') then 'knowledgebase-article' else $resource-type, ".xsl")), 
             <parameters/>(:,
             <attributes>

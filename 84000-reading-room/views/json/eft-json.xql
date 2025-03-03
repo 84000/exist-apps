@@ -190,7 +190,7 @@ declare function eft-json:annotation($type as xs:string, $resourceId as element(
         if($resourceId or $body-text) then
             element body {
                 $resourceId ! (
-                    attribute {'id'} { $resourceId/content },
+                    attribute {'xmlid'} { $resourceId/content },
                     attribute {'type'} { $resourceId/idType }
                 ),
                 $body-text ! element value { . }

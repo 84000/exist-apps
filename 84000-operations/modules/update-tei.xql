@@ -223,20 +223,25 @@ declare function update-tei:publication-status($tei as element(tei:TEI)) as elem
                     (: Push to Github & push to static site :)
                     if($store:conf) then (
                         
-                        deploy:push('data-tei', (), concat($text-id, ' / ',  $request-version-number-str), $document-url),
+                        deploy:push('data-tei', (), concat($text-id, ' / ',  $request-version-number-str), $document-url)(:,
                         
-                        (: store-publication-files for unpublished texts :)
-                        if($availability[not(@status eq $translation:published-status-ids)]) then
-                            helper:async-script(
-                                'store-publication-files',
-                                string-join(('store-publication-files', $text-id), '-'),
-                                <parameters xmlns="">
-                                    <param name="resource-id" value="{ $text-id }"/>
-                                    <param name="publish-file-group" value="{ string-join(('translation-html','translation-files'), ',') }"/>
-                                </parameters>
-                            )
+                        (\: store-publication-files for unpublished texts :\)
+                        if($availability[not(@status = $translation:published-status-ids)]) then
+                            
+                            let $schedule-publication := 
+                                helper:async-script(
+                                    'store-publication-files',
+                                    string-join(('store-publication-files', $text-id), '-'),
+                                    <parameters xmlns="">
+                                        <param name="resource-id" value="{ $text-id }"/>
+                                        <param name="publish-file-group" value="{ string-join(('translation-html','translation-files', 'publications-list'), ',') }"/>
+                                    </parameters>
+                                )
+                                
+                            return ()
+                            
+                        else ():)
                         
-                        else ()
                     )
                     else ()
                     
@@ -480,17 +485,20 @@ declare function update-tei:title-statement($tei as element(tei:TEI), $titles as
     
     let $notes-from-request :=
         for $titles-note-param in common:sort-trailing-number-in-string(request:get-parameter-names()[starts-with(., 'titles-note-text-')], '-')
-            let $titles-note := request:get-parameter($titles-note-param, '')
-            let $titles-note-index := substring-after($titles-note-param, 'titles-note-text-')
-            let $titles-note-type := request:get-parameter(concat('titles-note-type-', $titles-note-index), '')
-            where normalize-space($titles-note) gt ''
-            return 
-                element { QName("http://www.tei-c.org/ns/1.0", "note") } {
-                    attribute type { if($titles-note-type eq 'internal') then 'title-internal' else 'title' },
-                    attribute date-time {current-dateTime()},
-                    attribute user {common:user-name()},
-                    text {$titles-note}
-                }
+        let $titles-note := request:get-parameter($titles-note-param, '') ! normalize-space(.)
+        let $titles-note-index := substring-after($titles-note-param, 'titles-note-text-')
+        let $titles-note-existing := $notes-statement-existing/tei:note[string-join(text()) ! normalize-space(.) eq $titles-note]
+        let $titles-note-type := request:get-parameter(concat('titles-note-type-', $titles-note-index), '')
+        where $titles-note gt ''
+        return 
+            element { QName("http://www.tei-c.org/ns/1.0", "note") } {
+                attribute type { if($titles-note-type eq 'internal') then 'title-internal' else 'title' },
+                attribute date-time { ($titles-note-existing/@date-time, current-dateTime())[1] },
+                attribute user { ($titles-note-existing/@user, common:user-name())[1] },
+                $titles-note-existing/@update ! attribute update { string() },
+                $titles-note-existing/@import ! attribute import { string() },
+                text { $titles-note }
+            }
     
     let $notes-remainder := $notes-statement-existing/*[not(local-name(.) eq 'note' and @type = ('title', 'title-internal'))]
     

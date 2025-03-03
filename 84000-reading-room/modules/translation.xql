@@ -35,6 +35,7 @@ declare variable $translation:view-modes :=
       <view-mode id="tests"            client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
       <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none"   />
       <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none"   />
+      <view-mode id="glossary-json"    client="app"      cache="suppress"   layout="flat"      glossary="use-cache"  parts="glossary"        annotation="none"   />
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
@@ -2687,4 +2688,3 @@ declare function translation:href($source-key as xs:string, $part-id as xs:strin
 declare function translation:href($source-key as xs:string, $part-id as xs:string?, $commentary-id as xs:string?, $url-parameters as xs:string*, $fragment as xs:string?, $host as xs:string?) as xs:string {
     concat($host, '/', string-join(('translation', $source-key, ($part-id, $commentary-id[. gt ''] ! '')[1], $commentary-id), '/'), string-join($url-parameters[. gt ''], '&amp;')[. gt ''] ! concat('?', .), $fragment ! concat('#', .))
 };
-
