@@ -685,7 +685,7 @@ declare function json-types:submission($xmlId as xs:string, $workXmlid as xs:str
     }
 };
 
-declare function json-types:log($xmlId as xs:string, $targetXmlid as xs:string, $type as xs:string, $datetime as xs:dateTime, $user as xs:string?, $new-value as xs:string?, $description as xs:string?) as element(eft:log) {
+declare function json-types:log($xmlId as xs:string, $targetXmlid as xs:string, $type as xs:string, $datetime as xs:dateTime?, $user as xs:string?, $new-value as xs:string?, $description as xs:string?) as element(eft:log) {
     element { QName('http://read.84000.co/ns/1.0', 'log') } {
         attribute json:array {'true'},
         attribute xmlId { $xmlId },

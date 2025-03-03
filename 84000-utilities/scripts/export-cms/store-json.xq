@@ -12,6 +12,6 @@ import module namespace store="http://read.84000.co/store" at "../../../84000-re
     (:store:http-download(concat($store:conf/@source-url, '/rest/authorities-classifications.json'), '/db/apps/84000-static/json', 'authorities-classifications.json', $store:permissions-group),:)
     (:store:http-download(concat($store:conf/@source-url, '/rest/object-relations.json'), '/db/apps/84000-static/json', 'object-relations.json', $store:permissions-group),:)
     (:store:http-download(concat($store:conf/@source-url, '/rest/annotations.json'), '/db/apps/84000-static/json', 'annotations.json', $store:permissions-group),:)
-    (:store:http-download(concat($store:conf/@source-url, '/rest/texts-status.json'), '/db/apps/84000-static/json', 'texts-status.json', $store:permissions-group),:)
+    store:http-download(concat($store:conf/@source-url, '/rest/translation-projects.json'), '/db/apps/84000-static/json', 'translation-projects.json', $store:permissions-group),
     ()
 )

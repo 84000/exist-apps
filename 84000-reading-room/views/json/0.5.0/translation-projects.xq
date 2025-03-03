@@ -52,7 +52,7 @@ element translation-projects {
     
     let $project := json-types:project(string-join(($text-id, 'project'), '/'), $text-id, $contract/@number, $contract/@date[. gt ''] ! xs:date(.), $progress-note ! json-types:normalize-text(.), $action-note ! json-types:normalize-text(.))
     
-    let $history := (
+    let $log := (
     
         for $change in $tei//tei:revisionDesc/tei:change
         return
@@ -94,13 +94,13 @@ element translation-projects {
     
     let $targets := 
         for $target in $translation-status/eft:target-date
-        let $history-completed := $history[@target_xmlid eq $text-id][@type eq 'translationStatusChange'][@newValue eq $target/@status-id]
+        let $log-completed := fn:sort($log[@target_xmlid eq $text-id][@type eq 'translationStatusChange'][@newValue eq $target/@status-id],(), function($log) { $log/@timestamp ! xs:dateTime(.) })[last()]
         return
-            json-types:project-target(string-join(($text-id, 'target', $target/@status-id), '/'), $text-id, $target/@status-id, $target/@date-time, $history-completed/@xmlId)
+            json-types:project-target(string-join(($text-id, 'target', $target/@status-id), '/'), $text-id, $target/@status-id, $target/@date-time, $log-completed/@xmlId)
     
     return (
         $project,
-        $history,
+        $log,
         $targets
     )
 }

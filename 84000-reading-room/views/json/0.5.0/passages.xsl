@@ -24,9 +24,8 @@
         <annotation-type type="foreign"/>
         <annotation-type type="distinct"/>
         <annotation-type type="small-caps"/>
-        <annotation-type type="internal-link"/>
-        <annotation-type type="dynamic-link"/>
         <annotation-type type="link"/>
+        <annotation-type type="internal-link"/>
         <annotation-type type="quoted"/>
         <annotation-type type="paragraph"/>
         <annotation-type type="line-group"/>
