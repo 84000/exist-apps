@@ -7,7 +7,7 @@ declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace json="http://www.json.org";
 
-import module namespace common = "http://read.84000.co/common" at "../../modules/common.xql";
+import module namespace common = "http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace functx="http://www.functx.com";
 
 declare function eft-json:response($api-version as xs:string, $uri as xs:string, $html-url as xs:string, $text-id as xs:string, $toh-key as xs:string?, $publication-version as xs:string, $publication-status as xs:string, $cache-key as xs:string, $content as element()*) as element(eft:response) {
@@ -240,3 +240,4 @@ declare function eft-json:title-migration-id($source-key as xs:string, $title-ty
         string-join(($source-key, $title-type, $language, $index-in-similar-titles), '/') (:! util:base64-encode(.):)
 
 };
+

@@ -4,9 +4,10 @@ declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
+import module namespace types = "http://read.84000.co/json-types/0.5.0" at "common/types.xql";
+import module namespace helpers = "http://read.84000.co/json-helpers/0.5.0" at "common/helpers.xql";
 import module namespace common = "http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
-import module namespace json-types = "http://read.84000.co/json-types/0.5.0" at "common/types.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option output:method "json";
@@ -16,8 +17,9 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 
 declare variable $local:request-entity-id := if(request:exists()) then request:get-parameter('id', '') else '';
 declare variable $local:request-text-id := if(request:exists()) then request:get-parameter('text-id', '') else 'UT22084-066-009';
-declare variable $local:request-text := $tei-content:translations-collection/id($local:request-text-id);
-declare variable $local:text-xmlids := $local:request-text/ancestor::tei:TEI//@xml:id;
+declare variable $local:request-tei := $local:request-text-id[. gt ''] ! tei-content:tei(., 'translation');
+declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
+declare variable $local:text-xmlids := $local:request-tei//@xml:id;
 
 declare variable $local:operations-data := collection(concat($common:data-path, '/operations'));
 declare variable $local:entities := $local:operations-data//eft:entities;
@@ -38,7 +40,7 @@ declare function local:entities() {
     return (
     
         (: entity/type :)
-        distinct-values($entity/eft:type/@type/string()) ! json-types:authority-classification($entity/@xml:id, .)
+        distinct-values($entity/eft:type/@type/string()) ! types:authority-classification($entity/@xml:id, .)
     
     )
     
@@ -51,7 +53,7 @@ declare function local:contributors() {
     
     return (
     
-        distinct-values($contributor/eft:affiliation/@type/string()) ! json-types:authority-classification($contributor/@xml:id, concat('contributor-', .))
+        distinct-values($contributor/eft:affiliation/@type/string()) ! types:authority-classification($contributor/@xml:id, concat('contributor-', .))
         
     )
     
@@ -64,7 +66,7 @@ declare function local:teams() {
     
     return (
     
-        json-types:authority-classification($team/@xml:id, 'translation-team')
+        types:authority-classification($team/@xml:id, 'translation-team')
    
    )
    
@@ -77,9 +79,9 @@ declare function local:institutions() {
     
     return (
     
-        $institution/@institution-type-id[. gt ''] ! json-types:authority-classification($institution/@xml:id, concat('organisation-type-', .)),
+        $institution/@institution-type-id[. gt ''] ! types:authority-classification($institution/@xml:id, concat('organisation-type-', .)),
         
-        $institution/@region-id[. gt ''] ! json-types:authority-classification($institution/@xml:id, concat('region-', .))
+        $institution/@region-id[. gt ''] ! types:authority-classification($institution/@xml:id, concat('region-', .))
         
     )
     
@@ -92,25 +94,32 @@ declare function local:sponsors() {
     
     return (
     
-        distinct-values($sponsor/eft:type/@id/string()) ! json-types:authority-classification($sponsor/@xml:id, concat('sponsor-', .)),
+        distinct-values($sponsor/eft:type/@id/string()) ! types:authority-classification($sponsor/@xml:id, concat('sponsor-', .)),
         
-        distinct-values($sponsor/eft:country ! json-types:slug(string-join(text()))) ! json-types:authority-classification($sponsor/@xml:id, concat('demographic-geo-', .))
+        distinct-values($sponsor/eft:country ! helpers:slug(string-join(text()))) ! types:authority-classification($sponsor/@xml:id, concat('demographic-geo-', .))
         
     )
     
 };
 
-element authorities-classifications {
-    
-    attribute modelType { 'authorities-classifications' },
-    attribute apiVersion { $json-types:api-version },
-    attribute url { concat('/rest/authorities-classifications.json?', string-join((concat('api-version=', $json-types:api-version), $local:request-entity[@xml:id eq $local:request-entity-id] ! concat('id=', $local:request-entity-id), $local:request-text ! concat('text-id=', $local:request-text-id)), '&amp;')) },
-    attribute timestamp { current-dateTime() },
-    
-    local:entities(),
-    local:contributors(),
-    local:teams(),
-    local:institutions(),
-    local:sponsors()
+let $response := 
+    element authorities-classifications {
         
-}
+        attribute modelType { 'authorities-classifications' },
+        attribute apiVersion { $types:api-version },
+        attribute url { concat('/rest/authorities-classifications.json?', string-join((concat('api-version=', $types:api-version), $local:request-entity[@xml:id eq $local:request-entity-id] ! concat('id=', $local:request-entity-id), $local:request-tei ! concat('text-id=', $local:request-text-id)), '&amp;')) },
+        attribute timestamp { current-dateTime() },
+        
+        local:entities(),
+        local:contributors(),
+        local:teams(),
+        local:institutions(),
+        local:sponsors()
+            
+    }
+
+return
+    if($local:request-store eq 'store') then
+        helpers:store($response, concat($response/@modelType, '.json'), ())
+    else
+        $response

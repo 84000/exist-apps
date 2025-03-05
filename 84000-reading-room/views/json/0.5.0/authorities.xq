@@ -4,9 +4,10 @@ declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
+import module namespace types = "http://read.84000.co/json-types/0.5.0" at "common/types.xql";
+import module namespace helpers = "http://read.84000.co/json-helpers/0.5.0" at "common/helpers.xql";
 import module namespace common = "http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
-import module namespace json-types = "http://read.84000.co/json-types/0.5.0" at "common/types.xql";
 import module namespace functx="http://www.functx.com";
 
 declare option output:method "json";
@@ -16,8 +17,9 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 
 declare variable $local:request-entity-id := if(request:exists()) then request:get-parameter('id', '') else '';
 declare variable $local:request-text-id := if(request:exists()) then request:get-parameter('text-id', '') else 'UT22084-066-009';
-declare variable $local:request-text := $tei-content:translations-collection/id($local:request-text-id);
-declare variable $local:text-xmlids := $local:request-text/ancestor::tei:TEI//@xml:id;
+declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
+declare variable $local:request-tei := $local:request-text-id[. gt ''] ! tei-content:tei(., 'translation');
+declare variable $local:text-xmlids := $local:request-tei//@xml:id;
 
 declare variable $local:operations-data := collection(concat($common:data-path, '/operations'));
 declare variable $local:entities := $local:operations-data//eft:entities;
@@ -56,7 +58,7 @@ declare function local:entities() {
     (: If not try glossaries :)
     let $head-term := 
         if(not($head-term)) then
-            local:head-term($instances[self::tei:gloss](:[not(@mode eq 'surfeit')]:), $entity/eft:label)
+            local:head-term($instances[self::tei:gloss](:[not(@mode eq 'surfeit')]:)/tei:term, $entity/eft:label)
         else
             $head-term
     where $head-term
@@ -68,7 +70,7 @@ declare function local:entities() {
     let $definition-string := string-join($definition-html ! serialize(., $local:html5-serialization-parameters) ! replace(., concat('^',functx:escape-for-regex('&lt;!DOCTYPE html&gt;'),'\s*'), '')) ! normalize-space(.)                       
     
     return
-        json-types:authority($entity/@xml:id, $entity/@timestamp, json-types:normalize-text($head-term), ($head-term/@xml:lang, 'en')[1], ($entity/eft:label[@xml:lang eq 'en'][normalize-space(text())])[1] ! normalize-space(string-join(text())), $definition-string)
+        types:authority($entity/@xml:id, $entity/@timestamp, helpers:normalize-text($head-term), ($head-term/@xml:lang, 'en')[1], ($entity/eft:label[@xml:lang eq 'en'][normalize-space(text())])[1] ! normalize-space(string-join(text())), $definition-string)
     
 };
 
@@ -81,7 +83,7 @@ declare function local:contributors() {
     let $head-term := local:head-term($instances, $contributor/eft:label)
     where $head-term
     return
-        json-types:authority($contributor/@xml:id, $contributor/@timestamp, $head-term, ($head-term/@xml:lang, 'en')[1], ($contributor/eft:label)[1] ! json-types:normalize-text(.), ())
+        types:authority($contributor/@xml:id, $contributor/@timestamp, $head-term, ($head-term/@xml:lang, 'en')[1], ($contributor/eft:label)[1] ! helpers:normalize-text(.), ())
    
 };
 
@@ -91,7 +93,7 @@ declare function local:teams() {
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($team except $local:request-entity) eq 0
     
     return
-        json-types:authority($team/@xml:id, $team/@timestamp, ($team/eft:label)[1] ! json-types:normalize-text(.), 'en', (), ())
+        types:authority($team/@xml:id, $team/@timestamp, ($team/eft:label)[1] ! helpers:normalize-text(.), 'en', (), ())
    
 };
 
@@ -101,7 +103,7 @@ declare function local:institutions() {
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($institution except $local:request-entity) eq 0
     
     return
-        json-types:authority($institution/@xml:id, $institution/@timestamp, ($institution/eft:label)[1] ! json-types:normalize-text(.), 'en', (), ())
+        types:authority($institution/@xml:id, $institution/@timestamp, ($institution/eft:label)[1] ! helpers:normalize-text(.), 'en', (), ())
         
 };
 
@@ -114,7 +116,7 @@ declare function local:sponsors() {
     let $head-term := local:head-term($instances, $sponsor/eft:label)
     where $head-term
     return
-        json-types:authority($sponsor/@xml:id, $sponsor/@timestamp, $head-term, ($head-term/@xml:lang, 'en')[1], ($sponsor/eft:label)[1] ! json-types:normalize-text(.), ())
+        types:authority($sponsor/@xml:id, $sponsor/@timestamp, $head-term, ($head-term/@xml:lang, 'en')[1], ($sponsor/eft:label)[1] ! helpers:normalize-text(.), ())
     
 };
 
@@ -130,7 +132,7 @@ declare function local:head-term($terms, $labels) as element()? {
     let $head-terms-lang := $terms[@xml:lang eq $head-term-lang]
     
     let $distinct-terms := distinct-values($head-terms-lang ! normalize-space(string-join(text())) ! lower-case(.) ! common:normalized-chars(.))
-    let $distinct-terms-sorted := fn:sort($distinct-terms, (), function($item) { -count($terms[normalize-space(string-join(text()) ! lower-case(.) ! common:normalized-chars(.)) eq $item]) })
+    let $distinct-terms-sorted := fn:sort($distinct-terms, (), function($term) { -count($terms[normalize-space(string-join(text()) ! lower-case(.) ! common:normalized-chars(.)) eq $term]) })
     let $distinct-terms-first := $distinct-terms-sorted[1]
     let $head-term := subsequence($head-terms-lang[normalize-space(string-join(text())) ! lower-case(.) ! common:normalized-chars(.) eq $distinct-terms-first], 1, 1)
     
@@ -142,18 +144,24 @@ declare function local:head-term($terms, $labels) as element()? {
     
 };
 
-element authorities {
-    
-    attribute modelType { 'authorities' },
-    attribute apiVersion { $json-types:api-version },
-    attribute url { concat('/rest/authorities.json?', string-join((concat('api-version=', $json-types:api-version), $local:request-entity[@xml:id eq $local:request-entity-id] ! concat('id=', $local:request-entity-id), $local:request-text ! concat('text-id=', $local:request-text-id)), '&amp;')) },
-    attribute timestamp { current-dateTime() },
-    
-    local:entities(),
-    local:contributors(),
-    local:teams(),
-    local:institutions(),
-    local:sponsors()
+let $response := 
+    element authorities {
         
-}
-    
+        attribute modelType { 'authorities' },
+        attribute apiVersion { $types:api-version },
+        attribute url { concat('/rest/authorities.json?', string-join((concat('api-version=', $types:api-version), $local:request-entity[@xml:id eq $local:request-entity-id] ! concat('id=', $local:request-entity-id), $local:request-tei ! concat('text-id=', $local:request-text-id)), '&amp;')) },
+        attribute timestamp { current-dateTime() },
+        
+        local:entities(),
+        local:contributors(),
+        local:teams(),
+        local:institutions(),
+        local:sponsors()
+            
+    }
+
+return
+    if($local:request-store eq 'store') then
+        helpers:store($response, concat($response/@modelType, '.json'), ())
+    else
+        $response

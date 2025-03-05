@@ -129,7 +129,7 @@ return
                     where $ref-1
                     return
                         element { QName('http://read.84000.co/ns/1.0', 'back-link') } {
-                            attribute url { translation:href($tei-location/@key, $ref-1/@xml:id, (), (), $ref-1/@xml:id) }
+                            attribute url { translation:href($tei-location/@key, (), (), (), $ref-1/@xml:id) }
                         }
                         
                 }

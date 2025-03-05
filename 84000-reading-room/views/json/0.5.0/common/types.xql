@@ -7,9 +7,9 @@ declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace json = "http://www.json.org";
 
+import module namespace helpers = "http://read.84000.co/json-helpers/0.5.0" at "helpers.xql";
 import module namespace common = "http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
-import module namespace translation = "http://read.84000.co/translation" at "/db/apps/84000-reading-room/modules/translation.xql";
 import module namespace functx="http://www.functx.com";
 
 declare variable $json-types:api-version := '0.5.0';
@@ -407,36 +407,6 @@ declare variable $json-types:control-data-types := map {
     'work-count-pages':          'workCountPages'
 };
 
-declare function json-types:copy-nodes($nodes as node()*) as node()* {
-    for $node in $nodes
-    return
-        if(functx:node-kind($node) eq 'text') then
-            $node
-        else if(functx:node-kind($node) eq 'element') then
-            element { local-name($node) } {
-                for $attr in $node/@*
-                return
-                    element { local-name($attr) } {
-                        if(functx:is-a-number($attr/string())) then
-                            attribute json:literal {'true'}
-                        else ()
-                        ,
-                        $attr/string()
-                    }
-                ,
-                json-types:copy-nodes($node/node())
-            }
-        else ()
-};
-
-declare function json-types:slug($text as xs:string) as xs:string {
-    $text ! normalize-space(.) ! lower-case(.) ! replace(., '[^a-zA-Z0-9]', '-') ! replace(., '\-+', '-') ! replace(., '^\-|\-$', '')
-};
-
-declare function json-types:normalize-text($element as element()) as xs:string? {
-    string-join($element//text()) ! normalize-space(.)
-};
-
 declare function json-types:object-relation($subject-xmlid as xs:string, $relation as xs:string, $object-xmlid as xs:string) as element(eft:objectRelation) {
     element { QName('http://read.84000.co/ns/1.0', 'objectRelation') } {
         attribute json:array { true() },
@@ -558,7 +528,7 @@ declare function json-types:distinct-names($entity as element(), $default-lang a
             for $label at $label-index in ($entity/eft:internal-name, $entity/eft:label)
             let $label-lang := ($label/@xml:lang, $default-lang, 'en')[1]
             let $label-id := string-join(($entity/@xml:id, $label-lang, $label-index, 'text'), '/')
-            let $label-text := json-types:normalize-text($label)
+            let $label-text := helpers:normalize-text($label)
             let $internalName := (local-name($label) = ('internal-name'))
             return
                 json-types:name($label-id, $label-lang, $label, $entity/@xml:id, $internalName)
@@ -574,14 +544,14 @@ declare function json-types:distinct-names($entity as element(), $default-lang a
                 let $term-lang := ($term/@xml:lang, $default-lang, 'en')[1]
                 let $term-lang-index := functx:index-of-node($tei-target/tei:term[(@xml:lang/string(), 'en')[1] eq $term-lang], $term)
                 let $label-id := string-join(($tei-target/@xml:id, $term-lang, $term-lang-index, 'text'), '/')
-                let $term-text := json-types:normalize-text($term)
+                let $term-text := helpers:normalize-text($term)
                 where $term-text
                 return
                     json-types:name($label-id, $term-lang, $term-text, $entity/@xml:id, false())
             
             (: Author/Sponsor -> Name :)
             else if($tei-target[not(@role eq 'translatorMain')]) then (: tei:sponsor, tei:author, tei:editor etc. :)
-                let $target-text := $tei-target ! json-types:normalize-text(.)
+                let $target-text := $tei-target ! helpers:normalize-text(.)
                 let $target-lang := ($tei-target/@xml:lang, $default-lang, 'en')[1]
                 let $label-id := string-join(($tei-target/@xml:id, $target-lang, 'text'), '/')
                 where $target-text
@@ -593,7 +563,7 @@ declare function json-types:distinct-names($entity as element(), $default-lang a
     
     for $name in $names
     let $name-lang := $name/@language
-    let $name-content := json-types:normalize-text($name/eft:content)
+    let $name-content := helpers:normalize-text($name/eft:content)
     group by $name-content, $name-lang
     return 
         $name[1]
@@ -663,22 +633,22 @@ declare function json-types:project($xmlId as xs:string, $workXmlid as xs:string
     }
 };
 
-declare function json-types:project-target($xmlId as xs:string, $workXmlid as xs:string, $status-id as xs:string, $datetime as xs:dateTime, $completedLogXmlid as xs:string?) as element(eft:project-target) {
+declare function json-types:project-target($xmlId as xs:string, $projectXmlid as xs:string, $status-id as xs:string, $datetime as xs:dateTime, $completedLogXmlid as xs:string?) as element(eft:project-target) {
     element { QName('http://read.84000.co/ns/1.0', 'project-target') } {
         attribute json:array {'true'},
         attribute xmlId { $xmlId },
-        attribute work_xmlid  { $workXmlid },
+        attribute project_xmlid  { $projectXmlid },
         attribute target_status { $status-id },
         attribute target_datetime { $datetime },
         attribute completed_log_xmlid { $completedLogXmlid }
     }
 };
 
-declare function json-types:submission($xmlId as xs:string, $workXmlid as xs:string, $filename as xs:string, $filename-original as xs:string) as element(eft:submission) {
+declare function json-types:submission($xmlId as xs:string, $projectXmlid as xs:string, $workXmlid as xs:string, $filename as xs:string, $filename-original as xs:string) as element(eft:submission) {
     element { QName('http://read.84000.co/ns/1.0', 'submission') } {
         attribute json:array {'true'},
         attribute xmlId { $xmlId },
-        attribute work_xmlid  { $workXmlid },
+        attribute project_xmlid  { $projectXmlid },
         attribute filename { $filename },
         attribute original_filename { $filename-original },
         attribute download_url { concat('https://projects.84000-translate.org/imported-file/?', string-join((concat('text-id=', $workXmlid), concat('submission-id=',$filename)), '&amp;')) }
