@@ -58,11 +58,11 @@
     
     <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
     
-    <xsl:template match="/xhtml:html">
+    <xsl:template match="/">
         
         <translation>
             
-            <xsl:for-each-group select="//xhtml:section[not(@data-part-type = ('titles','imprint','toc','bibliography','glossary','abbreviations','citation-index'))]/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
+            <xsl:for-each-group select="descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
                 <xsl:call-template name="passage">
                     <xsl:with-param name="passage-id" select="@data-location-id"/>
                     <xsl:with-param name="parent-id" select="ancestor::xhtml:section/@id"/>
@@ -102,7 +102,7 @@
         <xsl:param name="header-type" as="xs:boolean" required="yes"/>
         <!--<xsl:param name="elements" as="element()*"/>-->
         
-        <xsl:variable name="passage-root" select="/xhtml:html//xhtml:div[@data-location-id eq $passage-id][not(ancestor::xhtml:div[@data-location-id eq $passage-id])]"/>
+        <xsl:variable name="passage-root" select="/xhtml:section//xhtml:div[@data-location-id eq $passage-id][not(ancestor::xhtml:div[@data-location-id eq $passage-id])]"/>
         <xsl:variable name="gutters" select="$passage-root//xhtml:div[matches(@class, '(^|\s)gtr(\s|$)')]" as="element(xhtml:div)*"/>
         <xsl:variable name="inbound-quote-links" select="$passage-root//xhtml:div[matches(@class, '(^|\s)quotes\-inbound(\s|$)')]" as="element(xhtml:div)*"/>
         <xsl:variable name="content-nodes" select="$passage-root/node() except ($gutters | $inbound-quote-links) | $passage-root/preceding-sibling::*[1][self::xhtml:br]"/>
@@ -131,7 +131,7 @@
             
             <passageSort>
                 <xsl:attribute name="json:literal" select="true()"/>
-                <xsl:value-of select="common:index-of-node(/xhtml:html//*, $passage-root[1])"/>
+                <xsl:value-of select="common:index-of-node(/xhtml:section//*, $passage-root[1])"/>
             </passageSort>
             
             <content>

@@ -36,7 +36,7 @@ declare function local:entities() {
     for $entity at $entity-index in $local:entities/eft:entity
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($entity except $local:request-entity) eq 0
     return
-        types:distinct-names($entity, 'en')
+        helpers:distinct-names($entity, 'en')
         
 };
 
@@ -45,7 +45,7 @@ declare function local:contributors() {
     for $contributor at $entity-index in $local:contributors/eft:person
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($contributor except $local:request-entity) eq 0
     return
-        types:distinct-names($contributor, 'en')
+        helpers:distinct-names($contributor, 'en')
    
 };
 
@@ -54,7 +54,7 @@ declare function local:teams() {
     for $team at $entity-index in $local:contributors/eft:team
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($team except $local:request-entity) eq 0
     return
-        types:distinct-names($team, 'en')
+        helpers:distinct-names($team, 'en')
    
 };
 
@@ -63,7 +63,7 @@ declare function local:sponsors() {
     for $sponsor at $entity-index in $local:sponsors/eft:sponsor
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($sponsor except $local:request-entity) eq 0
     return
-        types:distinct-names($sponsor, 'en')
+        helpers:distinct-names($sponsor, 'en')
         
 };
 
@@ -79,7 +79,7 @@ let $response :=
         local:contributors(),
         local:teams(),
         local:sponsors()
-            
+        
     }
 
 return

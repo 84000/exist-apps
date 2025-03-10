@@ -47,7 +47,7 @@ declare function local:catalogue-sections($section-tei as element(tei:TEI), $par
             
             (:let $label := tei-content:title-any($text-tei)
             let $titles := ($text-tei//tei:titleStmt/tei:title, $text-tei//tei:sourceDesc/tei:bibl/tei:ref)[normalize-space()]
-            let $title-migration-id := types:title-migration-id($text-bibl/@key, 'eft:toh', $text-bibl/tei:ref, $titles):)
+            let $title-migration-id := helpers:title-migration-id($text-bibl/@key, 'eft:toh', $text-bibl/tei:ref, $titles):)
             
             let $min-volume-number := min($text-bibl/tei:location/tei:volume/@number ! xs:integer(.))
             let $start-volume := $text-bibl/tei:location/tei:volume[@number ! xs:integer(.) eq $min-volume-number]
@@ -80,9 +80,9 @@ declare function local:titles($section-tei as element(tei:TEI)) {
     for $title in $titles
     let $title-type :=  concat('eft:', $title/@type)
     let $title-language := ($title/@xml:lang, 'en')[1]
-    let $title-migration-id := types:title-migration-id($section-id, $title-type, $title, $titles)
+    let $title-migration-id := helpers:title-migration-id($section-id, $title-type, $title, $titles)
     return
-        types:title($title-migration-id, $title-language, $section-id, $title-type, helpers:normalize-text($title), $title/@rend ! concat('attestation-', .))
+        types:title($title-migration-id, $title-language, $section-id, $title-type, helpers:normalize-text($title), $title/@rend ! concat('attestation-', .), ())
         
 };
 

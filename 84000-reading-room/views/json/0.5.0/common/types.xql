@@ -9,8 +9,6 @@ declare namespace json = "http://www.json.org";
 
 import module namespace helpers = "http://read.84000.co/json-helpers/0.5.0" at "helpers.xql";
 import module namespace common = "http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
-import module namespace tei-content = "http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
-import module namespace functx="http://www.functx.com";
 
 declare variable $json-types:api-version := '0.5.0';
 
@@ -396,15 +394,24 @@ declare variable $json-types:catalogue-section-types := map {
 };
 
 declare variable $json-types:control-data-types := map {
-    'count-child-sections':      'countChildSections',
-    'count-child-works':         'countChildWorks',
-    'count-descendant-sections': 'countDescendantSections',
-    'count-descendant-works':    'countDescendantWorks',
-    'work-start-volume':         'workStartVolume',
-    'work-end-volume':           'workEndVolume',
-    'work-start-page':           'workStartPage',
-    'work-end-page':             'workEndPage',
-    'work-count-pages':          'workCountPages'
+    'count-child-sections':            'countChildSections',
+    'count-child-works':               'countChildWorks',
+    'count-descendant-sections':       'countDescendantSections',
+    'count-descendant-works':          'countDescendantWorks',
+    'work-toh':                        'catalogueWorkToh',
+    'work-start-volume':               'catalogueWorkStartVolume',
+    'work-end-volume':                 'catalogueWorkEndVolume',
+    'work-start-page':                 'catalogueWorkStartPage',
+    'work-end-page':                   'catalogueWorkEndPage',
+    'work-count-pages':                'catalogueWorkCountPages',
+    'work-text-id':                    'workXmlid',
+    'work-count-titles':               'workCountTitles',
+    'work-count-passages':             'workCountPassages',
+    'work-count-passage-annotations':  'workCountPassageAnnotations',
+    'work-count-glossary-entries':     'workCountGlossaryEntries',
+    'work-count-glossary-names':       'workCountGlossaryNames',
+    'work-count-bibliography-entries': 'workCountBibliographyEntries',
+    'work-count-source-authors':       'workCountSourceAuthors'
 };
 
 declare function json-types:object-relation($subject-xmlid as xs:string, $relation as xs:string, $object-xmlid as xs:string) as element(eft:objectRelation) {
@@ -454,7 +461,6 @@ declare function json-types:authority($xmlId as xs:string, $lastUpdated as xs:da
 };
 
 declare function json-types:authority-classification($authority-xmlid as xs:string, $classification-type as xs:string) as element(eft:authorityClassification) {
-    (:json-types:object-relation($authority-xmlid, 'classifiedAs', $json-types:classification-types($classification-key)('outputKey')):)
     element { QName('http://read.84000.co/ns/1.0', 'authorityClassification') } {
         attribute json:array { true() },
         attribute xmlId { string-join(($authority-xmlid, $classification-type, 'authorityClassification'), '/') },
@@ -486,8 +492,9 @@ declare function json-types:glossary($xmlId as xs:string, $authorityXmlid as xs:
         attribute work_xmlid  { $workXmlid },
         element definition { $definition },
         element definition_rend { $definition ! concat(($definitionRend, 'incompatible')[1], 'WithStandard') },
-        element termType { $termType },
-        element attestation { $attestation-key ! $json-types:attestation-types(.)('outputKey') },
+        element termType { ($termType[. = ('translationMain', 'translationAlternative')], $termType ! concat('unknown:', .))[1] },
+        element attestation { $attestation-key ! ($json-types:attestation-types(.) ! .('outputKey'), concat('unknown:', .))[1] },
+        (:attribute type { ($json-types:classification-types($type)('outputKey'), concat('unknown:', $type))[1] },:)
         element verified { attribute json:literal { true() }, $verified },
         element glossMode { $glossMode }
     }
@@ -520,76 +527,17 @@ declare function json-types:name($xmlId as xs:string, $language as xs:string, $c
     }
 };
 
-declare function json-types:distinct-names($entity as element(), $default-lang as xs:string?) as element(eft:name)* {
-
-    let $names := (
-        
-        if(local-name($entity) = ('team','sponsor')) then
-            for $label at $label-index in ($entity/eft:internal-name, $entity/eft:label)
-            let $label-lang := ($label/@xml:lang, $default-lang, 'en')[1]
-            let $label-id := string-join(($entity/@xml:id, $label-lang, $label-index, 'text'), '/')
-            let $label-text := helpers:normalize-text($label)
-            let $internalName := (local-name($label) = ('internal-name'))
-            return
-                json-types:name($label-id, $label-lang, $label, $entity/@xml:id, $internalName)
-        else ()
-        ,
-        
-        for $instance in $entity/eft:instance
-        let $tei-target := $tei-content:translations-collection/id($instance/@id)
-        return
-            (: Glossary terms -> Name :)
-            if($tei-target[self::tei:gloss](:[not(@mode eq 'surfeit')]:)) then
-                for $term in $tei-target/tei:term[not(@xml:lang eq 'bo' and @n)]
-                let $term-lang := ($term/@xml:lang, $default-lang, 'en')[1]
-                let $term-lang-index := functx:index-of-node($tei-target/tei:term[(@xml:lang/string(), 'en')[1] eq $term-lang], $term)
-                let $label-id := string-join(($tei-target/@xml:id, $term-lang, $term-lang-index, 'text'), '/')
-                let $term-text := helpers:normalize-text($term)
-                where $term-text
-                return
-                    json-types:name($label-id, $term-lang, $term-text, $entity/@xml:id, false())
-            
-            (: Author/Sponsor -> Name :)
-            else if($tei-target[not(@role eq 'translatorMain')]) then (: tei:sponsor, tei:author, tei:editor etc. :)
-                let $target-text := $tei-target ! helpers:normalize-text(.)
-                let $target-lang := ($tei-target/@xml:lang, $default-lang, 'en')[1]
-                let $label-id := string-join(($tei-target/@xml:id, $target-lang, 'text'), '/')
-                where $target-text
-                return
-                    json-types:name($label-id, $target-lang, $target-text, $entity/@xml:id, false())
-            
-            else ()
-    )
-    
-    for $name in $names
-    let $name-lang := $name/@language
-    let $name-content := helpers:normalize-text($name/eft:content)
-    group by $name-content, $name-lang
-    return 
-        $name[1]
-};
-
-declare function json-types:title($xmlId as xs:string, $language as xs:string, $workXmlid as xs:string, $type as xs:string, $content as xs:string, $attestation-key as xs:string?) as element(eft:name) {
+declare function json-types:title($xmlId as xs:string, $language as xs:string, $workXmlid as xs:string, $type as xs:string, $content as xs:string, $attestation-key as xs:string?, $catalogueWorkXmlid as xs:string?) as element(eft:name) {
     element { QName('http://read.84000.co/ns/1.0', 'title') } {
         attribute json:array { true() },
         attribute xmlId { $xmlId },
         attribute work_xmlid { $workXmlid },
         attribute type { ($json-types:title-types($type), concat('unknown:', $type))[1] },
         attribute language { $language },
+        element catalogue_work_xmlid { ($catalogueWorkXmlid, attribute json:literal { true() })[1] },
         element attestation { $attestation-key ! $json-types:attestation-types(.)('outputKey') },
         element content { $content }
     }
-};
-
-declare function json-types:title-migration-id($source-key as xs:string, $title-type as xs:string, $title as element(), $all-titles as element()*) as xs:string {
-
-    let $language := ($title/@xml:lang, 'en')[1]
-    let $similar-titles := $all-titles[@xml:lang eq $title/@xml:lang][@type eq $title/@type][(@key, ($title/@key, '')[1])[1] eq ($title/@key, '')[1]]
-    let $index-in-similar-titles := (functx:index-of-node($similar-titles, $title), 1)[1]
-    
-    return
-        string-join(($source-key, $title-type, $language, $index-in-similar-titles), '/')
-
 };
 
 declare function json-types:catalogue-section($xmlId as xs:string, $parentXmlid as xs:string, $type as xs:string, $label as xs:string?, $sort-index as xs:integer, $titles as element(eft:title)*, $description as xs:string?) as element(eft:catalogueSection) {
@@ -605,14 +553,12 @@ declare function json-types:catalogue-section($xmlId as xs:string, $parentXmlid 
     }
 };
 
-declare function json-types:catalogue-work($xmlId as xs:string, $sectionXmlid as xs:string, (:$label as xs:string, $titleXmlid as xs:string, :) $workXmlid as xs:string, $start-volume as xs:integer, $start-page as xs:integer, $end-volume as xs:integer, $end-page as xs:integer, $page-count as xs:integer) as element(eft:catalogueText)  {
+declare function json-types:catalogue-work($xmlId as xs:string, $sectionXmlid as xs:string, $workXmlid as xs:string, $start-volume as xs:integer, $start-page as xs:integer, $end-volume as xs:integer, $end-page as xs:integer, $page-count as xs:integer) as element(eft:catalogueText)  {
     element { QName('http://read.84000.co/ns/1.0', 'catalogueWork') } {
         attribute json:array { true() },
         attribute xmlId { $xmlId },
         attribute work_xmlId { $workXmlid },
         attribute catalogue_section_xmlid { $sectionXmlid },
-        (:element label { $label },
-        element title_xmlid  { $titleXmlid },:)
         element startVolume { attribute json:literal { 'true' }, $start-volume },
         element startPage { attribute json:literal { 'true' }, $start-page },
         element endVolume { attribute json:literal { 'true' }, $end-volume },

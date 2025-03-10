@@ -28,7 +28,7 @@ declare variable $local:published-statuses := $tei-content:text-statuses/eft:sta
 declare function local:process-gloss($gloss as element(tei:gloss), $text-id as xs:string, $glossary-xhtml as element()) as element(eft:glossary)* {
 
     let $entity := ($local:entities//eft:instance[@id eq $gloss/@xml:id]/parent::eft:entity)[1]
-    let $entity-names := $entity ! types:distinct-names(., 'en')
+    let $entity-names := $entity ! helpers:distinct-names(., 'en')
     let $definition-tei := $gloss/tei:note[@type eq 'definition']
     let $definition-html := $glossary-xhtml//xhtml:div[@id eq $gloss/@xml:id]/descendant::xhtml:p[matches(@class, '(^|\s)definition(\s|$)')]
     let $definition-html-string := string-join($definition-html ! serialize(.)) ! replace(., '\s+xmlns=[^\s|>]*', '')
