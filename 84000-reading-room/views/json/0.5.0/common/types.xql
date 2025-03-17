@@ -483,10 +483,11 @@ declare function json-types:work($text-id as xs:string, $titles as element(eft:t
     }
 };
 
-declare function json-types:glossary($xmlId as xs:string, $authorityXmlid as xs:string?, $nameXmlid as xs:string, $workXmlid as xs:string, $definition as xs:string?, $definitionRend as xs:string?, $termType as xs:string?, $attestation-key as xs:string?, $verified as xs:boolean, $glossMode as xs:string) as element(eft:glossary) {
+declare function json-types:glossary($xmlId as xs:string, $glossaryXmlid as xs:string, $authorityXmlid as xs:string?, $nameXmlid as xs:string, $workXmlid as xs:string, $definition as xs:string?, $definitionRend as xs:string?, $termType as xs:string?, $attestation-key as xs:string?, $verified as xs:boolean, $glossMode as xs:string) as element(eft:glossary) {
     element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
         attribute json:array { true() },
         attribute xmlId { $xmlId },
+        attribute glossary_xmlId { $glossaryXmlid },
         attribute authority_xmlid { $authorityXmlid },
         attribute name_xmlid  { $nameXmlid },
         attribute work_xmlid  { $workXmlid },

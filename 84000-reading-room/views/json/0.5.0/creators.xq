@@ -15,7 +15,7 @@ declare option output:indent "yes";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:request-text-id := if(request:exists()) then request:get-parameter('text-id', '') else 'UT22084-066-009';
+declare variable $local:request-text-id := if(request:exists()) then request:get-parameter('text-id', '') else 'UT22084-034-009';
 declare variable $local:request-tei := $local:request-text-id[. gt ''] ! tei-content:tei(., 'translation');
 declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
 declare variable $local:entities := collection(concat($common:data-path, '/operations'))//eft:entities;
@@ -57,7 +57,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
             for $attribution in $attributions
             let $instance := $attribution/@xml:id ! local:instance(.)
             let $entity := ($instance/parent::eft:*)[1]
-            let $entity-names := $entity ! helpers:distinct-names(., 'en')
+            let $entity-names := helpers:distinct-names($entity, $attribution, 'en') 
             let $attribution-text := helpers:normalize-text($attribution)
             let $entity-name-attribution := $entity-names[eft:content/text() eq $attribution-text]
             let $entity-name := ($entity-name-attribution, $entity-names)[1]
@@ -74,7 +74,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
                 else
                     ($attribution/@role, string-join(('error', $attribution-text), ':'))[1]
             
-            where $entity
+            (:where $entity:)
             return (
                 (:$entity-name,:)
                 types:creator($attribution/@xml:id, $entity/@xml:id, $name-id, $text-id, $attribution-type)

@@ -43,6 +43,7 @@ declare function local:process-gloss($gloss as element(tei:gloss), $text-id as x
         return
             types:glossary(
                 $term-id, 
+                $gloss/@xml:id,
                 $entity/@xml:id, 
                 $name-id, 
                 $text-id, 

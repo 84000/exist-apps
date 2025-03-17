@@ -2,6 +2,7 @@ module namespace update-entity = "http://operations.84000.co/update-entity";
 
 import module namespace update-tei = "http://operations.84000.co/update-tei" at "update-tei.xql";
 import module namespace common = "http://read.84000.co/common" at "../../84000-reading-room/modules/common.xql";
+import module namespace tei-content = "http://read.84000.co/tei-content" at "../../84000-reading-room/modules/tei-content.xql";
 import module namespace entities = "http://read.84000.co/entities" at "../../84000-reading-room/modules/entities.xql";
 import module namespace glossary = "http://read.84000.co/glossary" at "../../84000-reading-room/modules/glossary.xql";
 import module namespace functx="http://www.functx.com";
@@ -569,7 +570,7 @@ declare function update-entity:auto-assign-glossary($text-id as xs:string, $crea
                     if(count($search-terms-sa) gt 0) then
                         $glossary:tei//tei:back//tei:term[@xml:lang eq 'Sa-Ltn'][matches(., $regex-sa, 'i')]/parent::tei:gloss except $gloss
                     else ()
-               
+                
                 (: Is there a matching Tibetan term? :)
                 let $search-terms-bo := distinct-values($gloss/tei:term[@xml:lang eq 'Bo-Ltn']/text() ! normalize-space(.)) (:distinct-values(($gloss/tei:term[@xml:lang eq 'Bo-Ltn'][text()], $gloss/tei:term[@xml:lang eq 'bo'][text()] ! common:wylie-from-bo(.))):)
                 let $regex-bo := string-join($search-terms-bo ! functx:escape-for-regex(.), '|') ! concat('^\s*(', ., ')\s*$')
@@ -671,4 +672,83 @@ declare function update-entity:auto-assign-glossary($text-id as xs:string, $crea
         )
         
     }
+};
+
+(: Auto-assign entities to all glossary entries in a text :)
+declare function update-entity:auto-assign-attributions($text-id as xs:string) as element()* {
+    
+    (# exist:batch-transaction #) {
+        
+        let $tei := tei-content:tei($text-id,'translation')
+        let $log := util:log('info', concat('update-entity-auto-assign-attributions-started:', $text-id))
+        
+        let $merge-attributions  :=
+            for $attribution in $tei//tei:sourceDesc/tei:bibl/tei:author | $tei//tei:sourceDesc/tei:bibl/tei:editor
+            let $instance := $entities:entities//m:instance[@id eq $attribution/@xml:id]
+            where not($instance)
+            (: Get matching attributions :)
+            let $regex := string-join($attribution/text()) ! normalize-space(.) ! replace(., '­', '') ! normalize-unicode(.) ! functx:escape-for-regex(.) ! concat('^\s*', ., '\s*$')
+            let $similar-attributions := ($glossary:tei//tei:sourceDesc/tei:bibl/tei:author[matches(., $regex, 'i')] | $glossary:tei//tei:sourceDesc/tei:bibl/tei:editor[matches(., $regex, 'i')]) except $attribution
+            let $similar-glossaries := $glossary:tei//tei:term[matches(., $regex, 'i')]/parent::tei:gloss
+            let $similar-entities := $entities:entities//m:label[matches(., $regex, 'i')]/parent::m:entity
+            
+            (: Get the associated enities :)
+            let $candidates-ids := ($similar-attributions/@xml:id/string(), $similar-glossaries/@xml:id/string())
+            let $entity-candidates := ($entities:entities//m:entity[m:instance/@id = $candidates-ids] | $similar-entities)[m:type/@type = 'eft-person']
+            
+            (: Do more filtering and sorting :)
+            let $entity-candidates-sorted := 
+                for $entity-candidate in $entity-candidates
+                
+                let $entity-candidate-attributions := $glossary:tei/id($entity-candidate/m:instance/@id)
+                
+                (: Count of matches :)
+                let $entity-candidate-glosses-count := count($entity-candidate-attributions)
+                
+                (: Order by most matching :)
+                order by $entity-candidate-glosses-count descending
+                return 
+                    element { QName('http://read.84000.co/ns/1.0','entity-candidate') } {
+                        attribute count-attributions { count($entity-candidate-attributions) },
+                        $entity-candidate
+                    }
+            
+            (: Match to entity depending on type :)
+            let $entity-candidates-first := $entity-candidates-sorted[1]
+            let $entity-match := $entity-candidates-first/m:entity
+            
+            (: Do the update :)
+            let $do-update := 
+                if($entity-match) then (
+                    (:update-entity:match-instance($entity-match/@xml:id, $gloss/@xml:id, 'glossary-item', ()):)
+                    (:util:log('info', concat('update-entity-auto-assign-attribution-match:', $attribution/@xml:id, '->', $entity-match/@xml:id)):)
+                )
+                else (
+                    (:update-entity:create($gloss, ()):)
+                    (:util:log('info', concat('update-entity-auto-assign-attribution-create:', $attribution/@xml:id)):)
+                )
+            
+            return 
+                element update {
+                    (:attribute regex { $regex },:)
+                    attribute action { if($entity-match) then 'merge' else 'create' },
+                    element source {
+                        $attribution
+                    },
+                    element match {
+                        $entity-match(:,
+                        $similar-attributions,
+                        $similar-glossaries,
+                        $similar-entities:)
+                    }
+                }
+        
+        where $merge-attributions
+        return (
+            $merge-attributions,
+            util:log('info', concat('update-entity-auto-assign-attributions-complete:', $text-id))
+        )
+        
+    }
+
 };

@@ -122,6 +122,6 @@ let $response :=
 
 return
     if($local:request-store eq 'store') then
-        helpers:store($response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), 'translation')
+        helpers:store($response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), ()(:'translation':))
     else
         $response

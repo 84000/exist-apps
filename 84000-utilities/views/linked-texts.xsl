@@ -13,6 +13,13 @@
             
             <div class="alert alert-info small text-center">
                 <p>This page tracks and validates links between texts defined in the tei header, specifically tei:fileDesc/tei:sourceDesc/tei:link nodes with a target attribute <br/>e.g. &lt;link target="toh123"/&gt;</p>
+                <p>
+                    <a>
+                        <xsl:attribute name="href" select="'linked-texts.xlsx'"/>
+                        <xsl:attribute name="title" select="'Download as spreadsheet'"/>
+                        <xsl:value-of select="'Download as a spreadsheet'"/>
+                    </a>
+                </p>
             </div>
             
             <div class="div-list">

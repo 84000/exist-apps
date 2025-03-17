@@ -101,45 +101,59 @@ declare function json-helpers:passages($html-sections as element(xhtml:section)*
     
 };
 
-declare function json-helpers:distinct-names($entity as element(), $default-lang as xs:string?) as element(eft:name)* {
+declare function json-helpers:distinct-names($entity as element()?, $default-lang as xs:string?) as element(eft:name)* {
+    json-helpers:distinct-names($entity, (), $default-lang)
+};
+
+declare function json-helpers:distinct-names($entity as element()?, $fallback as element()?, $default-lang as xs:string?) as element(eft:name)* {
 
     let $names := (
         
-        if(local-name($entity) = ('team','sponsor')) then
-            for $label at $label-index in ($entity/eft:internal-name, $entity/eft:label)
-            let $label-lang := ($label/@xml:lang, $default-lang, 'en')[1]
-            let $label-id := string-join(($entity/@xml:id, $label-lang, $label-index, 'text'), '/')
-            let $label-text := json-helpers:normalize-text($label)
-            let $internalName := (local-name($label) = ('internal-name'))
-            return
-                types:name($label-id, $label-lang, $label, $entity/@xml:id, $internalName)
-        else ()
-        ,
-        
-        for $instance in $entity/eft:instance
-        let $tei-target := $tei-content:translations-collection/id($instance/@id)
-        return
-            (: Glossary terms -> Name :)
-            if($tei-target[self::tei:gloss](:[not(@mode eq 'surfeit')]:)) then
-                for $term in $tei-target/tei:term[not(@xml:lang eq 'bo' and @n)]
-                let $term-lang := ($term/@xml:lang, $default-lang, 'en')[1]
-                let $term-lang-index := functx:index-of-node($tei-target/tei:term[(@xml:lang/string(), 'en')[1] eq $term-lang], $term)
-                let $label-id := string-join(($tei-target/@xml:id, $term-lang, $term-lang-index, 'text'), '/')
-                let $term-text := json-helpers:normalize-text($term)
-                where $term-text
+        if($entity) then (
+            if(local-name($entity) = ('team','sponsor')) then
+                for $label at $label-index in ($entity/eft:internal-name, $entity/eft:label)
+                let $label-lang := ($label/@xml:lang, $default-lang, 'en')[1]
+                let $label-id := string-join(($entity/@xml:id, $label-lang, $label-index, 'text'), '/')
+                let $label-text := json-helpers:normalize-text($label)
+                let $internalName := (local-name($label) = ('internal-name'))
                 return
-                    types:name($label-id, $term-lang, $term-text, $entity/@xml:id, false())
-            
-            (: Author/Sponsor -> Name :)
-            else if($tei-target[not(@role eq 'translatorMain')]) then (: tei:sponsor, tei:author, tei:editor etc. :)
-                let $target-text := $tei-target ! json-helpers:normalize-text(.)
-                let $target-lang := ($tei-target/@xml:lang, $default-lang, 'en')[1]
-                let $label-id := string-join(($tei-target/@xml:id, $target-lang, 'text'), '/')
-                where $target-text
-                return
-                    types:name($label-id, $target-lang, $target-text, $entity/@xml:id, false())
-            
+                    types:name($label-id, $label-lang, $label, $entity/@xml:id, $internalName)
             else ()
+            ,
+            
+            for $instance in $entity/eft:instance
+            let $tei-target := $tei-content:translations-collection/id($instance/@id)
+            return
+                (: Glossary terms -> Name :)
+                if($tei-target[self::tei:gloss](:[not(@mode eq 'surfeit')]:)) then
+                    for $term in $tei-target/tei:term[not(@xml:lang eq 'bo' and @n)]
+                    let $term-lang := ($term/@xml:lang, $default-lang, 'en')[1]
+                    let $term-lang-index := functx:index-of-node($tei-target/tei:term[(@xml:lang/string(), 'en')[1] eq $term-lang], $term)
+                    let $label-id := string-join(($tei-target/@xml:id, $term-lang, $term-lang-index, 'text'), '/')
+                    let $term-text := json-helpers:normalize-text($term)
+                    where $term-text
+                    return
+                        types:name($label-id, $term-lang, $term-text, $entity/@xml:id, false())
+                
+                (: Author/Sponsor -> Name :)
+                else if($tei-target[not(@role eq 'translatorMain')]) then (: tei:sponsor, tei:author, tei:editor etc. :)
+                    let $target-text := $tei-target ! json-helpers:normalize-text(.)
+                    let $target-lang := ($tei-target/@xml:lang, $default-lang, 'en')[1]
+                    let $label-id := string-join(($tei-target/@xml:id, $target-lang, 'text'), '/')
+                    where $target-text
+                    return
+                        types:name($label-id, $target-lang, $target-text, $entity/@xml:id, false())
+                
+                else ()
+        )
+        else
+            let $target-text := $fallback ! json-helpers:normalize-text(.)
+            let $target-lang := ($fallback/@xml:lang, $default-lang, 'en')[1]
+            let $label-id := string-join(($fallback/@xml:id, $target-lang, 'text'), '/')
+            where $target-text
+            return
+                types:name($label-id, $target-lang, $target-text, (), false())
+                
     )
     
     for $name in $names
@@ -148,6 +162,7 @@ declare function json-helpers:distinct-names($entity as element(), $default-lang
     group by $name-content, $name-lang
     return 
         $name[1]
+        
 };
 
 declare function json-helpers:glossaries($tei as element(tei:TEI), $html as element(xhtml:html)) as element(eft:glossary)* {
@@ -161,7 +176,7 @@ declare function json-helpers:glossaries($tei as element(tei:TEI), $html as elem
     let $definition-html := $html//xhtml:div[@id eq $gloss/@xml:id]/descendant::xhtml:p[matches(@class, '(^|\s)definition(\s|$)')]
     let $definition-html-string := string-join($definition-html ! serialize(.)) ! replace(., '\s+xmlns=[^\s|>]*', '')
     return 
-        for $term in $gloss/tei:term[not(@xml:lang eq 'bo' and @n)]
+        for $term in $gloss/tei:term[not(@xml:lang eq 'bo' and @n)][normalize-space(string-join(text()))]
         let $term-lang := ($term/@xml:lang, 'en')[1]
         let $term-text := json-helpers:normalize-text($term)
         let $term-lang-index := functx:index-of-node($gloss/tei:term[(@xml:lang/string(), 'en')[1] eq $term-lang], $term)
@@ -171,6 +186,7 @@ declare function json-helpers:glossaries($tei as element(tei:TEI), $html as elem
         return
             types:glossary(
                 $term-id, 
+                $gloss/@xml:id,
                 $entity/@xml:id, 
                 $name-id, 
                 $text-id, 

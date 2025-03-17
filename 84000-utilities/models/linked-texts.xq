@@ -46,12 +46,51 @@ declare function local:linked-text($tei as element(tei:TEI)) as element(m:text) 
     }
 };
 
-common:response(
-    'utilities/linked-texts',
-    'utilities',(
-        utilities:request(),
-        for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:link[@type][@target]]
+declare function local:spreadsheet-data($linked-texts as element(m:text)*){
+    element { QName('http://read.84000.co/ns/1.0', 'spreadsheet-data') } {
+    
+        attribute key { '84000-linked-texts' },
+        
+        for $text in $linked-texts
+        order by 
+            $text/m:toh[1]/@number[. gt ''] ! xs:integer(.),
+            $text/m:toh[1]/@chapter-number[. gt ''] ! xs:integer(.)
         return
-            local:linked-text($tei)
+            element row {
+                element ID { $text/@id/string() },
+                element Toh { 
+                    attribute width { '10' },
+                    string-join($text/m:toh/m:base, ' ') 
+                },
+                for $type in ('isCommentaryOf','hasCommonSourceText')
+                return
+                element { $type } {
+                    attribute width { '50' }, 
+                    if($text/m:link[@type eq $type]/m:text[m:toh]) then
+                        string-join($text/m:link[@type eq $type]/m:text/m:toh/m:base ! string-join(text()) ! normalize-space(), ', ')
+                    else if($text/m:link[@type eq $type][@target gt '']) then
+                        string-join($text/m:link[@type eq $type]/@target ! normalize-space(), ', ') ! concat('Not found: ', .)
+                    else ()
+                }
+            }
+        
+    }
+};
+
+let $linked-texts := 
+    for $tei in $tei-content:translations-collection//tei:TEI[tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:link[@type][@target]]
+    return
+        local:linked-text($tei)
+
+return
+    common:response(
+        'utilities/linked-texts',
+        'utilities',(
+            utilities:request(),
+            if(request:get-parameter('resource-suffix', '') eq 'xlsx') then
+                local:spreadsheet-data($linked-texts)
+            else
+                $linked-texts
+        )
     )
-)
+
