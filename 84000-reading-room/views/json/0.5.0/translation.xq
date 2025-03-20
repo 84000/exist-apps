@@ -82,7 +82,7 @@ declare function local:titles() as element(eft:title)* {
         }
 };:)
 
-let $html-sections := $local:html//xhtml:section[not(@data-part-type = ('titles','imprint','toc','bibliography','glossary','abbreviations','citation-index'))]
+let $html-sections := $local:html//xhtml:section[not(@data-part-type = ('titles','imprint','toc','bibliography','glossary','citation-index'))]
 
 let $passages := helpers:passages($html-sections)
 
@@ -114,7 +114,7 @@ let $response :=
         (:types:control-data($local:text-id, 'work-count-milestones', count($local:xml-response/eft:text-outline/eft:pre-processed[@type eq 'milestones'][@text-id eq $local:text-id]/eft:milestone)),:)
         types:control-data($local:text-id, 'work-count-passage-annotations', count($passages/eft:annotation)),
         types:control-data($local:text-id, 'work-count-glossary-entries', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id])),
-        types:control-data($local:text-id, 'work-count-glossary-names', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]/tei:term[not(@xml:lang eq 'bo' and @n)])),
+        types:control-data($local:text-id, 'work-count-glossary-names', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]/tei:term[not(@xml:lang eq 'bo' and @n)][text() ! normalize-space()])),
         types:control-data($local:text-id, 'work-count-bibliography-entries', count($local:xml-response//eft:part[@type eq 'bibliography']/descendant::tei:bibl)),
         types:control-data($local:text-id, 'work-count-source-authors', count($local:translation//eft:attribution))
         

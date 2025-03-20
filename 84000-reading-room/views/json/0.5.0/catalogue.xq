@@ -17,8 +17,7 @@ declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
 declare variable $local:root-section-ids := ('O1JC11494','O1JC7630');
-declare variable $local:root-section-index := 1;
-declare variable $local:request-section-id := if(request:exists()) then request:get-parameter('section-id', $local:root-section-ids[$local:root-section-index]) else $local:root-section-ids[$local:root-section-index];
+declare variable $local:request-section-id := if(request:exists()) then request:get-parameter('section-id', $local:root-section-ids[1]) else $local:root-section-ids[1];
 declare variable $local:lobby-tei := tei-content:tei($local:request-section-id, 'section');
 declare variable $local:request-content-mode := if(request:exists()) then request:get-parameter('content', 'section') else 'section';
 declare variable $local:content-mode := ('sections', 'works', 'control-data')[. eq ($local:request-content-mode[. gt ''], .)[1]];
@@ -56,9 +55,9 @@ declare function local:catalogue-sections($section-tei as element(tei:TEI), $par
             
             order by $start-volume/@number ! xs:integer(.) ascending, $start-volume/@start-page ! xs:integer(.) ascending
             return (
-                types:catalogue-work($text-bibl/@key, $section-id, (:$label, $title-migration-id,:) $text-id, $start-volume/@number, $start-volume/@start-page, $end-volume/@number, $end-volume/@end-page, $text-bibl/tei:location/@count-pages)(:,
+                types:catalogue-work($text-bibl/@key, $section-id, (:$label, $title-migration-id,:) $text-id, helpers:normalize-text($text-bibl/tei:biblScope), $start-volume/@number, $start-volume/@start-page, $end-volume/@number, $end-volume/@end-page, $text-bibl/tei:location/@count-pages)(:,
                 types:control-data($section-id, 'work-start-volume', $start-volume/@number ! xs:integer(.)):)
-            
+                
             )
     
     return (
@@ -118,3 +117,4 @@ return
         helpers:store($response, concat($file-name, '.json'), ())
     else
         $response
+        

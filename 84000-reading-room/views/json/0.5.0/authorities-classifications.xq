@@ -96,7 +96,7 @@ declare function local:sponsors() {
     
         distinct-values($sponsor/eft:type/@id/string()) ! types:authority-classification($sponsor/@xml:id, concat('sponsor-', .)),
         
-        distinct-values($sponsor/eft:country ! helpers:slug(string-join(text()))) ! types:authority-classification($sponsor/@xml:id, concat('demographic-geo-', .))
+        distinct-values($sponsor/eft:country[text() ! normalize-space(.)] ! helpers:slug(string-join(text()))) ! types:authority-classification($sponsor/@xml:id, concat('demographic-geo-', .))
         
     )
     

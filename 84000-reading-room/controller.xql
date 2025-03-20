@@ -670,7 +670,7 @@ return
             )
         
         (: Other rest endpoints :)
-        else if ($collection-path eq "rest" and $resource-id = ('authorities','authorities-annotations','authorities-classifications','classifications','creators','glossaries','names','object-relations','translation-projects','types') and $resource-suffix eq 'json') then
+        else if ($collection-path eq "rest" and $resource-id = ('authorities','authorities-annotations','authorities-classifications','classifications','creators','glossaries','names','authorities-relations','works-relations','translation-projects','types') and $resource-suffix eq 'json') then
             local:dispatch(concat("/views/json/0.5.0/", $resource-id, ".xq"), "",
                 <parameters xmlns="http://exist.sourceforge.net/NS/exist">
                     <set-header name="Content-Type" value="application/json"/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/common.xsl"/>
     
@@ -16,6 +16,7 @@
         <passage-type parent-type="prelude" type="prelude" header-type="preludeHeader"/>
         <passage-type parent-type="translation" type="translation" header-type="translationHeader"/>
         <passage-type parent-type="colophon" type="colophon" header-type="colophonHeader"/>
+        <passage-type parent-type="abbreviations" type="abbreviations" header-type="abbreviationsHeader"/>
         <passage-type parent-type="appendix" type="appendix" header-type="appendixHeader"/>
         <passage-type parent-type="end-notes" type="end-note" header-type="endnotesHeader"/>
     </xsl:variable>
@@ -39,12 +40,15 @@
         <annotation-type type="mantra"/>
         <annotation-type type="reference"/>
         <annotation-type type="trailer"/>
+        <annotation-type type="abbreviation"/>
+        <annotation-type type="has-abbreviation"/>
     </xsl:variable>
     
     <xsl:variable name="annotation-content-types" as="element()*">
         <content-type type="glossary_xmlId"/>
         <content-type type="endnote_xmlId"/>
         <content-type type="quote_xmlId"/>
+        <content-type type="abbreviation_xmlId"/>
         <content-type type="title"/>
         <content-type type="href"/>
         <content-type type="text"/>
@@ -52,6 +56,7 @@
             <option value="en"/>
             <option value="sa-LATN"/>
             <option value="bo-LATN"/>
+            <option value="pi-LATN"/>
             <option value="zh"/>
         </content-type>
         <content-type type="link-type">
@@ -77,13 +82,15 @@
             
             <xsl:for-each-group select="descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]" group-by="@data-location-id">
                 
+                <xsl:variable name="data-location-id" select="@data-location-id" as="xs:string"/>
+                
                 <xsl:call-template name="passage">
-                    <xsl:with-param name="passage-id" select="@data-location-id"/>
-                    <xsl:with-param name="parent-id" select="ancestor::xhtml:section/@id"/>
+                    <xsl:with-param name="passage-id" select="$data-location-id"/>
+                    <xsl:with-param name="parent-id" select="((ancestor::xhtml:*[@id][@data-location-id ! not(. eq $data-location-id)]/@id)[last()], ancestor::xhtml:section/@id)[1]"/>
                     <xsl:with-param name="parent-type" select="(ancestor::xhtml:section/@data-part-type[not(. = ('section', 'chapter'))], 'translation')[1]"/>
                     <xsl:with-param name="header-type" select="if(@data-head-type) then true() else false()"/>
                 </xsl:call-template>
-                        
+                
             </xsl:for-each-group>
             
         </translation>
@@ -108,14 +115,14 @@
         
     </xsl:template>
     
-    <xsl:template name="passage">
+    <xsl:template name="passage" as="element()*">
         
         <xsl:param name="passage-id" as="xs:string" required="yes"/>
         <xsl:param name="parent-id" as="xs:string" required="yes"/>
         <xsl:param name="parent-type" as="xs:string" required="yes"/>
         <xsl:param name="header-type" as="xs:boolean" required="yes"/>
         
-        <xsl:variable name="passage-root" select="/xhtml:section/descendant::xhtml:div[@data-location-id eq $passage-id][not(ancestor::xhtml:div[@data-location-id eq $passage-id])]"/>
+        <xsl:variable name="passage-root" select="/xhtml:section/descendant::xhtml:*[@data-location-id eq $passage-id][not(ancestor::xhtml:div[@data-location-id eq $passage-id])]"/>
         <xsl:variable name="passage-nodes" select="$passage-root/node()[(ancestor-or-self::*[@data-location-id])[last()][@data-location-id eq $passage-id]]"/>
         <xsl:variable name="gutters" select="$passage-nodes/descendant-or-self::xhtml:div[matches(@class, '(^|\s)gtr(\s|$)')]" as="element(xhtml:div)*"/>
         <xsl:variable name="inbound-quote-links" select="$passage-nodes/descendant-or-self::xhtml:div[matches(@class, '(^|\s)quotes\-inbound(\s|$)')]" as="element(xhtml:div)*"/>
@@ -149,10 +156,19 @@
             </passageSort>
             
             <content>
+                
+                <xsl:variable name="text-nodes-padded" as="text()*">
+                    <xsl:call-template name="text-nodes-padded">
+                        <xsl:with-param name="text-nodes" select="$content-nodes/descendant-or-self::text()"/>
+                        <xsl:with-param name="partial" select="false()"/>
+                    </xsl:call-template>
+                </xsl:variable>
+                
                 <xsl:call-template name="text-filtered">
-                    <xsl:with-param name="text-nodes" select="$content-nodes/descendant-or-self::text()"/>
-                    <xsl:with-param name="exclude-elements" select="$gutters | $inbound-quote-links"/>
+                    <xsl:with-param name="text-nodes" select="$text-nodes-padded"/>
+                    <xsl:with-param name="exclude-elements" select="$gutters | $inbound-quote-links | $content-nodes/descendant::*[@data-location-id[not(. eq $passage-id)]]"/>
                 </xsl:call-template>
+                
             </content>
             
         </passage>
@@ -160,7 +176,7 @@
         <xsl:call-template name="standoff">
             <xsl:with-param name="passage-id" select="$passage-id"/>
             <xsl:with-param name="nodes" select="$content-nodes"/>
-            <xsl:with-param name="exclude-elements" select="$gutters | $inbound-quote-links"/>
+            <xsl:with-param name="exclude-elements" select="$gutters | $inbound-quote-links | $content-nodes/descendant::*[@data-location-id[not(. eq $passage-id)]]"/>
         </xsl:call-template>
         
     </xsl:template>
@@ -174,6 +190,13 @@
         <xsl:param name="text-nodes" as="text()*"/>
         <xsl:param name="exclude-elements" as="element()*"/>
         
+        <xsl:variable name="text-nodes-padded" as="text()*">
+            <xsl:call-template name="text-nodes-padded">
+                <xsl:with-param name="text-nodes" select="$text-nodes"/>
+                <xsl:with-param name="partial" select="true()"/>
+            </xsl:call-template>
+        </xsl:variable>
+        
         <xsl:variable name="node" select="$nodes[$node-index]" as="node()?"/>
         
         <xsl:if test="count($exclude-elements | $node) gt count($exclude-elements)">
@@ -185,7 +208,7 @@
                     
                     <xsl:variable name="text-nodes-joined" as="xs:string">
                         <xsl:call-template name="text-filtered">
-                            <xsl:with-param name="text-nodes" select="$text-nodes"/>
+                            <xsl:with-param name="text-nodes" select="$text-nodes-padded"/>
                             <xsl:with-param name="exclude-elements" select="$exclude-elements"/>
                         </xsl:call-template>
                     </xsl:variable>
@@ -227,14 +250,14 @@
                 <xsl:with-param name="passage-id" select="$passage-id"/>
                 <xsl:with-param name="nodes" select="$nodes"/>
                 <xsl:with-param name="node-index" select="$node-index + 1"/>
-                <xsl:with-param name="text-nodes" select="($text-nodes, $node/descendant-or-self::text())"/>
+                <xsl:with-param name="text-nodes" select="($text-nodes-padded, $node/descendant-or-self::text())"/>
                 <xsl:with-param name="exclude-elements" select="$exclude-elements"/>
             </xsl:call-template>
         </xsl:if>
         
     </xsl:template>
     
-    <xsl:template name="substring-annotation">
+    <xsl:template name="substring-annotation" as="element(eft:annotation)*">
         
         <xsl:param name="passage-id" as="xs:string" required="yes"/>
         <xsl:param name="node" as="node()" required="yes"/>
@@ -318,6 +341,12 @@
                 <xsl:when test="$tag-name eq 'span' and tokenize($node/@class, ' ')[. eq 'small-caps']">
                     <xsl:value-of select="'small-caps'"/>
                 </xsl:when>
+                <xsl:when test="$tag-name eq 'th' and $node/parent::xhtml:tr[@data-abbreviation-id]">
+                    <xsl:value-of select="'abbreviation'"/>
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'td' and $node/parent::xhtml:tr[@data-abbreviation-id]">
+                    <xsl:value-of select="'has-abbreviation'"/>
+                </xsl:when>
                 <xsl:otherwise>
                     <xsl:value-of select="$tag-name"/>
                 </xsl:otherwise>
@@ -355,6 +384,13 @@
                     <xsl:call-template name="annotation-content">
                         <xsl:with-param name="type" select="'heading-level'"/>
                         <xsl:with-param name="value" select="'h4'"/>
+                    </xsl:call-template>
+                </xsl:if>
+                
+                <xsl:if test="$type = ('has-abbreviation', 'abbreviation') and $node/parent::xhtml:tr[@data-abbreviation-id]">
+                    <xsl:call-template name="annotation-content">
+                        <xsl:with-param name="type" select="'abbreviation_xmlId'"/>
+                        <xsl:with-param name="value" select="concat($node/parent::xhtml:tr/@data-abbreviation-id, '/abbreviation')"/>
                     </xsl:call-template>
                 </xsl:if>
                 
@@ -406,7 +442,7 @@
                                     <xsl:when test="$type eq 'heading' and $class-name = ('section-title', 'h4')">
                                         <!-- exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$node[@lang] and $class-name = ('text-en','text-sa','text-bo','text-zh','text-wy','break')">
+                                    <xsl:when test="$node[@lang] and $class-name = ('text-en','text-sa','text-bo','text-zh','text-wy','text-pi','break')">
                                         <!-- Already set as lang => exclude -->
                                     </xsl:when>
                                     <xsl:when test="$class-name = ('quoted','matched')">
@@ -520,7 +556,7 @@
         
     </xsl:template>
     
-    <xsl:template name="annotation">
+    <xsl:template name="annotation" as="element(eft:annotation)">
         
         <xsl:param name="passage-id" as="xs:string" required="yes"/>
         <xsl:param name="type" as="xs:string" required="yes"/>
@@ -558,7 +594,7 @@
     
     </xsl:template>
     
-    <xsl:template name="annotation-content">
+    <xsl:template name="annotation-content" as="element(eft:content)">
         
         <xsl:param name="type" as="xs:string" required="yes"/>
         <xsl:param name="value" as="xs:string" required="yes"/>
@@ -575,6 +611,27 @@
         
     </xsl:template>
     
+    <xsl:template name="text-nodes-padded" as="text()*">
+        
+        <xsl:param name="text-nodes" as="text()*"/>
+        <xsl:param name="partial" as="xs:boolean"/>
+        
+        <xsl:for-each select="$text-nodes">
+            
+            <xsl:variable name="last" as="xs:boolean" select="position() ge count($text-nodes)"/>
+            
+            <xsl:sequence select="."/>
+            
+            <!-- Add trailing space -->
+            <xsl:choose>
+                <xsl:when test="(parent::xhtml:*[parent::xhtml:tr] | parent::xhtml:h2 | parent::xhtml:h3 | parent::xhtml:div[tokenize(@class, ' ')[. eq 'h4']]) and ($partial or not($last))">
+                    <xsl:text> </xsl:text>
+                </xsl:when>
+            </xsl:choose>
+            
+        </xsl:for-each>
+    </xsl:template>
+    
     <xsl:template name="text-filtered" as="xs:string">
         
         <xsl:param name="text-nodes" as="text()*"/>
@@ -586,65 +643,48 @@
         <xsl:variable name="filtered-nodes" as="text()*">
             <xsl:for-each select="$text-nodes-included">
                 
-                <xsl:variable name="text-node" select="." as="xs:string?"/>
+                <xsl:variable name="input-node" select="." as="text()"/>
+                <xsl:variable name="output-node" select="." as="text()"/>
+                <xsl:variable name="text-node-index" select="position()" as="xs:integer"/>
+                <xsl:variable name="input-node-preceding" select="$text-nodes-included[$text-node-index - 1]" as="text()?"/>
                 
                 <xsl:choose>
                     
-                    <xsl:when test="parent::*[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref')]]">
+                    <!-- Exclude content -->
+                    <xsl:when test="$input-node/parent::*[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref')]]">
                         <!-- Exclude -->
                     </xsl:when>
                     
                     <xsl:otherwise>
                         
                         <!-- Remove leading space -->
-                        <xsl:variable name="text-node" as="xs:string?">
+                        <xsl:variable name="output-node" as="text()?">
                             <xsl:choose>
-                                <xsl:when test="position() eq 1">
-                                    <xsl:value-of select="replace($text-node, '^\s+', '')"/>
+                                <xsl:when test="$text-node-index eq 1">
+                                    <xsl:value-of select="replace($output-node, '^\s+', '')"/>
+                                </xsl:when>
+                                <xsl:when test="$input-node/preceding-sibling::node()[1]/descendant-or-self::*[last()][tokenize(@class, ' ')[. = ('folio-ref')]]">
+                                    <xsl:value-of select="replace($output-node, '^\s+', '')"/>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <xsl:value-of select="$text-node"/>
+                                    <xsl:sequence select="$output-node"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:variable>
                         
                         <!-- Remove trailing space -->
-                        <xsl:variable name="text-node" as="xs:string?">
+                        <xsl:variable name="output-node" as="text()?">
                             <xsl:choose>
-                                <xsl:when test="position() eq $count-text-nodes-included and (parent::xhtml:h2 | parent::xhtml:h3)">
-                                    <xsl:value-of select="replace($text-node, '\s+$', '')"/>
+                                <xsl:when test="$text-node-index eq $count-text-nodes-included and ($input-node/parent::xhtml:h2 | $input-node/parent::xhtml:h3)">
+                                    <xsl:value-of select="replace($output-node, '\s+$', '')"/>
                                 </xsl:when>
                                 <xsl:otherwise>
-                                    <xsl:value-of select="$text-node"/>
+                                    <xsl:value-of select="$output-node"/>
                                 </xsl:otherwise>
                             </xsl:choose>
                         </xsl:variable>
                         
-                        <!-- Add trailing space -->
-                        <xsl:variable name="text-node" as="xs:string?">
-                            <xsl:choose>
-                                <xsl:when test="position() gt 1 and position() eq $count-text-nodes-included and (parent::xhtml:h2 | parent::xhtml:h3)">
-                                    <xsl:value-of select="concat($text-node, ' ')"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="$text-node"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:variable>
-                        
-                        <!-- Remove leading space -->
-                        <xsl:variable name="text-node" as="xs:string?">
-                            <xsl:choose>
-                                <xsl:when test="preceding-sibling::node()[1]/descendant-or-self::*[last()][tokenize(@class, ' ')[. = ('folio-ref')]]">
-                                    <xsl:value-of select="replace($text-node, '^\s+', '')"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="$text-node"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:variable>
-                        
-                        <xsl:value-of select="$text-node"/>
+                        <xsl:value-of select="$output-node"/>
                         
                     </xsl:otherwise>
                     

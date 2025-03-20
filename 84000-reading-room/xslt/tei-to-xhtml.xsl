@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -1095,9 +1095,13 @@
         <xsl:call-template name="milestone-row">
             <xsl:with-param name="content">
                 <xsl:for-each select="tei:head[@type eq 'abbreviations' and not(lower-case(data()) = ('abbreviations', 'abbreviations:'))]">
-                    <h5>
-                        <xsl:apply-templates select="node()"/>
-                    </h5>
+                    <xsl:call-template name="header-row">
+                        <xsl:with-param name="header-content">
+                            <h5>
+                                <xsl:apply-templates select="node()"/>
+                            </h5>
+                        </xsl:with-param>
+                    </xsl:call-template>
                 </xsl:for-each>
                 <xsl:for-each select="tei:head[@type eq 'description']">
                     <p>
@@ -1109,6 +1113,8 @@
                         <xsl:for-each select="tei:item[tei:abbr]">
                             <xsl:sort select="tei:abbr"/>
                             <tr>
+                                <xsl:attribute name="data-location-id" select="@xml:id"/>
+                                <xsl:attribute name="data-abbreviation-id" select="@xml:id"/>
                                 <th>
                                     <xsl:apply-templates select="tei:abbr/node()"/>
                                 </th>
@@ -3871,6 +3877,9 @@
             </xsl:when>
             <xsl:when test="$lang-class eq 'text-en'">
                 <xsl:attribute name="lang" select="'en'"/>
+            </xsl:when>
+            <xsl:when test="$lang-class eq 'text-pi'">
+                <xsl:attribute name="lang" select="'pi-LATN'"/>
             </xsl:when>
         </xsl:choose>
         

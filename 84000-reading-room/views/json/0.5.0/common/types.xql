@@ -28,7 +28,9 @@ declare variable $json-types:relation-types := map {
     'isNameOf':                     'isNameOf',
     'isInternalNameOf':             'isInternalNameOf',
     'nameEquivalent':               'nameEquivalent',
-    'articleAbout':                 'articleAbout'
+    'articleAbout':                 'articleAbout',
+    'isCommentaryOf':               'isCommentaryOf',
+    'hasCommonSourceText':          'hasCommonSourceText'
 };
 
 declare variable $json-types:creator-types := map {
@@ -91,6 +93,12 @@ declare variable $json-types:classification-types := map {
         'description': 'A significant term from any text',
         'parentKey': 'eft-thing',
         'outputKey': 'term'
+    },
+    'eft-collection': map{ 
+        'label': 'Collection',
+        'description': 'A collection of things without a common type',
+        'parentKey': 'eft-thing',
+        'outputKey': 'collection'
     },
     'textual-person': map{ 
         'label': 'Character',
@@ -325,6 +333,24 @@ declare variable $json-types:classification-types := map {
         'description': 'Malaysian resident',
         'parentKey': 'demographic-geo',
         'outputKey': 'demographicGeoMalaysia'
+    },
+    'demographic-geo-bhutan': map{ 
+        'label': 'Bhutan',
+        'description': 'Bhutan resident',
+        'parentKey': 'demographic-geo',
+        'outputKey': 'demographicGeoBhutan'
+    },
+    'demographic-geo-united-kingdom': map{ 
+        'label': 'UK',
+        'description': 'UK resident',
+        'parentKey': 'demographic-geo',
+        'outputKey': 'demographicGeoUK'
+    },
+    'demographic-geo-united-kingdom': map{ 
+        'label': 'Italy',
+        'description': 'Italian resident',
+        'parentKey': 'demographic-geo',
+        'outputKey': 'demographicGeoItaly'
     }
 };
 
@@ -487,7 +513,7 @@ declare function json-types:glossary($xmlId as xs:string, $glossaryXmlid as xs:s
     element { QName('http://read.84000.co/ns/1.0', 'glossary') } {
         attribute json:array { true() },
         attribute xmlId { $xmlId },
-        attribute glossary_xmlId { $glossaryXmlid },
+        attribute glossary_xmlid { $glossaryXmlid },
         attribute authority_xmlid { $authorityXmlid },
         attribute name_xmlid  { $nameXmlid },
         attribute work_xmlid  { $workXmlid },
@@ -554,12 +580,13 @@ declare function json-types:catalogue-section($xmlId as xs:string, $parentXmlid 
     }
 };
 
-declare function json-types:catalogue-work($xmlId as xs:string, $sectionXmlid as xs:string, $workXmlid as xs:string, $start-volume as xs:integer, $start-page as xs:integer, $end-volume as xs:integer, $end-page as xs:integer, $page-count as xs:integer) as element(eft:catalogueText)  {
+declare function json-types:catalogue-work($xmlId as xs:string, $sectionXmlid as xs:string, $workXmlid as xs:string, $description as xs:string?, $start-volume as xs:integer, $start-page as xs:integer, $end-volume as xs:integer, $end-page as xs:integer, $page-count as xs:integer) as element(eft:catalogueText)  {
     element { QName('http://read.84000.co/ns/1.0', 'catalogueWork') } {
         attribute json:array { true() },
         attribute xmlId { $xmlId },
         attribute work_xmlId { $workXmlid },
         attribute catalogue_section_xmlid { $sectionXmlid },
+        attribute description { $description },
         element startVolume { attribute json:literal { 'true' }, $start-volume },
         element startPage { attribute json:literal { 'true' }, $start-page },
         element endVolume { attribute json:literal { 'true' }, $end-volume },
@@ -624,4 +651,11 @@ declare function json-types:control-data($targetXmlid as xs:string, $type as xs:
     }
 };
 
-
+declare function json-types:linked-data($subject-xmlid as xs:string, $relation as xs:string, $object-uri as xs:string) as element(eft:linkedData) {
+    element { QName('http://read.84000.co/ns/1.0', 'linkedData') } {
+        attribute json:array { true() },
+        attribute subject_xmlid { $subject-xmlid },
+        attribute relation { ($json-types:relation-types($relation), concat('unknown:', $relation))[1] },
+        attribute object_uri { $object-uri }
+    }
+};
