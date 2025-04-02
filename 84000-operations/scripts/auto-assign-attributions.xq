@@ -14,7 +14,7 @@ import module namespace store="http://read.84000.co/store" at "/db/apps/84000-re
     update-entity:auto-assign-attributions('UT22084-034-009')
 }:)
 
-let $results :=
+let $results := 
     element results {
         for $tei in $tei-content:translations-collection//tei:TEI[descendant::tei:sourceDesc/tei:bibl/tei:*[self::tei:author | self::tei:editor]]
         let $text-id := tei-content:id($tei)

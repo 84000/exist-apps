@@ -15,7 +15,7 @@ declare option output:indent "yes";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
+declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else 'store';
 declare variable $local:teis := $tei-content:translations-collection//tei:TEI;
 declare variable $local:text-refs := doc(concat($common:data-path, '/config/linked-data/text-refs.xml'));
 
@@ -48,7 +48,7 @@ let $response :=
                 let $target-tei := tei-content:tei($link/@target, 'translation')
                 let $target-text-ref := $local:text-refs//eft:text[@key eq $link/@target]
                 return
-                    types:object-relation($source-bibl/@key, $link/@type, ($target-tei ! $link/@target, $target-text-ref/eft:ref[@type eq 'eft-section-id']/@value, concat('unknown:', $link/@target))[1])
+                    types:object-relation($source-bibl/@key, $link/@type, ($target-tei ! $link/@target, $target-text-ref ! $link/@target, concat('unknown:', $link/@target))[1])
                 
                 (:,
                 $source-text-ref ! local:linked-data(., $source-bibl/@key):)

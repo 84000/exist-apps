@@ -346,7 +346,7 @@ declare variable $json-types:classification-types := map {
         'parentKey': 'demographic-geo',
         'outputKey': 'demographicGeoUK'
     },
-    'demographic-geo-united-kingdom': map{ 
+    'demographic-geo-italy': map{ 
         'label': 'Italy',
         'description': 'Italian resident',
         'parentKey': 'demographic-geo',
@@ -584,7 +584,7 @@ declare function json-types:catalogue-work($xmlId as xs:string, $sectionXmlid as
     element { QName('http://read.84000.co/ns/1.0', 'catalogueWork') } {
         attribute json:array { true() },
         attribute xmlId { $xmlId },
-        attribute work_xmlId { $workXmlid },
+        attribute work_xmlid { $workXmlid },
         attribute catalogue_section_xmlid { $sectionXmlid },
         attribute description { $description },
         element startVolume { attribute json:literal { 'true' }, $start-volume },

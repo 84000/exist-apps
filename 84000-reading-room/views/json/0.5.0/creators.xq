@@ -52,7 +52,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
     return
         try {
             
-            (:util:log('INFO', concat('Creators: ', $text-id, ' (', $tei-index, '/', $local:count-teis, ')')),:)
+            util:log('INFO', concat('Creators: ', $text-id, ' (', $tei-index, '/', $local:count-teis, ')')),
             
             for $attribution in $attributions
             let $instance := $attribution/@xml:id ! local:instance(.)
@@ -74,7 +74,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
                 else
                     ($attribution/@role, string-join(('error', $attribution-text), ':'))[1]
             
-            (:where $entity:)
+            where $entity
             return (
                 (:$entity-name,:)
                 types:creator($attribution/@xml:id, $entity/@xml:id, $name-id, $text-id, $attribution-type)

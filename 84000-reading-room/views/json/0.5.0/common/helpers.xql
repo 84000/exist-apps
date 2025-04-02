@@ -88,7 +88,7 @@ declare function json-helpers:translation-html($xml-response as element(eft:resp
         
 };
 
-declare function json-helpers:passages($html-sections as element(xhtml:section)*) {
+declare function json-helpers:passages($html-sections as element(eft:html-sections)) {
     
     let $xslt := doc('../passages.xsl')
     let $parameters :=

@@ -717,18 +717,7 @@ declare function update-entity:auto-assign-attributions($text-id as xs:string) a
             let $entity-candidates-first := $entity-candidates-sorted[1]
             let $entity-match := $entity-candidates-first/m:entity
             
-            (: Do the update :)
-            let $do-update := 
-                if($entity-match) then (
-                    (:update-entity:match-instance($entity-match/@xml:id, $gloss/@xml:id, 'glossary-item', ()):)
-                    (:util:log('info', concat('update-entity-auto-assign-attribution-match:', $attribution/@xml:id, '->', $entity-match/@xml:id)):)
-                )
-                else (
-                    (:update-entity:create($gloss, ()):)
-                    (:util:log('info', concat('update-entity-auto-assign-attribution-create:', $attribution/@xml:id)):)
-                )
-            
-            return 
+            let $debug :=
                 element update {
                     (:attribute regex { $regex },:)
                     attribute action { if($entity-match) then 'merge' else 'create' },
@@ -742,11 +731,25 @@ declare function update-entity:auto-assign-attributions($text-id as xs:string) a
                         $similar-entities:)
                     }
                 }
+            
+            (: Do the update :)
+            let $do-update := 
+                if($entity-match) then (
+                    update-entity:match-instance($entity-match/@xml:id, $attribution/@xml:id, 'source-attribution', ()),
+                    util:log('info', concat('update-entity-auto-assign-attribution-match:', $attribution/@xml:id, '->', $entity-match/@xml:id))
+                )
+                else (
+                    update-entity:create($attribution/@xml:lang, string-join($attribution//text()) ! normalize-space(.), 'eft-person', 'source-attribution', $attribution/@xml:id, ''),
+                    util:log('info', concat('update-entity-auto-assign-attribution-create:', $attribution/@xml:id))
+                )
+            
+            return 
+                $debug
         
         where $merge-attributions
         return (
-            $merge-attributions,
-            util:log('info', concat('update-entity-auto-assign-attributions-complete:', $text-id))
+            $merge-attributions(:,
+            util:log('info', concat('update-entity-auto-assign-attributions-complete:', $text-id)):)
         )
         
     }

@@ -814,6 +814,7 @@
                 
                 <xsl:otherwise>
                     <!-- Don't add an href -->
+                    <xsl:attribute name="data-pointer-target" select="$pointer/@target"/>
                 </xsl:otherwise>
                 
             </xsl:choose>
@@ -1092,22 +1093,32 @@
     
     <!-- Lists -->
     <xsl:template match="tei:list[@type eq 'abbreviations']">
+        
+        <xsl:for-each select="tei:head[@type eq 'abbreviations' and not(lower-case(data()) = ('abbreviations', 'abbreviations:'))]">
+            
+            <xsl:call-template name="milestone-row">
+                <xsl:with-param name="content">
+                    <header>
+                        <h5>
+                            <xsl:apply-templates select="node()"/>
+                        </h5>
+                    </header>
+                </xsl:with-param>
+                <xsl:with-param name="row-type" select="'section-head'"/>
+            </xsl:call-template>
+            
+        </xsl:for-each>
+        
         <xsl:call-template name="milestone-row">
+            
             <xsl:with-param name="content">
-                <xsl:for-each select="tei:head[@type eq 'abbreviations' and not(lower-case(data()) = ('abbreviations', 'abbreviations:'))]">
-                    <xsl:call-template name="header-row">
-                        <xsl:with-param name="header-content">
-                            <h5>
-                                <xsl:apply-templates select="node()"/>
-                            </h5>
-                        </xsl:with-param>
-                    </xsl:call-template>
-                </xsl:for-each>
+                
                 <xsl:for-each select="tei:head[@type eq 'description']">
                     <p>
                         <xsl:apply-templates select="node()"/>
                     </p>
                 </xsl:for-each>
+                
                 <table class="table">
                     <tbody>
                         <xsl:for-each select="tei:item[tei:abbr]">
@@ -1125,14 +1136,22 @@
                         </xsl:for-each>
                     </tbody>
                 </table>
+                
                 <xsl:for-each select="tei:item[not(tei:abbr)]">
-                    <p>
-                        <xsl:apply-templates select="node()"/>
-                    </p>
+                    <div>
+                        <xsl:attribute name="data-location-id" select="@xml:id"/>
+                        <xsl:attribute name="data-abbreviation-id" select="@xml:id"/>
+                        <p>
+                            <xsl:apply-templates select="node()"/>
+                        </p>
+                    </div>
                 </xsl:for-each>
+                
             </xsl:with-param>
             <xsl:with-param name="row-type" select="'list-section'"/>
+            
         </xsl:call-template>
+    
     </xsl:template>
     <xsl:template match="tei:list">
         
@@ -1143,9 +1162,6 @@
                     <xsl:call-template name="class-attribute">
                         <xsl:with-param name="base-classes" as="xs:string*">
                             <xsl:value-of select="'list'"/>
-                            <xsl:if test="parent::tei:item">
-                                <xsl:value-of select="'list-sublist'"/>
-                            </xsl:if>
                             <xsl:choose>
                                 <xsl:when test="@type eq 'section'">
                                     <xsl:value-of select="'list-section'"/>
@@ -1154,6 +1170,9 @@
                                     <xsl:value-of select="'list-bullet'"/>
                                 </xsl:otherwise>
                             </xsl:choose>
+                            <xsl:if test="parent::tei:item">
+                                <xsl:value-of select="'list-sublist'"/>
+                            </xsl:if>
                             <xsl:value-of select="@rend"/>
                             <xsl:if test="ancestor::tei:list[not(@type eq 'section')]">
                                 <xsl:value-of select="concat('nesting-', count(ancestor::tei:list[not(@type eq 'section')]))"/>
@@ -3880,6 +3899,9 @@
             </xsl:when>
             <xsl:when test="$lang-class eq 'text-pi'">
                 <xsl:attribute name="lang" select="'pi-LATN'"/>
+            </xsl:when>
+            <xsl:when test="$lang-class eq 'text-ja'">
+                <xsl:attribute name="lang" select="'ja'"/>
             </xsl:when>
         </xsl:choose>
         

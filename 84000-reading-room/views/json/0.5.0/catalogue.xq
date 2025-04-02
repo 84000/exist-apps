@@ -19,9 +19,9 @@ declare option output:json-ignore-whitespace-text-nodes "yes";
 declare variable $local:root-section-ids := ('O1JC11494','O1JC7630');
 declare variable $local:request-section-id := if(request:exists()) then request:get-parameter('section-id', $local:root-section-ids[1]) else $local:root-section-ids[1];
 declare variable $local:lobby-tei := tei-content:tei($local:request-section-id, 'section');
-declare variable $local:request-content-mode := if(request:exists()) then request:get-parameter('content', 'section') else 'section';
+declare variable $local:request-content-mode := if(request:exists()) then request:get-parameter('content', 'sections') else 'sections';
 declare variable $local:content-mode := ('sections', 'works', 'control-data')[. eq ($local:request-content-mode[. gt ''], .)[1]];
-declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
+declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else 'store';
 
 declare function local:catalogue-sections($section-tei as element(tei:TEI), $parent-id as xs:string) as element()* {
 

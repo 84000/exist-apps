@@ -82,7 +82,10 @@ declare function local:titles() as element(eft:title)* {
         }
 };:)
 
-let $html-sections := $local:html//xhtml:section[not(@data-part-type = ('titles','imprint','toc','bibliography','glossary','citation-index'))]
+let $html-sections := 
+    element { QName('http://read.84000.co/ns/1.0','html-sections') } {
+        $local:html//xhtml:section[not(@data-part-type = ('titles','imprint','toc','bibliography','glossary','citation-index'))]
+    }
 
 let $passages := helpers:passages($html-sections)
 
