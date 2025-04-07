@@ -21,7 +21,7 @@ declare variable $local:request-section-id := if(request:exists()) then request:
 declare variable $local:lobby-tei := tei-content:tei($local:request-section-id, 'section');
 declare variable $local:request-content-mode := if(request:exists()) then request:get-parameter('content', 'sections') else 'sections';
 declare variable $local:content-mode := ('sections', 'works', 'control-data')[. eq ($local:request-content-mode[. gt ''], .)[1]];
-declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else 'store';
+declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
 
 declare function local:catalogue-sections($section-tei as element(tei:TEI), $parent-id as xs:string) as element()* {
 

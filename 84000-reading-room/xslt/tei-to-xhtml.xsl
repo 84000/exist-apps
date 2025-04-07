@@ -3076,7 +3076,7 @@
         <xsl:param name="quote" as="element(m:quote)"/>
         
         <!-- If incomplete, only show if we're in editor mode -->
-        <xsl:if test="$view-mode[@client = ('browser', 'ajax')] and ($quote/@resource-id gt '' and $quote/m:source/@resource-id gt '' or $tei-editor)">
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'app')] and ($quote/@resource-id gt '' and $quote/m:source/@resource-id gt '' or $tei-editor)">
             <a>
                 
                 <xsl:attribute name="data-quote-id" select="$quote/@id"/>

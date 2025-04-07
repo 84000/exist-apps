@@ -25,7 +25,7 @@ declare function local:passage-types() {
         </parameters>
 
     return
-        transform:transform(element xhtml:html {}, $local:passages-xslt, $parameters)
+        transform:transform(element eft:html-sections { element xhtml:html {} }, $local:passages-xslt, $parameters)
     
 };
 
@@ -66,10 +66,8 @@ let $response :=
         
         for $type in local:passage-types()[not(self::eft:translation)][eft:option]
         return
-            element contentTypeValues { 
-                attribute json:array { true() },
-                $type/@type,
-                $type/eft:option ! element option { attribute json:array { true() }, @value/string() }
+            element annotationContentTypesValues { 
+                $type/eft:option ! element { $type/@type } { attribute json:array { true() }, @value/string() }
             }
             
     }

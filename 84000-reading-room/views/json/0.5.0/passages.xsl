@@ -26,25 +26,22 @@
     <xsl:variable name="annotation-types" as="element()*">
         <annotation-type type="leading-space"/>
         <annotation-type type="heading"/>
-        <annotation-type type="glossary-instance"/>
-        <annotation-type type="end-note"/>
         <annotation-type type="inline-title"/>
-        <annotation-type type="foreign"/>
-        <annotation-type type="distinct"/>
-        <annotation-type type="emphasis"/>
-        <annotation-type type="small-caps"/>
-        <annotation-type type="sub"/>
+        <annotation-type type="glossary-instance"/>
+        <annotation-type type="end-note-link"/>
         <annotation-type type="link"/>
         <annotation-type type="internal-link"/>
-        <annotation-type type="quoted"/>
+        <annotation-type type="reference"/>
         <annotation-type type="paragraph"/>
         <annotation-type type="span"/>
         <annotation-type type="line-group"/>
         <annotation-type type="line"/>
+        <annotation-type type="list"/>
         <annotation-type type="list-item"/>
         <annotation-type type="mantra"/>
         <annotation-type type="blockquote"/>
-        <annotation-type type="reference"/>
+        <annotation-type type="quote"/>
+        <annotation-type type="quoted"/>
         <annotation-type type="trailer"/>
         <annotation-type type="table-body-row"/>
         <annotation-type type="table-body-data"/>
@@ -59,15 +56,15 @@
         <content-type type="endnote_xmlId"/>
         <content-type type="quote_xmlId"/>
         <content-type type="abbreviation_xmlId"/>
-        <content-type type="title"/>
         <content-type type="href"/>
-        <content-type type="text"/>
+        <content-type type="quote"/>
+        <annotation-type type="nesting"/>
         <content-type type="lang">
             <option value="en"/>
             <option value="bo"/>
-            <option value="bo-LATN"/>
-            <option value="sa-LATN"/>
-            <option value="pi-LATN"/>
+            <option value="Bo-Ltn"/>
+            <option value="Sa-Ltn"/>
+            <option value="Pi-Ltn"/>
             <option value="zh"/>
             <option value="ja"/>
         </content-type>
@@ -76,6 +73,11 @@
             <option value="text-bold"/>
             <option value="underline"/>
             <option value="line-through"/>
+            <option value="small-caps"/>
+            <option value="subscript"/>
+            <option value="foreign"/>
+            <option value="distinct"/>
+            <option value="emphasis"/>
         </content-type>
         <content-type type="link-type">
             <option value="pending"/>
@@ -93,9 +95,12 @@
             <option value="h4"/>
             <option value="h5"/>
         </content-type>
-        <content-type type="link-text">
+        <content-type type="link-text"/>
+        <content-type type="link-text-lookup">
             <option value="endnoteIndex"/>
             <option value="passageLabel"/>
+            <option value="targetTextShortcode"/>
+            <option value="quotingTextShortcode"/>
         </content-type>
         <content-type type="link-text-pending"/>
         <content-type type="list-spacing">
@@ -184,6 +189,8 @@
             </xsl:call-template>
         </xsl:variable>
         
+        <xsl:variable name="content" select="string-join($standoff[self::eft:output-string]/text()) ! replace(., '\s+', ' ')" as="xs:string"/>
+        
         <passage>
             
             <xsl:attribute name="json:array" select="true()"/>
@@ -214,12 +221,22 @@
             
             <!-- The passage string -->
             <content>
-                <xsl:value-of select="string-join($standoff[self::eft:output-string]/text()) ! replace(., '\s+', ' ')"/>
+                <xsl:value-of select="$content"/>
             </content>
             
         </passage>
         
         <xsl:sequence select="$standoff[self::eft:annotation]"/>
+        
+        <xsl:for-each select="$inbound-quote-links/descendant-or-self::xhtml:div[matches(@class, '(^|\s)quotes\-inbound(\s|$)')]/descendant::xhtml:a[@data-quote-id]">
+            <xsl:call-template name="substring-annotation">
+                <xsl:with-param name="passage-id" select="$passage-id"/>
+                <xsl:with-param name="node" select="."/>
+                <xsl:with-param name="start" select="1"/>
+                <xsl:with-param name="end" select="string-length($content) + 1"/>
+                <xsl:with-param name="has-siblings" select="false()"/>
+            </xsl:call-template>
+        </xsl:for-each>
         
     </xsl:template>
     
@@ -245,7 +262,7 @@
                         
                         <!-- Recurse through child nodes -->
                         <xsl:variable name="children-standoff" as="element()*">
-                            <xsl:if test="$node[node()] and not($node[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref')]])">
+                            <xsl:if test="$node[node()] and not($node[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref', 'quote-link')]])">
                                 <xsl:call-template name="standoff">
                                     <xsl:with-param name="passage-id" select="$passage-id"/>
                                     <xsl:with-param name="nodes" select="$node/node()"/>
@@ -277,7 +294,7 @@
         <xsl:sequence select="$standoff"/>
         
         <xsl:variable name="preceding-string" select="string-join(($output-string, $standoff[self::eft:output-string]/text(), ''))" as="xs:string"/>
-        <xsl:variable name="following-string" select="string-join($nodes[$node-index + 1]/descendant::text()[count($exclude-elements except ancestor::*) eq $exclude-elements-count][not(ancestor::*[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref')]])])" as="xs:string?"/>
+        <xsl:variable name="following-string" select="string-join($nodes[$node-index + 1]/descendant-or-self::text()[count($exclude-elements except ancestor::*) eq $exclude-elements-count][not(ancestor::*[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref')]])])" as="xs:string?"/>
         
         <xsl:variable name="output-string-element" as="element()?">
             <xsl:choose>
@@ -312,7 +329,7 @@
                     
                     <!--<xsl:variable name="last-char-is-word-char" as="xs:boolean" select="$preceding-string and not(matches($preceding-string, '一$')) and matches($preceding-string, '[\p{L}\p{N}\)\]:;\.,]$')"/>-->
                     <xsl:variable name="last-char-is-space" as="xs:boolean" select="$preceding-string and matches($preceding-string, '\s$')"/>
-                    <xsl:variable name="next-char-is-word" as="xs:boolean" select="$following-string and not(matches($following-string, '^一')) and matches($following-string, '^[\p{L}\p{N}\[\(“]', 'i')"/>
+                    <xsl:variable name="next-char-is-word" as="xs:boolean" select="$following-string and not(matches($following-string, '^一')) and matches($following-string, '^[\p{L}\p{N}\[\(“&#34;]', 'i')"/>
                     
                     <xsl:if test="($preceding-string and not($last-char-is-space)) and $next-char-is-word">
                         <output-string>
@@ -365,12 +382,6 @@
                 <xsl:when test="$tag-name = ('div') and $node[matches(@class, '^rw\srw\-(paragraph|section\-head|line|line\-group|list\-bullet|list\-item|list\-head|list\-section|table|label|mantra|blockquote)$')]">
                     <!-- exclude -->
                 </xsl:when>
-                <xsl:when test="$tag-name = ('div') and $node[matches(@class, '^list\slist\-(bullet|section)(\slist\-sublist)?(\snesting\-\d+)?(\s(dots|numbers|letters))?$')]">
-                    <!-- exclude -->
-                </xsl:when>
-                <xsl:when test="$tag-name = ('div') and $node[tokenize(@class, ' ')[. eq 'list-item']][descendant::text()[normalize-space()]]">
-                    <xsl:value-of select="'list-item'"/>
-                </xsl:when>
                 <xsl:when test="$tag-name eq 'div' and $node[matches(@class, '^rw\-heading\sheading\-section(\schapter)?(\snested)?(\snested\-\d+)?(\ssupplementary)?$')]">
                     <!-- exclude -->
                 </xsl:when>
@@ -379,6 +390,21 @@
                 </xsl:when>
                 <xsl:when test="$tag-name = ('table','tbody')">
                     <!-- exclude -->
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'span' and $node[tokenize(@class, ' ')[. eq 'quote-outbound']] and $node/preceding-sibling::xhtml:span[tokenize(@class, ' ')[. eq 'quote']]">
+                    <!-- exclude -->
+                </xsl:when>
+                <xsl:when test="$tag-name = 'span' and $node[tokenize(@class, ' ')[. eq 'quote-outbound']] and $node/ancestor::xhtml:blockquote">
+                    <!-- exclude -->
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'a' and $node/parent::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id]">
+                    <!-- exclude -->
+                </xsl:when>
+                <xsl:when test="$tag-name = ('div') and $node[matches(@class, '^list\slist\-(bullet|section)(\slist\-sublist)?(\snesting\-\d+)?(\s(dots|numbers|letters))?$')]">
+                    <xsl:value-of select="'list'"/>
+                </xsl:when>
+                <xsl:when test="$tag-name = ('div') and $node[tokenize(@class, ' ')[. eq 'list-item']][descendant::text()[normalize-space()]]">
+                    <xsl:value-of select="'list-item'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name = ('br')">
                     <xsl:value-of select="'leading-space'"/>
@@ -393,7 +419,7 @@
                     <xsl:value-of select="'paragraph'"/>
                 </xsl:when>
                 <xsl:when test="$node[@data-endnote-id]">
-                    <xsl:value-of select="'end-note'"/>
+                    <xsl:value-of select="'end-note-link'"/>
                 </xsl:when>
                 <xsl:when test="$node[@data-glossary-id]">
                     <xsl:value-of select="'glossary-instance'"/>
@@ -422,17 +448,17 @@
                 <xsl:when test="$tag-name eq 'p' and tokenize($node/@class, ' ')[. eq 'trailer']">
                     <xsl:value-of select="'trailer'"/>
                 </xsl:when>
-                <xsl:when test="$tag-name eq 'em' and tokenize($node/@class, ' ')[. eq 'foreign']">
-                    <xsl:value-of select="'foreign'"/>
+                <xsl:when test="$tag-name eq 'em'">
+                    <xsl:value-of select="'span'"/>
                 </xsl:when>
-                <xsl:when test="$tag-name eq 'em' and tokenize($node/@class, ' ')[. eq 'distinct']">
-                    <xsl:value-of select="'distinct'"/>
-                </xsl:when>
-                <xsl:when test="$tag-name eq 'em' and tokenize($node/@class, ' ')[. = ('emph','emphtext-bold','emphunderline','emphline-through')]">
-                    <xsl:value-of select="'emphasis'"/>
+                <xsl:when test="$tag-name eq 'sub'">
+                    <xsl:value-of select="'span'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'span' and tokenize($node/@class, ' ')[. eq 'ref']">
                     <xsl:value-of select="'reference'"/>
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'span' and tokenize($node/@class, ' ')[. eq 'quote']">
+                    <xsl:value-of select="'quote'"/>
                 </xsl:when>
                 <xsl:when test="$node[@data-href]">
                     <xsl:value-of select="'link'"/>
@@ -442,9 +468,6 @@
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'div' and tokenize($node/@class, ' ')[. eq 'line-group']">
                     <xsl:value-of select="'line-group'"/>
-                </xsl:when>
-                <xsl:when test="$tag-name eq 'span' and tokenize($node/@class, ' ')[. eq 'small-caps']">
-                    <xsl:value-of select="'small-caps'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'tr' and $node[@data-abbreviation-id]">
                     <!-- exclude -->
@@ -476,16 +499,16 @@
             <xsl:variable name="content" as="element()*">
                 
                 <!-- content based on @type -->
-                <xsl:if test="tokenize($node/@class, ' ')[. eq 'folio-ref']">
+                <xsl:if test="$type = ('link', 'internal-link') and $node[descendant::text()] and (not($start lt $end) or tokenize($node/@class, ' ')[. eq 'folio-ref'])">
                     <xsl:call-template name="annotation-content">
-                        <xsl:with-param name="type" select="'text'"/>
+                        <xsl:with-param name="type" select="'link-text'"/>
                         <xsl:with-param name="value" select="string-join($node/descendant::text()) ! replace(., '\s+', ' ') || ''"/>
                     </xsl:call-template>
                 </xsl:if>
                 
-                <xsl:if test="$type eq 'end-note'">
+                <xsl:if test="$type eq 'end-note-link'">
                     <xsl:call-template name="annotation-content">
-                        <xsl:with-param name="type" select="'link-text'"/>
+                        <xsl:with-param name="type" select="'link-text-lookup'"/>
                         <xsl:with-param name="value" select="'endnoteIndex'"/>
                     </xsl:call-template>
                 </xsl:if>
@@ -518,27 +541,41 @@
                     </xsl:call-template>
                 </xsl:if>
                 
-                <xsl:if test="$type eq 'list-item' and $node[ancestor::xhtml:div[2][tokenize(@class, ' ')[. eq 'list-bullet']]]">
-                    
+                <xsl:if test="$type eq 'span' and $tag-name eq 'sub'">
                     <xsl:call-template name="annotation-content">
-                        <xsl:with-param name="type" select="'list-spacing'"/>
-                        <xsl:with-param name="value" select="'horizontal'"/>
+                        <xsl:with-param name="type" select="'text-style'"/>
+                        <xsl:with-param name="value" select="'subscript'"/>
                     </xsl:call-template>
-                    
-                    <xsl:if test="$type eq 'list-item' and $node[ancestor::xhtml:div[2][matches(@class, '(^|\s)(dots|numbers|letters)(\s|$)')]]">
-                        <xsl:call-template name="annotation-content">
-                            <xsl:with-param name="type" select="'list-item-style'"/>
-                            <xsl:with-param name="value" select="$node/ancestor::xhtml:div[2]/@class ! replace(., '.*(^|\s)(dots|numbers|letters)(\s|$).*', '$2')"/>
-                        </xsl:call-template>
-                    </xsl:if>
-                    
                 </xsl:if>
                 
-                <xsl:if test="$type eq 'list-item' and $node[ancestor::xhtml:div[2][tokenize(@class, ' ')[. eq 'list-section']]]">
-                    <xsl:call-template name="annotation-content">
-                        <xsl:with-param name="type" select="'list-spacing'"/>
-                        <xsl:with-param name="value" select="'vertical'"/>
-                    </xsl:call-template>
+                <xsl:if test="$type eq 'quote' and $node/following-sibling::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id]">
+                    <xsl:for-each select="$node/following-sibling::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id]">
+                        <xsl:call-template name="annotation-content">
+                            <xsl:with-param name="type" select="'quote_xmlId'"/>
+                            <xsl:with-param name="value" select="@id"/>
+                        </xsl:call-template>
+                        <xsl:if test="common:index-of-node($node/following-sibling::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id], .) eq 1">
+                            <xsl:call-template name="annotation-content">
+                                <xsl:with-param name="type" select="'link-text-lookup'"/>
+                                <xsl:with-param name="value" select="'targetTextShortcode'"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:if>
+                
+                <xsl:if test="$type eq 'blockquote' and $node/descendant::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id]">
+                    <xsl:for-each select="$node/descendant::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id]">
+                        <xsl:call-template name="annotation-content">
+                            <xsl:with-param name="type" select="'quote_xmlId'"/>
+                            <xsl:with-param name="value" select="@id"/>
+                        </xsl:call-template>
+                        <xsl:if test="common:index-of-node($node/descendant::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id], .) eq 1">
+                            <xsl:call-template name="annotation-content">
+                                <xsl:with-param name="type" select="'link-text-lookup'"/>
+                                <xsl:with-param name="value" select="'targetTextShortcode'"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                    </xsl:for-each>
                 </xsl:if>
                 
                 <!-- content based on attributes -->
@@ -552,14 +589,17 @@
                         <xsl:when test="$attribute-name eq 'type' and $attribute-value = ('noteref')">
                             <!-- exclude -->
                         </xsl:when>
-                        <xsl:when test="$attribute-name  = ('target') and $type = ('link','internal-link')">
+                        <xsl:when test="$attribute-name  eq 'target' and $type = ('link','internal-link','quoted')">
                             <!-- exclude -->
                         </xsl:when>
-                        <xsl:when test="$attribute-name eq 'data-pointer-type' and $attribute-value eq 'id'">
-                            <xsl:call-template name="annotation-content">
-                                <xsl:with-param name="type" select="'link-text'"/>
-                                <xsl:with-param name="value" select="'passageLabel'"/>
-                            </xsl:call-template>
+                        <xsl:when test="$attribute-name eq 'href' and matches($attribute-value, '^end\-notes\.xhtml#end\-note')">
+                            <!-- exclude -->
+                        </xsl:when>
+                        <xsl:when test="$attribute-name eq 'title' and $start lt $end">
+                            <!-- exclude -->
+                        </xsl:when>
+                        <xsl:when test="$type eq 'quoted' and $attribute-name = ('href', 'data-dualview-href', 'data-dualview-title', 'data-loading', 'title')">
+                            <!-- exclude -->
                         </xsl:when>
                         <xsl:when test="$attribute-name eq 'class'">
                             <xsl:for-each select="tokenize($attribute-value, '\s+')[. gt '']">
@@ -574,16 +614,13 @@
                                     <xsl:when test="$type eq 'internal-link' and $class-name = ('ref', 'folio-ref')">
                                         <!-- exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$type eq 'end-note' and $class-name eq 'footnote-link'">
+                                    <xsl:when test="$type eq 'end-note-link' and $class-name eq 'footnote-link'">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$type eq 'reference' and $class-name eq 'ref'">
                                         <!-- exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$type eq 'emphasis' and $class-name eq 'emph'">
-                                        <!-- exclude -->
-                                    </xsl:when>
-                                    <xsl:when test="$type eq 'quoted' and $class-name eq 'bridged'">
+                                    <xsl:when test="$type eq 'quoted' and $class-name = ('bridged', 'quote-link')">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$type eq 'list-item' and $class-name = ('list-item-first', 'list-item-last')">
@@ -598,13 +635,16 @@
                                     <xsl:when test="$node[@lang] and $class-name = ('text-en','text-sa','text-bo','text-zh','text-wy','text-pi','text-ja','break')">
                                         <!-- Already set as lang => exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$class-name = ('quoted','matched','hidden-print','hidden-ebook','table-responsive')">
+                                    <xsl:when test="$class-name = ('matched','hidden-print','hidden-ebook','table-responsive')">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$node[@data-reconstructed] and $class-name = ('reconstructed')">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$type[not(. eq 'mantra')] and $class-name eq 'mantra'">
+                                        <!-- exclude -->
+                                    </xsl:when>
+                                    <xsl:when test="$type eq 'list' and $class-name eq 'list-sublist'">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$type eq 'heading' and $class-name = ('section-title', 'section-label', 'table-label')">
@@ -617,6 +657,12 @@
                                         <xsl:call-template name="annotation-content">
                                             <xsl:with-param name="type" select="'link-type'"/>
                                             <xsl:with-param name="value" select="'pending'"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:when test="$class-name = ('foreign','distinct','italic','small-caps')">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'text-style'"/>
+                                            <xsl:with-param name="value" select="$class-name"/>
                                         </xsl:call-template>
                                     </xsl:when>
                                     <xsl:when test="$class-name = ('text-bold','emphtext-bold')">
@@ -637,10 +683,28 @@
                                             <xsl:with-param name="value" select="'line-through'"/>
                                         </xsl:call-template>
                                     </xsl:when>
-                                    <xsl:when test="$class-name = ('italic')">
+                                    <xsl:when test="$class-name = ('emph','emphtext-bold','emphunderline','emphline-through')">
                                         <xsl:call-template name="annotation-content">
                                             <xsl:with-param name="type" select="'text-style'"/>
-                                            <xsl:with-param name="value" select="'italic'"/>
+                                            <xsl:with-param name="value" select="'emphasis'"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:when test="$type eq 'list' and $class-name = ('list-bullet','list-section')">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'list-spacing'"/>
+                                            <xsl:with-param name="value" select="if($class-name eq 'list-bullet') then 'horizontal' else 'vertical'"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:when test="$type eq 'list' and $class-name = ('dots','numbers','letters')">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'list-item-style'"/>
+                                            <xsl:with-param name="value" select="$class-name"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:when test="matches($class-name, '^nesting\-\d+$')">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'nesting'"/>
+                                            <xsl:with-param name="value" select="replace($class-name, '^nesting\-(\d+)$', '$1')"/>
                                         </xsl:call-template>
                                     </xsl:when>
                                     <xsl:otherwise>
@@ -652,14 +716,32 @@
                                 </xsl:choose>
                             </xsl:for-each>
                         </xsl:when>
+                        <xsl:when test="$attribute-name eq 'lang'">
+                            <xsl:call-template name="annotation-content">
+                                <xsl:with-param name="type" select="'lang'"/>
+                                <xsl:with-param name="value">
+                                    <xsl:choose>
+                                        <xsl:when test="$attribute-value eq 'bo-LATN'">
+                                            <xsl:value-of select="'Bo-Ltn'"/>
+                                        </xsl:when>
+                                        <xsl:when test="$attribute-value eq 'sa-LATN'">
+                                            <xsl:value-of select="'Sa-Ltn'"/>
+                                        </xsl:when>
+                                        <xsl:when test="$attribute-value eq 'pi-LATN'">
+                                            <xsl:value-of select="'Pi-Ltn'"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="$attribute-value"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:with-param>
+                            </xsl:call-template>
+                        </xsl:when>
                         <xsl:when test="$attribute-name = ('data-glossary-id')">
                             <xsl:call-template name="annotation-content">
                                 <xsl:with-param name="type" select="'glossary_xmlId'"/>
                                 <xsl:with-param name="value" select="$attribute-value"/>
                             </xsl:call-template>
-                        </xsl:when>
-                        <xsl:when test="$attribute-name = ('href') and matches($attribute-value, '^end\-notes\.xhtml#end\-note')">
-                            <!-- exclude -->
                         </xsl:when>
                         <xsl:when test="$attribute-name = ('data-endnote-id')">
                             <xsl:call-template name="annotation-content">
@@ -672,6 +754,12 @@
                                 <xsl:with-param name="type" select="'quote_xmlId'"/>
                                 <xsl:with-param name="value" select="$attribute-value"/>
                             </xsl:call-template>
+                            <xsl:if test="$type eq 'quoted'">
+                                <xsl:call-template name="annotation-content">
+                                    <xsl:with-param name="type" select="'link-text-lookup'"/>
+                                    <xsl:with-param name="value" select="'quotingTextShortcode'"/>
+                                </xsl:call-template>
+                            </xsl:if>
                         </xsl:when>
                         <xsl:when test="$attribute-name = ('data-href','href') and matches($attribute-value, '^https?://(read\.)?84000\.co')">
                             <xsl:call-template name="annotation-content">
@@ -699,6 +787,12 @@
                             <xsl:call-template name="annotation-content">
                                 <xsl:with-param name="type" select="'link-type'"/>
                                 <xsl:with-param name="value" select="'not-found'"/>
+                            </xsl:call-template>
+                        </xsl:when>
+                        <xsl:when test="$attribute-name eq 'data-pointer-type' and $attribute-value eq 'id'">
+                            <xsl:call-template name="annotation-content">
+                                <xsl:with-param name="type" select="'link-text-lookup'"/>
+                                <xsl:with-param name="value" select="'passageLabel'"/>
                             </xsl:call-template>
                         </xsl:when>
                         <xsl:when test="$attribute-value gt ''">
@@ -793,13 +887,25 @@
         
         <xsl:param name="type" as="xs:string" required="yes"/>
         <xsl:param name="value" as="xs:string" required="yes"/>
+        
         <xsl:variable name="content-type" select="$annotation-content-types[@type eq $type]"/>
+        <xsl:variable name="content-value" select="($content-type/eft:option[@value eq $value]/@value, $content-type[not(eft:option)] ! $value[. gt ''], concat('unknown:', $value))[1]"/>
         
         <content>
             <xsl:attribute name="json:array" select="true()"/>
             <xsl:choose>
                 <xsl:when test="not($type eq 'annotation-content-type-empty')">
-                    <xsl:attribute name="{ ($content-type/@type, $type)[1] }" select="($content-type/eft:option[@value eq $value]/@value, $content-type[not(eft:option)] ! $value[. gt ''], concat('unknown:', $value))[1]"/>
+                    <xsl:element name="{ ($content-type/@type, $type)[1] }">
+                        <xsl:choose>
+                            <xsl:when test="matches($content-value, '^\d+$')">
+                                <xsl:attribute name="json:literal" select="true()"/>
+                                <xsl:value-of select="xs:integer($content-value)"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="$content-value"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:element>
                 </xsl:when>
             </xsl:choose>
         </content>

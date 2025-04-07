@@ -182,7 +182,7 @@ declare function json-helpers:glossaries($tei as element(tei:TEI), $html as elem
         let $term-lang-index := functx:index-of-node($gloss/tei:term[(@xml:lang/string(), 'en')[1] eq $term-lang], $term)
         let $term-id := string-join(($gloss/@xml:id, $term-lang, $term-lang-index), '/')
         let $entity-name := $entity-names[@language eq $term-lang][eft:content/text() eq $term-text]
-        let $name-id := ($entity-name/@xmlId, string-join(('error', $term-lang, $term-text), ':'))[1]
+        let $name-id := ($entity-name/@xmlId, string-join(('unknown', $term-lang, $term-text), ':'))[1]
         return
             types:glossary(
                 $term-id, 

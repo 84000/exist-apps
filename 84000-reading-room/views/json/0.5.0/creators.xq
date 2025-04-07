@@ -61,7 +61,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
             let $attribution-text := helpers:normalize-text($attribution)
             let $entity-name-attribution := $entity-names[eft:content/text() eq $attribution-text]
             let $entity-name := ($entity-name-attribution, $entity-names)[1]
-            let $name-id := ($entity-name/@xmlId, string-join(('error', $attribution-text), ':'))[1]
+            let $name-id := ($entity-name/@xmlId, string-join(('unknown', $attribution-text), ':'))[1]
             let $attribution-type :=
                 if($attribution[local-name(.) = ('sponsor')]) then
                     concat('contribution-', local-name($attribution))
@@ -72,7 +72,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
                 else if($attribution[local-name(.) eq 'author'][local-name(parent::*) eq 'bibl']) then
                     concat('attribution-', 'author')
                 else
-                    ($attribution/@role, string-join(('error', $attribution-text), ':'))[1]
+                    ($attribution/@role, string-join(('unknown', $attribution-text), ':'))[1]
             
             where $entity
             return (
@@ -82,7 +82,7 @@ declare function local:creators($tei as element(tei:TEI), $tei-index as xs:integ
             
         }
         catch * {
-            util:log('ERROR', 'json/0.5.0/creators:'|| $text-id)
+            util:log('unknown', 'json/0.5.0/creators:'|| $text-id)
         }
         
 };
