@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.1" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://read.84000.co/ns/1.0" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:eft="http://read.84000.co/ns/1.0" xmlns:common="http://read.84000.co/common" xmlns:json="http://www.json.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.1" exclude-result-prefixes="#all">
     
     <xsl:import href="../../../xslt/common.xsl"/>
     
@@ -49,6 +49,9 @@
         <annotation-type type="abbreviation"/>
         <annotation-type type="has-abbreviation"/>
         <annotation-type type="code"/>
+        <annotation-type type="audio"/>
+        <annotation-type type="image"/>
+        <annotation-type type="caption"/>
     </xsl:variable>
     
     <xsl:variable name="annotation-content-types" as="element()*">
@@ -57,8 +60,10 @@
         <content-type type="quote_xmlId"/>
         <content-type type="abbreviation_xmlId"/>
         <content-type type="href"/>
+        <content-type type="src"/>
+        <content-type type="title"/>
         <content-type type="quote"/>
-        <annotation-type type="nesting"/>
+        <content-type type="nesting"/>
         <content-type type="lang">
             <option value="en"/>
             <option value="bo"/>
@@ -102,7 +107,6 @@
             <option value="targetTextShortcode"/>
             <option value="quotingTextShortcode"/>
         </content-type>
-        <content-type type="link-text-pending"/>
         <content-type type="list-spacing">
             <option value="horizontal"/>
             <option value="vertical"/>
@@ -115,6 +119,15 @@
         <content-type type="reconstructed">
             <option value="reconstructedPhonetic"/>
             <option value="reconstructedSemantic"/>
+        </content-type>
+        <content-type type="media-type">
+            <option value="audio/mpeg"/>
+        </content-type>
+        <content-type type="image-style">
+            <option value="inline"/>
+            <option value="block"/>
+            <option value="align-left"/>
+            <option value="align-right"/>
         </content-type>
     </xsl:variable>
     
@@ -262,7 +275,7 @@
                         
                         <!-- Recurse through child nodes -->
                         <xsl:variable name="children-standoff" as="element()*">
-                            <xsl:if test="$node[node()] and not($node[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref', 'quote-link')]])">
+                            <xsl:if test="$node[node()] and (not($node[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref', 'quote-link')]] or $node[self::xhtml:audio]))">
                                 <xsl:call-template name="standoff">
                                     <xsl:with-param name="passage-id" select="$passage-id"/>
                                     <xsl:with-param name="nodes" select="$node/node()"/>
@@ -294,7 +307,7 @@
         <xsl:sequence select="$standoff"/>
         
         <xsl:variable name="preceding-string" select="string-join(($output-string, $standoff[self::eft:output-string]/text(), ''))" as="xs:string"/>
-        <xsl:variable name="following-string" select="string-join($nodes[$node-index + 1]/descendant-or-self::text()[count($exclude-elements except ancestor::*) eq $exclude-elements-count][not(ancestor::*[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref')]])])" as="xs:string?"/>
+        <xsl:variable name="following-string" select="string-join($nodes[$node-index + 1]/descendant-or-self::text()[count($exclude-elements except ancestor::*) eq $exclude-elements-count][not(ancestor::*[tokenize(@class, ' ')[. = ('footnote-link', 'folio-ref', 'quote-link')]] | ancestor::xhtml:audio)])" as="xs:string?"/>
         
         <xsl:variable name="output-string-element" as="element()?">
             <xsl:choose>
@@ -327,7 +340,6 @@
                 </xsl:when>
                 <xsl:when test="$node instance of element()">
                     
-                    <!--<xsl:variable name="last-char-is-word-char" as="xs:boolean" select="$preceding-string and not(matches($preceding-string, '一$')) and matches($preceding-string, '[\p{L}\p{N}\)\]:;\.,]$')"/>-->
                     <xsl:variable name="last-char-is-space" as="xs:boolean" select="$preceding-string and matches($preceding-string, '\s$')"/>
                     <xsl:variable name="next-char-is-word" as="xs:boolean" select="$following-string and not(matches($following-string, '^一')) and matches($following-string, '^[\p{L}\p{N}\[\(“&#34;]', 'i')"/>
                     
@@ -400,6 +412,15 @@
                 <xsl:when test="$tag-name eq 'a' and $node/parent::xhtml:span[tokenize(@class, ' ')[. eq 'quote-outbound']][@id]">
                     <!-- exclude -->
                 </xsl:when>
+                <xsl:when test="$tag-name eq 'a' and $node/parent::xhtml:*[tokenize(@class, ' ')[. = ('img-inline','img-block')]]">
+                    <!-- exclude -->
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'img' and $node/ancestor::xhtml:*[tokenize(@class, ' ')[. = ('img-inline','img-block')]]">
+                    <!-- exclude -->
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'source' and $node/parent::xhtml:audio">
+                    <!-- exclude -->
+                </xsl:when>
                 <xsl:when test="$tag-name = ('div') and $node[matches(@class, '^list\slist\-(bullet|section)(\slist\-sublist)?(\snesting\-\d+)?(\s(dots|numbers|letters))?$')]">
                     <xsl:value-of select="'list'"/>
                 </xsl:when>
@@ -468,6 +489,12 @@
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'div' and tokenize($node/@class, ' ')[. eq 'line-group']">
                     <xsl:value-of select="'line-group'"/>
+                </xsl:when>
+                <xsl:when test="tokenize($node/@class, ' ')[. = ('img-inline','img-block')]">
+                    <xsl:value-of select="'image'"/>
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'p' and tokenize($node/@class, ' ')[. eq 'caption']">
+                    <xsl:value-of select="'caption'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'tr' and $node[@data-abbreviation-id]">
                     <!-- exclude -->
@@ -578,6 +605,40 @@
                     </xsl:for-each>
                 </xsl:if>
                 
+                <xsl:if test="$type eq 'audio' and $node[xhtml:source/@type]">
+                    <xsl:call-template name="annotation-content">
+                        <xsl:with-param name="type" select="'media-type'"/>
+                        <xsl:with-param name="value" select="$node/xhtml:source/@type"/>
+                    </xsl:call-template>
+                    <xsl:call-template name="annotation-content">
+                        <xsl:with-param name="type" select="'src'"/>
+                        <xsl:with-param name="value" select="$node/xhtml:source/@src"/>
+                    </xsl:call-template>
+                </xsl:if>
+                
+                <xsl:if test="$type eq 'image'">
+                    
+                    <xsl:for-each select="$node/xhtml:a[@href gt '']">
+                        <xsl:call-template name="annotation-content">
+                            <xsl:with-param name="type" select="'href'"/>
+                            <xsl:with-param name="value" select="@href"/>
+                        </xsl:call-template>
+                    </xsl:for-each>
+                    
+                    <xsl:for-each select="$node/descendant::xhtml:img[@src gt '']">
+                        <xsl:call-template name="annotation-content">
+                            <xsl:with-param name="type" select="'src'"/>
+                            <xsl:with-param name="value" select="@src"/>
+                        </xsl:call-template>
+                        <xsl:if test="@title gt ''">
+                            <xsl:call-template name="annotation-content">
+                                <xsl:with-param name="type" select="'title'"/>
+                                <xsl:with-param name="value" select="@title"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:if>
+                
                 <!-- content based on attributes -->
                 <xsl:for-each select="$node/@*">
                     <xsl:variable name="attribute-name" select="local-name(.)"/>
@@ -595,10 +656,13 @@
                         <xsl:when test="$attribute-name eq 'href' and matches($attribute-value, '^end\-notes\.xhtml#end\-note')">
                             <!-- exclude -->
                         </xsl:when>
-                        <xsl:when test="$attribute-name eq 'title' and $start lt $end">
+                        <xsl:when test="$type = ('link','internal-link') and $attribute-name eq 'title' and $start lt $end">
                             <!-- exclude -->
                         </xsl:when>
                         <xsl:when test="$type eq 'quoted' and $attribute-name = ('href', 'data-dualview-href', 'data-dualview-title', 'data-loading', 'title')">
+                            <!-- exclude -->
+                        </xsl:when>
+                        <xsl:when test="$type eq 'audio' and $attribute-name = ('controls')">
                             <!-- exclude -->
                         </xsl:when>
                         <xsl:when test="$attribute-name eq 'class'">
@@ -701,6 +765,18 @@
                                             <xsl:with-param name="value" select="$class-name"/>
                                         </xsl:call-template>
                                     </xsl:when>
+                                    <xsl:when test="$type eq 'image' and $class-name = ('img-inline','img-block')">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'image-style'"/>
+                                            <xsl:with-param name="value" select="if($class-name eq 'img-inline') then 'inline' else 'block'"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:when test="$type eq 'image' and $class-name = ('inline-left','inline-right')">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'image-style'"/>
+                                            <xsl:with-param name="value" select="if($class-name eq 'inline-left') then 'align-left' else 'align-right'"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
                                     <xsl:when test="matches($class-name, '^nesting\-\d+$')">
                                         <xsl:call-template name="annotation-content">
                                             <xsl:with-param name="type" select="'nesting'"/>
@@ -769,7 +845,7 @@
                         </xsl:when>
                         <xsl:when test="$attribute-name = ('data-inst') and $type eq 'internal-link' and tokenize($node/@class, ' ')[. eq 'ref-pending']">
                             <xsl:call-template name="annotation-content">
-                                <xsl:with-param name="type" select="'link-text-pending'"/>
+                                <xsl:with-param name="type" select="'link-text'"/>
                                 <xsl:with-param name="value" select="$attribute-value"/>
                             </xsl:call-template>
                         </xsl:when>

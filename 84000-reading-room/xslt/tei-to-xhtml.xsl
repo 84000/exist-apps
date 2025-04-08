@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -2567,7 +2567,7 @@
     
     <xsl:template match="tei:media[@mimeType eq 'audio/mpeg']">
 
-        <xsl:if test="$view-mode[@client = ('browser', 'ajax')]">
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'app')]">
             <xsl:call-template name="milestone-row">
                 <xsl:with-param name="content">
                     <audio controls="controls">
@@ -2586,11 +2586,11 @@
     
     <xsl:template match="tei:media[@mimeType eq 'image/png']">
         
-        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook')]">
+        <xsl:if test="$view-mode[@client = ('browser', 'ajax', 'pdf', 'ebook', 'app')]">
             
             <xsl:variable name="title" select="tei:desc/text() ! normalize-space()"/>
             
-            <xsl:variable name="img">
+            <xsl:variable name="img" as="element(xhtml:img)">
                 <xsl:choose>
                     
                     <!-- epubs -->
@@ -2607,6 +2607,21 @@
                                 </xsl:choose>
                             </xsl:attribute>
                             <xsl:attribute name="title" select="$title"/>
+                        </img>
+                    </xsl:when>
+                    
+                    <xsl:when test="$view-mode[@client eq 'app']">
+                        <img>
+                            <xsl:attribute name="src">
+                                <xsl:choose>
+                                    <xsl:when test="matches(@url, '^http', 'i')">
+                                        <xsl:value-of select="@url"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat('image', @url)"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
                         </img>
                     </xsl:when>
                     
@@ -2647,7 +2662,7 @@
             </xsl:variable>
             
             <!-- Image link -->
-            <xsl:variable name="img-link">
+            <xsl:variable name="img-link" as="element()">
                 <xsl:choose>
                     <xsl:when test="@source">
                         <a>
@@ -2670,14 +2685,20 @@
                 <xsl:when test="ancestor::tei:note[@place = 'end']">
                     <xsl:choose>
                         <xsl:when test="$view-mode[@client eq 'ebook']">
-                            <span class="img-block">
+                            <div class="img-block">
                                 <xsl:if test="$title">
                                     <p>
                                         <xsl:apply-templates select="$title"/>
                                     </p>
                                 </xsl:if>
                                 <xsl:sequence select="$img-link"/>
-                            </span>
+                            </div>
+                        </xsl:when>
+                        <xsl:when test="$view-mode[@client eq 'app']">
+                            <div class="img-block">
+                                <xsl:apply-templates select="$title"/>
+                                <xsl:sequence select="$img-link"/>
+                            </div>
                         </xsl:when>
                         <xsl:when test="$title">
                             <div class="row sml-margin top bottom">
@@ -2698,19 +2719,9 @@
                 </xsl:when>
                 
                 <xsl:when test="parent::tei:div | parent::m:part | parent::tei:figure/parent::tei:div | parent::tei:figure/parent::m:part">
-                    <xsl:choose>
-                        <xsl:when test="$view-mode[@client eq 'ebook']">
-                            <span class="img-block">
-                                <xsl:sequence select="$img-link"/>
-                                <xsl:if test="parent::tei:figure[tei:figDesc/text()]">
-                                    <p class="caption">
-                                        <xsl:apply-templates select="parent::tei:figure/tei:figDesc/node()"/>
-                                    </p>
-                                </xsl:if>
-                            </span>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <div class="rw rw-image">
+                    <xsl:call-template name="milestone-row">
+                        <xsl:with-param name="content">
+                            <div class="img-block">
                                 <xsl:sequence select="$img-link"/>
                                 <xsl:if test="parent::tei:figure[tei:figDesc/text()]">
                                     <p class="caption">
@@ -2718,8 +2729,9 @@
                                     </p>
                                 </xsl:if>
                             </div>
-                        </xsl:otherwise>
-                    </xsl:choose>
+                        </xsl:with-param>
+                        <xsl:with-param name="row-type" select="'image'"/>
+                    </xsl:call-template>
                 </xsl:when>
                 
                 <!-- others -->
