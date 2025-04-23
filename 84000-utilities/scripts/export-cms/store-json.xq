@@ -34,17 +34,18 @@ declare variable $local:static-paths := map {
     '/rest/translation-projects.json':                                      'translation-projects.json'
 };
 
-declare function local:store($source-path as xs:string, $target-file as xs:string) as xs:string* {
+declare function local:store($source-path as xs:string, $target-file as xs:string) {
     
     let $target-file-path := string-join(('/db/apps/84000-static/json', $target-file), '/')
     let $source-path := concat($source-path, if(contains($source-path, '?')) then '&amp;' else '?', 'store=store')
     where not(util:binary-doc-available($target-file-path))
-    return (
-        $source-path  || ' -> ' || $target-file(:,
-        json-helpers:get($source-path):)
-    )
+    let $get-file := json-helpers:get($source-path)
+    return 
+        $source-path  || ' -> ' || $target-file
     
 };
+
+(:local:store('/rest/translation.json?id=UT22084-101-146', 'UT22084-101-146.json'):)
 
 for $source-path in map:keys($local:static-paths)
 return

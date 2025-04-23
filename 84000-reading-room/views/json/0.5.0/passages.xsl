@@ -164,7 +164,7 @@
                         <xsl:variable name="default-passage" select="$default[@xmlId eq $variant-passage/@xmlId]"/>
                         
                         <passage>
-                            <xsl:sequence select="$default-passage/@*"/>
+                            <xsl:sequence select="$variant-passage/@*"/>
                             <xsl:if test="not($variant-passage/eft:content/text() eq $default-passage/eft:content/text())">
                                 <xsl:if test="not($variant-source-key eq $default-key)">
                                     <xsl:attribute name="catalogue_work_xmlid" select="$variant-source-key"/>
@@ -173,7 +173,7 @@
                                     <xsl:attribute name="commentary_work_xmlid" select="$variant-commentary-key"/>
                                 </xsl:if>
                             </xsl:if>
-                            <xsl:sequence select="$default-passage/eft:passageSort"/>
+                            <xsl:sequence select="$variant-passage/eft:passageSort"/>
                             <xsl:sequence select="$variant-passage/eft:content"/>
                         </passage>
                         
