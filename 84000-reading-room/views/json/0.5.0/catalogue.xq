@@ -113,8 +113,6 @@ let $response :=
 let $file-name := string-join((($local:request-section-id[. eq 'O1JC11494'] ! 'kangyur', $local:request-section-id[. eq 'O1JC7630'] ! 'tengyur', $response/@modelType)[1], $local:request-content-mode[. gt '']),'-')
 
 return
-    if($local:request-store eq 'store') then
-        helpers:store($response, concat($file-name, '.json'), ())
-    else
-        $response
+    helpers:store($local:request-store, $response, concat($file-name, '.json'), ())
+
         

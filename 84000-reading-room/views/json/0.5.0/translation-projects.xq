@@ -132,8 +132,7 @@ let $response :=
     }
 
 return
-    if($local:request-store eq 'store') then
-        helpers:store($response, concat($response/@modelType, '.json'), ())
-    else
-        $response
+    helpers:store($local:request-store, $response, concat($response/@modelType, '.json'), ())
+
+
         

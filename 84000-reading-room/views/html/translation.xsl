@@ -1345,37 +1345,81 @@
                                 <!-- If the first parent head is the same as the main title we want to use the translation part head in the first chapter, so not here -->
                                 <xsl:if test="$translation-head and data($first-part-head) and not(data($first-part-head) eq data($main-title)) and not($prelude)">
                                     <div class="h3">
+                                        
+                                        <xsl:call-template name="key-attribute">
+                                            <xsl:with-param name="node" select="$translation-head[1]"/>
+                                        </xsl:call-template>
+                                        
                                         <xsl:value-of select="$translation-head[1]/node()"/>
+                                        
                                     </div>
                                 </xsl:if>
                                 
                                 <xsl:if test="$main-title">
                                     <div class="h1 break">
+                                        
                                         <xsl:if test="$sub-title[following-sibling::tei:head[1][@type eq 'titleHon']]">
                                             <small>
+                                                
+                                                <xsl:call-template name="key-attribute">
+                                                    <xsl:with-param name="node" select="$sub-title[1]"/>
+                                                </xsl:call-template>
+                                                
                                                 <xsl:apply-templates select="$sub-title[1]/node()"/>
+                                                
                                             </small>
                                             <br/>
                                         </xsl:if>
+                                        
                                         <xsl:if test="$honoration">
                                             <small>
+                                                
+                                                <xsl:call-template name="key-attribute">
+                                                    <xsl:with-param name="node" select="$honoration[1]"/>
+                                                </xsl:call-template>
+                                                
                                                 <xsl:apply-templates select="$honoration[1]/node()"/>
+                                                
                                             </small>
                                             <br/>
                                         </xsl:if>
+                                        
                                         <xsl:if test="$sub-title[following-sibling::tei:head[1][@type eq 'titleMain']]">
                                             <small>
+                                                
+                                                <xsl:call-template name="key-attribute">
+                                                    <xsl:with-param name="node" select="$sub-title[1]"/>
+                                                </xsl:call-template>
+                                                
                                                 <xsl:apply-templates select="$sub-title[1]/node()"/>
+                                                
                                             </small>
                                             <br/>
                                         </xsl:if>
-                                        <xsl:apply-templates select="$main-title[1]/node()"/>
+                                        
+                                        <span>
+                                            
+                                            <xsl:call-template name="key-attribute">
+                                                <xsl:with-param name="node" select="$main-title[1]"/>
+                                            </xsl:call-template>
+                                            
+                                            <xsl:apply-templates select="$main-title[1]/node()"/>
+                                            
+                                        </span>
+                                        
                                         <xsl:if test="$sub-title[not(following-sibling::tei:head[1][@type = ('titleHon', 'titleMain')])]">
                                             <br/>
                                             <small>
+                                                
+                                                <xsl:call-template name="key-attribute">
+                                                    <xsl:with-param name="node" select="$sub-title[1]"/>
+                                                </xsl:call-template>
+                                                
                                                 <xsl:apply-templates select="$sub-title[1]/node()"/>
+                                                
                                             </small>
                                         </xsl:if>
+                                        
                                     </div>
                                 </xsl:if>
                                 

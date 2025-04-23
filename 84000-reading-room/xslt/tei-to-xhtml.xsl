@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0" exclude-result-prefixes="#all">
+<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:common="http://read.84000.co/common" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:functx="http://www.functx.com" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:m="http://read.84000.co/ns/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" version="3.0" exclude-result-prefixes="#all">
     
     <!-- Transforms tei to xhtml -->
     
@@ -343,6 +343,9 @@
                             </xsl:if>
                         </xsl:when>
                     </xsl:choose>
+                    <xsl:call-template name="key-attribute">
+                        <xsl:with-param name="node" select="$ref"/>
+                    </xsl:call-template>
                     <xsl:apply-templates select="$ref/text()"/>
                 </span>
             </xsl:when>
@@ -358,11 +361,18 @@
                     <!-- Target is an empty page -->
                     <xsl:when test="$ref[@rend eq 'blank']">
                         <span>
+                            
+                            <xsl:call-template name="key-attribute">
+                                <xsl:with-param name="node" select="$ref"/>
+                            </xsl:call-template>
+                            
                             <xsl:call-template name="class-attribute">
                                 <xsl:with-param name="base-classes" select="'ref'"/>
                                 <xsl:with-param name="html-classes" select="'text-muted'"/>
                             </xsl:call-template>
+                            
                             <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                            
                         </span>
                     </xsl:when>
                     
@@ -388,6 +398,9 @@
                                     <xsl:attribute name="data-dualview-title" select="concat($translation/m:source/m:toh, ' (source text)')"/>
                                     <xsl:attribute name="data-log-click-text-id" select="$text-id"/>
                                     <xsl:attribute name="data-loading" select="concat('Loading ', $translation/m:source/m:toh, '...')"/>
+                                    <xsl:call-template name="key-attribute">
+                                        <xsl:with-param name="node" select="$ref"/>
+                                    </xsl:call-template>
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
                                 </a>
                                 
@@ -410,8 +423,15 @@
                             <xsl:otherwise>
                                 
                                 <span class="ref folio-ref">
-                                    <xsl:attribute name="data-href" select="concat('https://84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/> 
+                                    
+                                    <xsl:attribute name="data-href" select="concat('https://84000.co', m:source-href($toh-key, $folio-ref-index, ()))"/>
+                                    
+                                    <xsl:call-template name="key-attribute">
+                                        <xsl:with-param name="node" select="$ref"/>
+                                    </xsl:call-template>
+                                    
                                     <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                                    
                                 </span>
                                 
                             </xsl:otherwise>
@@ -435,6 +455,10 @@
             <!-- @target designates an external (http) link -->
             <xsl:when test="$ref[@target]">
                 <a target="_blank">
+                    
+                    <xsl:call-template name="key-attribute">
+                        <xsl:with-param name="node" select="$ref"/>
+                    </xsl:call-template>
                     
                     <xsl:choose>
                         <!-- Same domain, make relative -->
@@ -468,7 +492,13 @@
             <!-- Otherwise just output the text -->
             <xsl:when test="$ref[text()]">
                 <span class="ref">
+                    
+                    <xsl:call-template name="key-attribute">
+                        <xsl:with-param name="node" select="$ref"/>
+                    </xsl:call-template>
+                    
                     <xsl:apply-templates select="$ref/text()"/>
+                    
                 </span>
             </xsl:when>
         
@@ -696,6 +726,10 @@
                             <xsl:sequence select="key('quotes-outbound', $quote-refs/@xml:id, $root)"/>
                         </xsl:if>
                     </xsl:variable>
+                    
+                    <xsl:call-template name="key-attribute">
+                        <xsl:with-param name="node" select="$element"/>
+                    </xsl:call-template>
                     
                     <xsl:call-template name="class-attribute">
                         
@@ -3079,7 +3113,19 @@
             </xsl:choose>
         
         </xsl:if>
+        
+        <xsl:call-template name="key-attribute">
+            <xsl:with-param name="node" select="$node"/>
+        </xsl:call-template>
+        
+    </xsl:template>
     
+    <!-- Add a data attribute for a @key -->
+    <xsl:template name="key-attribute">
+        <xsl:param name="node" as="node()"/>
+        <xsl:if test="$view-mode[@client eq 'app'] and $node[@key]">
+            <xsl:attribute name="data-key" select="$node/@key"/>
+        </xsl:if>
     </xsl:template>
     
     <!-- Add links to inbound and outbound quotes -->
@@ -3101,6 +3147,9 @@
                         <xsl:if test="not($quote/@resource-id gt '') or not($quote/m:source/@resource-id gt '')">
                             <xsl:value-of select="'quote-error'"/>
                         </xsl:if>
+                        
+                    </xsl:with-param>
+                    <xsl:with-param name="html-classes">
                         
                         <xsl:if test="$quote/m:source[@resource-id eq $toh-key] and $quote[not(@resource-id eq $requested-commentary)]">
                             <xsl:value-of select="'pop-up'"/>
@@ -4446,14 +4495,55 @@
                 <xsl:value-of select="$node/ancestor-or-self::m:entry[@id][1]/@id"/>
             </xsl:when>
             
-            <!-- Look for a nearest milestone -->
+            <!--<!-\- Look for a nearest milestone -\->
             <xsl:when test="$node[ancestor-or-self::tei:*/preceding-sibling::tei:milestone[@xml:id]]">
                 <xsl:value-of select="$node/ancestor-or-self::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
             </xsl:when>
             
-            <!-- Default to the id of the nearest part -->
+            <!-\- Default to the id of the nearest part -\->
             <xsl:otherwise>
                 <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
+            </xsl:otherwise>-->
+            
+            <!-- Look for a nearest milestone -->
+            <xsl:otherwise>
+                
+                <xsl:variable name="part" select="$node/ancestor-or-self::m:part[@id][1]"/>
+                <xsl:variable name="part-milestones" select="$part/descendant::tei:milestone[@xml:id]" as="element(tei:milestone)*"/>
+                <xsl:variable name="element" as="element()">
+                    <xsl:choose>
+                        <xsl:when test="$node instance of text()">
+                            <xsl:sequence select="$node/parent::*"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:sequence select="$node"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="part-nodes" select="$part-milestones | $element"/>
+                <xsl:variable name="element-index" select="common:index-of-node($part-nodes, $element)"/>
+                <xsl:variable name="preceding-milestones" as="element(tei:milestone)*">
+                    <xsl:for-each select="$part-milestones">
+                        <xsl:variable name="milestone-index" select="common:index-of-node($part-nodes, .)"/>
+                        <xsl:if test="$milestone-index lt $element-index">
+                            <xsl:sequence select="."/>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:variable>
+                <xsl:variable name="nearest-milestone" select="$preceding-milestones[last()]"/>
+                <xsl:choose>
+                    
+                    <xsl:when test="$nearest-milestone">
+                        <xsl:value-of select="$nearest-milestone/@xml:id"/>
+                    </xsl:when>
+                    
+                    <!-- Default to the id of the nearest part -->
+                    <xsl:otherwise>
+                        <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
+                    </xsl:otherwise>
+                    
+                </xsl:choose>
+                
             </xsl:otherwise>
             
         </xsl:choose>
@@ -5154,7 +5244,7 @@
                                             <xsl:value-of select="$text-analyzed-node/fn:group[@nr eq '1']"/>
                                             <xsl:choose>
                                                 <xsl:when test="$context-occurrence-index gt 0 and $context-occurrence-index = $context-occurrences-validated and (count($context-occurrences-validated) eq 1 or $context-occurrence-index eq $context-occurrence-target)">
-                                                    <span data-quote-id="{ $quote/@id }" data-quote-highlight="{ $highlight/@index }" class="quoted matched">
+                                                    <span data-quote-id="{ $quote/@id }" data-commentary="{ $quote/@resource-id }" data-quote-highlight="{ $highlight/@index }" class="quoted matched">
                                                         <xsl:sequence select="$text-match-recurse"/>
                                                     </span>
                                                 </xsl:when>

@@ -64,10 +64,29 @@ declare function json-helpers:title-migration-id($source-key as xs:string, $titl
 
 };
 
-declare function json-helpers:store($data as element(), $file-name as xs:string, $target-subdir as xs:string?) as xs:string {
+declare function json-helpers:store($mode as xs:string?, $data as element(), $file-name as xs:string, $target-subdir as xs:string?)  {
    
-    store:file(string-join(('/db/apps/84000-static/json', $target-subdir[. gt '']), '/'), $file-name, serialize($data, $json-helpers:json-serialization-parameters), 'application/json')
+    if($mode eq 'store') then
+        store:file(string-join(('/db/apps/84000-static/json', $target-subdir[. gt '']), '/'), $file-name, serialize($data, $json-helpers:json-serialization-parameters), 'application/json')
+    else
+        $data
     
+};
+
+declare function json-helpers:get($source-path) {
+
+    let $request := 
+        element { QName('http://expath.org/ns/http-client', 'request') }{
+            attribute href { concat($common:environment//eft:store-conf/@source-url, $source-path) },
+            attribute method { 'GET' }
+        }
+    
+    let $response := hc:send-request($request)
+    let $head := $response[1]
+    let $body := $response[2]
+    return 
+        $body
+        
 };
 
 declare function json-helpers:translation-html($xml-response as element(eft:response)) {

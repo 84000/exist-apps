@@ -19,12 +19,19 @@ declare option output:indent "yes";
 declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
-declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else '';
-declare variable $local:xml-response := request:get-data()/eft:response;
-declare variable $local:translation := $local:xml-response/eft:translation;
-declare variable $local:text-id := $local:translation/@id/string();
+declare variable $local:text-id := if(request:exists()) then request:get-parameter('resource-id', '') else 'UT22084-034-007';
+declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else 'store';
 declare variable $local:tei := tei-content:tei($local:text-id, 'translation');
+declare variable $local:xml-response := local:xml-response($local:text-id, ());
+declare variable $local:translation-xml := $local:xml-response/eft:translation;
 declare variable $local:html := helpers:translation-html($local:xml-response);
+declare variable $local:passage-parts-exclude := ('titles','imprint','toc','bibliography','glossary','citation-index');
+
+declare function local:xml-response($resource-id as xs:string, $commentary-key as xs:string?) as element(eft:response)* {
+
+    helpers:get(concat('/translation/', $resource-id, '.xml?', string-join(('view-mode=app', $commentary-key[. gt ''] ! concat('commentary=', .)), '&amp;')))/eft:response
+    
+};
 
 declare function local:titles() as element(eft:title)* {
 
@@ -49,7 +56,7 @@ declare function local:titles() as element(eft:title)* {
     
     let $title-language := ($title/@xml:lang, 'en')[1]
     
-    let $section-title := $local:translation/eft:parent/eft:titles/eft:title[not(@xml:lang) or @xml:lang eq 'en'][text()]
+    let $section-title := $local:translation-xml/eft:parent/eft:titles/eft:title[not(@xml:lang) or @xml:lang eq 'en'][text()]
     let $chapter-bibl := ($local:tei//tei:sourceDesc/tei:bibl[@type eq 'chapter'][@key eq $title-key], $local:tei//tei:sourceDesc/tei:bibl[@key][@type eq 'chapter'])[1]
     
     let $source-key := ($title/@key, $title/parent::tei:bibl/@key, $local:tei//tei:sourceDesc/tei:bibl/@key, ($section-title/ancestor::eft:parent)[1]/@id, $local:text-id)[1]
@@ -82,10 +89,47 @@ declare function local:titles() as element(eft:title)* {
         }
 };:)
 
+let $commentary-keys := $local:translation-xml/eft:part[@type eq 'citation-index'] ! translation:commentary-keys($local:tei, tei:ptr)
+
 let $html-sections := 
     element { QName('http://read.84000.co/ns/1.0','html-sections') } {
-        $local:html//xhtml:section[not(@data-part-type = ('titles','imprint','toc','bibliography','glossary','citation-index'))]
+    
+        attribute text-id { $local:text-id },
+        
+        (: Default rendering :)
+        element { QName('http://read.84000.co/ns/1.0','default') } {
+            attribute source-key { $local:xml-response/eft:request/@resource-id },
+            $local:html//xhtml:section[not(@data-part-type = $local:passage-parts-exclude)]
+        },
+        
+        (: Toh variants :)
+        for $bibl in $local:tei//tei:sourceDesc/tei:bibl[@key]
+        where $bibl[not(@key/string() eq $local:xml-response/eft:request/@resource-id/string())]
+        let $xml-response-variant := local:xml-response($bibl/@key, ())
+        let $html-variant := helpers:translation-html($xml-response-variant)
+        return
+            element { QName('http://read.84000.co/ns/1.0','variant') } {
+                attribute source-key { $bibl/@key },
+                $html-variant//xhtml:section[not(@data-part-type = $local:passage-parts-exclude)]
+            }
+        ,
+        
+        (: Commentary variants for each toh :)
+        for $commentary-key in $commentary-keys
+        return
+            for $bibl in $local:tei//tei:sourceDesc/tei:bibl[@key]
+            let $xml-response-variant := local:xml-response($bibl/@key, $commentary-key)
+            let $html-variant := helpers:translation-html($xml-response-variant)
+            return
+                element { QName('http://read.84000.co/ns/1.0','variant') } {
+                    attribute source-key { $bibl/@key },
+                    attribute commentary-key { $commentary-key },
+                    $html-variant//xhtml:section[not(@data-part-type = $local:passage-parts-exclude)]
+                }
+                
     }
+
+(:return if (true()) then $html-sections else:)
 
 let $passages := helpers:passages($html-sections)
 
@@ -101,11 +145,11 @@ let $response :=
             $local:text-id,
             (:$local:translation/eft:source/eft:location/@work ! source:work-name(.),:)
             local:titles(),
-            if($local:translation/eft:publication/eft:tantric-restriction[tei:p]) then true() else false(),
-            tei-content:strip-version-number($local:translation/eft:publication/eft:edition/text()[1]),
-            $local:translation/eft:publication/eft:edition/tei:date/text(),
-            $local:translation/@status/string(),
-            $local:translation/eft:publication/eft:publication-date/text()
+            if($local:translation-xml/eft:publication/eft:tantric-restriction[tei:p]) then true() else false(),
+            tei-content:strip-version-number($local:translation-xml/eft:publication/eft:edition/text()[1]),
+            $local:translation-xml/eft:publication/eft:edition/tei:date/text(),
+            $local:translation-xml/@status/string(),
+            $local:translation-xml/eft:publication/eft:publication-date/text()
         ),
         
         $passages,
@@ -119,12 +163,10 @@ let $response :=
         types:control-data($local:text-id, 'work-count-glossary-entries', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id])),
         types:control-data($local:text-id, 'work-count-glossary-names', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]/tei:term[not(@xml:lang eq 'bo' and @n)][text() ! normalize-space()])),
         types:control-data($local:text-id, 'work-count-bibliography-entries', count($local:xml-response//eft:part[@type eq 'bibliography']/descendant::tei:bibl)),
-        types:control-data($local:text-id, 'work-count-source-authors', count($local:translation//eft:attribution))
+        types:control-data($local:text-id, 'work-count-source-authors', count($local:translation-xml//eft:attribution))
         
     }
 
 return
-    if($local:request-store eq 'store') then
-        helpers:store($response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), ()(:'translation':))
-    else
-        $response
+    helpers:store($local:request-store, $response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), ()(:'translation':))
+
