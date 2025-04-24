@@ -50,7 +50,6 @@ declare function local:translation-project($tei as element(tei:TEI)) {
     )
     let $webflow-items := $local:webflow-data//webflow-api:item[@id = $toh-keys]
     
-        
     let $project := 
         if($contract or $progress-note or $action-note or $submissions or $target-dates) then
             types:project(string-join(($text-id, 'project'), '/'), $text-id, $contract/@number, $contract/@date[. gt ''] ! xs:date(.), $progress-note ! helpers:normalize-text(.), $action-note ! helpers:normalize-text(.))
@@ -60,7 +59,7 @@ declare function local:translation-project($tei as element(tei:TEI)) {
     
         for $change in $tei//tei:revisionDesc/tei:change
         return
-            types:log($change/@xml:id, $text-id, $change/@type, $change/@when, $change/@who ! replace(., '^#', ''), $change/@status, $change/tei:desc[not(string-join(text()) eq $change/@status/string())] ! helpers:normalize-text(.))
+            types:log($change/@xml:id, $text-id, $change/@type, $change/@when, $change/@who ! replace(., '^#', ''), ($change/@status, $change/@source)[1], $change/tei:desc[not(string-join(text()) eq $change/@status/string())] ! helpers:normalize-text(.))
         ,
         
         if($project) then (
@@ -70,19 +69,19 @@ declare function local:translation-project($tei as element(tei:TEI)) {
             $progress-note ! types:log(string-join(($text-id, 'project', 'progress-note-updated'), '/'), $project/@xmlId, 'progress-note-updated', @last-edited, @last-edited-by, (), ()),
             
             $action-note ! types:log(string-join(($text-id, 'project', 'action-note-updated'), '/'), $project/@xmlId, 'action-note-updated', @last-edited, @last-edited-by, (), ()),
-        
+            
             for $submission in $submissions
             let $submission-id := string-join(($text-id, $submission/@id), '/')
             return (
-            
+                
                 types:submission($submission-id, $project/@xmlId, $text-id, $submission/@id, $submission/@original-file-name),
-            
+                
                 types:log(string-join(($text-id, $submission/@id, 'submission'), '/'), $submission-id, 'draft-submitted', $submission/@date-time, $submission/@user, $submission/@id, ()),
                 
                 for $item-checked in $submission/eft:item-checked
                 return
                     types:log(string-join(($text-id, $submission/@id, $item-checked/@item-id), '/'), $submission-id, concat('submission-', $item-checked/@item-id), $item-checked/@date-time, $item-checked/@user, '', ())
-                    
+                
             )
         )
         else ()
@@ -91,13 +90,13 @@ declare function local:translation-project($tei as element(tei:TEI)) {
         (: File version updates :)
         for $file-version in $file-versions
         return 
-            types:log(string-join(($text-id, $file-version/@file-name, 'file-generated'), '/'), $text-id, 'file-generated', $file-version/@timestamp, (), $file-version/@file-name, concat('Status:', $file-version/@status, ', Version:', $file-version/@version))
+            types:log(string-join(($text-id, $file-version/@file-name, 'file-generated'), '/'), $text-id, 'file-generated', $file-version/@timestamp, (), $file-version/@file-name, string-join(($file-version/@status ! concat('Status:', .), $file-version/@version ! concat('Version:', .)), ', '))
         ,
         
         (: Webflow api updates :)
         for $webflow-item in $webflow-items
         return 
-            types:log(string-join(($text-id, $webflow-item/@id, 'webflow-updated'), '/'), $text-id, 'webflow-updated', $webflow-item/@updated, (), $webflow-item/@webflow-id, concat('Status:', $webflow-item/@status, ', Version:', $webflow-item/@version))
+            types:log(string-join(($text-id, $webflow-item/@id, 'webflow-updated'), '/'), $text-id, 'webflow-updated', $webflow-item/@updated, (), $webflow-item/@webflow-id, string-join(($webflow-item/@status ! concat('Status:', .), $webflow-item/@version ! concat('Version:', .)), ', '))
         
     )
     
@@ -109,6 +108,7 @@ declare function local:translation-project($tei as element(tei:TEI)) {
                 types:project-target(string-join(($text-id, 'target', $target/@status-id), '/'), $project/@xmlId, $target/@status-id, $target/@date-time, $log-completed/@xmlId)
 
         else ()
+    
     return (
         $project,
         $log,

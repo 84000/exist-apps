@@ -38,9 +38,6 @@ declare function local:entities() {
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($entity except $local:request-entity) eq 0
     return (
     
-        (: entity/type :)
-        (:distinct-values($entity/eft:type/@type/string()) ! types:authority-classification($entity/@xml:id, .),:)
-        
         (: entity/relation :)
         for $relation in $entity/eft:relation
         let $relation-id := $relation/@id/string()
@@ -61,8 +58,6 @@ declare function local:contributors() {
     where (not($local:request-entity-id gt '') and not($local:request-text-id gt '')) or count($contributor except $local:request-entity) eq 0
     return (
     
-        (:distinct-values($contributor/eft:affiliation/@type/string()) ! types:authority-classification($contributor/@xml:id, concat('contributor-', .)),:)
-        
         $contributor/eft:institution/@id[. gt ''] ! types:object-relation($contributor/@xml:id, 'isMemberOf', .),
         
         $contributor/eft:team/@id[. gt ''] ! types:object-relation($contributor/@xml:id, 'isMemberOf', .)

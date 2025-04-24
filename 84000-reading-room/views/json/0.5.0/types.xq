@@ -39,7 +39,7 @@ let $response :=
         
         map:keys($types:relation-types) ! element relationTypes { attribute json:array { true() }, $types:relation-types(.) },
         map:keys($types:creator-types) ! element creatorTypes { attribute json:array { true() }, $types:creator-types(.) },
-        distinct-values(map:keys($types:annotation-types) !$types:annotation-types(.)) ! element authorityAnnotationTypes { attribute json:array { true() }, . },
+        distinct-values(map:keys($types:annotation-types) ! $types:annotation-types(.)) ! element authorityAnnotationTypes { attribute json:array { true() }, . },
         map:keys($types:title-types) ! element titleTypes { attribute json:array { true() }, $types:title-types(.) },
         map:keys($types:catalogue-section-types) ! element catalogueSectionTypes { attribute json:array { true() }, $types:catalogue-section-types(.) },
         map:keys($types:log-types) ! element logTypes { attribute json:array { true() }, $types:log-types(.) },

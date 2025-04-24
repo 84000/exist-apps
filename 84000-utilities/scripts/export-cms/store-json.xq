@@ -1,17 +1,19 @@
 xquery version "3.0";
 
+declare namespace eft = "http://read.84000.co/ns/1.0";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
+import module namespace common="http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
 import module namespace store = "http://read.84000.co/store" at "/db/apps/84000-reading-room/modules/store.xql";
 import module namespace json-helpers = "http://read.84000.co/json-helpers/0.5.0" at '/db/apps/84000-reading-room/views/json/0.5.0/common/helpers.xql';
 (: 
-
-1. Backload and restore dataset locally
-2. Run this script
-3. Check for unknown: and error: content
-4. Fix issues, delete files, re-run script
-5. Sync to file server and commit to Github
+    
+    1. Confirm output directory '/db/apps/84000-data/migration'
+    2. Run this script
+    3. Search output for any content flagged as 'unknown:' or 'error:'
+    4. Fix issues, delete any files that should be replaced, re-run script
+    5. Sync to file server and commit to Github
 
 :)
 
@@ -28,24 +30,33 @@ declare variable $local:static-paths := map {
     '/rest/catalogue.json?section-id=O1JC7630&amp;content=sections':        'tengyur-catalog.json',
     '/rest/catalogue.json?section-id=O1JC7630&amp;content=control-data':    'tengyur-control-data.json',
     '/rest/catalogue.json?section-id=O1JC7630&amp;content=works':           'tengyur-works.json',
+    '/rest/works-annotations.json':                                         'works-annotations.json',
     '/rest/works-relations.json':                                           'works-relations.json',
     '/rest/classifications.json':                                           'classifications.json',
     '/rest/types.json':                                                     'types.json',
     '/rest/translation-projects.json':                                      'translation-projects.json'
 };
 
+declare variable $local:exec-options := 
+    <option>
+        <workingDir>/{ $common:environment//eft:env-vars/eft:var[@id eq 'home']/text() }/</workingDir>
+    </option>;
+    
 declare function local:store($source-path as xs:string, $target-file as xs:string) {
     
-    let $target-file-path := string-join(('/db/apps/84000-static/json', $target-file), '/')
+    let $target-file-path := string-join(('/db/apps/84000-data/migration', $target-file), '/')
     let $source-path := concat($source-path, if(contains($source-path, '?')) then '&amp;' else '?', 'store=store')
     where not(util:binary-doc-available($target-file-path))
     let $get-file := json-helpers:get($source-path)
-    return 
-        $source-path  || ' -> ' || $target-file
+    return (
+        $source-path  || ' -> ' || $target-file,
+        process:execute(('sleep', '0.5'), $local:exec-options) ! ()
+    )
     
 };
 
-(:local:store('/rest/translation.json?id=UT22084-101-146', 'UT22084-101-146.json'):)
+(:local:store('/rest/translation.json?id=UT23703-001-001', 'UT23703-001-001.json')
+,:)
 
 for $source-path in map:keys($local:static-paths)
 return

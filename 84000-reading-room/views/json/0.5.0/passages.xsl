@@ -133,111 +133,119 @@
     
     <xsl:template match="/eft:html-sections">
         
-        <translation>
-            
-            <xsl:variable name="default-key" as="xs:string" select="(eft:default)[1]/@source-key"/>
-            
-            <xsl:variable name="default" as="element()*">
-                <xsl:call-template name="sections">
-                    <xsl:with-param name="variant" select="(eft:default)[1]"/>
-                </xsl:call-template>
-            </xsl:variable>
-            
-            <xsl:variable name="count-variants" as="xs:integer" select="count(/eft:html-sections/eft:variant)"/>
-            
-            <xsl:variable name="variants" as="element()*">
-                <xsl:for-each select="eft:variant">
+        <xsl:choose>
+            <xsl:when test="not($return-types)">
+                
+                <translation>
                     
-                    <xsl:variable name="variant-source-key" as="xs:string" select="@source-key"/>
-                    <xsl:variable name="variant-commentary-key" as="xs:string?" select="@commentary-key"/>
+                    <xsl:variable name="default-key" as="xs:string" select="(eft:default)[1]/@source-key"/>
                     
-                    <xsl:variable name="variant" as="element()*">
+                    <xsl:variable name="default" as="element()*">
                         <xsl:call-template name="sections">
-                            <xsl:with-param name="variant" select="."/>
+                            <xsl:with-param name="variant" select="(eft:default)[1]"/>
                         </xsl:call-template>
                     </xsl:variable>
                     
-                    <!-- If passage text varies then include the variant -->
-                    <xsl:for-each select="$variant[self::eft:passage]">
+                    <xsl:variable name="count-variants" as="xs:integer" select="count(/eft:html-sections/eft:variant)"/>
+                    
+                    <xsl:variable name="variants" as="element()*">
+                        <xsl:for-each select="eft:variant">
+                            
+                            <xsl:variable name="variant-source-key" as="xs:string" select="@source-key"/>
+                            <xsl:variable name="variant-commentary-key" as="xs:string?" select="@commentary-key"/>
+                            
+                            <xsl:variable name="variant" as="element()*">
+                                <xsl:call-template name="sections">
+                                    <xsl:with-param name="variant" select="."/>
+                                </xsl:call-template>
+                            </xsl:variable>
+                            
+                            <!-- If passage text varies then include the variant -->
+                            <xsl:for-each select="$variant[self::eft:passage]">
+                                
+                                <xsl:variable name="variant-passage" select="."/>
+                                <xsl:variable name="default-passage" select="$default[@xmlId eq $variant-passage/@xmlId]"/>
+                                
+                                <passage>
+                                    <xsl:sequence select="$variant-passage/@*"/>
+                                    <xsl:if test="not($variant-passage/eft:content/text() eq $default-passage/eft:content/text())">
+                                        <xsl:if test="not($variant-source-key eq $default-key)">
+                                            <xsl:attribute name="catalogue_work_xmlid" select="$variant-source-key"/>
+                                        </xsl:if>
+                                        <xsl:if test="$variant-commentary-key gt ''">
+                                            <xsl:attribute name="commentary_work_xmlid" select="$variant-commentary-key"/>
+                                        </xsl:if>
+                                    </xsl:if>
+                                    <xsl:sequence select="$variant-passage/eft:passageSort"/>
+                                    <xsl:sequence select="$variant-passage/eft:content"/>
+                                </passage>
+                                
+                            </xsl:for-each>
+                            
+                            <!-- Include annotations that are source-key or commentary specific -->
+                            <xsl:sequence select="$variant[self::eft:annotation][eft:catalogue_work_xmlid or eft:commentary_work_xmlid]"/>
+                            
+                        </xsl:for-each>
+                    </xsl:variable>
+                    
+                    <!-- Include default passages, with catalogue_work_xmlid where variant -->
+                    <xsl:variable name="default-passages" as="element(eft:passage)*" select="$default[self::eft:passage]"/>
+                    <xsl:for-each select="$default-passages">
                         
-                        <xsl:variable name="variant-passage" select="."/>
-                        <xsl:variable name="default-passage" select="$default[@xmlId eq $variant-passage/@xmlId]"/>
+                        <xsl:variable name="default-passage" select="." as="element(eft:passage)"/>
+                        <xsl:variable name="index" select="position()" as="xs:integer"/>
+                        <xsl:variable name="next-passage" select="$default-passages[$index + 1]" as="element(eft:passage)?"/>
+                        <xsl:variable name="variant-passage" select="$variants[self::eft:passage][@xmlId eq $default-passage/@xmlId]" as="element(eft:passage)*"/>
                         
                         <passage>
-                            <xsl:sequence select="$variant-passage/@*"/>
-                            <xsl:if test="not($variant-passage/eft:content/text() eq $default-passage/eft:content/text())">
-                                <xsl:if test="not($variant-source-key eq $default-key)">
-                                    <xsl:attribute name="catalogue_work_xmlid" select="$variant-source-key"/>
-                                </xsl:if>
-                                <xsl:if test="$variant-commentary-key gt ''">
-                                    <xsl:attribute name="commentary_work_xmlid" select="$variant-commentary-key"/>
-                                </xsl:if>
+                            <xsl:sequence select="$default-passage/@*"/>
+                            <xsl:if test="(count($variant-passage) lt $count-variants) or $variant-passage[@catalogue_work_xmlid or @commentary_work_xmlid]">
+                                <xsl:attribute name="catalogue_work_xmlid" select="$default-key"/>
                             </xsl:if>
-                            <xsl:sequence select="$variant-passage/eft:passageSort"/>
-                            <xsl:sequence select="$variant-passage/eft:content"/>
+                            <xsl:sequence select="$default-passage/*[local-name(.) = ('passageSort', 'content')]"/>
+                            <xsl:if test="$default-passage/eft:passageTextLast/text() ! xs:integer(.) gt $next-passage/eft:passageSort/text() ! xs:integer(.)">
+                                <error key="passageBleed">
+                                    <xsl:sequence select="$default-passage/eft:passageTextLast"/>
+                                </error>
+                            </xsl:if>
                         </passage>
                         
                     </xsl:for-each>
                     
-                    <!-- Include annotations that are source-key or commentary specific -->
-                    <xsl:sequence select="$variant[self::eft:annotation][eft:catalogue_work_xmlid or eft:commentary_work_xmlid]"/>
+                    <!-- Include variant passages -->
+                    <xsl:sequence select="$variants[self::eft:passage][@catalogue_work_xmlid or @commentary_work_xmlid]"/>
                     
+                    <!-- Include default annotations -->
+                    <xsl:sequence select="$default[self::eft:annotation]"/>
+                    
+                    <!-- Include variant annotations -->
+                    <xsl:sequence select="$variants[self::eft:annotation]"/>
+                    
+                </translation>
+                
+            </xsl:when>
+            <xsl:otherwise>
+                
+                <xsl:for-each select="$passage-types">
+                    <passageTypes type="{ @type }"/>
+                    <passageTypes type="{ @header-type }"/>
                 </xsl:for-each>
                 
-            </xsl:variable>
-            
-            <!-- Include default passages, with catalogue_work_xmlid where variant -->
-            <xsl:variable name="default-passages" as="element(eft:passage)*" select="$default[self::eft:passage]"/>
-            <xsl:for-each select="$default-passages">
+                <xsl:for-each select="$annotation-types">
+                    <passageAnnotationTypes>
+                        <xsl:sequence select="@*"/>
+                    </passageAnnotationTypes>
+                </xsl:for-each>
                 
-                <xsl:variable name="default-passage" select="." as="element(eft:passage)"/>
-                <xsl:variable name="index" select="position()" as="xs:integer"/>
-                <xsl:variable name="next-passage" select="$default-passages[$index + 1]" as="element(eft:passage)?"/>
-                <xsl:variable name="variant-passage" select="$variants[self::eft:passage][@xmlId eq $default-passage/@xmlId]" as="element(eft:passage)*"/>
+                <xsl:for-each select="$annotation-content-types">
+                    <annotationContentTypes>
+                        <xsl:sequence select="@*"/>
+                        <xsl:sequence select="eft:option"/>
+                    </annotationContentTypes>
+                </xsl:for-each>
                 
-                <passage>
-                    <xsl:sequence select="$default-passage/@*"/>
-                    <xsl:if test="(count($variant-passage) lt $count-variants) or $variant-passage[@catalogue_work_xmlid or @commentary_work_xmlid]">
-                        <xsl:attribute name="catalogue_work_xmlid" select="$default-key"/>
-                    </xsl:if>
-                    <xsl:sequence select="$default-passage/*[local-name(.) = ('passageSort', 'content')]"/>
-                    <xsl:if test="$default-passage/eft:passageTextLast/text() ! xs:integer(.) gt $next-passage/eft:passageSort/text() ! xs:integer(.)">
-                        <error key="passageBleed">
-                            <xsl:sequence select="$default-passage/eft:passageTextLast"/>
-                        </error>
-                    </xsl:if>
-                </passage>
-                
-            </xsl:for-each>
-            
-            <!-- Include variant passages -->
-            <xsl:sequence select="$variants[self::eft:passage][@catalogue_work_xmlid or @commentary_work_xmlid]"/>
-            
-            <!-- Include default annotations -->
-            <xsl:sequence select="$default[self::eft:annotation]"/>
-            
-            <!-- Include variant annotations -->
-            <xsl:sequence select="$variants[self::eft:annotation]"/>
-            
-        </translation>
-        
-        <xsl:if test="$return-types">
-            <xsl:for-each select="$passage-types">
-                <passageTypes type="{ @type }"/>
-                <passageTypes type="{ @header-type }"/>
-            </xsl:for-each>
-            <xsl:for-each select="$annotation-types">
-                <passageAnnotationTypes>
-                    <xsl:sequence select="@*"/>
-                </passageAnnotationTypes>
-            </xsl:for-each>
-            <xsl:for-each select="$annotation-content-types">
-                <annotationContentTypes>
-                    <xsl:sequence select="@*"/>
-                    <xsl:sequence select="eft:option"/>
-                </annotationContentTypes>
-            </xsl:for-each>
-        </xsl:if>
+            </xsl:otherwise>
+        </xsl:choose>
         
     </xsl:template>
     

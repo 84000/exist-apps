@@ -57,7 +57,6 @@ declare function local:catalogue-sections($section-tei as element(tei:TEI), $par
             return (
                 types:catalogue-work($text-bibl/@key, $section-id, (:$label, $title-migration-id,:) $text-id, helpers:normalize-text($text-bibl/tei:biblScope), $start-volume/@number, $start-volume/@start-page, $end-volume/@number, $end-volume/@end-page, $text-bibl/tei:location/@count-pages)(:,
                 types:control-data($section-id, 'work-start-volume', $start-volume/@number ! xs:integer(.)):)
-                
             )
     
     return (
@@ -110,7 +109,7 @@ let $response :=
         
     }
 
-let $file-name := string-join((($local:request-section-id[. eq 'O1JC11494'] ! 'kangyur', $local:request-section-id[. eq 'O1JC7630'] ! 'tengyur', $response/@modelType)[1], $local:request-content-mode[. gt '']),'-')
+let $file-name := string-join((($local:request-section-id[. eq 'O1JC11494'] ! 'kangyur', $local:request-section-id[. eq 'O1JC7630'] ! 'tengyur', $response/@modelType)[1], ($local:request-content-mode[. eq 'sections'] ! 'catalog', $local:request-content-mode[. gt ''], $response/@modelType)[1]),'-')
 
 return
     helpers:store($local:request-store, $response, concat($file-name, '.json'), ())

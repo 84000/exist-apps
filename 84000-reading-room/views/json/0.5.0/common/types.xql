@@ -60,7 +60,12 @@ declare variable $json-types:annotation-types := map {
     'contentPreferredTranslation':  'preferredTranslation',
     'flagRequiresAttention':        'requiresAttention',
     'flagHidden':                   'hidden',
-    'rendHidden':                   'hidden'
+    'rendHidden':                   'hidden',
+    'note':                         'textNote',
+    'general':                      'textNote',
+    'title':                        'textTitleNote',
+    'title-internal':               'textTitleNoteInternal',
+    'attribution':                  'textAttributionNote'
 };
 
 declare variable $json-types:classification-types := map {
@@ -402,15 +407,20 @@ declare variable $json-types:title-types := map {
 };
 
 declare variable $json-types:log-types := map {
-    'translation-status':      'translationStatusChange',
-    'text-version':            'translationVersionChange',
-    'draft-submitted':         'translationDraftSubmitted',
-    'submission-generate-tei': 'teiGeneratedFromDraft',
-    'progress-note-updated':   'progressNoteUpdated',
-    'action-note-updated':     'actionNoteUpdated',
-    'project-updated':         'translationProjectUpdated',
-    'file-generated':          'fileGenerated',
-    'webflow-updated':         'webflowUpdated'
+    'translation-status':               'translationStatusChange',
+    'text-version':                     'translationVersionChange',
+    'draft-submitted':                  'translationDraftSubmitted',
+    'publication-date':                 'translationSetPublicationDate',
+    'import':                           'translationImportNote',
+    'submission-generate-tei':          'teiGeneratedFromDraft',
+    'submission-document-template':     'submissionSetAsDocument',
+    'submission-spreadsheet-template':  'submissionSetAsSpreadsheet',
+    'submission-apostrophes-checked':   'submissionApostrophesChecked',
+    'progress-note-updated':            'progressNoteUpdated',
+    'action-note-updated':              'actionNoteUpdated',
+    'project-updated':                  'translationProjectUpdated',
+    'file-generated':                   'fileGenerated',
+    'webflow-updated':                  'webflowUpdated'
 };
 
 declare variable $json-types:catalogue-section-types := map {

@@ -129,8 +129,6 @@ let $html-sections :=
                 
     }
 
-(:return if (true()) then $html-sections else:)
-
 let $passages := helpers:passages($html-sections)
 
 let $response := 
@@ -143,7 +141,6 @@ let $response :=
         
         types:work(
             $local:text-id,
-            (:$local:translation/eft:source/eft:location/@work ! source:work-name(.),:)
             local:titles(),
             if($local:translation-xml/eft:publication/eft:tantric-restriction[tei:p]) then true() else false(),
             tei-content:strip-version-number($local:translation-xml/eft:publication/eft:edition/text()[1]),
@@ -158,7 +155,6 @@ let $response :=
         
         types:control-data($local:text-id, 'work-count-titles', count(($local:tei//tei:titleStmt/tei:title, $local:tei//tei:sourceDesc/tei:bibl/tei:ref)[normalize-space()])),
         types:control-data($local:text-id, 'work-count-passages', count(distinct-values($html-sections/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]/@data-location-id))),
-        (:types:control-data($local:text-id, 'work-count-milestones', count($local:xml-response/eft:text-outline/eft:pre-processed[@type eq 'milestones'][@text-id eq $local:text-id]/eft:milestone)),:)
         types:control-data($local:text-id, 'work-count-passage-annotations', count($passages/eft:annotation)),
         types:control-data($local:text-id, 'work-count-glossary-entries', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id])),
         types:control-data($local:text-id, 'work-count-glossary-names', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]/tei:term[not(@xml:lang eq 'bo' and @n)][text() ! normalize-space()])),

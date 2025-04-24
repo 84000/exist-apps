@@ -67,7 +67,7 @@ declare function json-helpers:title-migration-id($source-key as xs:string, $titl
 declare function json-helpers:store($mode as xs:string?, $data as element(), $file-name as xs:string, $target-subdir as xs:string?)  {
    
     if($mode eq 'store') then
-        store:file(string-join(('/db/apps/84000-static/json', $target-subdir[. gt '']), '/'), $file-name, serialize($data, $json-helpers:json-serialization-parameters), 'application/json')
+        store:file(string-join(('/db/apps/84000-data/migration', $target-subdir[. gt '']), '/'), $file-name, serialize($data, $json-helpers:json-serialization-parameters), 'application/json')
     else
         $data
     
