@@ -505,7 +505,7 @@ declare function json-types:authority-classification($authority-xmlid as xs:stri
     }
 };
 
-declare function json-types:work($text-id as xs:string, $titles as element(eft:title)*, $tantric-restriction as xs:boolean, $version as xs:string, $version-date as xs:string?, $status as xs:string, $publication-date as xs:string?) as element(eft:work) {
+declare function json-types:work($text-id as xs:string, $titles as element(eft:title)*, $tantric-restriction as xs:boolean, $glossary-excluded as xs:boolean, $version as xs:string, $version-date as xs:string?, $status as xs:string, $publication-date as xs:string?) as element(eft:work) {
     element { QName('http://read.84000.co/ns/1.0', 'work') } {
         attribute json:array {'true'},
         attribute workId { $text-id },
@@ -514,7 +514,7 @@ declare function json-types:work($text-id as xs:string, $titles as element(eft:t
         attribute publicationStatus { $status },
         attribute publicationDate { $publication-date },
         element tantricRestriction { attribute json:literal { 'true' }, $tantric-restriction },
-        (:distinct-values($source-work-name) ! element workType { attribute json:array {'true'}, . },:)
+        element glossaryExcluded { attribute json:literal { 'true' }, $glossary-excluded },
         $titles
     }
 };

@@ -187,6 +187,9 @@ declare function json-helpers:distinct-names($entity as element()?, $fallback as
 declare function json-helpers:glossaries($tei as element(tei:TEI), $html as element(xhtml:html)) as element(eft:glossary)* {
     
     let $text-id := tei-content:id($tei)
+    let $publication-status := $tei//tei:publicationStmt/tei:availability/@status
+    
+    where $publication-status = ('1', '1.a')
     
     for $gloss in $tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]
     let $entity := $entities:entities//eft:instance[@id eq $gloss/@xml:id]/parent::eft:entity

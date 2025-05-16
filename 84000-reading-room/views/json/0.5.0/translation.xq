@@ -79,16 +79,6 @@ declare function local:titles() as element(eft:title)* {
     
 };
 
-(:declare function local:bibliographic-scope() as element(eft:bibliographicScope)* {
-    for $bibl in $local:tei//tei:sourceDesc/tei:bibl[@key]
-    return
-        element { QName('http://read.84000.co/ns/1.0', 'bibliographicScope') } { 
-            attribute toh-key { $bibl/@key },
-            $bibl/tei:location ! json-types:copy-nodes(.)/*, 
-            element description { json-types:normalize-text($bibl/tei:biblScope) } 
-        }
-};:)
-
 let $commentary-keys := $local:translation-xml/eft:part[@type eq 'citation-index'] ! translation:commentary-keys($local:tei, tei:ptr)
 
 let $html-sections := 
@@ -143,6 +133,7 @@ let $response :=
             $local:text-id,
             local:titles(),
             if($local:translation-xml/eft:publication/eft:tantric-restriction[tei:p]) then true() else false(),
+            if($local:tei//tei:back/tei:div[@type eq 'glossary'][@status eq 'excluded']) then true() else false(),
             tei-content:strip-version-number($local:translation-xml/eft:publication/eft:edition/text()[1]),
             $local:translation-xml/eft:publication/eft:edition/tei:date/text(),
             $local:translation-xml/@status/string(),
@@ -164,5 +155,5 @@ let $response :=
     }
 
 return
-    helpers:store($local:request-store, $response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), ()(:'translation':))
+    helpers:store($local:request-store, $response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), 'translations')
 

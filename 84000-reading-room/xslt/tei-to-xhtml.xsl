@@ -367,7 +367,7 @@
                             </xsl:call-template>
                             
                             <xsl:call-template name="class-attribute">
-                                <xsl:with-param name="base-classes" select="'ref'"/>
+                                <xsl:with-param name="base-classes" select="'ref folio-ref-other'"/>
                                 <xsl:with-param name="html-classes" select="'text-muted'"/>
                             </xsl:call-template>
                             
@@ -442,8 +442,18 @@
                     <!-- ...or just output the cRef. -->
                     <xsl:otherwise>
                         
-                        <span class="ref">
+                        <span class="ref folio-ref-other">
+                            
+                            <xsl:call-template name="key-attribute">
+                                <xsl:with-param name="node" select="$ref"/>
+                            </xsl:call-template>
+                            
+                            <xsl:if test="$ref[@work]">
+                                <xsl:attribute name="data-ref-work" select="$ref/@work"/>
+                            </xsl:if>
+                            
                             <xsl:value-of select="concat('[', $ref/@cRef, ']')"/>
+                            
                         </span>
                         
                     </xsl:otherwise>
@@ -4495,21 +4505,19 @@
                 <xsl:value-of select="$node/ancestor-or-self::m:entry[@id][1]/@id"/>
             </xsl:when>
             
-            <!--<!-\- Look for a nearest milestone -\->
+            <!-- Look for a nearest milestone -->
             <xsl:when test="$node[ancestor-or-self::tei:*/preceding-sibling::tei:milestone[@xml:id]]">
                 <xsl:value-of select="$node/ancestor-or-self::tei:*[preceding-sibling::tei:milestone[@xml:id]][1]/preceding-sibling::tei:milestone[@xml:id][1]/@xml:id"/>
             </xsl:when>
             
-            <!-\- Default to the id of the nearest part -\->
+            <!-- Default to the id of the nearest part -->
             <xsl:otherwise>
                 <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
-            </xsl:otherwise>-->
+            </xsl:otherwise>
             
-            <!-- Look for a nearest milestone -->
+            <!--<!-\- Look for a nearest milestone -\->
             <xsl:otherwise>
                 
-                <xsl:variable name="part" select="$node/ancestor-or-self::m:part[@id][1]"/>
-                <xsl:variable name="part-milestones" select="$part/descendant::tei:milestone[@xml:id]" as="element(tei:milestone)*"/>
                 <xsl:variable name="element" as="element()">
                     <xsl:choose>
                         <xsl:when test="$node instance of text()">
@@ -4520,31 +4528,34 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                <xsl:variable name="part-nodes" select="$part-milestones | $element"/>
-                <xsl:variable name="element-index" select="common:index-of-node($part-nodes, $element)"/>
-                <xsl:variable name="preceding-milestones" as="element(tei:milestone)*">
-                    <xsl:for-each select="$part-milestones">
-                        <xsl:variable name="milestone-index" select="common:index-of-node($part-nodes, .)"/>
+                <xsl:variable name="part" select="$node/ancestor-or-self::m:part[@id][1]"/>
+                <xsl:variable name="part-milestones" select="$part/descendant::tei:milestone[@xml:id]" as="element(tei:milestone)*"/>
+                <xsl:variable name="preceding-milestones" select="$part-milestones intersect ($element/ancestor-or-self::tei:*/preceding-sibling::tei:milestone[1] | $element/ancestor-or-self::tei:*/preceding-sibling::tei:*[descendant-or-self::tei:milestone][1]/descendant-or-self::tei:milestone[last()])" as="element(tei:milestone)*"/>
+                <xsl:variable name="relevant-nodes" select="$preceding-milestones | $element"/>
+                <xsl:variable name="element-index" select="common:index-of-node($relevant-nodes, $element)"/>
+                <xsl:variable name="ordered-milestones" as="element(tei:milestone)*">
+                    <xsl:for-each select="$preceding-milestones">
+                        <xsl:variable name="milestone-index" select="common:index-of-node($relevant-nodes, .)"/>
                         <xsl:if test="$milestone-index lt $element-index">
                             <xsl:sequence select="."/>
                         </xsl:if>
                     </xsl:for-each>
                 </xsl:variable>
-                <xsl:variable name="nearest-milestone" select="$preceding-milestones[last()]"/>
+                <xsl:variable name="nearest-milestone" select="$ordered-milestones[last()]"/>
                 <xsl:choose>
                     
                     <xsl:when test="$nearest-milestone">
                         <xsl:value-of select="$nearest-milestone/@xml:id"/>
                     </xsl:when>
                     
-                    <!-- Default to the id of the nearest part -->
+                    <!-\- Default to the id of the nearest part -\->
                     <xsl:otherwise>
                         <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
                     </xsl:otherwise>
                     
                 </xsl:choose>
                 
-            </xsl:otherwise>
+            </xsl:otherwise>-->
             
         </xsl:choose>
     </xsl:template>
