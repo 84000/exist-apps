@@ -20,16 +20,23 @@ declare option output:media-type "application/json";
 declare option output:json-ignore-whitespace-text-nodes "yes";
 
 declare variable $local:text-id := if(request:exists()) then request:get-parameter('resource-id', '') else 'UT22084-034-007';
+declare variable $local:part-id := if(request:exists()) then request:get-parameter('part', '') else '';
 declare variable $local:request-store := if(request:exists()) then request:get-parameter('store', '') else 'store';
 declare variable $local:tei := tei-content:tei($local:text-id, 'translation');
-declare variable $local:xml-response := local:xml-response($local:text-id, ());
+declare variable $local:xml-response := local:xml-response($local:text-id, $local:part-id, ());
 declare variable $local:translation-xml := $local:xml-response/eft:translation;
 declare variable $local:html := helpers:translation-html($local:xml-response);
 declare variable $local:passage-parts-exclude := ('titles','imprint','toc','bibliography','glossary','citation-index');
 
-declare function local:xml-response($resource-id as xs:string, $commentary-key as xs:string?) as element(eft:response)* {
+declare function local:xml-response($resource-id as xs:string, $part-id as xs:string?, $commentary-key as xs:string?) as element(eft:response)* {
 
-    helpers:get(concat('/translation/', $resource-id, '.xml?', string-join(('view-mode=app', $commentary-key[. gt ''] ! concat('commentary=', .)), '&amp;')))/eft:response
+    helpers:get(
+        concat('/translation/', $resource-id, '.xml?', 
+            string-join((
+                ($part-id[. gt ''][not(. = ('front','back'))] ! 'app-part', 'app')[1] ! concat('view-mode=', .), 
+                $part-id[. gt ''] ! concat('part=', .), 
+                $commentary-key[. gt ''] ! concat('commentary=', .)
+            ), '&amp;')))/eft:response
     
 };
 
@@ -95,7 +102,7 @@ let $html-sections :=
         (: Toh variants :)
         for $bibl in $local:tei//tei:sourceDesc/tei:bibl[@key]
         where $bibl[not(@key/string() eq $local:xml-response/eft:request/@resource-id/string())]
-        let $xml-response-variant := local:xml-response($bibl/@key, ())
+        let $xml-response-variant := local:xml-response($bibl/@key, $local:part-id, ())
         let $html-variant := helpers:translation-html($xml-response-variant)
         return
             element { QName('http://read.84000.co/ns/1.0','variant') } {
@@ -108,7 +115,7 @@ let $html-sections :=
         for $commentary-key in $commentary-keys
         return
             for $bibl in $local:tei//tei:sourceDesc/tei:bibl[@key]
-            let $xml-response-variant := local:xml-response($bibl/@key, $commentary-key)
+            let $xml-response-variant := local:xml-response($bibl/@key, $local:part-id, $commentary-key)
             let $html-variant := helpers:translation-html($xml-response-variant)
             return
                 element { QName('http://read.84000.co/ns/1.0','variant') } {
@@ -126,7 +133,7 @@ let $response :=
         
         attribute modelType { 'translation' },
         attribute apiVersion { $types:api-version },
-        attribute url { concat('/rest/translation.json?', string-join((concat('api-version=', $types:api-version), $local:text-id ! concat('id=', .)), '&amp;')) },
+        attribute url { concat('/rest/translation.json?', string-join((concat('api-version=', $types:api-version), $local:text-id ! concat('id=', .), $local:part-id[. gt ''] ! concat('part=', .)), '&amp;')) },
         attribute timestamp { current-dateTime() },
         
         types:work(
@@ -142,18 +149,32 @@ let $response :=
         
         $passages,
         
-        helpers:glossaries($local:tei, $local:html),
+        if(not($local:part-id) or $local:part-id[. = ('','back','glossary')]) then
+            helpers:glossaries($local:tei, $local:html)
+        else (),
         
-        types:control-data($local:text-id, 'work-count-titles', count(($local:tei//tei:titleStmt/tei:title, $local:tei//tei:sourceDesc/tei:bibl/tei:ref)[normalize-space()])),
+        if(not($local:part-id) or $local:part-id[. = ('','front')]) then (
+            types:control-data($local:text-id, 'work-count-titles', count(($local:tei//tei:titleStmt/tei:title, $local:tei//tei:sourceDesc/tei:bibl/tei:ref)[normalize-space()])),
+            types:control-data($local:text-id, 'work-count-source-authors', count($local:translation-xml//eft:attribution))
+        )
+        else (),
+        
+        if(not($local:part-id) or $local:part-id[. = ('','back','glossary')]) then (
+            types:control-data($local:text-id, 'work-count-glossary-entries', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id])),
+            types:control-data($local:text-id, 'work-count-glossary-names', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]/tei:term[not(@xml:lang eq 'bo' and @n)][text() ! normalize-space()]))
+        )
+        else (),
+        
+        if(not($local:part-id) or $local:part-id[. = ('','back','glossary')]) then (
+            types:control-data($local:text-id, 'work-count-bibliography-entries', count($local:xml-response//eft:part[@type eq 'bibliography']/descendant::tei:bibl))
+        )
+        else (),
+        
         types:control-data($local:text-id, 'work-count-passages', count(distinct-values($html-sections/descendant::xhtml:*[@data-location-id][not(descendant::*/@data-location-id)]/@data-location-id))),
-        types:control-data($local:text-id, 'work-count-passage-annotations', count($passages/eft:annotation)),
-        types:control-data($local:text-id, 'work-count-glossary-entries', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id])),
-        types:control-data($local:text-id, 'work-count-glossary-names', count($local:tei//tei:back/tei:div[@type eq 'glossary']/descendant::tei:gloss[@xml:id]/tei:term[not(@xml:lang eq 'bo' and @n)][text() ! normalize-space()])),
-        types:control-data($local:text-id, 'work-count-bibliography-entries', count($local:xml-response//eft:part[@type eq 'bibliography']/descendant::tei:bibl)),
-        types:control-data($local:text-id, 'work-count-source-authors', count($local:translation-xml//eft:attribution))
+        types:control-data($local:text-id, 'work-count-passage-annotations', count($passages/eft:annotation))
         
     }
 
 return
-    helpers:store($local:request-store, $response, concat(($local:tei ! $local:text-id, concat('unknown-', $local:text-id))[1], '.json'), 'translations')
+    helpers:store($local:request-store, $response, concat(($local:tei ! ($local:part-id[. = ('front','back')] ! concat($local:text-id, '-', .), $local:part-id[. gt ''], $local:text-id)[1], concat('unknown-', $local:text-id))[1], '.json'), 'translations')
 

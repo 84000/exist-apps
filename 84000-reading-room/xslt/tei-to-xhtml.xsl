@@ -4511,11 +4511,11 @@
             </xsl:when>
             
             <!-- Default to the id of the nearest part -->
-            <xsl:otherwise>
+            <!--<xsl:otherwise>
                 <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
-            </xsl:otherwise>
+            </xsl:otherwise>-->
             
-            <!--<!-\- Look for a nearest milestone -\->
+            <!-- Look for a nearest milestone -->
             <xsl:otherwise>
                 
                 <xsl:variable name="element" as="element()">
@@ -4548,14 +4548,14 @@
                         <xsl:value-of select="$nearest-milestone/@xml:id"/>
                     </xsl:when>
                     
-                    <!-\- Default to the id of the nearest part -\->
+                    <!-- Default to the id of the nearest part -->
                     <xsl:otherwise>
                         <xsl:value-of select="$node/ancestor-or-self::m:part[@id][1]/@id"/>
                     </xsl:otherwise>
                     
                 </xsl:choose>
                 
-            </xsl:otherwise>-->
+            </xsl:otherwise>
             
         </xsl:choose>
     </xsl:template>

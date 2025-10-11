@@ -5,6 +5,7 @@ declare namespace tei = "http://www.tei-c.org/ns/1.0";
 
 import module namespace common="http://read.84000.co/common" at "/db/apps/84000-reading-room/modules/common.xql";
 import module namespace tei-content = "http://read.84000.co/tei-content" at "/db/apps/84000-reading-room/modules/tei-content.xql";
+import module namespace translation = "http://read.84000.co/translation" at "/db/apps/84000-reading-room/modules/translation.xql";
 import module namespace store = "http://read.84000.co/store" at "/db/apps/84000-reading-room/modules/store.xql";
 import module namespace json-helpers = "http://read.84000.co/json-helpers/0.5.0" at '/db/apps/84000-reading-room/views/json/0.5.0/common/helpers.xql';
 
@@ -38,6 +39,8 @@ declare variable $local:static-paths := map {
     '/rest/translation-projects.json':                                      'translation-projects.json'
 };
 
+declare variable $local:epic-text-ids := ('UT22084-014-001');
+
 declare variable $local:exec-options := 
     <option>
         <workingDir>/{ $common:environment//eft:env-vars/eft:var[@id eq 'home']/text() }/</workingDir>
@@ -48,12 +51,34 @@ declare function local:store($source-path as xs:string, $target-file as xs:strin
     let $target-file-path := string-join(('/db/apps/84000-data/migration', $target-file), '/')
     let $source-path := concat($source-path, if(contains($source-path, '?')) then '&amp;' else '?', 'store=store')
     where not(util:binary-doc-available($target-file-path))
-    (:let $get-file := json-helpers:get($source-path):)
+    let $get-file := json-helpers:get($source-path)
     return (
-        $source-path  || ' -> ' || $target-file(:,
-        process:execute(('sleep', '1'), $local:exec-options) ! ():)
+        $source-path  || ' -> ' || $target-file,
+        process:execute(('sleep', '1'), $local:exec-options) ! ()
     )
     
+};
+
+declare function local:store-chapters($text-id as xs:string) {
+    
+    let $tei := tei-content:tei($text-id, 'translation')
+    let $parts := translation:parts($tei, (), $translation:view-modes/eft:view-mode[@id eq 'outline'], ())
+    return (
+    
+        (: Save front matter :)
+        local:store(concat('/rest/translation.json?id=', $text-id, '&amp;part=front'), concat('translations/', $text-id, '-front.json'))
+        ,
+        
+        (: Save back matter :)
+        local:store(concat('/rest/translation.json?id=', $text-id, '&amp;part=back'), concat('translations/', $text-id, '-back.json'))
+        ,
+        
+        (: Save the translation chapter by chapter :)
+        for $chapter in $parts[@type eq 'translation']/eft:part
+        return
+            local:store(concat('/rest/translation.json?id=', $text-id, '&amp;part=', $chapter/@id), concat('translations/', $chapter/@id, '.json'))
+            
+    )
 };
 
 (: General files :)
@@ -62,7 +87,7 @@ return
     local:store($source-path, $local:static-paths($source-path))
 ,
 
-(: Individual texts :)
+(: Run for individual texts :)
 ((:'UT22084-001-001', 'UT22084-029-001', 'UT22084-000-000', 'UT23703-000-000':)) ! local:store(concat('/rest/translation.json?id=', .), concat('translations/', ., '.json'))
 ,
 
@@ -72,7 +97,13 @@ let $text-id := tei-content:id($tei)
 let $target-file := concat($text-id, '.json')
 let $publication-status := ($tei//tei:publicationStmt/tei:availability/@status[. gt '']/string(), '')[1]
 let $pages-count := ($tei//tei:sourceDesc/tei:bibl/tei:location/@count-pages[. gt ''] ! xs:integer(.), 0)[1]
+(: Some conditions for testing :)
 (:where not($publication-status = ('1', '1.a')) or $pages-count le 100:)
 return 
-    local:store(concat('/rest/translation.json?id=', $text-id), concat('translations/', $text-id, '.json')) (:|| ' : ' || $publication-status || ' : ' || $pages-count:)
+    if ($text-id = $local:epic-text-ids) then
+        local:store-chapters($text-id)
+    else
+        local:store(concat('/rest/translation.json?id=', $text-id), concat('translations/', $text-id, '.json')) (:|| ' : ' || $publication-status || ' : ' || $pages-count:)
+
+
 

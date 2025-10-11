@@ -78,6 +78,7 @@
         <content-type type="text-style">
             <option value="italic"/>
             <option value="text-bold"/>
+            <option value="text-small"/>
             <option value="underline"/>
             <option value="line-through"/>
             <option value="small-caps"/>
@@ -86,6 +87,9 @@
             <option value="foreign"/>
             <option value="distinct"/>
             <option value="emphasis"/>
+        </content-type>
+        <content-type type="paragraph-style">
+            <option value="indent"/>
         </content-type>
         <content-type type="link-type">
             <option value="pending"/>
@@ -98,6 +102,7 @@
             <option value="supplementary"/>
         </content-type>
         <content-type type="heading-level">
+            <option value="h1"/>
             <option value="h2"/>
             <option value="h3"/>
             <option value="h4"/>
@@ -511,7 +516,7 @@
                 <xsl:when test="$tag-name = ('span') and not($node/@*[not(local-name(.) = ('data-ref'))])">
                     <!-- exclude -->
                 </xsl:when>
-                <xsl:when test="$tag-name = ('div') and $node[matches(@class, '^rw\srw\-(paragraph|section\-head|line|line\-group|list\-bullet|list\-item|list\-head|list\-section|table|label|mantra|blockquote)$')]">
+                <xsl:when test="$tag-name eq 'div' and $node[matches(@class, '^rw\srw\-(paragraph|section\-head|line|line\-group|list\-bullet|list\-item|list\-head|list\-section|table|label|mantra|blockquote)$')]">
                     <!-- exclude -->
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'div' and $node[matches(@class, '^rw\-heading\sheading\-section(\schapter)?(\snested)?(\snested\-\d+)?(\ssupplementary)?$')]">
@@ -555,6 +560,9 @@
                 <xsl:when test="$tag-name = ('br')">
                     <xsl:value-of select="'leading-space'"/>
                 </xsl:when>
+                <xsl:when test="$tag-name eq 'div' and $node[matches(@class, '(^|\s)h1(\s|$)')]">
+                    <xsl:value-of select="'heading'"/>
+                </xsl:when>
                 <xsl:when test="$tag-name = ('h2','h3','h4','h5')">
                     <xsl:value-of select="'heading'"/>
                 </xsl:when>
@@ -575,6 +583,9 @@
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'cite' and tokenize($node/@class, ' ')[. eq 'title']">
                     <xsl:value-of select="'inline-title'"/>
+                </xsl:when>
+                <xsl:when test="$tag-name eq 'p' and tokenize($node/@class, ' ')[. eq 'mantra'] and $node//xhtml:span[tokenize(@class, ' ')[. eq 'mantra']]">
+                    <xsl:value-of select="'paragraph'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name = ('span', 'p') and tokenize($node/@class, ' ')[. eq 'mantra']">
                     <xsl:value-of select="'mantra'"/>
@@ -597,13 +608,14 @@
                 <xsl:when test="$tag-name eq 'p' and tokenize($node/@class, ' ')[. eq 'trailer']">
                     <xsl:value-of select="'trailer'"/>
                 </xsl:when>
+                
                 <xsl:when test="$tag-name eq 'em'">
                     <xsl:value-of select="'span'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name = ('sub', 'sup')">
                     <xsl:value-of select="'span'"/>
                 </xsl:when>
-                <xsl:when test="$tag-name eq 'strong'">
+                <xsl:when test="$tag-name = ('strong', 'small')">
                     <xsl:value-of select="'span'"/>
                 </xsl:when>
                 <xsl:when test="$tag-name eq 'span' and tokenize($node/@class, ' ')[. eq 'ref']">
@@ -678,10 +690,10 @@
                     </xsl:call-template>
                 </xsl:if>
                 
-                <xsl:if test="$type eq 'heading' and tokenize($node/@class, ' ')[. = ('h3','h4')]">
+                <xsl:if test="$type eq 'heading' and tokenize($node/@class, ' ')[. = ('h1','h3','h4')]">
                     <xsl:call-template name="annotation-content">
                         <xsl:with-param name="type" select="'heading-level'"/>
-                        <xsl:with-param name="value" select="if(tokenize($node/@class, ' ')[. eq 'h3']) then 'h3' else 'h4'"/>
+                        <xsl:with-param name="value" select="if(tokenize($node/@class, ' ')[. eq 'h1']) then 'h1' else if(tokenize($node/@class, ' ')[. eq 'h3']) then 'h3' else 'h4'"/>
                     </xsl:call-template>
                 </xsl:if>
                 
@@ -717,6 +729,13 @@
                     <xsl:call-template name="annotation-content">
                         <xsl:with-param name="type" select="'text-style'"/>
                         <xsl:with-param name="value" select="'text-bold'"/>
+                    </xsl:call-template>
+                </xsl:if>
+                
+                <xsl:if test="$type eq 'span' and $tag-name eq 'small'">
+                    <xsl:call-template name="annotation-content">
+                        <xsl:with-param name="type" select="'text-style'"/>
+                        <xsl:with-param name="value" select="'text-small'"/>
                     </xsl:call-template>
                 </xsl:if>
                 
@@ -856,19 +875,16 @@
                                     <xsl:when test="$type eq 'blockquote' and $class-name = ('quote')">
                                         <!-- exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$type eq 'heading' and $class-name = ('h3','h4')">
+                                    <xsl:when test="$type eq 'heading' and $class-name = ('h1','h3','h4')">
                                         <!-- exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$node[@lang] and $class-name = ('text-en','text-sa','text-bo','text-zh','text-wy','text-pi','text-ja','break')">
+                                    <xsl:when test="$node[@lang] and $class-name = ('text-en','text-sa','text-bo','text-zh','text-wy','text-pi','text-ja')">
                                         <!-- Already set as lang => exclude -->
                                     </xsl:when>
-                                    <xsl:when test="$class-name = ('matched','hidden-print','hidden-ebook','table-responsive')">
+                                    <xsl:when test="$class-name = ('matched','hidden-print','hidden-ebook','table-responsive','break')">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$node[@data-reconstructed] and $class-name = ('reconstructed')">
-                                        <!-- exclude -->
-                                    </xsl:when>
-                                    <xsl:when test="$type[not(. eq 'mantra')] and $class-name eq 'mantra'">
                                         <!-- exclude -->
                                     </xsl:when>
                                     <xsl:when test="$type eq 'list' and $class-name eq 'list-sublist'">
@@ -946,6 +962,12 @@
                                         <xsl:call-template name="annotation-content">
                                             <xsl:with-param name="type" select="'image-style'"/>
                                             <xsl:with-param name="value" select="if($class-name eq 'inline-left') then 'align-left' else 'align-right'"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <xsl:when test="$type eq 'paragraph' and $class-name eq 'mantra' and $node//xhtml:span[tokenize(@class, ' ')[. eq 'mantra']]">
+                                        <xsl:call-template name="annotation-content">
+                                            <xsl:with-param name="type" select="'paragraph-style'"/>
+                                            <xsl:with-param name="value" select="'indent'"/>
                                         </xsl:call-template>
                                     </xsl:when>
                                     <xsl:when test="matches($class-name, '^nesting\-\d+$')">
@@ -1093,7 +1115,7 @@
                     
                     <!-- Cases where multiple annotations should be applied -->
                     <xsl:choose>
-                        <xsl:when test="$type[not(. eq 'mantra')] and $node/@class ! tokenize(., ' ')[. eq 'mantra']">
+                        <xsl:when test="$type[not(. = ('mantra','paragraph'))] and $node/@class ! tokenize(., ' ')[. eq 'mantra']">
                             <xsl:call-template name="annotation">
                                 <xsl:with-param name="passage-id" select="$passage-id"/>
                                 <xsl:with-param name="type" select="'mantra'"/>

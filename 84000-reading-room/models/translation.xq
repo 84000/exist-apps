@@ -51,7 +51,9 @@ let $part-id := (
     (: Citation index is derived so can't be looked up :)
     $part-id[. eq concat($text-id, '-citation-index')],
     (: End notes is derived so can't be looked up :)
-    $part-id[. eq concat($text-id, '-end-notes')]
+    $part-id[. eq concat($text-id, '-end-notes')],
+    (: Allow front and back :)
+    $part-id[. = ('front', 'back')]
     (:(\: DANGER ! Only enable for debug! :\),$part-id:)
 )
 

@@ -1306,7 +1306,7 @@
             <div class="row">
                 <div class="col-md-offset-1 col-md-10 col-lg-offset-2 col-lg-8 print-width-override">
                     
-                    <section id="body-title">
+                    <section id="{ $text-id }-body-title">
                         
                         <xsl:call-template name="class-attribute">
                             <xsl:with-param name="base-classes">
@@ -1326,7 +1326,7 @@
                             <xsl:value-of select="'Text Body'"/>
                         </h2>
                         
-                        <div class="rw rw-section-head">
+                        <div class="rw rw-section-head" data-location-id="{ $text-id }-body-title">
                             
                             <xsl:variable name="prelude" select="$translation/m:part[@type eq 'translation']/m:part[@type eq 'prelude']"/>
                             

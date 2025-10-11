@@ -20,22 +20,23 @@ import module namespace functx = "http://www.functx.com";
 (: View modes hold attributes that determine the display of a translation :)
 declare variable $translation:view-modes := 
     <view-modes xmlns="http://read.84000.co/ns/1.0">
-      <view-mode id="default"          client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections"  annotation="none"   />
-      <view-mode id="editor"           client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"             annotation="editor" />
-      <view-mode id="json"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
-      <view-mode id="passage"          client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
-      <view-mode id="editor-passage"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"         annotation="editor" />
-      <view-mode id="json-passage"     client="none"     cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
-      <view-mode id="outline"          client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"         annotation="none"   />
-      <view-mode id="annotation"       client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"             annotation="web"    />
-      <view-mode id="txt"              client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
-      <view-mode id="ebook"            client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none"   />
-      <view-mode id="pdf"              client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
-      <view-mode id="app"              client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none"   />
-      <view-mode id="tests"            client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
-      <view-mode id="glossary-editor"  client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none"   />
-      <view-mode id="glossary-check"   client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none"   />
-      <view-mode id="glossary-json"    client="app"      cache="suppress"   layout="flat"      glossary="use-cache"  parts="glossary"        annotation="none"   />
+      <view-mode id="default"           client="browser"  cache="use-cache"  layout="full"      glossary="use-cache"  parts="count-sections"  annotation="none"   />
+      <view-mode id="editor"            client="browser"  cache="suppress"   layout="expanded"  glossary="defer"      parts="all"             annotation="editor" />
+      <view-mode id="json"              client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="passage"           client="browser"  cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
+      <view-mode id="editor-passage"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="passage"         annotation="editor" />
+      <view-mode id="json-passage"      client="none"     cache="suppress"   layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
+      <view-mode id="outline"           client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="outline"         annotation="none"   />
+      <view-mode id="annotation"        client="browser"  cache="use-cache"  layout="expanded"  glossary="use-cache"  parts="all"             annotation="web"    />
+      <view-mode id="txt"               client="none"     cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="ebook"             client="ebook"    cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none"   />
+      <view-mode id="pdf"               client="pdf"      cache="use-cache"  layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="app"               client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="all"             annotation="none"   />
+      <view-mode id="app-part"          client="app"      cache="use-cache"  layout="flat"      glossary="use-cache"  parts="passage"         annotation="none"   />
+      <view-mode id="tests"             client="none"     cache="suppress"   layout="flat"      glossary="suppress"   parts="all"             annotation="none"   />
+      <view-mode id="glossary-editor"   client="browser"  cache="suppress"   layout="full"      glossary="use-cache"  parts="glossary"        annotation="none"   />
+      <view-mode id="glossary-check"    client="browser"  cache="suppress"   layout="flat"      glossary="no-cache"   parts="all"             annotation="none"   />
+      <view-mode id="glossary-json"     client="app"      cache="suppress"   layout="flat"      glossary="use-cache"  parts="glossary"        annotation="none"   />
     </view-modes>;
 
 declare variable $translation:status-statuses := $tei-content:text-statuses/m:status[@type eq 'translation'];
@@ -908,9 +909,11 @@ declare function translation:parts($tei as element(tei:TEI), $passage-id as xs:s
     (: Get the parts of a translation :)
     
     let $passage-id :=
-        if($view-mode[@parts eq 'all']) then
+        if($passage-id = ('front','back','all')) then
+            $passage-id
+        else if($view-mode[@parts eq 'all']) then
             'all'
-        else if( $view-mode[@parts eq 'count-sections'] and translation:single-page($tei)) then
+        else if($view-mode[@parts eq 'count-sections'] and translation:single-page($tei)) then
             'all'
         else
             $passage-id
@@ -1486,6 +1489,8 @@ declare function translation:summary($tei as element(tei:TEI), $passage-id as xs
     let $content-directive := 
         if($passage-id = ($summary/@xml:id, 'summary','front','all')) then
             'complete'
+        else if($passage-id eq 'back') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($summary, $passage-id, true())) then
                 'passage'
@@ -1514,6 +1519,8 @@ declare function translation:acknowledgment($tei as element(tei:TEI), $passage-i
     let $content-directive := 
         if($passage-id = ($acknowledgment/@xml:id, 'acknowledgment','front','all')) then
             'complete'
+        else if($passage-id eq 'back') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($acknowledgment, $passage-id, true())) then
                 'passage'
@@ -1541,6 +1548,8 @@ declare function translation:preface($tei as element(tei:TEI), $passage-id as xs
     let $content-directive := 
         if($passage-id = ($preface/@xml:id, 'preface','front','all')) then
             'complete'
+        else if($passage-id eq 'back') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($preface, $passage-id, true())) then
                 'passage'
@@ -1568,6 +1577,8 @@ declare function translation:introduction($tei as element(tei:TEI), $passage-id 
     let $content-directive := 
         if($passage-id = ($introduction/@xml:id, 'introduction','front','all')) then
             'complete'
+        else if($passage-id eq 'back') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($introduction, $passage-id, true())) then
                 'passage'
@@ -1622,6 +1633,8 @@ declare function translation:body($tei as element(tei:TEI), $passage-id as xs:st
                 let $content-directive := 
                     if($view-mode[@parts eq 'outline']) then
                         'empty'
+                    else if($passage-id = ('front','back')) then
+                        'empty'
                     else if($chapter-block[@status] and not($common:environment/m:render/m:status[@type eq 'translation'][@status-id eq $chapter-block/@status])) then
                         'unpublished'
                     else if($passage-id = ($part/@xml:id, 'body', 'all')) then
@@ -1654,6 +1667,8 @@ declare function translation:appendix($tei as element(tei:TEI), $passage-id as x
     let $content-directive := 
         if($passage-id = ($appendix/@xml:id, 'appendix', 'back', 'all')) then
             'complete'
+        else if($passage-id eq 'front') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($appendix, $passage-id, true())) then
                 'passage'
@@ -1729,6 +1744,8 @@ declare function translation:abbreviations($tei as element(tei:TEI), $passage-id
     let $content-directive := 
         if($passage-id = ($abbreviations-part/@xml:id, 'abbreviations', 'back', 'all')) then
             'complete'
+        else if($passage-id eq 'front') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($abbreviations, $passage-id, true())) then
                 'passage'
@@ -1762,6 +1779,8 @@ declare function translation:end-notes($tei as element(tei:TEI), $passage-id as 
     let $content-directive := 
         if($passage-id = ($end-notes//@xml:id, $end-notes-part-id, 'end-notes', 'back', 'all')) then
             'complete'
+        else if($passage-id eq 'front') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             'passage'
         else if($view-mode[@parts eq 'outline']) then
@@ -1799,6 +1818,8 @@ declare function translation:bibliography($tei as element(tei:TEI), $passage-id 
     let $content-directive := 
         if($passage-id = ('bibliography', 'back', 'all')) then
             'complete'
+        else if($passage-id eq 'front') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             if(local:passage-in-content($bibliography, $passage-id, true())) then
                 'passage'
@@ -1896,6 +1917,8 @@ declare function translation:citation-index($tei as element(tei:TEI), $passage-i
     let $content-directive := 
         if($passage-id = ($citation-index-part-id, 'citation-index', 'back', 'all')) then
             'complete'
+        else if($passage-id eq 'front') then
+            'empty'
         else if($view-mode[@parts = ('passage')]) then
             'passage'
         else if($view-mode[@parts eq 'outline']) then
